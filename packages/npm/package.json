@@ -1,0 +1,41 @@
+{
+  "name": "@byronwade/dits",
+  "version": "0.1.2",
+  "description": "Version control for video and large binary files - like Git, but optimized for large binary files",
+  "license": "Apache-2.0 OR MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/byronwade/dits.git",
+    "directory": "packages/npm"
+  },
+  "homepage": "https://github.com/byronwade/dits",
+  "bugs": {
+    "url": "https://github.com/byronwade/dits/issues"
+  },
+  "keywords": [
+    "version-control",
+    "video",
+    "binary",
+    "large-files",
+    "vcs",
+    "cli",
+    "git",
+    "media",
+    "deduplication"
+  ],
+  "bin": {
+    "dits": "bin/dits"
+  },
+  "main": "lib/index.js",
+  "files": [
+    "bin",
+    "lib"
+  ],
+  "scripts": {
+    "build": "echo 'Binaries built via cargo'",
+    "clean": "rm -rf bin/darwin-* bin/linux-* bin/win32-*"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

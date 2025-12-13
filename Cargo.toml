@@ -1,0 +1,73 @@
+[workspace]
+members = [
+  "apps/cli",
+  "apps/cli/crates/dits-api",
+  "apps/cli/crates/dits-cache",
+  "apps/cli/crates/dits-chunker",
+  "apps/cli/crates/dits-cli",
+  "apps/cli/crates/dits-core",
+  "apps/cli/crates/dits-db",
+  "apps/cli/crates/dits-protocol",
+  "apps/cli/crates/dits-sdk",
+  "apps/cli/crates/dits-signal",
+  "apps/cli/crates/dits-storage",
+  "apps/cli/crates/dits-worker",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/byronwade/dits"
+
+[workspace.dependencies]
+anyhow = "1.0.92"
+async-trait = "0.1.83"
+aws-config = "1.8.0"
+aws-sdk-s3 = { version = "1.8.0", features = ["behavior-version-latest"] }
+axum = { version = "0.7.5", features = ["macros", "json"] }
+bincode = "1.3.3"
+blake3 = "1.5.4"
+bytes = "1.7.1"
+chrono = { version = "0.4.38", features = ["serde"] }
+clap = { version = "4.5.20", features = ["derive"] }
+config = "0.14.0"
+console = "0.15.8"
+dashmap = "6.1.0"
+dialoguer = "0.11.0"
+dotenvy = "0.15.7"
+fastcdc = "3.1.1"
+futures = "0.3.30"
+hex = "0.4.3"
+hyper = { version = "1.4.1", features = ["full"] }
+humantime = "2.1.0"
+indicatif = "0.17.8"
+lz4_flex = "0.11.3"
+metrics = "0.21.1"
+metrics-exporter-prometheus = "0.15.0"
+predicates = "3.1.0"
+quinn = "0.11.9"
+redis = { version = "0.25.4", features = ["tokio-rustls-comp"] }
+reqwest = { version = "0.12.8", features = ["json", "gzip", "stream", "rustls-tls"] }
+rustls = { version = "0.23.14", features = ["ring"] }
+serde = { version = "1.0.215", features = ["derive"] }
+serde_json = "1.0.117"
+sha2 = "0.10.8"
+sqlx = { version = "0.7.4", default-features = false, features = ["runtime-tokio-rustls", "postgres", "macros", "uuid", "chrono", "migrate", "json"] }
+tempfile = "3.10.1"
+thiserror = "1.0.63"
+tokio = { version = "1.48.0", features = ["rt-multi-thread", "macros", "fs", "sync"] }
+tokio-util = "0.7.12"
+tower = "0.4.13"
+tower-http = { version = "0.5.2", features = ["trace", "cors", "timeout"] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["fmt", "env-filter", "ansi"] }
+url = "2.5.2"
+uuid = { version = "1.10.0", features = ["serde", "v4"] }
+wiremock = "0.6.0"
+zstd = "0.13.2"
+toml = "0.9.8"
+assert_cmd = "2.0.16"
+
+

@@ -1,0 +1,20 @@
+[package]
+name = "dits-signal"
+description = "Signal server for DITS P2P peer discovery"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0 OR MIT"
+
+[[bin]]
+name = "dits-signal"
+path = "src/main.rs"
+
+[dependencies]
+tokio = { version = "1.48", features = ["rt-multi-thread", "macros", "net", "sync", "signal", "time"] }
+tokio-tungstenite = "0.24"
+futures-util = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+dashmap = "6.0"

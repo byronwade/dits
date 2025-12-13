@@ -1,0 +1,222 @@
+# Dits Development Commands
+# Install just: cargo install just
+# Usage: just <recipe>
+
+# Default recipe - show available commands
+default:
+    @just --list
+
+# ============================================================================
+# Development
+# ============================================================================
+
+# Build all crates
+build:
+    cargo build --all-targets
+
+# Build in release mode
+build-release:
+    cargo build --release --all-targets
+
+# Run all tests
+test:
+    cargo nextest run 2>/dev/null || cargo test
+
+# Run tests for a specific crate
+test-crate crate:
+    cargo test -p {{crate}}
+
+# Run tests with coverage
+coverage:
+    cargo tarpaulin --out Html --output-dir target/coverage
+
+# Run clippy lints
+lint:
+    cargo clippy --all-targets --all-features -- -D warnings
+
+# Format code
+fmt:
+    cargo fmt --all
+
+# Check formatting
+fmt-check:
+    cargo fmt --all -- --check
+
+# Full check (build + test + lint + fmt)
+check: fmt-check lint test
+    @echo "All checks passed!"
+
+# Watch for changes and run tests
+watch:
+    cargo watch -x test
+
+# Watch for changes and run clippy
+watch-lint:
+    cargo watch -x clippy
+
+# ============================================================================
+# Documentation
+# ============================================================================
+
+# Generate and open documentation
+docs:
+    cargo doc --no-deps --open
+
+# Build all documentation
+docs-all:
+    cargo doc --all-features --document-private-items
+
+# Serve documentation locally
+docs-serve:
+    cd target/doc && python3 -m http.server 8080
+
+# ============================================================================
+# Database
+# ============================================================================
+
+# Start local database
+db-start:
+    docker-compose up -d postgres redis
+
+# Stop local database
+db-stop:
+    docker-compose down
+
+# Run database migrations
+db-migrate:
+    cargo run --bin dits-migrate
+
+# Reset database (WARNING: destructive)
+db-reset:
+    docker-compose down -v
+    docker-compose up -d postgres redis
+    sleep 3
+    cargo run --bin dits-migrate
+
+# Connect to local database
+db-connect:
+    psql postgresql://dits:dits@localhost:5432/dits
+
+# ============================================================================
+# Server
+# ============================================================================
+
+# Run API server
+server:
+    cargo run --bin dits-server
+
+# Run API server in watch mode
+server-watch:
+    cargo watch -x 'run --bin dits-server'
+
+# Run API server in release mode
+server-release:
+    cargo run --release --bin dits-server
+
+# ============================================================================
+# CLI
+# ============================================================================
+
+# Run CLI command
+cli *args:
+    cargo run --bin dits -- {{args}}
+
+# Install CLI locally
+cli-install:
+    cargo install --path crates/dits-client
+
+# ============================================================================
+# Benchmarks
+# ============================================================================
+
+# Run all benchmarks
+bench:
+    cargo bench
+
+# Run specific benchmark
+bench-name name:
+    cargo bench -- {{name}}
+
+# Run benchmarks and compare to baseline
+bench-compare:
+    cargo bench -- --save-baseline new
+    critcmp baseline new
+
+# ============================================================================
+# Release
+# ============================================================================
+
+# Check if ready for release
+release-check:
+    cargo publish --dry-run -p dits-core
+    cargo publish --dry-run -p dits-parsers
+    cargo publish --dry-run -p dits-storage
+    cargo publish --dry-run -p dits-protocol
+    cargo publish --dry-run -p dits-sdk
+
+# Build release binaries
+release-build:
+    cargo build --release
+    @echo "Binaries in target/release/"
+
+# ============================================================================
+# Docker
+# ============================================================================
+
+# Build Docker image
+docker-build:
+    docker build -t dits:latest .
+
+# Run in Docker
+docker-run:
+    docker-compose up
+
+# Build and push Docker image
+docker-push tag:
+    docker build -t dits:{{tag}} .
+    docker push dits:{{tag}}
+
+# ============================================================================
+# Utilities
+# ============================================================================
+
+# Clean build artifacts
+clean:
+    cargo clean
+
+# Update dependencies
+update:
+    cargo update
+
+# Check for outdated dependencies
+outdated:
+    cargo outdated
+
+# Security audit
+audit:
+    cargo audit
+
+# Count lines of code
+loc:
+    tokei --exclude target --exclude node_modules
+
+# Generate dependency graph
+deps-graph:
+    cargo depgraph | dot -Tpng > deps.png
+    @echo "Generated deps.png"
+
+# ============================================================================
+# CI Helpers
+# ============================================================================
+
+# Run full CI check locally
+ci: fmt-check lint test audit
+    @echo "CI checks passed!"
+
+# Generate lockfile
+lockfile:
+    cargo generate-lockfile
+
+# Verify minimum Rust version
+msrv:
+    cargo msrv --min 1.75.0

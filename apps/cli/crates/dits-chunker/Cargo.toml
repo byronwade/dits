@@ -1,0 +1,33 @@
+[package]
+name = "dits-chunker"
+description = "Content-defined chunking for the Dits version control system"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+dits-core = { path = "../dits-core" }
+
+# Async
+tokio = { workspace = true }
+async-trait = { workspace = true }
+futures = { workspace = true }
+
+# Chunking
+fastcdc = { workspace = true }
+
+# Cryptography
+blake3 = { workspace = true }
+
+# Compression
+zstd = { workspace = true }
+lz4_flex = { workspace = true }
+
+# Utilities
+bytes = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+tokio = { workspace = true, features = ["test-util", "macros"] }

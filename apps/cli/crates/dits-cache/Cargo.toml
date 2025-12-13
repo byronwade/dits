@@ -1,0 +1,32 @@
+[package]
+name = "dits-cache"
+description = "Caching layer for the Dits version control system"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+dits-core = { path = "../dits-core" }
+
+# Async
+tokio = { workspace = true }
+async-trait = { workspace = true }
+
+# Cache
+redis = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+bincode = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }
+
+# Utilities
+bytes = { workspace = true }
+tracing = { workspace = true }
+dashmap = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util", "macros"] }

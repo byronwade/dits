@@ -1,0 +1,24 @@
+{
+  "name": "dits-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "clean": "turbo clean",
+    "build:cli": "cargo build --release",
+    "test:cli": "cargo test",
+    "release": "turbo build && echo 'Ready for release'"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0"
+  },
+  "packageManager": "npm@10.2.0",
+  "engines": {
+    "node": ">=18"
+  }
+}

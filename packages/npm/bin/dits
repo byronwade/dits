@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+/**
+ * Dits CLI entry point
+ *
+ * This wrapper finds and executes the platform-specific dits binary.
+ */
+require('../lib/index.js').run();

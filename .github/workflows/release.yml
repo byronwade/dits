@@ -1,0 +1,322 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.1.0)'
+        required: true
+        type: string
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # macOS
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            platform: darwin-arm64
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            platform: darwin-x64
+
+          # Linux (glibc)
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            platform: linux-x64
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            platform: linux-arm64
+            cross: true
+
+          # Linux (musl)
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+            platform: linux-x64-musl
+          - target: aarch64-unknown-linux-musl
+            os: ubuntu-latest
+            platform: linux-arm64-musl
+            cross: true
+
+          # Windows
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            platform: win32-x64
+          - target: aarch64-pc-windows-msvc
+            os: windows-latest
+            platform: win32-arm64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross
+        if: matrix.cross
+        uses: taiki-e/install-action@cross
+
+      - name: Install musl tools
+        if: contains(matrix.target, 'musl') && !matrix.cross
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+
+      - name: Build (cross)
+        if: matrix.cross
+        working-directory: apps/cli
+        run: cross build --release --target ${{ matrix.target }}
+
+      - name: Build (native)
+        if: "!matrix.cross"
+        working-directory: apps/cli
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Strip binary (Unix)
+        if: runner.os != 'Windows'
+        run: strip apps/cli/target/${{ matrix.target }}/release/dits || true
+
+      - name: Prepare artifacts
+        shell: bash
+        run: |
+          mkdir -p artifacts/${{ matrix.platform }}
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            cp apps/cli/target/${{ matrix.target }}/release/dits.exe artifacts/${{ matrix.platform }}/
+          else
+            cp apps/cli/target/${{ matrix.target }}/release/dits artifacts/${{ matrix.platform }}/
+            chmod +x artifacts/${{ matrix.platform }}/dits
+          fi
+
+      - name: Create tarball (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          cd artifacts/${{ matrix.platform }}
+          tar -czvf ../dits-${{ matrix.platform }}.tar.gz dits
+          cd ..
+          sha256sum dits-${{ matrix.platform }}.tar.gz > dits-${{ matrix.platform }}.tar.gz.sha256
+
+      - name: Create zip (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cd artifacts/${{ matrix.platform }}
+          Compress-Archive -Path dits.exe -DestinationPath ../dits-${{ matrix.platform }}.zip
+          cd ..
+          (Get-FileHash dits-${{ matrix.platform }}.zip -Algorithm SHA256).Hash.ToLower() + "  dits-${{ matrix.platform }}.zip" | Out-File -Encoding ascii dits-${{ matrix.platform }}.zip.sha256
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.platform }}
+          path: artifacts/${{ matrix.platform }}
+          retention-days: 1
+
+      - name: Upload archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: archive-${{ matrix.platform }}
+          path: |
+            artifacts/dits-${{ matrix.platform }}.*
+          retention-days: 1
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download all archives
+        uses: actions/download-artifact@v4
+        with:
+          pattern: archive-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: List assets
+        run: ls -la release-assets/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: v${{ steps.version.outputs.version }}
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', inputs.version) || github.ref_name }}
+          generate_release_notes: true
+          files: release-assets/*
+          body: |
+            ## Installation
+
+            ### Quick Install (Recommended)
+            ```bash
+            curl -fsSL https://raw.githubusercontent.com/byronwade/dits/main/install.sh | sh
+            ```
+
+            ### Homebrew (macOS/Linux)
+            ```bash
+            brew tap byronwade/dits https://github.com/byronwade/dits
+            brew install dits
+            ```
+
+            ### npm / bun / pnpm
+            ```bash
+            npm install -g @byronwade/dits
+            ```
+
+            ### Manual Download
+            Download the archive for your platform below, extract, and add to PATH.
+
+            | Platform | File |
+            |----------|------|
+            | macOS (Apple Silicon) | `dits-darwin-arm64.tar.gz` |
+            | macOS (Intel) | `dits-darwin-x64.tar.gz` |
+            | Linux (x64) | `dits-linux-x64.tar.gz` |
+            | Linux (ARM64) | `dits-linux-arm64.tar.gz` |
+            | Linux (x64 musl) | `dits-linux-x64-musl.tar.gz` |
+            | Linux (ARM64 musl) | `dits-linux-arm64-musl.tar.gz` |
+            | Windows (x64) | `dits-win32-x64.zip` |
+            | Windows (ARM64) | `dits-win32-arm64.zip` |
+
+  publish-npm:
+    name: Publish to npm
+    needs: [build, release]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Download all binaries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: binary-*
+          path: packages/npm/bin
+
+      - name: Reorganize binaries
+        run: |
+          cd packages/npm/bin
+          for dir in binary-*; do
+            platform="${dir#binary-}"
+            mkdir -p "$platform"
+            mv "$dir"/* "$platform/" 2>/dev/null || true
+            rmdir "$dir" 2>/dev/null || true
+          done
+          find . -name 'dits' -type f -exec chmod +x {} \;
+          ls -la */
+
+      - name: Update version
+        run: |
+          cd packages/npm
+          npm version ${{ needs.release.outputs.version }} --no-git-tag-version --allow-same-version
+
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          cd packages/npm
+          npm publish --access public
+
+  update-homebrew:
+    name: Update Homebrew Formula
+    needs: [build, release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Download SHA256 files
+        uses: actions/download-artifact@v4
+        with:
+          pattern: archive-*
+          path: sha-files
+          merge-multiple: true
+
+      - name: Update formula
+        run: |
+          VERSION="${{ needs.release.outputs.version }}"
+
+          # Read SHA256 values
+          SHA_DARWIN_ARM64=$(cat sha-files/dits-darwin-arm64.tar.gz.sha256 | awk '{print $1}')
+          SHA_DARWIN_X64=$(cat sha-files/dits-darwin-x64.tar.gz.sha256 | awk '{print $1}')
+          SHA_LINUX_ARM64=$(cat sha-files/dits-linux-arm64.tar.gz.sha256 | awk '{print $1}')
+          SHA_LINUX_X64=$(cat sha-files/dits-linux-x64.tar.gz.sha256 | awk '{print $1}')
+
+          # Update formula
+          cat > Formula/dits.rb << EOF
+          # typed: false
+          # frozen_string_literal: true
+
+          class Dits < Formula
+            desc "Version control for video and large binary files"
+            homepage "https://github.com/byronwade/dits"
+            version "$VERSION"
+            license any_of: ["Apache-2.0", "MIT"]
+
+            on_macos do
+              on_arm do
+                url "https://github.com/byronwade/dits/releases/download/v#{version}/dits-darwin-arm64.tar.gz"
+                sha256 "$SHA_DARWIN_ARM64"
+              end
+              on_intel do
+                url "https://github.com/byronwade/dits/releases/download/v#{version}/dits-darwin-x64.tar.gz"
+                sha256 "$SHA_DARWIN_X64"
+              end
+            end
+
+            on_linux do
+              on_arm do
+                url "https://github.com/byronwade/dits/releases/download/v#{version}/dits-linux-arm64.tar.gz"
+                sha256 "$SHA_LINUX_ARM64"
+              end
+              on_intel do
+                url "https://github.com/byronwade/dits/releases/download/v#{version}/dits-linux-x64.tar.gz"
+                sha256 "$SHA_LINUX_X64"
+              end
+            end
+
+            def install
+              bin.install "dits"
+            end
+
+            test do
+              system "#{bin}/dits", "--version"
+            end
+          end
+          EOF
+
+      - name: Commit formula update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/dits.rb
+          git commit -m "Update Homebrew formula to v${{ needs.release.outputs.version }}" || echo "No changes"
+          git push

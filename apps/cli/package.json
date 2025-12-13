@@ -1,0 +1,11 @@
+{
+  "name": "@byronwade/dits-rust",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "cargo build --workspace --locked --manifest-path ../../Cargo.toml",
+    "test": "cargo test --workspace --locked --manifest-path ../../Cargo.toml"
+  }
+}
+
+

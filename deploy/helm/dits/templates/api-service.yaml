@@ -1,0 +1,21 @@
+{{- if .Values.api.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dits.fullname" . }}-api
+  labels:
+    {{- include "dits.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+spec:
+  type: {{ .Values.api.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.api.service.port }}
+      targetPort: http
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+  selector:
+    {{- include "dits.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+{{- end }}

@@ -1,0 +1,36 @@
+# Dits Clippy Configuration
+# https://rust-lang.github.io/rust-clippy/
+
+# Complexity thresholds
+cognitive-complexity-threshold = 25
+too-many-arguments-threshold = 7
+too-many-lines-threshold = 100
+type-complexity-threshold = 250
+
+# Naming
+enum-variant-name-threshold = 3
+
+# Doc
+missing-docs-in-crate-items = true
+
+# Matches
+single-char-binding-names-threshold = 4
+
+# Disallowed types - prefer these alternatives
+disallowed-types = [
+    # Use chrono instead
+    { path = "std::time::SystemTime", reason = "Use chrono::DateTime<Utc> for timestamps" },
+]
+
+# Disallowed methods
+disallowed-methods = [
+    # Avoid panics in library code
+    { path = "std::option::Option::unwrap", reason = "Use expect() with context or ? operator" },
+    { path = "std::result::Result::unwrap", reason = "Use expect() with context or ? operator" },
+
+    # Avoid blocking in async code
+    { path = "std::thread::sleep", reason = "Use tokio::time::sleep in async code" },
+]
+
+# Allowed patterns
+allowed-idents-below-min-chars = ["i", "j", "k", "n", "x", "y", "id", "to", "tx", "rx"]

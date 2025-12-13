@@ -1,0 +1,38 @@
+[package]
+name = "dits-worker"
+description = "Background worker for the Dits version control system"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "dits-worker"
+path = "src/main.rs"
+
+[dependencies]
+dits-core = { path = "../dits-core" }
+dits-db = { path = "../dits-db" }
+dits-cache = { path = "../dits-cache" }
+dits-storage = { path = "../dits-storage" }
+dits-chunker = { path = "../dits-chunker" }
+
+# Async
+tokio = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Error handling
+anyhow = { workspace = true }
+
+# Utilities
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+# Configuration
+dotenvy = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util", "macros"] }
