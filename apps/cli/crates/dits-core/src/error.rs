@@ -139,6 +139,9 @@ pub enum Error {
     Io(#[from] std::io::Error),
 
     // ==================== Wrapped Errors ====================
+    #[error("Git error: {0}")]
+    Git(String),
+
     #[error(transparent)]
     Other(#[from] anyhow::Error),
 }
@@ -204,6 +207,7 @@ impl Error {
             Error::Database(_) => "E9002",
             Error::Serialization(_) => "E9003",
             Error::Io(_) => "E9004",
+            Error::Git(_) => "E9005",
             Error::Other(_) => "E9999",
         }
     }
@@ -279,6 +283,12 @@ impl Error {
                 | Error::RateLimited { .. }
                 | Error::ConnectionRefused(_)
         )
+    }
+}
+
+impl From<git2::Error> for Error {
+    fn from(err: git2::Error) -> Self {
+        Error::Git(err.to_string())
     }
 }
 

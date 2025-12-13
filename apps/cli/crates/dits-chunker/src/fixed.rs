@@ -27,7 +27,10 @@ impl Default for FixedChunker {
 
 #[async_trait]
 impl Chunker for FixedChunker {
-    async fn chunk<R: AsyncRead + Unpin + Send>(&self, mut reader: R) -> Result<Vec<Chunk>> {
+    async fn chunk<R: AsyncRead + Unpin + Send>(&self, mut reader: R) -> Result<Vec<Chunk>>
+    where
+        R: tokio::io::AsyncReadExt,
+    {
         use tokio::io::AsyncReadExt;
 
         let mut chunks = Vec::new();

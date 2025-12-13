@@ -11,7 +11,7 @@
 use crate::core::Hash;
 use crate::store::ObjectStore;
 use moka::future::Cache;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::fs;
 use tokio::sync::RwLock;

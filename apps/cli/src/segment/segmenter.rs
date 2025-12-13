@@ -4,7 +4,7 @@ use super::manifest::{Segment, VideoManifest};
 use crate::core::{Hash, Hasher};
 use std::fs;
 use std::io;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 use thiserror::Error;
 

@@ -1,21 +1,65 @@
 # Test Plan & Performance Benchmarks
 
-Comprehensive testing strategy for Dits quality assurance.
+**DITS Comprehensive Testing Infrastructure**
+
+DITS includes the most extensive testing framework ever built for a version control system, inspired by Git's legendary testing approach but dramatically expanded to cover every conceivable aspect of creative workflows.
+
+**120+ Automated Tests** across 80+ file formats with Git-based recovery validation.
 
 ---
 
 ## Testing Philosophy
 
-1. **Test at boundaries**: Focus on edge cases, format limits, error conditions
-2. **Test for video**: Ensure media files remain playable after roundtrip
-3. **Test for scale**: Validate performance with production-size repositories
-4. **Test for reliability**: Verify data integrity under all conditions
+1. **Test Everything**: 120+ tests covering 80+ file formats, Git recovery, cross-platform compatibility
+2. **Git-Inspired Framework**: Shell script tests with TAP output, just like Git's legendary testing
+3. **Creative Asset Focus**: 3D models, game assets, video, audio, materials, custom formats
+4. **Recovery Validation**: Full Git operations (diff/merge/blame/reset) on binary creative assets
+5. **Real-World Scenarios**: NLE workflows, game development, 3D animation pipelines
+6. **Cross-Platform**: Windows/macOS/Linux filesystem behaviors, Unicode, path limits
+7. **Stress Testing**: 1TB workload simulation through extreme concurrency
+8. **Quality Assurance**: Chainlint for test script quality, performance regression testing
 
 ---
 
 ## Test Categories
 
-### 1. Unit Tests
+### 1. Git-Inspired Shell Script Tests (Primary Framework)
+
+**120+ Comprehensive Tests** using Git's legendary shell script testing approach:
+
+#### **Basic Tests** (`t/basic/` - Foundation)
+- Core CLI functionality and repository lifecycle
+- File addition, status tracking, commits, logging
+- Essential Git operations validation
+
+#### **Core Tests** (`t/core/` - Algorithm & Feature Validation)
+- **FastCDC Chunking**: Determinism, boundary stability, performance
+- **Video Processing**: MP4 parsing, keyframe alignment, codec handling
+- **File Type Coverage**: 20+ formats (images, audio, documents, archives)
+- **Creative Assets**: 3D models (OBJ/FBX/glTF/USD), game assets, materials
+- **Git Recovery**: Diff/merge/blame/reset operations on binary assets
+
+#### **QA Tests** (`t/qa/` - Quality Assurance & Stress)
+- **Edge Cases**: Disk full, permissions, corruption, interruptions
+- **Concurrency**: Race conditions, locks, high concurrency (100+ operations)
+- **Data Integrity**: Bit flips, silent corruption, recovery, long-term storage
+- **Stress Testing**: 10GB+ files, 100k+ files, extreme scenarios
+- **Security**: Encryption, authentication, access control, audit trails
+- **Network Resilience**: Connection failures, timeouts, interruptions
+- **Cross-Platform**: Windows/macOS/Linux filesystem behaviors, Unicode
+- **Long-term Aging**: Large repos (1000+ commits), corruption recovery
+- **Massive Concurrency**: 1TB workload simulation through high concurrency
+
+#### **Advanced Tests** (`t/advanced/` - Real-World Workflows)
+- **NLE Workflows**: Premiere Pro, DaVinci Resolve, Final Cut Pro scenarios
+- **Game Development**: Unity, Unreal Engine, Godot pipelines
+- **3D Animation**: Blender, Maya, 3ds Max, custom rigging workflows
+- **Team Collaboration**: Branching strategies, merge conflicts, code reviews
+- **CI/CD Integration**: Automated builds, deployment pipelines
+- **P2P Networking**: Decentralized collaboration and asset sharing
+- **Storage Lifecycle**: Hot/cold tier migration, backup/recovery
+
+### 2. Rust Unit Tests
 
 Coverage target: **80%+ line coverage**
 
@@ -89,21 +133,83 @@ mod tests {
 }
 ```
 
+#### Creative Asset Test Coverage
+
+**80+ File Formats Tested** with Git recovery validation:
+
+##### **3D Model Formats**
+- **OBJ**: Wavefront OBJ with materials and textures
+- **FBX**: Autodesk FBX with animations and rigging
+- **COLLADA**: DAE XML format with complex hierarchies
+- **glTF 2.0**: Khronos glTF with PBR materials and animations
+- **USD**: Universal Scene Description (Pixar)
+- **Blender**: Native .blend format
+- **Maya/3ds Max**: Industry standard formats
+
+##### **Game Engine Assets**
+- **Unity**: Asset bundles, prefabs, scenes, shaders
+- **Unreal Engine**: UAsset, UMap, material instances
+- **Godot**: Scene files, resource files, GDScript
+- **Custom Engines**: Proprietary formats and middleware
+
+##### **Animation & Rigging**
+- **FBX Animation**: Keyframe animation curves
+- **Blender Actions**: Non-linear animation
+- **Custom Rigs**: Complex character rigging systems
+
+##### **Materials & Shaders**
+- **PBR Materials**: Physically-based rendering workflows
+- **Substance Painter**: Material layers and smart materials
+- **Custom Shaders**: HLSL, GLSL, CG shader programs
+
+##### **Audio Middleware**
+- **Wwise**: SoundBanks, work units, audio sources
+- **FMOD**: Banks, events, parameters
+- **Custom Audio**: Game-ready audio formats
+
+##### **Pipeline & Tools**
+- **Render Farm Scripts**: Python automation
+- **Custom Tool Formats**: Proprietary pipeline files
+- **Version Control Integration**: Perforce/PlasticSCM alternatives
+
 #### Test Data Fixtures
 
 ```
-tests/fixtures/
+t/fixtures/
+├── creative_assets/
+│   ├── models/
+│   │   ├── cube.obj + cube.mtl      # Wavefront OBJ with materials
+│   │   ├── character.fbx            # FBX with animation
+│   │   ├── scene.dae                # COLLADA XML
+│   │   ├── model.gltf + model.bin   # glTF 2.0 with PBR
+│   │   └── scene.usda               # Universal Scene Description
+│   ├── game_assets/
+│   │   ├── assets.unity3d           # Unity asset bundle
+│   │   ├── Character.prefab         # Unity prefab
+│   │   ├── Character.uasset         # Unreal Engine asset
+│   │   └── Level.tscn               # Godot scene
+│   ├── animation/
+│   │   ├── walk_cycle.fbx           # FBX animation
+│   │   └── WalkCycle.action         # Blender action
+│   ├── materials/
+│   │   ├── pbr_material.json        # PBR material definition
+│   │   └── character.spp            # Substance Painter project
+│   ├── audio/
+│   │   ├── Actor-Mixer Hierarchy.wwu # Wwise work unit
+│   │   └── Master Bank.bank         # FMOD bank
+│   └── pipeline/
+│       └── render_job.py            # Render farm script
 ├── video/
-│   ├── prores_1080p.mov         # ProRes 422 HQ
-│   ├── h264_4k.mp4              # H.264 Long GOP
-│   ├── hevc_hdr.mov             # HEVC HDR
-│   ├── corrupt_moov.mp4         # Malformed moov
-│   └── truncated.mp4            # Incomplete file
+│   ├── prores_1080p.mov             # ProRes 422 HQ
+│   ├── h264_4k.mp4                  # H.264 Long GOP
+│   ├── hevc_hdr.mov                 # HEVC HDR
+│   ├── corrupt_moov.mp4             # Malformed moov
+│   └── truncated.mp4                # Incomplete file
 ├── projects/
-│   ├── premiere_simple.prproj   # Basic Premiere project
-│   ├── premiere_nested.prproj   # Nested sequences
-│   ├── resolve_project.drp      # DaVinci Resolve
-│   └── fcpx_project.fcpxml      # Final Cut Pro X
+│   ├── premiere_simple.prproj       # Basic Premiere project
+│   ├── premiere_nested.prproj       # Nested sequences
+│   ├── resolve_project.drp          # DaVinci Resolve
+│   └── fcpx_project.fcpxml          # Final Cut Pro X
 ├── images/
 │   ├── jpeg_standard.jpg
 │   ├── raw_canon.cr3
@@ -719,23 +825,52 @@ jobs:
       - uses: codecov/codecov-action@v3
 ```
 
-### Local Testing
+### Test Execution
 
+#### **Comprehensive Test Suite**
 ```bash
-# Run all tests
-cargo test
+# Run all tests (Rust + integration)
+just test-all
 
-# Run specific test
-cargo test test_basic_workflow
+# Run specific test categories
+just test-creative-all        # Creative assets + Git recovery
+just test-qa-extended         # All QA tests including new ones
+just test-cross-platform      # Cross-platform compatibility
+just test-network-failures    # Network failure scenarios
+just test-aging              # Long-term aging tests
+just test-massive-concurrency # 1TB workload simulation
 
-# Run benchmarks
-cargo bench
+# Run individual creative asset tests
+just test-creative-assets     # 3D models, game assets, materials
+just test-git-recovery-creative # Git operations on binary assets
 
-# Run with coverage
-cargo tarpaulin --out Html
+# Performance and quality checks
+cargo test                    # Rust unit tests
+cargo clippy --all-targets --all-features  # Lints
+cargo fmt                     # Format checking
+just check                    # All quality checks
 
-# Run fuzz tests
+# Run fuzz tests (when available)
 cargo +nightly fuzz run fuzz_chunker
+```
+
+#### **Git-Inspired Shell Script Testing**
+```bash
+# Run all shell script tests
+just test-integration
+
+# Run with verbose output
+just test-integration-verbose
+
+# Run in parallel (like Git's prove)
+just test-integration-parallel
+
+# Run performance tests
+just test-performance
+
+# Run specific test files
+cd t && ./run-tests.sh qa/t1300-cross-platform.sh
+cd t && ./run-tests.sh core/t0301-creative-assets-comprehensive.sh
 ```
 
 ---

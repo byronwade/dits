@@ -1,6 +1,6 @@
 //! Key derivation and management.
 
-use argon2::{Argon2, PasswordHasher, password_hash::SaltString};
+use argon2::{Argon2, password_hash::SaltString};
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
 use zeroize::{Zeroize, ZeroizeOnDrop};

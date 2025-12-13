@@ -34,7 +34,10 @@ impl Default for FastCDCChunker {
 
 #[async_trait]
 impl Chunker for FastCDCChunker {
-    async fn chunk<R: AsyncRead + Unpin + Send>(&self, mut reader: R) -> Result<Vec<Chunk>> {
+    async fn chunk<R: AsyncRead + Unpin + Send>(&self, mut reader: R) -> Result<Vec<Chunk>>
+    where
+        R: tokio::io::AsyncReadExt,
+    {
         use tokio::io::AsyncReadExt;
 
         // Read all data (in production, this would be streamed)

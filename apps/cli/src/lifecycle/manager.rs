@@ -5,7 +5,6 @@ use super::tier::StorageTier;
 use super::tracker::{AccessTracker, AccessStats};
 use super::policy::{LifecyclePolicy, TierTransition};
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
 use std::fs::{self, File};
 use std::io::{self, BufReader, BufWriter, Read, Write};
 use std::path::{Path, PathBuf};

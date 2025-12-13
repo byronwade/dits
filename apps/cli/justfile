@@ -7,6 +7,33 @@ default:
     @just --list
 
 # ============================================================================
+# Testing
+# ============================================================================
+
+# Run all tests (Rust + integration)
+test-all: test test-integration
+
+# Run integration tests only
+test-integration:
+    cd t && ./run-tests.sh
+
+# Run integration tests with verbose output
+test-integration-verbose:
+    cd t && ./run-tests.sh -v
+
+# Run integration tests in parallel
+test-integration-parallel:
+    cd t && ./run-tests.sh --prove
+
+# Run performance tests
+test-performance:
+    cd t/perf && ../run-tests.sh
+
+# Validate test script quality with chainlint
+test-chainlint:
+    cd t && find . -name "t[0-9][0-9][0-9][0-9]*.sh" -exec sh -c 'CHAINLINT_FILE="$1" perl chainlint.pl' _ {} \;
+
+# ============================================================================
 # Development
 # ============================================================================
 
@@ -21,6 +48,116 @@ build-release:
 # Run all tests
 test:
     cargo nextest run 2>/dev/null || cargo test
+
+# Run shell script integration tests
+test-integration:
+    cd t && ./run-tests.sh
+
+# Run shell script tests with verbose output
+test-integration-verbose:
+    cd t && ./run-tests.sh -v
+
+# Run shell script tests in parallel (if prove is available)
+test-integration-parallel:
+    cd t && ./run-tests.sh --prove
+
+# Run performance tests
+test-performance:
+    cd t/perf && ../run-tests.sh
+
+# Run chainlint validation
+test-chainlint:
+    cd t && find . -name "t[0-9][0-9][0-9][0-9]*.sh" -exec perl chainlint.pl {} \;
+
+# Run specific test suite
+test-suite suite:
+    cd t && ./run-tests.sh -r "{{suite}}"
+
+# Run FastCDC comprehensive tests
+test-fastcdc:
+    cd t && ./run-tests.sh -r "core/t0100"
+
+# Run video comprehensive tests
+test-video:
+    cd t && ./run-tests.sh -r "core/t0200"
+
+# Run file types comprehensive tests
+test-filetypes:
+    cd t && ./run-tests.sh -r "core/t0300"
+
+# Run edge cases and error tests
+test-edge-cases:
+    cd t && ./run-tests.sh -r "qa/t0400"
+
+# Run concurrent access tests
+test-concurrent:
+    cd t && ./run-tests.sh -r "qa/t0500"
+
+# Run data integrity tests
+test-integrity:
+    cd t && ./run-tests.sh -r "qa/t0600"
+
+# Run extreme stress tests
+test-stress:
+    cd t && ./run-tests.sh -r "qa/t0700"
+
+# Run security tests
+test-security:
+    cd t && ./run-tests.sh -r "qa/t0800"
+
+# Run workflow simulations
+test-workflows:
+    cd t && ./run-tests.sh -r "advanced/t0900"
+
+# Run P2P networking tests
+test-p2p:
+    cd t && ./run-tests.sh -r "advanced/t1000"
+
+# Run storage lifecycle tests
+test-lifecycle:
+    cd t && ./run-tests.sh -r "advanced/t1100"
+
+# Run audit and compliance tests
+test-audit:
+    cd t && ./run-tests.sh -r "advanced/t1200"
+
+# ============================================================================
+# NEW COMPREHENSIVE TESTS
+# ============================================================================
+
+# Run cross-platform compatibility tests
+test-cross-platform:
+    cd t && ./run-tests.sh -r "qa/t1300"
+
+# Run network failure and interruption tests
+test-network-failures:
+    cd t && ./run-tests.sh -r "qa/t1400"
+
+# Run long-term repository aging tests
+test-aging:
+    cd t && ./run-tests.sh -r "qa/t1500"
+
+# Run massive concurrency tests (1TB workload simulation)
+test-massive-concurrency:
+    cd t && ./run-tests.sh -r "qa/t1600"
+
+# ============================================================================
+# CREATIVE ASSETS TESTING
+# ============================================================================
+
+# Run comprehensive creative assets tests
+test-creative-assets:
+    cd t && ./run-tests.sh -r "core/t0301"
+
+# Run Git recovery tests for creative assets
+test-git-recovery-creative:
+    cd t && ./run-tests.sh -r "qa/t1700"
+
+# Run all creative industry tests
+test-creative-all: test-creative-assets test-git-recovery-creative
+
+# Run all new comprehensive QA tests
+test-qa-extended: test-cross-platform test-network-failures test-aging test-massive-concurrency test-creative-all
 
 # Run tests for a specific crate
 test-crate crate:

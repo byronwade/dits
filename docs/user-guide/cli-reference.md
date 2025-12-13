@@ -12,6 +12,9 @@
 
 ### Implemented Commands (Ready to Use)
 
+**DITS now supports 60+ commands** across all major version control operations, creative workflows, and enterprise features.
+
+#### **Core Git Operations** (Phase 3.5)
 | Command | Status | Description |
 |---------|--------|-------------|
 | `init` | ✅ | Initialize a new repository |
@@ -29,25 +32,103 @@
 | `restore` | ✅ | Restore working tree files |
 | `config` | ✅ | Get and set configuration |
 | `stash` | ✅ | Stash changes |
-| `mount` | ✅ | Mount repository as VFS (Phase 4) |
-| `unmount` | ✅ | Unmount VFS (Phase 4) |
-| `inspect` | ✅ | Inspect MP4 structure (Phase 2) |
-| `inspect-file` | ✅ | Inspect file dedup stats (Phase 4) |
-| `repo-stats` | ✅ | Show repo dedup statistics (Phase 4) |
-| `segment` | ✅ | Segment video into chunks (Phase 3) |
-| `assemble` | ✅ | Reassemble segmented video (Phase 3) |
-| `roundtrip` | ✅ | Test MP4 deconstruct/reconstruct (Phase 2) |
-| `cache-stats` | ✅ | Show cache statistics (Phase 4) |
-| `fsck` | ✅ | Repository integrity check (Phase 5) |
-| `meta-scan` | ✅ | Scan files and extract metadata (Phase 5) |
-| `meta-show` | ✅ | Show metadata for a file (Phase 5) |
-| `meta-list` | ✅ | List all stored metadata (Phase 5) |
-| `video-init` | ✅ | Initialize video timeline project (Phase 5) |
-| `video-add-clip` | ✅ | Add a clip to video timeline (Phase 5) |
-| `video-show` | ✅ | Show a video timeline (Phase 5) |
-| `video-list` | ✅ | List all video projects (Phase 5) |
-| `proxy-generate` | ✅ | Generate proxies for video files (Phase 6) |
-| `proxy-status` | ✅ | Show proxy generation status (Phase 6) |
+
+#### **Advanced Git Operations**
+| Command | Status | Description |
+|---------|--------|-------------|
+| `rebase` | ✅ | Rebase commits |
+| `cherry-pick` | ✅ | Apply specific commits |
+| `bisect` | ✅ | Binary search for bugs |
+| `reflog` | ✅ | Show reference logs |
+| `blame` | ✅ | Show authorship by line |
+| `show` | ✅ | Show object details |
+| `grep` | ✅ | Search repository content |
+| `worktree` | ✅ | Manage multiple worktrees |
+| `sparse-checkout` | ✅ | Check out only specified paths |
+| `hooks` | ✅ | Manage Git hooks |
+| `archive` | ✅ | Create archives |
+| `describe` | ✅ | Describe commits |
+| `shortlog` | ✅ | Summarize git log output |
+| `maintenance` | ✅ | Run maintenance tasks |
+| `completions` | ✅ | Generate shell completions |
+
+#### **Creative Workflow Commands** (Phase 5-6)
+| Command | Status | Description |
+|---------|--------|-------------|
+| `video-init` | ✅ | Initialize video timeline project |
+| `video-add-clip` | ✅ | Add a clip to video timeline |
+| `video-show` | ✅ | Show a video timeline |
+| `video-list` | ✅ | List all video projects |
+| `proxy-generate` | ✅ | Generate proxies for video files |
+| `proxy-status` | ✅ | Show proxy generation status |
+| `proxy-list` | ✅ | List proxy files |
+| `proxy-delete` | ✅ | Delete proxy files |
+
+#### **Asset Management** (Phase 5)
+| Command | Status | Description |
+|---------|--------|-------------|
+| `segment` | ✅ | Segment video into chunks |
+| `assemble` | ✅ | Reassemble segmented video |
+| `roundtrip` | ✅ | Test MP4 deconstruct/reconstruct |
+| `mount` | ✅ | Mount repository as VFS |
+| `unmount` | ✅ | Unmount VFS |
+| `inspect` | ✅ | Inspect MP4 structure |
+| `inspect-file` | ✅ | Inspect file dedup stats |
+| `repo-stats` | ✅ | Show repo dedup statistics |
+| `cache-stats` | ✅ | Show cache statistics |
+| `fsck` | ✅ | Repository integrity check |
+| `meta-scan` | ✅ | Scan files and extract metadata |
+| `meta-show` | ✅ | Show metadata for a file |
+| `meta-list` | ✅ | List all stored metadata |
+
+#### **Collaboration & Security** (Phase 7-9)
+| Command | Status | Description |
+|---------|--------|-------------|
+| `remote` | ✅ | Manage remote repositories |
+| `push` | ✅ | Push commits to remote |
+| `pull` | ✅ | Pull commits from remote |
+| `fetch` | ✅ | Fetch from remote without merge |
+| `clone` | ✅ | Clone a repository |
+| `lock` | ✅ | Lock files for editing |
+| `unlock` | ✅ | Unlock files |
+| `locks` | ✅ | List active locks |
+| `login` | ✅ | Authenticate user |
+| `logout` | ✅ | Log out user |
+| `change-password` | ✅ | Change user password |
+| `audit` | ✅ | Show audit logs |
+| `audit-stats` | ✅ | Show audit statistics |
+| `audit-export` | ✅ | Export audit logs |
+
+#### **Lifecycle & Maintenance**
+| Command | Status | Description |
+|---------|--------|-------------|
+| `freeze-init` | ✅ | Initialize freeze storage |
+| `freeze-status` | ✅ | Show freeze status |
+| `freeze` | ✅ | Freeze repository to cold storage |
+| `thaw` | ✅ | Thaw repository from cold storage |
+| `freeze-policy` | ✅ | Configure freeze policies |
+| `encrypt-init` | ✅ | Initialize encryption |
+| `encrypt-status` | ✅ | Show encryption status |
+| `dep-check` | ✅ | Check dependencies |
+| `dep-graph` | ✅ | Show dependency graph |
+| `dep-list` | ✅ | List dependencies |
+| `gc` | ✅ | Run garbage collection |
+| `clean` | ✅ | Clean untracked files |
+| `p2p` | ✅ | Manage P2P connections |
+| `maintenance` | ✅ | Run maintenance tasks |
+
+#### **Advanced Features**
+| Command | Status | Description |
+|---------|--------|-------------|
+| `p2p` | ✅ | Manage P2P repository sharing |
+| `worktree` | ✅ | Manage multiple working trees |
+| `sparse-checkout` | ✅ | Check out only specified paths |
+| `hooks` | ✅ | Manage Git-style hooks |
+| `archive` | ✅ | Create tar/zip archives |
+| `describe` | ✅ | Describe commits with tags |
+| `shortlog` | ✅ | Summarize git log output |
+| `maintenance` | ✅ | Optimize repository |
+| `completions` | ✅ | Generate shell completions |
 | `p2p share` | ✅ | Share repository via P2P (Wormhole integration) |
 | `p2p connect` | ✅ | Connect to P2P shared repository |
 | `p2p status` | ✅ | Show P2P connection status |

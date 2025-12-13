@@ -36,6 +36,9 @@ humantime = { workspace = true }
 # Tracing
 tracing = { workspace = true }
 
+# Git integration for text files (Phase 3.6 Hybrid Storage)
+git2 = { version = "0.19", features = ["vendored-libgit2"] }
+
 [dev-dependencies]
 tempfile = { workspace = true }
 tokio = { workspace = true, features = ["test-util", "macros"] }

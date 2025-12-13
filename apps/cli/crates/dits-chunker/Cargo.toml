@@ -10,7 +10,7 @@ repository.workspace = true
 dits-core = { path = "../dits-core" }
 
 # Async
-tokio = { workspace = true }
+tokio = { workspace = true, features = ["io-util"] }
 async-trait = { workspace = true }
 futures = { workspace = true }
 

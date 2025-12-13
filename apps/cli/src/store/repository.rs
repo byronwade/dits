@@ -15,10 +15,10 @@ use crate::core::{
     FileClassifier, FileStatus, Hash, Hasher, Index, IndexEntry, IgnoreMatcher, Manifest,
     ManifestEntry, Mp4Metadata, StorageStrategy, StoredAtom,
 };
-use crate::mp4::{Deconstructor, Mp4Parser, Mp4Structure, Reconstructor};
+use crate::mp4::{Deconstructor, Mp4Parser};
 use crate::store::{GitTextEngine, ObjectStore, RefStore};
 use std::fs::{self, File};
-use std::io::{self, BufWriter, Cursor, Read, Seek, SeekFrom, Write};
+use std::io::{self, BufWriter, Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 use walkdir::WalkDir;
@@ -724,7 +724,7 @@ impl Repository {
         }
 
         // Store ftyp atom
-        let (ftyp_hash, ftyp_new) = self.objects.store_mp4_ftyp(&deconstructed.ftyp_data)?;
+        let (ftyp_hash, ftyp_new) = self.objects.store_blob(&deconstructed.ftyp_data)?;
         if ftyp_new {
             result.new_bytes += deconstructed.ftyp_data.len() as u64;
         } else {
@@ -732,7 +732,7 @@ impl Repository {
         }
 
         // Store moov atom (normalized)
-        let (moov_hash, moov_new) = self.objects.store_mp4_moov(&deconstructed.moov_data)?;
+        let (moov_hash, moov_new) = self.objects.store_blob(&deconstructed.moov_data)?;
         if moov_new {
             result.new_bytes += deconstructed.moov_data.len() as u64;
         } else {
@@ -1154,7 +1154,7 @@ impl Repository {
     ) -> Result<(), RepoError> {
         // Load ftyp data
         let ftyp_data = if let Some(ref ftyp_hash) = mp4_meta.ftyp_hash {
-            self.objects.load_mp4_ftyp(ftyp_hash)?
+            self.objects.load_blob(ftyp_hash)?
         } else {
             // Fall back to regular checkout if no ftyp stored
             return self.checkout_regular_file(full_path, entry, result);
@@ -1162,7 +1162,7 @@ impl Repository {
 
         // Load moov data (normalized)
         let mut moov_data = if let Some(ref moov_hash) = mp4_meta.moov_hash {
-            self.objects.load_mp4_moov(moov_hash)?
+            self.objects.load_blob(moov_hash)?
         } else {
             return self.checkout_regular_file(full_path, entry, result);
         };

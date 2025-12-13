@@ -114,6 +114,56 @@ Commit xyz... -> Manifest hash -> File hashes -> Chunk hashes`}</code>
         </li>
       </ul>
 
+      <h2>Hybrid Storage Architecture</h2>
+      <p>
+        Dits uses a <strong>hybrid storage system</strong> that intelligently chooses the optimal storage method
+        for different types of files. This combines the best of Git's text handling with Dits' binary optimizations.
+      </p>
+
+      <div className="not-prose my-6 grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Text Files (Git Storage)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="text-sm space-y-2">
+              <li><strong>Source code:</strong> .rs, .js, .py, .cpp, etc.</li>
+              <li><strong>Config files:</strong> .json, .yaml, .toml, .xml</li>
+              <li><strong>Documentation:</strong> .md, .txt, .rst</li>
+              <li><strong>Benefits:</strong> Line-based diffs, 3-way merge, blame</li>
+            </ul>
+          </CardContent>
+        </Card>
+        <Card className="border-primary">
+          <CardHeader>
+            <CardTitle className="text-primary">Binary Assets (Dits Storage)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="text-sm space-y-2">
+              <li><strong>Video:</strong> .mp4, .mov, .avi, .mkv</li>
+              <li><strong>3D Models:</strong> .obj, .fbx, .gltf, .usd</li>
+              <li><strong>Game Assets:</strong> Unity, Unreal, Godot files</li>
+              <li><strong>Images:</strong> .psd, .raw, large .png/.jpg</li>
+              <li><strong>Benefits:</strong> FastCDC chunking, deduplication</li>
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
+
+      <p>
+        The system automatically classifies files based on extension, content analysis, and filename patterns.
+        This ensures optimal performance and features for each file type while maintaining Git compatibility.
+      </p>
+
+      <Alert className="not-prose my-4">
+        <Lightbulb className="h-4 w-4" />
+        <AlertTitle>Best of Both Worlds</AlertTitle>
+        <AlertDescription>
+          Use Git's powerful text operations for code while benefiting from Dits' binary optimizations for creative assets.
+          All files coexist in the same repository with unified version control.
+        </AlertDescription>
+      </Alert>
+
       <h2>Repository Structure</h2>
       <p>
         A Dits repository is stored in a <code>.dits</code> directory with this

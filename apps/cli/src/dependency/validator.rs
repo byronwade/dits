@@ -4,8 +4,7 @@
 //! before allowing commits.
 
 use super::graph::{DependencyGraph, DependencyNode, EdgeType};
-use super::parser::{parse_project, MediaReference, ParsedProject, ProjectType};
-use crate::core::Hash;
+use super::parser::{parse_project, ParsedProject, ProjectType};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use thiserror::Error;

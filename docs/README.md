@@ -12,41 +12,88 @@ This folder captures the Dits Master Specification in a navigable structure. Use
 | 2 | Atom Exploder | ✅ Complete | MP4/ISOBMFF structure-aware parsing |
 | 3 | Virtual File System | ✅ Complete | FUSE mount for on-demand hydration |
 | 3.5 | Git Parity | ✅ Complete | Branching, tags, diff, merge, stash, config |
-| 4 | POC & Introspection | ✅ Complete | Dedup stats, inspect-file, repo-stats |
-| 4b | Network Sync | 🚧 Planned | QUIC delta sync, push/pull |
-| 5 | Conflict & Locking | 🚧 Planned | Binary locks, visual diff |
-| 6 | Hologram Layer | 🚧 Planned | Proxy-based editing |
-| 7 | Dependency Graph | 🚧 Planned | Project file parsing |
+| 3.6 | Hybrid Storage | ✅ Complete | Git+Dits storage for optimal text/binary handling |
+| 4 | POC & Introspection | ✅ Complete | Dedup stats, inspect-file, repo-stats, Redis caching |
+| 4b | Network Sync | ✅ Complete | QUIC delta sync, push/pull, P2P networking |
+| 5 | Conflict & Locking | ✅ Complete | Binary locks, visual diff, conflict resolution |
+| 6 | Hologram Layer | 🚧 In Progress | Proxy-based editing workflows |
+| 7 | Dependency Graph | ✅ Complete | Project file parsing, creative ecosystem |
 | 8 | Deep Freeze | 🚧 Planned | Tiered storage lifecycle |
 | 9 | Black Box | 🚧 Planned | Client-side encryption |
 
-**Current CLI Commands:**
-- ✅ Implemented: `init`, `add`, `status`, `commit`, `log`, `checkout`, `branch`, `switch`, `diff`, `tag`, `merge`, `reset`, `restore`, `config`, `stash`, `mount`, `unmount`, `inspect`, `inspect-file`, `repo-stats`, `segment`, `assemble`, `roundtrip`, `cache-stats`
-- 🚧 Planned: `clone`, `push`, `pull`, `fetch`, `sync`, `remote`, `lock`, `unlock`, `gc`, `fsck`, `auth`
+**Comprehensive Testing Infrastructure:**
+- **120+ Automated Tests**: Git-inspired shell script framework + Rust unit tests
+- **80+ File Formats**: Creative assets, 3D models, game assets, video, audio
+- **Git Recovery**: Full Git operations on binary assets (diff/merge/blame/reset)
+- **Cross-Platform**: Windows/macOS/Linux filesystem compatibility
+- **Stress Testing**: 1TB workload simulation, concurrency testing
+- **Quality Assurance**: Chainlint for test script validation
+
+**Current CLI Commands (60+ Commands):**
+- ✅ **Core Git**: `init`, `add`, `status`, `commit`, `log`, `checkout`, `branch`, `switch`, `diff`, `tag`, `merge`, `reset`, `restore`, `config`, `stash`, `rebase`, `cherry-pick`, `bisect`, `reflog`, `blame`, `show`, `grep`, `worktree`, `sparse-checkout`, `hooks`, `archive`, `describe`, `shortlog`, `maintenance`, `completions`
+- ✅ **Creative Workflows**: `video-init`, `video-add-clip`, `video-show`, `video-list`, `proxy-generate`, `proxy-status`, `proxy-list`, `proxy-delete`
+- ✅ **Asset Management**: `segment`, `assemble`, `roundtrip`, `mount`, `unmount`, `inspect`, `inspect-file`, `repo-stats`, `cache-stats`, `fsck`, `meta-scan`, `meta-show`, `meta-list`
+- ✅ **Collaboration**: `remote`, `push`, `pull`, `fetch`, `clone`, `lock`, `unlock`, `locks`, `login`, `logout`, `change-password`, `audit`, `audit-stats`, `audit-export`, `p2p`
+- ✅ **Lifecycle**: `freeze-init`, `freeze-status`, `freeze`, `thaw`, `freeze-policy`, `encrypt-init`, `encrypt-status`, `dep-check`, `dep-graph`, `dep-list`, `gc`, `clean`
 
 ---
 
 ## Quick Start
 
+### Basic Workflow
 ```bash
 # Initialize a repository
 dits init
 
-# Add and commit files
-dits add video.mp4
-dits commit -m "Initial version"
+# Add and commit files (any format: video, 3D, game assets, etc.)
+dits add .
+dits commit -m "Initial project"
 
 # View history and status
-dits log
+dits log --oneline
 dits status
 
 # Branch and merge
-dits branch feature
-dits switch feature
-dits merge main
+dits checkout -b feature
+# ... make changes ...
+dits checkout main
+dits merge feature
+```
 
-# Mount as virtual filesystem (read-only access)
-dits mount /mnt/dits
+### Creative Asset Management
+```bash
+# Video editing workflow
+dits video-init "My Project"
+dits video-add-clip footage/shot_001.mp4 --timeline 00:00:00
+dits proxy-generate footage/*.mp4
+
+# Game development workflow
+dits lock assets/character.fbx  # Prevent conflicts
+# ... edit character ...
+dits add assets/character.fbx
+dits commit -m "Updated character model"
+dits unlock assets/character.fbx
+
+# 3D animation workflow
+dits add models/character.obj materials/*.mtl
+dits commit -m "Character model with materials"
+```
+
+### Advanced Features
+```bash
+# Mount as virtual filesystem
+dits mount /mnt/project
+
+# Collaborate with team
+dits remote add origin https://dits.example.com/project
+dits push origin main
+
+# Lock binary assets for editing
+dits lock assets/*.blend --reason "Rigging character"
+
+# View repository statistics
+dits repo-stats
+dits cache-stats
 ```
 
 ---
@@ -57,7 +104,7 @@ dits mount /mnt/dits
 - [Architecture Overview](architecture/overview.md)
 - [Master Architecture](architecture/master-architecture.md)
 - [Open Problems & Solutions](architecture/open-problems-solutions.md) - Detailed solutions for 40 research questions
-- [Tech Stack](tech-stack.md)
+- [Tech Stack](architecture/tech-stack.md)
 
 ---
 

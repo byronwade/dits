@@ -13,6 +13,7 @@ mod config {
     pub use dits::config::*;
 }
 mod core;
+mod hooks;
 mod mp4;
 mod segment;
 mod store;
@@ -686,6 +687,166 @@ enum Commands {
         #[arg(long)]
         aggressive: bool,
     },
+
+    /// Remove untracked files from the working tree
+    Clean {
+        /// Dry run (show what would be deleted)
+        #[arg(short = 'n', long)]
+        dry_run: bool,
+        /// Actually remove files
+        #[arg(short, long)]
+        force: bool,
+        /// Remove untracked directories
+        #[arg(short = 'd')]
+        directories: bool,
+        /// Remove ignored files as well
+        #[arg(short = 'x')]
+        remove_ignored: bool,
+        /// Remove only ignored files
+        #[arg(short = 'X')]
+        only_ignored: bool,
+        /// Exclude patterns
+        #[arg(short = 'e', long)]
+        exclude: Vec<String>,
+        /// Paths to clean
+        paths: Vec<String>,
+    },
+
+    /// Search tracked files for patterns
+    Grep {
+        /// Pattern to search for
+        pattern: String,
+        /// Show line numbers
+        #[arg(short = 'n', long)]
+        line_number: bool,
+        /// Case insensitive search
+        #[arg(short, long)]
+        ignore_case: bool,
+        /// Match whole words only
+        #[arg(short, long)]
+        word_regexp: bool,
+        /// Show count only
+        #[arg(short, long)]
+        count: bool,
+        /// Show filenames only
+        #[arg(short = 'l', long)]
+        files_with_matches: bool,
+        /// Use fixed string (no regex)
+        #[arg(short = 'F', long)]
+        fixed_strings: bool,
+        /// Paths to search
+        paths: Vec<String>,
+    },
+
+    /// Manage multiple working trees
+    Worktree {
+        /// Action: add, list, remove, prune, lock, unlock
+        action: String,
+        /// Path or argument for action
+        path: Option<String>,
+        /// Branch name (for add)
+        #[arg(short, long)]
+        branch: Option<String>,
+        /// Force operation
+        #[arg(short, long)]
+        force: bool,
+    },
+
+    /// Manage sparse checkout
+    #[command(name = "sparse-checkout")]
+    SparseCheckout {
+        /// Action: init, set, add, list, disable
+        action: String,
+        /// Patterns to set/add
+        patterns: Vec<String>,
+        /// Use cone mode (directory-based)
+        #[arg(long)]
+        cone: bool,
+    },
+
+    /// Manage Git hooks
+    Hooks {
+        /// Action: list, install, uninstall, run, show
+        action: String,
+        /// Hook name
+        hook: Option<String>,
+        /// Force overwrite
+        #[arg(short, long)]
+        force: bool,
+        /// Additional arguments for run
+        #[arg(last = true)]
+        args: Vec<String>,
+    },
+
+    /// Create archives from repository content
+    Archive {
+        /// Commit/branch/tag to archive
+        #[arg(default_value = "HEAD")]
+        tree_ish: String,
+        /// Output format: tar, tar.gz, zip
+        #[arg(long, default_value = "tar.gz")]
+        format: String,
+        /// Prefix to add to paths
+        #[arg(long)]
+        prefix: Option<String>,
+        /// Output file
+        #[arg(short, long)]
+        output: Option<String>,
+        /// Specific paths to include
+        #[arg(last = true)]
+        paths: Vec<String>,
+    },
+
+    /// Give a human-readable name to a commit
+    Describe {
+        /// Commit to describe
+        commit: Option<String>,
+        /// Use any tag, not just annotated
+        #[arg(long)]
+        tags: bool,
+        /// Use any ref
+        #[arg(long)]
+        all: bool,
+        /// Always use long format
+        #[arg(long)]
+        long: bool,
+        /// Add dirty suffix if modified
+        #[arg(long)]
+        dirty: bool,
+        /// Abbreviation length
+        #[arg(long, default_value = "7")]
+        abbrev: usize,
+    },
+
+    /// Summarize commit history by author
+    Shortlog {
+        /// Sort by number of commits
+        #[arg(short = 'n', long)]
+        numbered: bool,
+        /// Show only counts
+        #[arg(short, long)]
+        summary: bool,
+        /// Show email addresses
+        #[arg(short, long)]
+        email: bool,
+        /// Number of commits to process
+        #[arg(long, default_value = "0")]
+        limit: usize,
+    },
+
+    /// Repository maintenance tasks
+    Maintenance {
+        /// Action: start, stop, run, status
+        action: String,
+        /// Task to run (gc, commit-graph, etc.)
+        task: Option<String>,
+    },
+
+    /// Generate shell completions
+    Completions {
+        /// Shell to generate for: bash, zsh, fish, powershell
+        shell: String,
+    },
 }
 
 fn main() {
@@ -808,11 +969,166 @@ fn main() {
             commands::fetch(remote.as_deref(), all, prune)
         }
         Commands::Lock { path, reason, ttl, force } => {
-            commands::lock(&path, reason.as_deref(), ttl, force)
+            commands::lock_file(&path, reason.as_deref(), ttl, force)
         }
         Commands::Unlock { path, force } => commands::unlock(&path, force),
         Commands::Locks { owner, verbose } => commands::locks(owner.as_deref(), verbose),
         Commands::Gc { dry_run, prune, aggressive } => commands::gc(dry_run, prune, aggressive),
+        Commands::Clean { dry_run, force, directories, remove_ignored, only_ignored, exclude, paths } => {
+            let options = commands::clean::CleanOptions {
+                dry_run,
+                force,
+                directories,
+                remove_ignored,
+                only_ignored,
+                exclude,
+                paths,
+            };
+            commands::clean::clean(&options).map(|result| {
+                commands::clean::print_results(&result, dry_run);
+            })
+        }
+        Commands::Grep { pattern, line_number, ignore_case, word_regexp, count, files_with_matches, fixed_strings, paths } => {
+            let options = commands::grep::GrepOptions {
+                pattern,
+                line_number,
+                ignore_case,
+                word_regexp,
+                count,
+                files_with_matches,
+                fixed_strings,
+                paths,
+                ..Default::default()
+            };
+            commands::grep::grep(&options).map(|result| {
+                commands::grep::print_results(&result, &options);
+            })
+        }
+        Commands::Worktree { action, path, branch, force } => {
+            match action.as_str() {
+                "list" => commands::worktree::list().map(|wts| {
+                    commands::worktree::print_list(&wts, false);
+                }),
+                "add" => match path {
+                    Some(p) => commands::worktree::add(&p, branch.as_deref(), branch.is_none(), force).map(|wt| {
+                        println!("Created worktree at {}", wt.path.display());
+                    }),
+                    None => Err(anyhow::anyhow!("Path required for worktree add")),
+                },
+                "remove" | "rm" => match path {
+                    Some(p) => commands::worktree::remove(&p, force),
+                    None => Err(anyhow::anyhow!("Path required for worktree remove")),
+                },
+                "prune" => commands::worktree::prune(false).map(|pruned| {
+                    if pruned.is_empty() {
+                        println!("Nothing to prune");
+                    } else {
+                        for p in pruned {
+                            println!("Pruned {}", p.display());
+                        }
+                    }
+                }),
+                "lock" => match path {
+                    Some(p) => commands::worktree::lock(&p, None),
+                    None => Err(anyhow::anyhow!("Path required for worktree lock")),
+                },
+                "unlock" => match path {
+                    Some(p) => commands::worktree::unlock(&p),
+                    None => Err(anyhow::anyhow!("Path required for worktree unlock")),
+                },
+                _ => Err(anyhow::anyhow!("Unknown worktree action: {}. Use: list, add, remove, prune, lock, unlock", action)),
+            }
+        }
+        Commands::SparseCheckout { action, patterns, cone } => {
+            match action.as_str() {
+                "init" => commands::sparse_checkout::init(cone),
+                "set" => commands::sparse_checkout::set(&patterns, cone),
+                "add" => commands::sparse_checkout::add(&patterns),
+                "list" => commands::sparse_checkout::list().map(|patterns| {
+                    for p in patterns {
+                        println!("{}", p);
+                    }
+                }),
+                "disable" => commands::sparse_checkout::disable(),
+                "status" => commands::sparse_checkout::print_status(),
+                _ => Err(anyhow::anyhow!("Unknown sparse-checkout action: {}. Use: init, set, add, list, disable", action)),
+            }
+        }
+        Commands::Hooks { action, hook, force, args } => {
+            match action.as_str() {
+                "list" => commands::hooks::list(),
+                "install" => match hook {
+                    Some(h) => commands::hooks::install(&h, force),
+                    None => Err(anyhow::anyhow!("Hook name required")),
+                },
+                "uninstall" => match hook {
+                    Some(h) => commands::hooks::uninstall(&h),
+                    None => Err(anyhow::anyhow!("Hook name required")),
+                },
+                "run" => match hook {
+                    Some(h) => commands::hooks::run(&h, &args),
+                    None => Err(anyhow::anyhow!("Hook name required")),
+                },
+                "show" => match hook {
+                    Some(h) => commands::hooks::show(&h),
+                    None => Err(anyhow::anyhow!("Hook name required")),
+                },
+                _ => Err(anyhow::anyhow!("Unknown hooks action: {}. Use: list, install, uninstall, run, show", action)),
+            }
+        }
+        Commands::Archive { tree_ish, format, prefix, output, paths } => {
+            match commands::archive::ArchiveFormat::from_str(&format) {
+                Some(fmt) => {
+                    let options = commands::archive::ArchiveOptions {
+                        format: fmt,
+                        tree_ish,
+                        prefix,
+                        output: output.map(std::path::PathBuf::from),
+                        paths,
+                    };
+                    commands::archive::archive(&options).map(|_| ())
+                }
+                None => Err(anyhow::anyhow!("Unknown format: {}. Use: tar, tar.gz, zip", format)),
+            }
+        }
+        Commands::Describe { commit, tags, all, long, dirty, abbrev } => {
+            let options = commands::describe::DescribeOptions {
+                commit,
+                tags,
+                all,
+                long,
+                dirty,
+                abbrev,
+                ..Default::default()
+            };
+            commands::describe::describe(&options).map(|result| {
+                commands::describe::print_result(&result);
+            })
+        }
+        Commands::Shortlog { numbered, summary, email, limit } => {
+            let options = commands::shortlog::ShortlogOptions {
+                numbered,
+                summary,
+                email,
+                limit,
+                ..Default::default()
+            };
+            commands::shortlog::shortlog(&options).map(|entries| {
+                commands::shortlog::print_shortlog(&entries, &options);
+            })
+        }
+        Commands::Maintenance { action, task } => {
+            match action.as_str() {
+                "start" => commands::maintenance::start(),
+                "stop" => commands::maintenance::stop(),
+                "run" => commands::maintenance::run(task.as_deref()),
+                "status" => commands::maintenance::status(),
+                _ => Err(anyhow::anyhow!("Unknown maintenance action: {}. Use: start, stop, run, status", action)),
+            }
+        }
+        Commands::Completions { shell } => {
+            commands::completions::generate_completions(&shell)
+        }
     };
 
     if let Err(e) = result {

@@ -5,7 +5,7 @@ use std::fs::{self, File};
 use std::io::{BufReader, BufWriter};
 use std::path::{Path, PathBuf};
 
-use super::keys::{KeyBundle, Argon2Params, derive_keys, generate_salt, generate_random_bytes};
+use super::keys::{KeyBundle, Argon2Params, derive_keys, generate_salt};
 use super::encryption::{encrypt_with_key, decrypt_with_key};
 
 /// Encrypted keystore stored on disk.

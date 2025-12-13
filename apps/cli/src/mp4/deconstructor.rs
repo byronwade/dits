@@ -5,7 +5,7 @@
 //! without re-chunking the entire media data.
 
 use super::atoms::AtomType;
-use super::offset_patcher::{read_moov_data, OffsetPatcher};
+use super::offset_patcher::read_moov_data;
 use super::parser::{Mp4Parser, Mp4Structure, ParseError};
 use std::fs::File;
 use std::io::{self, Read, Seek, SeekFrom};

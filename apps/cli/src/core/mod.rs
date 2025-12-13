@@ -29,7 +29,7 @@ pub use storage_strategy::{StorageStrategy, FileClassifier};
 // Universal Layer exports
 pub use hash::{Hash, Hasher};
 pub use chunk::{Chunk, ChunkRef, ChunkerConfig, chunk_data, chunk_data_with_refs, chunk_data_parallel, chunk_data_with_refs_parallel};
-pub use manifest::{Manifest, ManifestEntry};
+pub use manifest::{Manifest, ManifestEntry, FileMode};
 pub use commit::{Commit, Author};
 pub use index::{Index, IndexEntry, FileStatus, Mp4Metadata, StoredAtom};
 pub use ignore::IgnoreMatcher;

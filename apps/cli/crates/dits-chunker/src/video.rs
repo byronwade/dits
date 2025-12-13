@@ -66,7 +66,10 @@ impl Default for VideoChunker {
 
 #[async_trait]
 impl Chunker for VideoChunker {
-    async fn chunk<R: AsyncRead + Unpin + Send>(&self, mut reader: R) -> Result<Vec<Chunk>> {
+    async fn chunk<R: AsyncRead + Unpin + Send>(&self, mut reader: R) -> Result<Vec<Chunk>>
+    where
+        R: tokio::io::AsyncReadExt,
+    {
         use tokio::io::AsyncReadExt;
 
         // Read all data

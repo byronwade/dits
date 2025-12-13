@@ -1,6 +1,6 @@
 //! FFmpeg-based proxy generator.
 
-use super::config::{ProxyCodec, ProxyConfig, ProxyResolution};
+use super::config::{ProxyConfig, ProxyResolution};
 use super::variant::{ProxyVariant, VariantType};
 use crate::core::{chunk_data_with_refs_parallel, ChunkerConfig, Hash, Hasher};
 use std::path::Path;

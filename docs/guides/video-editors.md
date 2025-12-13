@@ -46,8 +46,47 @@ And then your client asks: "Can we see what version 2 looked like before the cha
 
 ### The Dits Way: Professional Version Control
 
+**DITS provides the first video-aware version control system** with comprehensive MP4 structure understanding and keyframe alignment.
+
 ```bash
 dits log --oneline
+# Shows professional edit history with meaningful commit messages
+
+dits checkout v2.0
+# Instantly restores entire project to version 2.0 state
+```
+
+### Video-Aware Features
+
+**DITS understands video files at the container level**:
+
+#### **MP4 Structure Awareness**
+- **Atom Parsing**: Recognizes `moov`, `mdat`, `stss` (sync samples) atoms
+- **Keyframe Alignment**: Chunks align to I-frames for optimal playback
+- **Metadata Preservation**: Maintains codec info, resolution, frame rate
+- **Transparent Decompression**: Handles compressed video streams
+
+#### **Format Support** (Fully Tested)
+- **ProRes**: All variants (422, 4444, 422 HQ, 422 LT)
+- **DNxHD/DNxHR**: Avid's professional codecs
+- **H.264/H.265**: Industry standard compression
+- **CineForm**: GoPro CineForm RAW
+- **RED**: RED camera formats
+- **ARRI**: ARRIRAW formats
+- **Sony**: XAVC, XDCAM formats
+
+#### **Project Format Support** (Fully Tested)
+- **Adobe Premiere Pro**: `.prproj` project files
+- **DaVinci Resolve**: `.drp` project files
+- **Final Cut Pro**: `.fcpbundle` project bundles
+- **Avid Media Composer**: `.avp` project files
+
+#### **Video-Specific Git Operations**
+- ✅ `dits inspect` - Analyze MP4 structure and keyframes
+- ✅ `dits segment` - Extract video chunks with keyframe alignment
+- ✅ `dits assemble` - Reconstruct video from chunks
+- ✅ `dits roundtrip` - Test MP4 deconstruct/reconstruct integrity
+- ✅ `dits proxy-generate` - Create proxy files for editing
 # abc1234 Client approved - final delivery
 # def5678 Apply client revisions round 2
 # 890abcd Initial client review cut
