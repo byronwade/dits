@@ -16,10 +16,13 @@ use crate::core::{
     ManifestEntry, Mp4Metadata, StorageStrategy, StoredAtom,
 };
 use crate::mp4::{Deconstructor, Mp4Parser};
+use crate::security::KeyStore;
 use crate::store::{GitTextEngine, ObjectStore, RefStore};
+use bincode;
 use std::fs::{self, File};
 use std::io::{self, BufWriter, Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 use thiserror::Error;
 use walkdir::WalkDir;
 
@@ -54,11 +57,23 @@ pub enum RepoError {
     #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
 
+    #[error("Index error: {0}")]
+    IndexError(String),
+
     #[error("Invalid hash: {0}")]
     InvalidHash(#[from] hex::FromHexError),
 
     #[error("Git engine error: {0}")]
     GitEngine(#[from] super::git_engine::GitEngineError),
+}
+
+/// Cached index with metadata for performance optimization.
+#[derive(Clone)]
+struct CachedIndex {
+    /// The index data.
+    index: Index,
+    /// Last modification time of the index file.
+    mtime: std::time::SystemTime,
 }
 
 /// A Dits repository.
@@ -81,6 +96,8 @@ pub struct Repository {
     git_engine: Option<GitTextEngine>,
     /// File classifier for storage strategy selection (Phase 3.6).
     file_classifier: FileClassifier,
+    /// Cached index for performance (Phase 6 optimization).
+    index_cache: Mutex<Option<CachedIndex>>,
 }
 
 impl Repository {
@@ -135,6 +152,7 @@ impl Repository {
             config,
             git_engine,
             file_classifier,
+            index_cache: Mutex::new(None),
         })
     }
 
@@ -170,16 +188,30 @@ impl Repository {
         // Phase 3.6: Initialize file classifier
         let file_classifier = FileClassifier::new();
 
+        // Check for encryption and create object store accordingly
+        let mut objects = ObjectStore::new(&dits_dir);
+
+        // Check if encryption keystore exists and keys are cached
+        let keystore = KeyStore::new(&dits_dir);
+        if keystore.exists() {
+            // Try to load cached keys
+            if let Ok(bundle) = keystore.load_cached() {
+                objects.enable_encryption(bundle.user_secret.clone());
+            }
+            // If keystore exists but no cached keys, encryption is disabled until login
+        }
+
         Ok(Self {
             work_dir: work_dir.clone(),
             dits_dir: dits_dir.clone(),
-            objects: ObjectStore::new(&dits_dir),
+            objects,
             refs: RefStore::new(&dits_dir),
             chunker_config,
             ignore,
             config,
             git_engine,
             file_classifier,
+            index_cache: Mutex::new(None),
         })
     }
 
@@ -408,20 +440,106 @@ impl Repository {
 
     // ========== Index Operations ==========
 
-    /// Load the index.
+    /// Load the index with caching for performance optimization.
+    /// Supports both binary format (Phase 6+) and legacy JSON format for backwards compatibility.
     pub fn load_index(&self) -> Result<Index, RepoError> {
         let index_path = self.dits_dir.join("index");
-        if !index_path.exists() {
-            return Ok(Index::new());
+
+        // Check if we have a valid cached index
+        if let Ok(cache_guard) = self.index_cache.lock() {
+            if let Some(ref cached) = *cache_guard {
+                if index_path.exists() {
+                    // Check if the file hasn't been modified since we cached it
+                    if let Ok(metadata) = index_path.metadata() {
+                        if let Ok(mtime) = metadata.modified() {
+                            if mtime == cached.mtime {
+                                // Cache is still valid
+                                return Ok(cached.index.clone());
+                            }
+                        }
+                    }
+                }
+            }
         }
-        let json = fs::read_to_string(&index_path)?;
-        Ok(Index::from_json(&json)?)
+
+        // Cache miss or invalid - load from disk
+        if !index_path.exists() {
+            let index = Index::new();
+            if let Ok(mut cache_guard) = self.index_cache.lock() {
+                *cache_guard = Some(CachedIndex {
+                    index: index.clone(),
+                    mtime: std::time::SystemTime::now(), // For new index, use current time
+                });
+            }
+            return Ok(index);
+        }
+
+        let data = fs::read(&index_path)?;
+        let mtime = index_path.metadata()?.modified()?;
+
+        // Try binary format first (Phase 6+), fall back to JSON for backwards compatibility
+        let index = match bincode::deserialize::<Index>(&data) {
+            Ok(index) => index,
+            Err(bincode_err) => {
+                // Fall back to JSON deserialization for legacy indexes
+                match String::from_utf8(data.clone()) {
+                    Ok(json) => match Index::from_json(&json) {
+                        Ok(index) => index,
+                        Err(json_err) => {
+                            eprintln!("Warning: Index file appears to be corrupted (bincode error: {}, JSON error: {}). Creating new empty index.", bincode_err, json_err);
+                            // Backup the corrupted index file
+                            let backup_path = index_path.with_extension("index.corrupted");
+                            if let Err(e) = fs::rename(&index_path, &backup_path) {
+                                eprintln!("Warning: Could not backup corrupted index file: {}", e);
+                            } else {
+                                eprintln!("Corrupted index file backed up to: {}", backup_path.display());
+                            }
+                            Index::new()
+                        }
+                    },
+                    Err(utf8_err) => {
+                        eprintln!("Warning: Index file contains invalid UTF-8 data (bincode error: {}, UTF-8 error: {}). Creating new empty index.", bincode_err, utf8_err);
+                        // Backup the corrupted index file
+                        let backup_path = index_path.with_extension("index.corrupted");
+                        if let Err(e) = fs::rename(&index_path, &backup_path) {
+                            eprintln!("Warning: Could not backup corrupted index file: {}", e);
+                        } else {
+                            eprintln!("Corrupted index file backed up to: {}", backup_path.display());
+                        }
+                        Index::new()
+                    }
+                }
+            }
+        };
+
+        // Cache the loaded index
+        if let Ok(mut cache_guard) = self.index_cache.lock() {
+            *cache_guard = Some(CachedIndex {
+                index: index.clone(),
+                mtime,
+            });
+        }
+
+        Ok(index)
     }
 
     /// Save the index.
+    /// Uses binary format for Phase 6 performance optimization.
     fn save_index(&self, index: &Index) -> Result<(), RepoError> {
         let index_path = self.dits_dir.join("index");
-        fs::write(&index_path, index.to_json())?;
+        let data = bincode::serialize(index)
+            .map_err(|e| RepoError::IndexError(e.to_string()))?;
+        fs::write(&index_path, &data)?;
+
+        // Update cache with new mtime
+        let mtime = index_path.metadata()?.modified()?;
+        if let Ok(mut cache_guard) = self.index_cache.lock() {
+            *cache_guard = Some(CachedIndex {
+                index: index.clone(),
+                mtime,
+            });
+        }
+
         Ok(())
     }
 
@@ -1343,6 +1461,13 @@ impl Repository {
     /// Get current branch name (None if detached HEAD).
     pub fn current_branch(&self) -> Result<Option<String>, RepoError> {
         Ok(self.refs.current_branch()?)
+    }
+
+    // ========== Accessor Methods for Extensions ==========
+
+    /// Get reference to the Git engine (for extensions like sparse checkout).
+    pub fn git_engine(&self) -> Option<&GitTextEngine> {
+        self.git_engine.as_ref()
     }
 
     /// List all branches.
