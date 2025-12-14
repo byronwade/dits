@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { WebVitals } from "@/components/web-vitals";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,8 +29,8 @@ export const viewport: Viewport = {
   // maximum-scale removed to allow pinch zoom
   viewportFit: "cover", // For safe area support on notched devices
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+    { media: "(prefers-color-scheme: light)", color: "#f9f9f6" },
+    { media: "(prefers-color-scheme: dark)", color: "#131210" },
   ],
 };
 
@@ -53,6 +55,7 @@ export const metadata: Metadata = {
     "BLAKE3",
   ],
   authors: [{ name: "Byron Wade" }],
+  manifest: "/manifest.json",
   openGraph: {
     title: "Dits - Version Control for Video & Large Files",
     description:
@@ -67,6 +70,20 @@ export const metadata: Metadata = {
     description:
       "Free and open source version control for video production. Like Git, but for large binary files.",
   },
+  alternates: {
+    canonical: "https://dits.dev",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -79,15 +96,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster />
-        </ThemeProvider>
+        <ErrorBoundary>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <Toaster />
+            <WebVitals />
+          </ThemeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

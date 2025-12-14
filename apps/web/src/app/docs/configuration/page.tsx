@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Configuration",
@@ -105,41 +106,46 @@ export default function ConfigurationPage() {
       <h2>Basic Usage</h2>
 
       <h3>Get a Value</h3>
-      <pre className="not-prose">
-        <code>{`$ dits config user.name
-John Editor`}</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`$ dits config user.name
+John Editor`}
+      />
 
       <h3>Set a Value</h3>
-      <pre className="not-prose">
-        <code>{`# Set in current repository
+      <CodeBlock
+        language="bash"
+        code={`# Set in current repository
 $ dits config user.name "John Editor"
 
 # Set globally (for all repositories)
 $ dits config --global user.name "John Editor"
 
 # Set at system level (requires admin)
-$ dits config --system user.name "John Editor"`}</code>
-      </pre>
+$ dits config --system user.name "John Editor"`}
+      />
 
       <h3>List All Configuration</h3>
-      <pre className="not-prose">
-        <code>{`$ dits config --list
+      <CodeBlock
+        language="bash"
+        code={`$ dits config --list
 user.name=John Editor
 user.email=john@example.com
 cache.size=10GB
-...`}</code>
-      </pre>
+...`}
+      />
 
       <h3>Unset a Value</h3>
-      <pre className="not-prose">
-        <code>{`$ dits config --unset user.name`}</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`$ dits config --unset user.name`}
+      />
 
       <h3>Edit Configuration File</h3>
-      <pre className="not-prose">
-        <code>{`$ dits config --global --edit`}</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`$ dits config --global --edit`}
+      />
 
       <h2>Configuration Options</h2>
       <Table className="not-prose my-6">
@@ -171,10 +177,11 @@ cache.size=10GB
       <p>
         Before making commits, you should set your identity:
       </p>
-      <pre className="not-prose">
-        <code>{`$ dits config --global user.name "Your Name"
-$ dits config --global user.email "you@example.com"`}</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`$ dits config --global user.name "Your Name"
+$ dits config --global user.email "you@example.com"`}
+      />
 
       <Alert className="not-prose my-4">
         <Info className="h-4 w-4" />
@@ -189,8 +196,9 @@ $ dits config --global user.email "you@example.com"`}</code>
       <p>
         Configuration files use a simple INI-like format:
       </p>
-      <pre className="not-prose">
-        <code>{`[user]
+      <CodeBlock
+        language="json"
+        code={`[user]
     name = John Editor
     email = john@example.com
 
@@ -202,37 +210,39 @@ $ dits config --global user.email "you@example.com"`}</code>
     size = 50GB
 
 [remote "origin"]
-    url = https://dits.example.com/team/project`}</code>
-      </pre>
+    url = https://dits.example.com/team/project`}
+      />
 
       <h2>Remote Configuration</h2>
       <p>
         Remotes are configured under <code>[remote &quot;name&quot;]</code> sections:
       </p>
-      <pre className="not-prose">
-        <code>{`# Add a remote
+      <CodeBlock
+        language="bash"
+        code={`# Add a remote
 $ dits remote add origin https://dits.example.com/team/project
 
 # This adds to config:
 [remote "origin"]
     url = https://dits.example.com/team/project
-    fetch = +refs/heads/*:refs/remotes/origin/*`}</code>
-      </pre>
+    fetch = +refs/heads/*:refs/remotes/origin/*`}
+      />
 
       <h2>Aliases</h2>
       <p>
         Create shortcuts for common commands:
       </p>
-      <pre className="not-prose">
-        <code>{`$ dits config --global alias.co checkout
+      <CodeBlock
+        language="bash"
+        code={`$ dits config --global alias.co checkout
 $ dits config --global alias.br branch
 $ dits config --global alias.ci commit
 $ dits config --global alias.st status
 
 # Now you can use:
 $ dits co main
-$ dits st`}</code>
-      </pre>
+$ dits st`}
+      />
 
       <h2>Environment Variables</h2>
       <p>

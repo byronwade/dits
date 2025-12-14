@@ -11,6 +11,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Info, Video, Clapperboard, Scissors, Combine, RotateCcw, Play } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Video & Media Commands",
@@ -81,22 +82,25 @@ export default function VideoCommandsPage() {
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits inspect [OPTIONS] &lt;FILE&gt;</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits inspect [OPTIONS] &lt;FILE&gt;`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--json              Output in JSON format for scripting
+      <CodeBlock
+        language="bash"
+        code={`--json              Output in JSON format for scripting
 --atoms             Show detailed atom hierarchy
 --keyframes         List all keyframe positions
 --tracks            Show track information only
--v, --verbose       Include technical details`}</code>
-      </pre>
+-v, --verbose       Include technical details`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Inspect an MP4 file
+      <CodeBlock
+        language="bash"
+        code={`# Inspect an MP4 file
 $ dits inspect footage/scene01.mov
 
 Container: MP4 (QuickTime)
@@ -134,8 +138,8 @@ Keyframes (166 total):
   ...
 
 # JSON output for scripting
-$ dits inspect --json footage/scene01.mov > info.json`}</code>
-      </pre>
+$ dits inspect --json footage/scene01.mov > info.json`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -157,25 +161,28 @@ $ dits inspect --json footage/scene01.mov > info.json`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits segment [OPTIONS] &lt;FILE&gt;</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits segment [OPTIONS] &lt;FILE&gt;`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--output <DIR>      Output directory for chunks (default: .dits/chunks)
+      <CodeBlock
+        language="bash"
+        code={`--output <DIR>      Output directory for chunks (default: .dits/chunks)
 --min-chunk <SIZE>  Minimum chunk size (default: 256KB)
 --avg-chunk <SIZE>  Target average chunk size (default: 1MB)
 --max-chunk <SIZE>  Maximum chunk size (default: 4MB)
 --keyframe-align    Align to keyframes (default: true for video)
 --dry-run           Show what would be done without writing
 --progress          Show progress bar
--v, --verbose       Show detailed output`}</code>
-      </pre>
+-v, --verbose       Show detailed output`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Segment a video file
+      <CodeBlock
+        language="bash"
+        code={`# Segment a video file
 $ dits segment footage/scene01.mov
 
 Segmenting: footage/scene01.mov (2.3 GB)
@@ -201,8 +208,8 @@ Would create 2,345 chunks:
   ...
 
 # Custom chunk sizes for very large files
-$ dits segment --min-chunk 1MB --avg-chunk 4MB --max-chunk 16MB large-file.mov`}</code>
-      </pre>
+$ dits segment --min-chunk 1MB --avg-chunk 4MB --max-chunk 16MB large-file.mov`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Combine className="h-5 w-5" />
@@ -214,22 +221,25 @@ $ dits segment --min-chunk 1MB --avg-chunk 4MB --max-chunk 16MB large-file.mov`}
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits assemble [OPTIONS] &lt;MANIFEST&gt;</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits assemble [OPTIONS] &lt;MANIFEST&gt;`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--output <FILE>     Output file path (default: original name)
+      <CodeBlock
+        language="bash"
+        code={`--output <FILE>     Output file path (default: original name)
 --verify            Verify final hash matches original
 --parallel <N>      Number of parallel chunk fetches
 --progress          Show progress bar
--f, --force         Overwrite existing file`}</code>
-      </pre>
+-f, --force         Overwrite existing file`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Reassemble from manifest
+      <CodeBlock
+        language="bash"
+        code={`# Reassemble from manifest
 $ dits assemble .dits/manifests/scene01.mov.manifest
 
 Assembling: scene01.mov
@@ -245,8 +255,8 @@ Output: scene01.mov (2.3 GB)
 $ dits assemble --output /exports/scene01.mov .dits/manifests/scene01.mov.manifest
 
 # Parallel fetching for remote chunks
-$ dits assemble --parallel 8 --progress manifest.json`}</code>
-      </pre>
+$ dits assemble --parallel 8 --progress manifest.json`}
+      />
 
       <h2 className="flex items-center gap-2">
         <RotateCcw className="h-5 w-5" />
@@ -258,20 +268,23 @@ $ dits assemble --parallel 8 --progress manifest.json`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits roundtrip [OPTIONS] &lt;FILE&gt;</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits roundtrip [OPTIONS] &lt;FILE&gt;`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--keep              Keep intermediate files
+      <CodeBlock
+        language="bash"
+        code={`--keep              Keep intermediate files
 --output <DIR>      Output directory for test files
--v, --verbose       Show detailed progress`}</code>
-      </pre>
+-v, --verbose       Show detailed progress`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Test roundtrip integrity
+      <CodeBlock
+        language="bash"
+        code={`# Test roundtrip integrity
 $ dits roundtrip footage/scene01.mov
 
 Roundtrip test: footage/scene01.mov
@@ -291,8 +304,8 @@ $ dits roundtrip --keep --output ./test footage/scene01.mov
 Files preserved in ./test/:
   - manifest.json
   - chunks/ (2,345 files)
-  - reconstructed.mov`}</code>
-      </pre>
+  - reconstructed.mov`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Play className="h-5 w-5" />
@@ -304,20 +317,23 @@ Files preserved in ./test/:
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits inspect-file [OPTIONS] &lt;PATH&gt;</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits inspect-file [OPTIONS] &lt;PATH&gt;`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--chunks            List all chunk hashes
+      <CodeBlock
+        language="bash"
+        code={`--chunks            List all chunk hashes
 --shared            Show which files share chunks
---json              Output in JSON format`}</code>
-      </pre>
+--json              Output in JSON format`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Inspect deduplication stats
+      <CodeBlock
+        language="bash"
+        code={`# Inspect deduplication stats
 $ dits inspect-file footage/scene01.mov
 
 Inspecting: footage/scene01.mov
@@ -348,8 +364,8 @@ $ dits inspect-file --shared footage/scene01_v2.mov
 Shared with:
   footage/scene01.mov     - 9,856 chunks (96.2%)
   footage/scene01_v3.mov  - 10,012 chunks (97.8%)
-  archived/scene01.mov    - 8,432 chunks (82.3%)`}</code>
-      </pre>
+  archived/scene01.mov    - 8,432 chunks (82.3%)`}
+      />
 
       <h2>Video Timeline Commands</h2>
       <p>
@@ -360,21 +376,23 @@ Shared with:
 
       <h3>dits video-init</h3>
       <p>Initialize a new video timeline project.</p>
-      <pre className="not-prose">
-        <code>{`# Create a new timeline project
+      <CodeBlock
+        language="bash"
+        code={`# Create a new timeline project
 $ dits video-init "Episode 1 Assembly"
 
 Created video project: Episode 1 Assembly
 Project ID: vid-a1b2c3d4
 Timeline: empty
 
-Use 'dits video-add-clip' to add clips to the timeline.`}</code>
-      </pre>
+Use 'dits video-add-clip' to add clips to the timeline.`}
+      />
 
       <h3>dits video-add-clip</h3>
       <p>Add a clip to a video timeline.</p>
-      <pre className="not-prose">
-        <code>{`# Add clips to timeline
+      <CodeBlock
+        language="bash"
+        code={`# Add clips to timeline
 $ dits video-add-clip "Episode 1 Assembly" footage/scene01.mov
 
 Added to timeline: footage/scene01.mov
@@ -390,13 +408,14 @@ Added to timeline: footage/scene02.mov
   Track: 1
 
 # Add with specific in/out points
-$ dits video-add-clip --in 00:00:10 --out 00:01:30 "Episode 1 Assembly" footage/b-roll.mov`}</code>
-      </pre>
+$ dits video-add-clip --in 00:00:10 --out 00:01:30 "Episode 1 Assembly" footage/b-roll.mov`}
+      />
 
       <h3>dits video-show</h3>
       <p>Display a video timeline&apos;s structure.</p>
-      <pre className="not-prose">
-        <code>{`$ dits video-show "Episode 1 Assembly"
+      <CodeBlock
+        language="bash"
+        code={`$ dits video-show "Episode 1 Assembly"
 
 Project: Episode 1 Assembly
 ID: vid-a1b2c3d4
@@ -413,13 +432,14 @@ Timeline (3 clips, 00:10:37 total):
 Source Files:
   footage/scene01.mov (10.2 GB) - commit abc1234
   footage/scene02.mov (8.5 GB)  - commit abc1234
-  footage/b-roll.mov (2.1 GB)   - commit def5678`}</code>
-      </pre>
+  footage/b-roll.mov (2.1 GB)   - commit def5678`}
+      />
 
       <h3>dits video-list</h3>
       <p>List all video timeline projects.</p>
-      <pre className="not-prose">
-        <code>{`$ dits video-list
+      <CodeBlock
+        language="bash"
+        code={`$ dits video-list
 
 Video Projects:
 
@@ -429,8 +449,8 @@ Video Projects:
   vid-e5f6g7h8  Episode 2 Rough Cut     12     00:42:15   2025-01-14
   vid-i9j0k1l2  B-Roll Selects          8      00:15:30   2025-01-13
 
-3 projects total`}</code>
-      </pre>
+3 projects total`}
+      />
 
       <h2>Understanding Video Processing</h2>
 
@@ -439,8 +459,9 @@ Video Projects:
         Dits parses MP4/MOV files using the ISO Base Media File Format (ISOBMFF)
         specification. Key atoms include:
       </p>
-      <pre className="not-prose">
-        <code>{`Container Structure:
+      <CodeBlock
+        language="bash"
+        code={`Container Structure:
 
 ftyp    File type declaration (identifies MP4/MOV variant)
 moov    Metadata container (CRITICAL - never chunked through)
@@ -452,8 +473,8 @@ moov    Metadata container (CRITICAL - never chunked through)
 │           ├── stss    Sync samples (keyframe index)
 │           ├── stts    Time-to-sample table
 │           └── stsc    Sample-to-chunk mapping
-mdat    Media data (actual video/audio frames - chunked here)`}</code>
-      </pre>
+mdat    Media data (actual video/audio frames - chunked here)`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -466,8 +487,9 @@ mdat    Media data (actual video/audio frames - chunked here)`}</code>
       </Alert>
 
       <h3>Chunking Strategy</h3>
-      <pre className="not-prose">
-        <code>{`Dits chunking for video:
+      <CodeBlock
+        language="bash"
+        code={`Dits chunking for video:
 
 1. Parse container structure
 2. Identify keyframe positions from stss atom
@@ -478,8 +500,8 @@ mdat    Media data (actual video/audio frames - chunked here)`}</code>
 4. Prefer chunk boundaries at keyframes when within tolerance
 5. Generate manifest with chunk order and metadata
 
-Result: Efficient deduplication + independent chunk decoding`}</code>
-      </pre>
+Result: Efficient deduplication + independent chunk decoding`}
+      />
 
       <h2>Related Commands</h2>
       <ul>

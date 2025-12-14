@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, AlertTriangle } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Advanced Commands",
@@ -99,8 +100,9 @@ export default function AdvancedCommandsPage() {
         hashes match their content.
       </p>
 
-      <pre className="not-prose">
-        <code>{`$ dits fsck
+      <CodeBlock
+        language="bash"
+        code={`$ dits fsck
 
 Checking 45,892 chunks...
 Checking 1,234 assets...
@@ -123,8 +125,8 @@ Object a1b2c3d4: valid
 $ dits fsck --unreachable
 Unreachable chunks: 234 (567 MB)
 Unreachable assets: 12 (24 KB)
-Unreachable commits: 3 (6 KB)`}</code>
-      </pre>
+Unreachable commits: 3 (6 KB)`}
+      />
 
       <h3>dits gc</h3>
       <p>
@@ -132,8 +134,9 @@ Unreachable commits: 3 (6 KB)`}</code>
         repository.
       </p>
 
-      <pre className="not-prose">
-        <code>{`$ dits gc
+      <CodeBlock
+        language="bash"
+        code={`$ dits gc
 
 Finding unreachable objects...
 Found 234 unreachable chunks (567 MB)
@@ -157,8 +160,8 @@ Would remove:
 
 # Keep objects newer than date
 $ dits gc --prune=now  # Remove all unreachable
-$ dits gc --prune=2weeks  # Keep if < 2 weeks old`}</code>
-      </pre>
+$ dits gc --prune=2weeks  # Keep if < 2 weeks old`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -172,8 +175,9 @@ $ dits gc --prune=2weeks  # Keep if < 2 weeks old`}</code>
       <h3>dits prune</h3>
       <p>Remove unreachable objects that are older than the grace period.</p>
 
-      <pre className="not-prose">
-        <code>{`$ dits prune
+      <CodeBlock
+        language="bash"
+        code={`$ dits prune
 Pruning unreachable objects older than 2 weeks...
 Removed 234 objects (567 MB)
 
@@ -181,16 +185,17 @@ Removed 234 objects (567 MB)
 $ dits prune --expire now
 
 # Dry run
-$ dits prune --dry-run`}</code>
-      </pre>
+$ dits prune --dry-run`}
+      />
 
       <h2>Object Inspection</h2>
 
       <h3>dits cat-file</h3>
       <p>Show the contents or type of a repository object.</p>
 
-      <pre className="not-prose">
-        <code>{`# Show object type
+      <CodeBlock
+        language="bash"
+        code={`# Show object type
 $ dits cat-file -t a1b2c3d4
 commit
 
@@ -221,14 +226,15 @@ $ dits cat-file -p asset:xyz789abc
     {"hash": "b2c3d4e5", "offset": 1048576, "size": 1048576},
     ...
   ]
-}`}</code>
-      </pre>
+}`}
+      />
 
       <h3>dits hash-object</h3>
       <p>Compute the hash of a file or data.</p>
 
-      <pre className="not-prose">
-        <code>{`# Hash a file (doesn't store it)
+      <CodeBlock
+        language="bash"
+        code={`# Hash a file (doesn't store it)
 $ dits hash-object footage/scene1.mov
 a1b2c3d4e5f6...
 
@@ -246,16 +252,17 @@ Chunk 1: 0-1048576 (1.0 MB) → a1b2c3d4
 Chunk 2: 1048576-2097152 (1.0 MB) → b2c3d4e5
 Chunk 3: 2097152-3145728 (1.0 MB) → c3d4e5f6
 ...
-Total: 10,234 chunks`}</code>
-      </pre>
+Total: 10,234 chunks`}
+      />
 
       <h2>Packing</h2>
 
       <h3>dits pack</h3>
       <p>Pack objects for more efficient storage and transfer.</p>
 
-      <pre className="not-prose">
-        <code>{`# Pack all loose objects
+      <CodeBlock
+        language="bash"
+        code={`# Pack all loose objects
 $ dits pack
 Counting objects: 45,892
 Compressing objects: 100% (45,892/45,892)
@@ -274,28 +281,30 @@ Packs: 3
   pack-abc123.pack: 45,000 objects (11.2 GB)
   pack-def456.pack: 892 objects (300 MB)
   pack-ghi789.pack: 100 objects (50 MB)
-Loose objects: 234 (567 MB)`}</code>
-      </pre>
+Loose objects: 234 (567 MB)`}
+      />
 
       <h3>dits unpack</h3>
       <p>Extract objects from a pack file.</p>
 
-      <pre className="not-prose">
-        <code>{`# Unpack a pack file
+      <CodeBlock
+        language="bash"
+        code={`# Unpack a pack file
 $ dits unpack pack-abc123.pack
 Unpacking 45,000 objects...
 
 # Verify during unpack
-$ dits unpack --verify pack-abc123.pack`}</code>
-      </pre>
+$ dits unpack --verify pack-abc123.pack`}
+      />
 
       <h2>Debugging</h2>
 
       <h3>dits rev-parse</h3>
       <p>Parse revision specifications and show their hashes.</p>
 
-      <pre className="not-prose">
-        <code>{`# Show commit hash
+      <CodeBlock
+        language="bash"
+        code={`# Show commit hash
 $ dits rev-parse HEAD
 a1b2c3d4e5f6789...
 
@@ -308,14 +317,15 @@ def456789abc...
 
 # Show relative commits
 $ dits rev-parse HEAD~3
-9f8e7d6c5b4a...`}</code>
-      </pre>
+9f8e7d6c5b4a...`}
+      />
 
       <h3>dits ls-tree</h3>
       <p>List the contents of a tree object.</p>
 
-      <pre className="not-prose">
-        <code>{`$ dits ls-tree HEAD
+      <CodeBlock
+        language="bash"
+        code={`$ dits ls-tree HEAD
 100644 asset abc123def footage/scene1.mov
 100644 asset def456abc footage/scene2.mov
 100644 asset 789xyzabc project.prproj
@@ -327,14 +337,15 @@ $ dits ls-tree -r HEAD
 100644 asset def456abc footage/scene2.mov
 100644 asset 789xyzabc project.prproj
 100644 asset 123abcdef audio/music.wav
-100644 asset 456defabc audio/sfx.wav`}</code>
-      </pre>
+100644 asset 456defabc audio/sfx.wav`}
+      />
 
       <h3>dits ls-files</h3>
       <p>Show information about files in the index and working tree.</p>
 
-      <pre className="not-prose">
-        <code>{`# Show tracked files
+      <CodeBlock
+        language="bash"
+        code={`# Show tracked files
 $ dits ls-files
 footage/scene1.mov
 footage/scene2.mov
@@ -351,16 +362,17 @@ footage/scene1.mov
 
 # Show untracked files
 $ dits ls-files --others
-footage/new-take.mov`}</code>
-      </pre>
+footage/new-take.mov`}
+      />
 
       <h2>Recovery</h2>
 
       <h3>dits reflog</h3>
       <p>Show reference log for recovering lost commits.</p>
 
-      <pre className="not-prose">
-        <code>{`$ dits reflog
+      <CodeBlock
+        language="bash"
+        code={`$ dits reflog
 a1b2c3d HEAD@{0}: commit: Current work
 f5e4d3c HEAD@{1}: reset: moving to HEAD~3
 b2c3d4e HEAD@{2}: commit: Lost commit 3
@@ -369,14 +381,15 @@ d4e5f6g HEAD@{4}: commit: Lost commit 1
 
 # Recover lost commit
 $ dits reset --hard HEAD@{2}
-HEAD is now at b2c3d4e Lost commit 3`}</code>
-      </pre>
+HEAD is now at b2c3d4e Lost commit 3`}
+      />
 
       <h3>dits lost-found</h3>
       <p>Find unreachable objects that might be recoverable.</p>
 
-      <pre className="not-prose">
-        <code>{`$ dits lost-found
+      <CodeBlock
+        language="bash"
+        code={`$ dits lost-found
 Searching for unreachable objects...
 
 Found 5 unreachable commits:
@@ -387,8 +400,8 @@ Found 5 unreachable commits:
 Found 234 unreachable chunks (567 MB)
 
 # Recover a commit
-$ dits branch recovered b2c3d4e`}</code>
-      </pre>
+$ dits branch recovered b2c3d4e`}
+      />
 
       <h2>Related Topics</h2>
       <ul>

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { GitBranch, Info, ListTree, ArrowRightLeft, GitMerge, GitPullRequest, Cherry, Tag } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Branch Commands",
@@ -94,16 +95,18 @@ export default function BranchCommandsPage() {
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>{`dits branch [--list] [-a] [-r]
+      <CodeBlock
+        language="bash"
+        code={`dits branch [--list] [-a] [-r]
 dits branch <name> [start-point]
 dits branch -d <name>
-dits branch -m <old> <new>`}</code>
-      </pre>
+dits branch -m <old> <new>`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--list, -l       List branches (default)
+      <CodeBlock
+        language="bash"
+        code={`--list, -l       List branches (default)
 --all, -a        List both local and remote branches
 --remotes, -r    List remote-tracking branches
 --delete, -d     Delete a branch
@@ -112,12 +115,13 @@ dits branch -m <old> <new>`}</code>
 --copy, -c       Copy a branch
 --verbose, -v    Show commit info with branches
 --merged         Only show merged branches
---no-merged      Only show unmerged branches`}</code>
-      </pre>
+--no-merged      Only show unmerged branches`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# List local branches
+      <CodeBlock
+        language="bash"
+        code={`# List local branches
 $ dits branch
 * main
   feature/audio
@@ -154,8 +158,8 @@ Deleted branch 'experiment/abandoned' (was a1b2c3d)
 $ dits branch -v
 * main           a1b2c3d Add color grading
   feature/audio  f5e4d3c Add sound effects
-  client-version b3c4d5e Client revisions`}</code>
-      </pre>
+  client-version b3c4d5e Client revisions`}
+      />
 
       <h2 className="flex items-center gap-2">
         <ArrowRightLeft className="h-5 w-5" />
@@ -167,22 +171,25 @@ $ dits branch -v
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits switch [options] &lt;branch&gt;</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits switch [options] &lt;branch&gt;`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--create, -c     Create and switch to new branch
+      <CodeBlock
+        language="bash"
+        code={`--create, -c     Create and switch to new branch
 --force, -f      Discard local changes
 --detach         Detach HEAD at the commit
 --merge, -m      Merge current changes into new branch
---orphan         Create new unparented branch`}</code>
-      </pre>
+--orphan         Create new unparented branch`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Switch to existing branch
+      <CodeBlock
+        language="bash"
+        code={`# Switch to existing branch
 $ dits switch feature/audio
 Switched to branch 'feature/audio'
 Hydrating 3 changed files... done
@@ -203,8 +210,8 @@ Switched to branch 'main'
 
 # Detached HEAD (specific commit)
 $ dits switch --detach a1b2c3d
-HEAD is now at a1b2c3d Add color grading`}</code>
-      </pre>
+HEAD is now at a1b2c3d Add color grading`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -226,24 +233,27 @@ HEAD is now at a1b2c3d Add color grading`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits merge [options] &lt;branch&gt;...</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits merge [options] &lt;branch&gt;...`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--no-commit      Merge but don't commit
+      <CodeBlock
+        language="bash"
+        code={`--no-commit      Merge but don't commit
 --no-ff          Create merge commit even if fast-forward
 --ff-only        Abort if fast-forward not possible
 --squash         Squash commits into one
 --abort          Abort current merge
 --continue       Continue after resolving conflicts
---message, -m    Set merge commit message`}</code>
-      </pre>
+--message, -m    Set merge commit message`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Basic merge
+      <CodeBlock
+        language="bash"
+        code={`# Basic merge
 $ dits merge feature/audio
 Updating a1b2c3d..f5e4d3c
 Fast-forward
@@ -265,12 +275,13 @@ $ dits commit -m "Merge feature/many-commits"
 
 # Abort a merge
 $ dits merge --abort
-Merge aborted, returning to a1b2c3d`}</code>
-      </pre>
+Merge aborted, returning to a1b2c3d`}
+      />
 
       <h3>Resolving Conflicts</h3>
-      <pre className="not-prose">
-        <code>{`$ dits merge client-version
+      <CodeBlock
+        language="bash"
+        code={`$ dits merge client-version
 CONFLICT (content): Merge conflict in footage/scene1.mov
 Automatic merge failed; fix conflicts and commit.
 
@@ -285,8 +296,8 @@ $ dits checkout --theirs footage/scene1.mov  # Keep client version
 
 # Or manually resolve, then:
 $ dits add footage/scene1.mov
-$ dits commit -m "Merge client-version"`}</code>
-      </pre>
+$ dits commit -m "Merge client-version"`}
+      />
 
       <h2 className="flex items-center gap-2">
         <GitPullRequest className="h-5 w-5" />
@@ -298,22 +309,25 @@ $ dits commit -m "Merge client-version"`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits rebase [options] [upstream [branch]]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits rebase [options] [upstream [branch]]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--onto           Rebase onto specific commit
+      <CodeBlock
+        language="bash"
+        code={`--onto           Rebase onto specific commit
 --continue       Continue after conflict
 --abort          Abort rebase
 --skip           Skip current commit
---interactive    Interactive rebase (not supported)`}</code>
-      </pre>
+--interactive    Interactive rebase (not supported)`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Rebase current branch onto main
+      <CodeBlock
+        language="bash"
+        code={`# Rebase current branch onto main
 $ dits rebase main
 Rebasing (1/3): Add sound effects
 Rebasing (2/3): Add music
@@ -327,8 +341,8 @@ $ dits rebase --onto main~3 main feature/audio
 $ dits rebase --continue
 
 # Abort rebase
-$ dits rebase --abort`}</code>
-      </pre>
+$ dits rebase --abort`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -349,13 +363,15 @@ $ dits rebase --abort`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits cherry-pick [options] &lt;commit&gt;...</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits cherry-pick [options] &lt;commit&gt;...`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Apply a single commit
+      <CodeBlock
+        language="bash"
+        code={`# Apply a single commit
 $ dits cherry-pick a1b2c3d
 [main f6g7h8i] Add sound effects
 
@@ -364,8 +380,8 @@ $ dits cherry-pick a1b2c3d b2c3d4e c3d4e5f
 
 # Cherry-pick without committing
 $ dits cherry-pick --no-commit a1b2c3d
-Changes applied, ready to commit`}</code>
-      </pre>
+Changes applied, ready to commit`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Tag className="h-5 w-5" />
@@ -377,15 +393,17 @@ Changes applied, ready to commit`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>{`dits tag [--list]
+      <CodeBlock
+        language="bash"
+        code={`dits tag [--list]
 dits tag <name> [commit]
-dits tag -d <name>`}</code>
-      </pre>
+dits tag -d <name>`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# List tags
+      <CodeBlock
+        language="bash"
+        code={`# List tags
 $ dits tag
 v1.0
 v1.1
@@ -404,8 +422,8 @@ $ dits tag v1.0-final a1b2c3d
 $ dits tag -d old-tag
 
 # Push tags to remote
-$ dits push --tags`}</code>
-      </pre>
+$ dits push --tags`}
+      />
 
       <h2>Related Commands</h2>
       <ul>

@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, Lock, Database, Share2 } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Content Addressing",
@@ -27,17 +28,18 @@ export default function ContentAddressingPage() {
       <h2>What is Content Addressing?</h2>
       <p>
         In a content-addressed storage system, data is identified by <em>what it
-        contains</em> rather than <em>where it&apos;s located</em>. The &quot;address&quot; of any
+          contains</em> rather than <em>where it&apos;s located</em>. The &quot;address&quot; of any
         piece of data is the cryptographic hash of its contents.
       </p>
 
-      <pre className="not-prose">
-        <code>{`Traditional addressing (location-based):
+      <CodeBlock
+        language="bash"
+        code={`Traditional addressing (location-based):
   /projects/video/scene1_take2.mov
 
 Content addressing (hash-based):
-  blake3:a1b2c3d4e5f6...  (represents the exact bytes)`}</code>
-      </pre>
+  blake3:a1b2c3d4e5f6...  (represents the exact bytes)`}
+      />
 
       <h2>Benefits of Content Addressing</h2>
 
@@ -128,16 +130,17 @@ Content addressing (hash-based):
         </li>
       </ul>
 
-      <pre className="not-prose">
-        <code>{`Performance comparison (10GB file):
+      <CodeBlock
+        language="bash"
+        code={`Performance comparison (10GB file):
 
 SHA-256:   ~45 seconds
 SHA-1:     ~30 seconds
 BLAKE2b:   ~15 seconds
 BLAKE3:    ~3 seconds  ← Dits uses this
 
-BLAKE3 throughput: ~10 GB/s on modern CPUs`}</code>
-      </pre>
+BLAKE3 throughput: 3 GB/s per core (multi-threaded: 10+ GB/s)`}
+      />
 
       <h2>Content-Addressed Objects</h2>
       <p>
@@ -149,21 +152,23 @@ BLAKE3 throughput: ~10 GB/s on modern CPUs`}</code>
         The smallest unit of storage. Each chunk&apos;s address is the BLAKE3 hash of
         its raw bytes.
       </p>
-      <pre className="not-prose">
-        <code>{`Chunk {
+      <CodeBlock
+        language="bash"
+        code={`Chunk {
   hash: blake3("raw bytes of chunk data"),
   size: 1048576,  // 1 MB
   data: [...raw bytes...]
-}`}</code>
-      </pre>
+}`}
+      />
 
       <h3>Assets</h3>
       <p>
         An asset represents a file and contains an ordered list of chunk references.
         The asset&apos;s address is the hash of its metadata and chunk list.
       </p>
-      <pre className="not-prose">
-        <code>{`Asset {
+      <CodeBlock
+        language="bash"
+        code={`Asset {
   hash: blake3(metadata + chunk_list),
   size: 10737418240,  // 10 GB
   chunks: [
@@ -176,40 +181,42 @@ BLAKE3 throughput: ~10 GB/s on modern CPUs`}</code>
     duration: 300.5,
     // ... codec info
   }
-}`}</code>
-      </pre>
+}`}
+      />
 
       <h3>Manifests (Trees)</h3>
       <p>
         A manifest maps file paths to assets, representing a directory structure
         at a point in time.
       </p>
-      <pre className="not-prose">
-        <code>{`Manifest {
+      <CodeBlock
+        language="bash"
+        code={`Manifest {
   hash: blake3(sorted_entries),
   entries: {
     "footage/scene1.mov": { asset: "abc123...", mode: 0o644 },
     "footage/scene2.mov": { asset: "def456...", mode: 0o644 },
     "project.prproj":     { asset: "789xyz...", mode: 0o644 },
   }
-}`}</code>
-      </pre>
+}`}
+      />
 
       <h3>Commits</h3>
       <p>
         A commit references a manifest (tree) and parent commits, creating the
         version history.
       </p>
-      <pre className="not-prose">
-        <code>{`Commit {
+      <CodeBlock
+        language="bash"
+        code={`Commit {
   hash: blake3(all_fields),
   tree: "manifest_hash...",
   parents: ["parent_commit_hash..."],
   author: "Jane Editor <jane@example.com>",
   timestamp: "2024-01-15T10:30:00Z",
   message: "Add color grading to scene 1"
-}`}</code>
-      </pre>
+}`}
+      />
 
       <h2>Hash Verification</h2>
       <p>
@@ -248,37 +255,40 @@ BLAKE3 throughput: ~10 GB/s on modern CPUs`}</code>
       <h2>Content Addressing in Practice</h2>
 
       <h3>Finding Duplicates</h3>
-      <pre className="not-prose">
-        <code>{`$ dits add footage/take1.mov footage/take2.mov
+      <CodeBlock
+        language="bash"
+        code={`$ dits add footage/take1.mov footage/take2.mov
 
 Chunking footage/take1.mov... 10,234 chunks
 Chunking footage/take2.mov... 10,198 chunks
   → 8,547 chunks already exist (83% deduplicated)
   → 1,651 new chunks to store
 
-Storage: 1.6 GB instead of 20 GB`}</code>
-      </pre>
+Storage: 1.6 GB instead of 20 GB`}
+      />
 
       <h3>Verifying Integrity</h3>
-      <pre className="not-prose">
-        <code>{`$ dits fsck
+      <CodeBlock
+        language="bash"
+        code={`$ dits fsck
 
 Checking 45,892 chunks...
 Checking 1,234 assets...
 Checking 89 commits...
 
-All objects verified. No corruption detected.`}</code>
-      </pre>
+All objects verified. No corruption detected.`}
+      />
 
       <h3>Referencing Specific Content</h3>
-      <pre className="not-prose">
-        <code>{`# Check out a specific version of a file
+      <CodeBlock
+        language="bash"
+        code={`# Check out a specific version of a file
 $ dits show abc123def:footage/scene1.mov > old_scene1.mov
 
 # The hash guarantees you get exactly what was stored
 $ blake3sum old_scene1.mov
-abc123def456...  old_scene1.mov  ✓`}</code>
-      </pre>
+abc123def456...  old_scene1.mov  ✓`}
+      />
 
       <h2>Security Considerations</h2>
 

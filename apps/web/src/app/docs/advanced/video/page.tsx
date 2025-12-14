@@ -16,7 +16,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Info, Film, Layers, Clock } from "lucide-react";
+import { Info, Film, Layers, Clock, Check, AlertTriangle, Beaker } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Video Features",
@@ -115,78 +116,78 @@ export default function VideoFeaturesPage() {
           <TableRow>
             <TableCell>H.264/AVC</TableCell>
             <TableCell>MP4, MOV, MKV, AVI</TableCell>
-            <TableCell className="text-green-600">✅ Full</TableCell>
-            <TableCell className="text-green-600">✅ Tested</TableCell>
+            <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
+            <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
             <TableCell>All profiles, levels, GOP patterns</TableCell>
           </TableRow>
           <TableRow>
             <TableCell>H.265/HEVC</TableCell>
             <TableCell>MP4, MOV, MKV</TableCell>
-            <TableCell className="text-green-600">✅ Full</TableCell>
-            <TableCell className="text-green-600">✅ Tested</TableCell>
+            <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
+            <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
             <TableCell>HDR10, HLG, Dolby Vision support</TableCell>
           </TableRow>
           <TableRow>
             <TableCell>ProRes</TableCell>
             <TableCell>MOV</TableCell>
-            <TableCell className="text-green-600">✅ Full</TableCell>
-            <TableCell className="text-green-600">✅ Tested</TableCell>
+            <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
+            <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
             <TableCell>All variants: 422, 4444, HQ, LT, XQ</TableCell>
           </TableRow>
           <TableRow>
             <TableCell>DNxHR/DNxHD</TableCell>
             <TableCell>MOV, MXF</TableCell>
-            <TableCell className="text-green-600">✅ Full</TableCell>
-            <TableCell className="text-green-600">✅ Tested</TableCell>
+            <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
+            <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
             <TableCell>All resolutions and frame rates</TableCell>
           </TableRow>
           <TableRow>
             <TableCell>CineForm</TableCell>
             <TableCell>MOV, AVI</TableCell>
-            <TableCell className="text-green-600">✅ Full</TableCell>
-            <TableCell className="text-green-600">✅ Tested</TableCell>
+            <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
+            <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
             <TableCell>GoPro CineForm RAW support</TableCell>
           </TableRow>
           <TableRow>
             <TableCell>AVID DNx</TableCell>
             <TableCell>MXF, MOV</TableCell>
-            <TableCell className="text-green-600">✅ Full</TableCell>
-            <TableCell className="text-green-600">✅ Tested</TableCell>
+            <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
+            <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
             <TableCell>All DNx variants and MXF structures</TableCell>
           </TableRow>
           <TableRow>
             <TableCell>MXF</TableCell>
             <TableCell>MXF</TableCell>
-            <TableCell className="text-green-600">✅ Full</TableCell>
-            <TableCell className="text-green-600">✅ Tested</TableCell>
+            <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
+            <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
             <TableCell>OP1a, OP-Atom, AS-02, IMF support</TableCell>
           </TableRow>
           <TableRow>
             <TableCell>RED RAW</TableCell>
             <TableCell>R3D</TableCell>
-            <TableCell className="text-yellow-600">⚠️ Partial</TableCell>
-            <TableCell className="text-yellow-600">🧪 Testing</TableCell>
+            <TableCell className="text-yellow-600 flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> Partial</TableCell>
+            <TableCell className="text-yellow-600 flex items-center gap-2"><Beaker className="h-4 w-4" /> Testing</TableCell>
             <TableCell>Frame-level chunking, metadata preserved</TableCell>
           </TableRow>
           <TableRow>
             <TableCell>ARRIRAW</TableCell>
             <TableCell>ARI</TableCell>
-            <TableCell className="text-yellow-600">⚠️ Partial</TableCell>
-            <TableCell className="text-yellow-600">🧪 Testing</TableCell>
+            <TableCell className="text-yellow-600 flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> Partial</TableCell>
+            <TableCell className="text-yellow-600 flex items-center gap-2"><Beaker className="h-4 w-4" /> Testing</TableCell>
             <TableCell>Uncompressed raw support</TableCell>
           </TableRow>
           <TableRow>
             <TableCell>XAVC</TableCell>
             <TableCell>MXF, MP4</TableCell>
-            <TableCell className="text-green-600">✅ Full</TableCell>
-            <TableCell className="text-green-600">✅ Tested</TableCell>
+            <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
+            <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
             <TableCell>Sony professional codec support</TableCell>
           </TableRow>
           <TableRow>
             <TableCell>AVC-Intra</TableCell>
             <TableCell>MXF, MOV</TableCell>
-            <TableCell className="text-green-600">✅ Full</TableCell>
-            <TableCell className="text-green-600">✅ Tested</TableCell>
+            <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
+            <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
             <TableCell>All-Intra variants supported</TableCell>
           </TableRow>
         </TableBody>
@@ -198,8 +199,9 @@ export default function VideoFeaturesPage() {
         boundaries to these natural breakpoints:
       </p>
 
-      <pre className="not-prose">
-        <code>{`Video Structure:
+      <CodeBlock
+        language="bash"
+        code={`Video Structure:
 Timeline:  |-------|-------|-------|-------|-------|
            I   P P P I   P P P I   P P P I   P P P
            ↑         ↑         ↑         ↑
@@ -213,8 +215,8 @@ Regular CDC might split here:
 Keyframe-aligned splits here:
            I   P P P|I   P P P|I   P P P|I   P P P
                     ↑         ↑         ↑
-              Aligned to keyframes`}</code>
-      </pre>
+              Aligned to keyframes`}
+      />
 
       <h3>Benefits</h3>
       <ul>
@@ -231,8 +233,9 @@ Keyframe-aligned splits here:
       </p>
 
       <h3>MP4/MOV Structure (ISOBMFF)</h3>
-      <pre className="not-prose">
-        <code>{`MP4/MOV File:
+      <CodeBlock
+        language="bash"
+        code={`MP4/MOV File:
 ├── ftyp (file type)          ← Keep together
 ├── moov (metadata)           ← NEVER split
 │   ├── mvhd (movie header)
@@ -242,8 +245,8 @@ Keyframe-aligned splits here:
 │   │   │   └── stbl (sample table)
 │   │   │       └── stss (keyframe index)
 └── mdat (media data)         ← Chunk this part
-    └── [video/audio samples]`}</code>
-      </pre>
+    └── [video/audio samples]`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -260,8 +263,9 @@ Keyframe-aligned splits here:
         See differences between video versions in terms of time, not just bytes:
       </p>
 
-      <pre className="not-prose">
-        <code>{`$ dits diff --video-aware HEAD~1 HEAD -- scene1.mov
+      <CodeBlock
+        language="bash"
+        code={`$ dits diff --video-aware HEAD~1 HEAD -- scene1.mov
 
 footage/scene1.mov:
   Duration: 5:00.00 (unchanged)
@@ -282,12 +286,13 @@ footage/scene1.mov:
   Summary:
     Total changed: 50 seconds of 300 seconds (16.7%)
     Chunks changed: 5 of 312 (1.6%)
-    Storage delta: +45 MB`}</code>
-      </pre>
+    Storage delta: +45 MB`}
+      />
 
       <h3>Frame-Level Analysis</h3>
-      <pre className="not-prose">
-        <code>{`$ dits diff --video-aware --frame-level HEAD~1 HEAD -- scene1.mov
+      <CodeBlock
+        language="bash"
+        code={`$ dits diff --video-aware --frame-level HEAD~1 HEAD -- scene1.mov
 
 Frame analysis:
   Frame 1350 (00:45.00): Modified (color values changed)
@@ -299,16 +304,17 @@ Frame analysis:
 Statistics:
   Identical frames: 7,500
   Modified frames: 1,500
-  Modification ratio: 16.7%`}</code>
-      </pre>
+  Modification ratio: 16.7%`}
+      />
 
       <h2>Video Metadata</h2>
       <p>
         Dits extracts and indexes video metadata for efficient operations:
       </p>
 
-      <pre className="not-prose">
-        <code>{`$ dits show --video-info HEAD:footage/scene1.mov
+      <CodeBlock
+        language="bash"
+        code={`$ dits show --video-info HEAD:footage/scene1.mov
 
 Video Information:
   Duration:     5:00.00 (300 seconds)
@@ -330,14 +336,15 @@ Video Information:
   Dits Info:
     Chunks: 312
     Chunk Size: 32 MB average
-    Dedup Potential: 15% (similar to scene2.mov)`}</code>
-      </pre>
+    Dedup Potential: 15% (similar to scene2.mov)`}
+      />
 
       <h2>Optimizing for Video</h2>
 
       <h3>Configuration</h3>
-      <pre className="not-prose">
-        <code>{`# .dits/config
+      <CodeBlock
+        language="bash"
+        code={`# .dits/config
 [media]
     # Enable keyframe-aligned chunking
     keyframeAligned = true
@@ -355,12 +362,13 @@ Video Information:
     # For ProRes/DNxHR, use larger chunks
     minChunkSize = 512KB
     avgChunkSize = 2MB
-    maxChunkSize = 8MB`}</code>
-      </pre>
+    maxChunkSize = 8MB`}
+      />
 
       <h3>Per-File Attributes</h3>
-      <pre className="not-prose">
-        <code>{`# .ditsattributes
+      <CodeBlock
+        language="bash"
+        code={`# .ditsattributes
 # Large format video files
 *.mxf chunk=video-large
 *.mov chunk=video-large
@@ -383,16 +391,17 @@ Video Information:
     min = 256KB
     avg = 1MB
     max = 4MB
-    keyframeAlign = true`}</code>
-      </pre>
+    keyframeAlign = true`}
+      />
 
       <h2>Working with NLE Projects</h2>
       <p>
         Dits can also parse NLE project files:
       </p>
 
-      <pre className="not-prose">
-        <code>{`# Supported project formats
+      <CodeBlock
+        language="bash"
+        code={`# Supported project formats
 - Premiere Pro (.prproj)
 - DaVinci Resolve (.drp)
 - Final Cut Pro (.fcpxml)
@@ -412,8 +421,8 @@ Project: project.prproj
     graphics/logo.png    ✗ Missing!
 
   Sequences: 3
-  Total Duration: 15:30`}</code>
-      </pre>
+  Total Duration: 15:30`}
+      />
 
       <h2>Performance Tips</h2>
 

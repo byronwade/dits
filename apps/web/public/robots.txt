@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# Allow crawling of all documentation
+Allow: /docs/
+Allow: /getting-started/
+Allow: /installation/
+Allow: /about/
+Allow: /community/
+
+# Disallow crawling of API endpoints and admin areas (if any)
+Disallow: /api/
+Disallow: /admin/
+
+# Sitemap
+Sitemap: https://dits.dev/sitemap.xml

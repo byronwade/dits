@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Layers, Info, Zap, Eye, List, Trash2 } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Proxy Commands",
@@ -75,13 +76,15 @@ export default function ProxyCommandsPage() {
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits proxy-generate [OPTIONS] &lt;PATH&gt;...</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits proxy-generate [OPTIONS] &lt;PATH&gt;...`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--resolution <RES>    Target resolution (default: 1080p)
+      <CodeBlock
+        language="bash"
+        code={`--resolution <RES>    Target resolution (default: 1080p)
                       Options: 720p, 1080p, 1440p, 2160p, half, quarter
 --codec <CODEC>       Output codec (default: h264)
                       Options: h264, h265, prores-proxy, prores-lt
@@ -91,12 +94,13 @@ export default function ProxyCommandsPage() {
 --parallel <N>        Number of parallel encode jobs
 --overwrite           Overwrite existing proxies
 --progress            Show encoding progress
--n, --dry-run         Show what would be generated`}</code>
-      </pre>
+-n, --dry-run         Show what would be generated`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Generate 1080p proxies for all videos in footage/
+      <CodeBlock
+        language="bash"
+        code={`# Generate 1080p proxies for all videos in footage/
 $ dits proxy-generate footage/
 
 Generating proxies for 12 files...
@@ -131,8 +135,8 @@ $ dits proxy-generate -n footage/
 Would generate proxies:
   footage/scene01.mov → .dits/proxies/scene01.mov (est. 245 MB)
   footage/scene02.mov → .dits/proxies/scene02.mov (est. 189 MB)
-  ...`}</code>
-      </pre>
+  ...`}
+      />
 
       <h3>Resolution Options</h3>
       <Table className="not-prose my-6">
@@ -182,20 +186,23 @@ Would generate proxies:
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits proxy-status [OPTIONS] [PATH]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits proxy-status [OPTIONS] [PATH]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--pending           Show only files without proxies
+      <CodeBlock
+        language="bash"
+        code={`--pending           Show only files without proxies
 --outdated          Show proxies that need regeneration
---json              Output in JSON format`}</code>
-      </pre>
+--json              Output in JSON format`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Check overall proxy status
+      <CodeBlock
+        language="bash"
+        code={`# Check overall proxy status
 $ dits proxy-status
 
 Proxy Status:
@@ -222,8 +229,8 @@ Files needing proxy generation:
   footage/interview-b.mov
   footage/drone-shot.mov
 
-Run: dits proxy-generate footage/ to create missing proxies`}</code>
-      </pre>
+Run: dits proxy-generate footage/ to create missing proxies`}
+      />
 
       <h2 className="flex items-center gap-2">
         <List className="h-5 w-5" />
@@ -235,21 +242,24 @@ Run: dits proxy-generate footage/ to create missing proxies`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits proxy-list [OPTIONS]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits proxy-list [OPTIONS]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--format <FMT>      Output format (table, json, paths)
+      <CodeBlock
+        language="bash"
+        code={`--format <FMT>      Output format (table, json, paths)
 --size              Sort by proxy size
 --source            Sort by source file
--v, --verbose       Show detailed information`}</code>
-      </pre>
+-v, --verbose       Show detailed information`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`$ dits proxy-list
+      <CodeBlock
+        language="bash"
+        code={`$ dits proxy-list
 
 Proxies (45 files, 1.8 GB total):
 
@@ -273,8 +283,8 @@ Proxy: footage/scene01.mov
   Bitrate:    8 Mbps (from 100 Mbps)
   Size:       245 MB (from 2.3 GB)
   Created:    2025-01-15 14:30:00
-  ...`}</code>
-      </pre>
+  ...`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Trash2 className="h-5 w-5" />
@@ -285,22 +295,25 @@ Proxy: footage/scene01.mov
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits proxy-delete [OPTIONS] &lt;PATH&gt;...</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits proxy-delete [OPTIONS] &lt;PATH&gt;...`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--all               Delete all proxies
+      <CodeBlock
+        language="bash"
+        code={`--all               Delete all proxies
 --outdated          Delete only outdated proxies
 --older-than <AGE>  Delete proxies older than specified age
 -n, --dry-run       Show what would be deleted
--f, --force         Don't prompt for confirmation`}</code>
-      </pre>
+-f, --force         Don't prompt for confirmation`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Delete proxy for specific file
+      <CodeBlock
+        language="bash"
+        code={`# Delete proxy for specific file
 $ dits proxy-delete footage/scene01.mov
 
 Delete proxy for footage/scene01.mov (245 MB)? [y/N] y
@@ -331,12 +344,13 @@ Would delete:
   .dits/proxies/scene02.mov (189 MB)
   ...
 
-Total: 1.8 GB would be freed`}</code>
-      </pre>
+Total: 1.8 GB would be freed`}
+      />
 
       <h2>Proxy Workflow</h2>
-      <pre className="not-prose">
-        <code>{`# Typical proxy editing workflow:
+      <CodeBlock
+        language="bash"
+        code={`# Typical proxy editing workflow:
 
 1. Clone repository (metadata only for speed)
    $ dits clone --filter blob:none project-url
@@ -351,8 +365,8 @@ Total: 1.8 GB would be freed`}</code>
    $ dits checkout --no-proxy  # Ensure originals are available
    # Relink in NLE to footage/scene01.mov
 
-5. Export at full quality from original files`}</code>
-      </pre>
+5. Export at full quality from original files`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />

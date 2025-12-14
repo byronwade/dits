@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FileSearch, Info, ScanSearch, Eye, List } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Metadata Commands",
@@ -74,23 +75,26 @@ export default function MetadataCommandsPage() {
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits meta-scan [OPTIONS] [PATH]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits meta-scan [OPTIONS] [PATH]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--force             Rescan files with existing metadata
+      <CodeBlock
+        language="bash"
+        code={`--force             Rescan files with existing metadata
 --deep              Extract extended metadata (slower)
 --parallel <N>      Number of parallel scan jobs
 --progress          Show progress bar
 --json              Output results as JSON
--v, --verbose       Show detailed output`}</code>
-      </pre>
+-v, --verbose       Show detailed output`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Scan entire repository
+      <CodeBlock
+        language="bash"
+        code={`# Scan entire repository
 $ dits meta-scan
 
 Scanning for media files...
@@ -128,8 +132,8 @@ Extracting extended metadata...
 $ dits meta-scan --force
 
 Rescanning all 156 files...
-  Updated: 156 metadata entries`}</code>
-      </pre>
+  Updated: 156 metadata entries`}
+      />
 
       <h3>Extracted Metadata</h3>
       <Table className="not-prose my-6">
@@ -174,20 +178,23 @@ Rescanning all 156 files...
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits meta-show [OPTIONS] &lt;PATH&gt;</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits meta-show [OPTIONS] &lt;PATH&gt;`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--json              Output as JSON
+      <CodeBlock
+        language="bash"
+        code={`--json              Output as JSON
 --raw               Show raw metadata (all fields)
---section <NAME>    Show only specific section`}</code>
-      </pre>
+--section <NAME>    Show only specific section`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Show metadata for video file
+      <CodeBlock
+        language="bash"
+        code={`# Show metadata for video file
 $ dits meta-show footage/scene01.mov
 
 Metadata: footage/scene01.mov
@@ -241,8 +248,8 @@ $ dits meta-show --raw footage/scene01.mov
 Raw Metadata (45 fields):
   com.apple.quicktime.creationdate: 2025-01-15T10:30:00-08:00
   com.apple.quicktime.camera.identifier: C0001
-  ...`}</code>
-      </pre>
+  ...`}
+      />
 
       <h2 className="flex items-center gap-2">
         <List className="h-5 w-5" />
@@ -254,25 +261,28 @@ Raw Metadata (45 fields):
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits meta-list [OPTIONS]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits meta-list [OPTIONS]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--filter <EXPR>     Filter by metadata expression
+      <CodeBlock
+        language="bash"
+        code={`--filter <EXPR>     Filter by metadata expression
 --type <TYPE>       Filter by file type (video, audio, image)
 --codec <CODEC>     Filter by codec
 --resolution <RES>  Filter by resolution
 --duration <RANGE>  Filter by duration range
 --sort <FIELD>      Sort by field
 --format <FMT>      Output format (table, json, csv)
---limit <N>         Limit results`}</code>
-      </pre>
+--limit <N>         Limit results`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# List all indexed files
+      <CodeBlock
+        language="bash"
+        code={`# List all indexed files
 $ dits meta-list
 
 Indexed Files (156):
@@ -324,12 +334,13 @@ Longest Files:
   ...
 
 # Export to CSV
-$ dits meta-list --format csv > media-inventory.csv`}</code>
-      </pre>
+$ dits meta-list --format csv > media-inventory.csv`}
+      />
 
       <h2>Filter Expressions</h2>
-      <pre className="not-prose">
-        <code>{`# Filter syntax:
+      <CodeBlock
+        language="bash"
+        code={`# Filter syntax:
 field=value           Exact match
 field!=value          Not equal
 field>value           Greater than
@@ -353,26 +364,28 @@ duration>5m
 duration>=00:30:00
 framerate=23.976
 bitrate>50Mbps
-(codec=H.264 OR codec=H.265) AND resolution=4K`}</code>
-      </pre>
+(codec=H.264 OR codec=H.265) AND resolution=4K`}
+      />
 
       <h2>Use Cases</h2>
 
       <h3>Media Inventory</h3>
-      <pre className="not-prose">
-        <code>{`# Generate a complete media inventory
+      <CodeBlock
+        language="bash"
+        code={`# Generate a complete media inventory
 $ dits meta-list --format csv > inventory.csv
 
 # Summarize by codec
 $ dits meta-list --format json | jq 'group_by(.codec) | map({codec: .[0].codec, count: length})'
 
 # Find all HDR content
-$ dits meta-list --filter "hdr=true"`}</code>
-      </pre>
+$ dits meta-list --filter "hdr=true"`}
+      />
 
       <h3>Quality Control</h3>
-      <pre className="not-prose">
-        <code>{`# Find files that don't meet delivery specs
+      <CodeBlock
+        language="bash"
+        code={`# Find files that don't meet delivery specs
 $ dits meta-list --filter "resolution<1920x1080"
 
 Warning: 3 files below 1080p:
@@ -380,8 +393,8 @@ Warning: 3 files below 1080p:
   ...
 
 # Check for consistent frame rates
-$ dits meta-list --format json | jq 'group_by(.framerate)'`}</code>
-      </pre>
+$ dits meta-list --format json | jq 'group_by(.framerate)'`}
+      />
 
       <h2>Related Commands</h2>
       <ul>

@@ -3,7 +3,16 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Video, Gamepad2, Camera, Music, Palette, Film } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Practical Examples",
@@ -54,8 +63,9 @@ export default function ExamplesPage() {
 
                 <div>
                   <h4 className="font-semibold">Dits Solution</h4>
-                  <pre className="bg-muted p-3 rounded text-xs">
-                    <code>{`# Editor workflow
+                  <CodeBlock
+                    language="bash"
+                    code={`# Editor workflow
 dits checkout scene-45-v2
 dits mount /Volumes/dailies  # Access all footage on-demand
 # Edit in Premiere/FCP, make changes
@@ -67,17 +77,17 @@ dits checkout vfx-shots
 dits pull origin main  # Get latest edits
 # Modify CG elements, render new versions
 dits add shot-127-vfx.exr
-dits commit -m "Added particle effects to shot 127"`}</code>
-                  </pre>
+dits commit -m "Added particle effects to shot 127"`}
+                  />
                 </div>
 
                 <div>
                   <h4 className="font-semibold">Benefits</h4>
                   <ul className="text-sm space-y-1">
-                    <li>• <strong>Zero duplication:</strong> Same footage shared across all versions</li>
-                    <li>• <strong>Instant access:</strong> 500TB appears as local drive</li>
-                    <li>• <strong>Conflict prevention:</strong> Locks prevent simultaneous edits</li>
-                    <li>• <strong>Version traceability:</strong> Every change tracked and revertible</li>
+                    <li><strong>Zero duplication:</strong> Same footage shared across all versions</li>
+                    <li><strong>Instant access:</strong> 500TB appears as local drive</li>
+                    <li><strong>Conflict prevention:</strong> Locks prevent simultaneous edits</li>
+                    <li><strong>Version traceability:</strong> Every change tracked and revertible</li>
                   </ul>
                 </div>
               </CardContent>
@@ -93,8 +103,9 @@ dits commit -m "Added particle effects to shot 127"`}</code>
               <CardContent className="space-y-4">
                 <div>
                   <h4 className="font-semibold">Daily Workflow</h4>
-                  <pre className="bg-muted p-3 rounded text-xs">
-                    <code>{`# Start new video project
+                  <CodeBlock
+                    language="bash"
+                    code={`# Start new video project
 dits init cooking-tutorial-2024
 dits checkout -b main
 
@@ -111,14 +122,15 @@ dits commit -m "First edit pass - 8 minute version"
 dits checkout -b edit-v2
 dits cherry-pick edit-v1  # Start from v1
 # Refine edit, improve pacing
-dits commit -m "Second pass - 6 minute version"`}</code>
-                  </pre>
+dits commit -m "Second pass - 6 minute version"`}
+                  />
                 </div>
 
                 <div>
                   <h4 className="font-semibold">Publishing & Archiving</h4>
-                  <pre className="bg-muted p-3 rounded text-xs">
-                    <code>{`# Final version ready
+                  <CodeBlock
+                    language="bash"
+                    code={`# Final version ready
 dits checkout main
 dits merge edit-v2
 dits tag v1.0-published
@@ -129,8 +141,8 @@ dits commit -m "Published: How to Cook Perfect Pasta"
 
 # Share with team
 dits remote add team /Volumes/team-drive/project
-dits push team main`}</code>
-                  </pre>
+dits push team main`}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -154,8 +166,9 @@ dits push team main`}</code>
               <CardContent className="space-y-4">
                 <div>
                   <h4 className="font-semibold">Asset Pipeline</h4>
-                  <pre className="bg-muted p-3 rounded text-xs">
-                    <code>{`# Initialize game project
+                  <CodeBlock
+                    language="bash"
+                    code={`# Initialize game project
 dits init my-awesome-game
 dits add Assets/ ProjectSettings/
 dits commit -m "Initial Unity project setup"
@@ -168,14 +181,15 @@ dits commit -m "Character models and textures"
 # Programmers add scripts
 dits checkout -b code
 dits add Assets/Scripts/ Assets/Prefabs/
-dits commit -m "Player controller and UI system"`}</code>
-                  </pre>
+dits commit -m "Player controller and UI system"`}
+                  />
                 </div>
 
                 <div>
                   <h4 className="font-semibold">Build Management</h4>
-                  <pre className="bg-muted p-3 rounded text-xs">
-                    <code>{`# Create build branch
+                  <CodeBlock
+                    language="bash"
+                    code={`# Create build branch
 dits checkout -b builds
 dits merge art-assets
 dits merge code
@@ -186,8 +200,8 @@ dits add Builds/  # Add built executables
 dits commit -m "Build v0.1.2 - Windows + Mac"
 
 # Tag release
-dits tag release-0.1.2`}</code>
-                  </pre>
+dits tag release-0.1.2`}
+                  />
                 </div>
 
                 <div>
@@ -210,8 +224,9 @@ dits tag release-0.1.2`}</code>
               <CardContent className="space-y-4">
                 <div>
                   <h4 className="font-semibold">Weekly Development Cycle</h4>
-                  <pre className="bg-muted p-3 rounded text-xs">
-                    <code>{`# Monday: Plan sprint
+                  <CodeBlock
+                    language="bash"
+                    code={`# Monday: Plan sprint
 dits checkout main
 dits pull origin main
 dits checkout -b sprint-12
@@ -221,14 +236,15 @@ dits add Assets/NewFeature/
 dits commit -m "feat: Add inventory system"
 
 dits add Assets/Bugfix/
-dits commit -m "fix: Resolve collision detection"`}</code>
-                  </pre>
+dits commit -m "fix: Resolve collision detection"`}
+                  />
                 </div>
 
                 <div>
                   <h4 className="font-semibold">Friday: Integration & Testing</h4>
-                  <pre className="bg-muted p-3 rounded text-xs">
-                    <code>{`# Merge feature branches
+                  <CodeBlock
+                    language="bash"
+                    code={`# Merge feature branches
 dits checkout main
 dits merge sprint-12
 
@@ -245,8 +261,8 @@ dits mount /Volumes/game-builds
 # Release if approved
 dits checkout main
 dits tag v1.2.0-release
-dits push origin main --tags`}</code>
-                  </pre>
+dits push origin main --tags`}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -270,8 +286,9 @@ dits push origin main --tags`}</code>
               <CardContent className="space-y-4">
                 <div>
                   <h4 className="font-semibold">Photo Session Workflow</h4>
-                  <pre className="bg-muted p-3 rounded text-xs">
-                    <code>{`# Start new wedding project
+                  <CodeBlock
+                    language="bash"
+                    code={`# Start new wedding project
 dits init smith-jones-wedding-2024
 dits add raw-photos/
 dits commit -m "Import all raw photos from shoot"
@@ -283,14 +300,15 @@ dits checkout -b portraits-edits
 
 # Edit photos (in Lightroom/Photoshop)
 dits add edited-photos/
-dits commit -m "Edited ceremony photos - improved exposure"`}</code>
-                  </pre>
+dits commit -m "Edited ceremony photos - improved exposure"`}
+                  />
                 </div>
 
                 <div>
                   <h4 className="font-semibold">Client Delivery</h4>
-                  <pre className="bg-muted p-3 rounded text-xs">
-                    <code>{`# Merge all edits
+                  <CodeBlock
+                    language="bash"
+                    code={`# Merge all edits
 dits checkout main
 dits merge ceremony-edits
 dits merge reception-edits
@@ -305,8 +323,8 @@ dits tag delivered-2024-06-15
 
 # Share with client (optional)
 dits remote add client /Volumes/client-drive
-dits push client main`}</code>
-                  </pre>
+dits push client main`}
+                  />
                 </div>
 
                 <div>
@@ -329,8 +347,9 @@ dits push client main`}</code>
               <CardContent className="space-y-4">
                 <div>
                   <h4 className="font-semibold">Library Organization</h4>
-                  <pre className="bg-muted p-3 rounded text-xs">
-                    <code>{`# Initialize stock library
+                  <CodeBlock
+                    language="bash"
+                    code={`# Initialize stock library
 dits init stock-photography
 dits add categories/ metadata/
 dits commit -m "Initial library structure"
@@ -342,14 +361,15 @@ dits commit -m "Added 500 new landscape photos"
 # Organize by categories
 dits checkout -b categorization
 dits add organized-landscapes/ organized-portraits/
-dits commit -m "Organized photos by category"`}</code>
-                  </pre>
+dits commit -m "Organized photos by category"`}
+                  />
                 </div>
 
                 <div>
                   <h4 className="font-semibold">Version Control for Edits</h4>
-                  <pre className="bg-muted p-3 rounded text-xs">
-                    <code>{`# Create editing branch for specific photo
+                  <CodeBlock
+                    language="bash"
+                    code={`# Create editing branch for specific photo
 dits checkout -b edit-landscape-001
 dits add edited-photos/landscape-001.psd
 dits commit -m "Enhanced colors and contrast"
@@ -360,8 +380,8 @@ dits diff HEAD~1 edited-photos/landscape-001.psd
 
 # Merge approved edits
 dits checkout main
-dits merge edit-landscape-001`}</code>
-                  </pre>
+dits merge edit-landscape-001`}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -412,42 +432,42 @@ dits merge edit-landscape-001`}</code>
       <p>Real-world performance based on file types and workflows:</p>
 
       <div className="not-prose overflow-x-auto my-6">
-        <table className="w-full border-collapse border border-gray-300 dark:border-gray-700">
-          <thead>
-            <tr className="bg-gray-50 dark:bg-gray-800">
-              <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Workflow</th>
-              <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">File Types</th>
-              <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Storage Savings</th>
-              <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Network Efficiency</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Video Editing</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">MP4, MOV, PRPROJ</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">85-95%</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">98%+ delta sync</td>
-            </tr>
-            <tr>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Game Assets</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Textures, Models, Builds</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">70-90%</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">95%+ delta sync</td>
-            </tr>
-            <tr>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Photography</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">RAW, PSD, JPEG</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">60-80%</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">90%+ delta sync</td>
-            </tr>
-            <tr>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Music Production</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">WAV, STEMS, Projects</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">75-90%</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">95%+ delta sync</td>
-            </tr>
-          </tbody>
-        </table>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Workflow</TableHead>
+              <TableHead>File Types</TableHead>
+              <TableHead>Storage Savings</TableHead>
+              <TableHead>Network Efficiency</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>Video Editing</TableCell>
+              <TableCell>MP4, MOV, PRPROJ</TableCell>
+              <TableCell>85-95%</TableCell>
+              <TableCell>98%+ delta sync</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Game Assets</TableCell>
+              <TableCell>Textures, Models, Builds</TableCell>
+              <TableCell>70-90%</TableCell>
+              <TableCell>95%+ delta sync</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Photography</TableCell>
+              <TableCell>RAW, PSD, JPEG</TableCell>
+              <TableCell>60-80%</TableCell>
+              <TableCell>90%+ delta sync</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Music Production</TableCell>
+              <TableCell>WAV, STEMS, Projects</TableCell>
+              <TableCell>75-90%</TableCell>
+              <TableCell>95%+ delta sync</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </div>
 
       <h2>Next Steps</h2>

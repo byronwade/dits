@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, Share2, Wifi, Globe, Shield, Zap, Server, Radio } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
+import { FlowDiagram } from "@/components/docs/flow-diagram";
 
 export const metadata: Metadata = {
   title: "Peer-to-Peer Sharing",
@@ -199,14 +201,15 @@ export default function PeerToPeerPage() {
       <p>
         For peers on the same WiFi or LAN, use <code>--local</code> mode:
       </p>
-      <pre className="not-prose">
-        <code>{`# Computer A
+      <CodeBlock
+        language="bash"
+        code={`# Computer A
 $ dits p2p share ./project --local
 Connect with: dits p2p connect ABC-123 --local
 
 # Computer B
-$ dits p2p connect ABC-123 --local`}</code>
-      </pre>
+$ dits p2p connect ABC-123 --local`}
+      />
       <p>Benefits:</p>
       <ul>
         <li>No internet required</li>
@@ -220,14 +223,15 @@ $ dits p2p connect ABC-123 --local`}</code>
         For peers on different networks, the default auto mode uses the signal
         server for NAT traversal:
       </p>
-      <pre className="not-prose">
-        <code>{`# Computer A
+      <CodeBlock
+        language="bash"
+        code={`# Computer A
 $ dits p2p share ./project
 Connect with: dits p2p connect XYZ-789
 
 # Computer B (anywhere in the world)
-$ dits p2p connect XYZ-789`}</code>
-      </pre>
+$ dits p2p connect XYZ-789`}
+      />
 
       <h2>Security Model</h2>
 
@@ -289,30 +293,26 @@ $ dits p2p connect XYZ-789`}</code>
       </div>
 
       <h2>Architecture Diagram</h2>
-      <pre className="not-prose text-sm">
-        <code>{`┌─────────────────────────────────────────────────────────────┐
-│                    Discovery Chain                           │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  1. Direct IP    - If target is IP:port, use directly       │
-│  2. mDNS         - Broadcast on local network               │
-│  3. STUN         - Query for external IP                    │
-│  4. Signal       - WebSocket rendezvous                     │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    QUIC Connection                           │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  • TLS 1.3 encrypted                                        │
-│  • UDP-based (NAT-friendly)                                 │
-│  • Multiplexed streams                                      │
-│  • Automatic congestion control                             │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘`}</code>
-      </pre>
+      <div className="not-prose my-8 space-y-4">
+        <FlowDiagram
+          title="Discovery Chain"
+          steps={[
+            { iconName: "Globe", label: "Direct IP", description: "If target is IP:port, use directly", priority: 1 },
+            { iconName: "Wifi", label: "mDNS", description: "Broadcast on local network", priority: 2 },
+            { iconName: "Radio", label: "STUN", description: "Query for external IP", priority: 3 },
+            { iconName: "Server", label: "Signal", description: "WebSocket rendezvous", priority: 4 },
+          ]}
+        />
+        <FlowDiagram
+          title="QUIC Connection"
+          steps={[
+            { iconName: "Shield", label: "TLS 1.3 Encrypted", description: "End-to-end encryption" },
+            { iconName: "Zap", label: "UDP-based", description: "NAT-friendly transport" },
+            { iconName: "Share2", label: "Multiplexed", description: "Multiple streams" },
+          ]}
+          direction="horizontal"
+        />
+      </div>
 
       <h2>Related Topics</h2>
       <ul>

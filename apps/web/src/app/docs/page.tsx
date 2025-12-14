@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { CodeBlock } from "@/components/ui/code-block";
 import {
   BookOpen,
   Terminal,
@@ -15,6 +16,8 @@ import {
   Layers,
   GitBranch,
   Zap,
+  Check,
+  Beaker,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -101,31 +104,31 @@ export default function DocsPage() {
         <h2 className="text-2xl font-bold mb-4">Why Dits Exists</h2>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <h3 className="font-semibold text-red-600 mb-2">The Problem</h3>
-            <ul className="space-y-1 text-sm">
-              <li>• Git LFS is a bandaid, not a solution</li>
-              <li>• Large files get re-uploaded entirely for tiny changes</li>
-              <li>• No deduplication across versions or projects</li>
-              <li>• Manual versioning with "final_v27.mp4" files</li>
-              <li>• No proper branching/merging for creative assets</li>
-              <li>• Binary conflicts require manual resolution</li>
-              <li>• 1TB+ projects overwhelm traditional systems</li>
-              <li>• No testing for creative workflows</li>
+            <h3 className="font-semibold text-destructive mb-2">The Problem</h3>
+            <ul className="space-y-1 text-sm list-disc list-inside">
+              <li>Git LFS is a bandaid, not a solution</li>
+              <li>Large files get re-uploaded entirely for tiny changes</li>
+              <li>No deduplication across versions or projects</li>
+              <li>Manual versioning with "final_v27.mp4" files</li>
+              <li>No proper branching/merging for creative assets</li>
+              <li>Binary conflicts require manual resolution</li>
+              <li>1TB+ projects overwhelm traditional systems</li>
+              <li>No testing for creative workflows</li>
             </ul>
           </div>
           <div>
-            <h3 className="font-semibold text-green-600 mb-2">The Dits Solution</h3>
-            <ul className="space-y-1 text-sm">
-              <li>• Content-defined chunking deduplicates automatically</li>
-              <li>• Only changed chunks transfer across network</li>
-              <li>• Video-aware optimizations (keyframe alignment)</li>
-              <li>• Git-like interface familiar to developers</li>
-              <li>• Local-first with optional cloud storage</li>
-              <li>• Hybrid Git+Dits storage for optimal performance</li>
-              <li>• 120+ automated tests for 80+ file formats</li>
-              <li>• Git operations work on binary creative assets</li>
-              <li>• 1TB+ repository support with Redis caching</li>
-              <li>• P2P networking and enterprise security</li>
+            <h3 className="font-semibold text-primary mb-2">The Dits Solution</h3>
+            <ul className="space-y-1 text-sm list-disc list-inside">
+              <li>Content-defined chunking deduplicates automatically</li>
+              <li>Only changed chunks transfer across network</li>
+              <li>Video-aware optimizations (keyframe alignment)</li>
+              <li>Git-like interface familiar to developers</li>
+              <li>Local-first with optional cloud storage</li>
+              <li>Hybrid Git+Dits storage for optimal performance</li>
+              <li>120+ automated tests for 80+ file formats</li>
+              <li>Git operations work on binary creative assets</li>
+              <li>1TB+ repository support with Redis caching</li>
+              <li>P2P networking and enterprise security</li>
             </ul>
           </div>
         </div>
@@ -157,8 +160,9 @@ export default function DocsPage() {
       <h2>Quick Reference</h2>
 
       <h3>Basic Workflow</h3>
-      <pre className="not-prose">
-        <code>{`# Initialize a new repository
+      <CodeBlock
+        language="bash"
+        code={`# Initialize a new repository
 dits init
 
 # Add files to staging
@@ -172,12 +176,13 @@ dits status
 dits commit -m "Add raw footage"
 
 # View history
-dits log`}</code>
-      </pre>
+dits log`}
+      />
 
       <h3>Branching</h3>
-      <pre className="not-prose">
-        <code>{`# Create a branch
+      <CodeBlock
+        language="bash"
+        code={`# Create a branch
 dits branch feature/color-grade
 
 # Switch to branch
@@ -185,12 +190,13 @@ dits switch feature/color-grade
 
 # Merge branch
 dits switch main
-dits merge feature/color-grade`}</code>
-      </pre>
+dits merge feature/color-grade`}
+      />
 
       <h3>Remote Operations</h3>
-      <pre className="not-prose">
-        <code>{`# Add a remote
+      <CodeBlock
+        language="bash"
+        code={`# Add a remote
 dits remote add origin /path/to/remote
 
 # Push changes
@@ -200,8 +206,8 @@ dits push origin main
 dits pull origin main
 
 # Clone a repository
-dits clone /path/to/repo my-project`}</code>
-      </pre>
+dits clone /path/to/repo my-project`}
+      />
 
       <h2>Implementation Status</h2>
       <p>
@@ -219,46 +225,46 @@ dits clone /path/to/repo my-project`}</code>
 
       <div className="not-prose grid gap-4 md:grid-cols-3 my-6">
         <div className="border rounded-lg p-4">
-          <h3 className="font-semibold mb-2 text-green-600">✅ Complete VCS (60+ Commands)</h3>
+          <h3 className="font-semibold mb-2 text-primary flex items-center gap-2"><Check className="h-5 w-5" /> Complete VCS (60+ Commands)</h3>
           <p className="text-sm text-muted-foreground">
             Full Git-compatible workflow + advanced operations: branching, merging, rebasing, stashing, worktrees, hooks, maintenance
           </p>
         </div>
         <div className="border rounded-lg p-4">
-          <h3 className="font-semibold mb-2 text-green-600">✅ Comprehensive Media Support</h3>
+          <h3 className="font-semibold mb-2 text-primary flex items-center gap-2"><Check className="h-5 w-5" /> Comprehensive Media Support</h3>
           <p className="text-sm text-muted-foreground">
             80+ file formats tested: MP4/MOV video, 3D models (OBJ/FBX/glTF), game assets (Unity/Unreal), images, audio, custom formats
           </p>
         </div>
         <div className="border rounded-lg p-4">
-          <h3 className="font-semibold mb-2 text-green-600">✅ Enterprise Features</h3>
+          <h3 className="font-semibold mb-2 text-primary flex items-center gap-2"><Check className="h-5 w-5" /> Enterprise Features</h3>
           <p className="text-sm text-muted-foreground">
             Hybrid storage, Redis caching, P2P networking, encryption, audit logging, VFS mounting, cross-platform support
           </p>
         </div>
       </div>
 
-      <div className="not-prose bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 my-8">
-        <h3 className="text-lg font-semibold mb-4 text-blue-900 dark:text-blue-100">🧪 Testing Infrastructure</h3>
+      <div className="not-prose bg-accent border border-primary/20 rounded-lg p-6 my-8">
+        <h3 className="text-lg font-semibold mb-4 text-foreground flex items-center gap-2"><Beaker className="h-5 w-5" /> Testing Infrastructure</h3>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <h4 className="font-medium mb-2">120+ Automated Tests</h4>
             <ul className="text-sm space-y-1">
-              <li>• Git-inspired shell script framework</li>
-              <li>• Creative asset format validation</li>
-              <li>• Git operations on binary files</li>
-              <li>• Cross-platform compatibility</li>
-              <li>• 1TB workload simulation</li>
+              <li>Git-inspired shell script framework</li>
+              <li>Creative asset format validation</li>
+              <li>Git operations on binary files</li>
+              <li>Cross-platform compatibility</li>
+              <li>1TB workload simulation</li>
             </ul>
           </div>
           <div>
             <h4 className="font-medium mb-2">Quality Assurance</h4>
             <ul className="text-sm space-y-1">
-              <li>• Chainlint for test script validation</li>
-              <li>• Performance regression testing</li>
-              <li>• Memory leak detection</li>
-              <li>• Network failure simulation</li>
-              <li>• Corruption recovery testing</li>
+              <li>Chainlint for test script validation</li>
+              <li>Performance regression testing</li>
+              <li>Memory leak detection</li>
+              <li>Network failure simulation</li>
+              <li>Corruption recovery testing</li>
             </ul>
           </div>
         </div>
@@ -268,9 +274,9 @@ dits clone /path/to/repo my-project`}</code>
       <div className="grid gap-6 md:grid-cols-2">
         <div>
           <h3 className="text-lg font-semibold mb-3">Core Technology</h3>
-          <ul className="space-y-2">
+          <ul className="space-y-2 list-disc list-inside">
             <li>
-              <strong>Content-Defined Chunking:</strong> FastCDC algorithm with video-aware optimizations and keyframe alignment
+              <strong>Content-Defined Chunking:</strong> FastCDC streaming algorithm with 90% memory reduction, unlimited file sizes, and video-aware optimizations
             </li>
             <li>
               <strong>Hybrid Git+Dits Storage:</strong> Optimal performance for text files (Git) and binary assets (Dits)
@@ -288,7 +294,7 @@ dits clone /path/to/repo my-project`}</code>
         </div>
         <div>
           <h3 className="text-lg font-semibold mb-3">Creative Workflow Support</h3>
-          <ul className="space-y-2">
+          <ul className="space-y-2 list-disc list-inside">
             <li>
               <strong>80+ File Formats:</strong> Comprehensive support for 3D models, game assets, video, audio, images
             </li>

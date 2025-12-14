@@ -71,10 +71,10 @@ export default function WireProtocolPage() {
             <div className="text-sm">
               <strong className="text-green-600">Advantages:</strong>
               <ul className="mt-1 space-y-1">
-                <li>• Built-in multiplexing (streams)</li>
-                <li>• Connection migration</li>
-                <li>• Forward error correction</li>
-                <li>• TLS 1.3 encryption</li>
+                <li>Built-in multiplexing (streams)</li>
+                <li>Connection migration</li>
+                <li>Forward error correction</li>
+                <li>TLS 1.3 encryption</li>
               </ul>
             </div>
           </CardContent>
@@ -92,10 +92,10 @@ export default function WireProtocolPage() {
             <div className="text-sm">
               <strong className="text-green-600">Built-in:</strong>
               <ul className="mt-1 space-y-1">
-                <li>• TLS 1.3 encryption</li>
-                <li>• Content integrity (BLAKE3)</li>
-                <li>• Authentication (JWT/bearer tokens)</li>
-                <li>• Optional end-to-end encryption</li>
+                <li>TLS 1.3 encryption</li>
+                <li>Content integrity (BLAKE3)</li>
+                <li>Authentication (JWT/bearer tokens)</li>
+                <li>Optional end-to-end encryption</li>
               </ul>
             </div>
           </CardContent>
@@ -394,19 +394,19 @@ export default function WireProtocolPage() {
           <div>
             <h4 className="font-medium text-green-600 mb-2">Efficiency</h4>
             <ul className="text-sm space-y-1">
-              <li>• Minimal bandwidth overhead</li>
-              <li>• Resumable large file transfers</li>
-              <li>• Parallel chunk streaming</li>
-              <li>• Compression for metadata</li>
+              <li>Minimal bandwidth overhead</li>
+              <li>Resumable large file transfers</li>
+              <li>Parallel chunk streaming</li>
+              <li>Compression for metadata</li>
             </ul>
           </div>
           <div>
             <h4 className="font-medium text-blue-600 mb-2">Reliability</h4>
             <ul className="text-sm space-y-1">
-              <li>• Content integrity verification</li>
-              <li>• Automatic error recovery</li>
-              <li>• Connection migration support</li>
-              <li>• Forward compatibility</li>
+              <li>Content integrity verification</li>
+              <li>Automatic error recovery</li>
+              <li>Connection migration support</li>
+              <li>Forward compatibility</li>
             </ul>
           </div>
         </div>

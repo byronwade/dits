@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { History, Info, List, Eye, GitCompare, UserCheck, Clock, Search } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "History Commands",
@@ -91,13 +92,15 @@ export default function HistoryCommandsPage() {
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits log [options] [revision range] [-- path...]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits log [options] [revision range] [-- path...]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--oneline        One line per commit
+      <CodeBlock
+        language="bash"
+        code={`--oneline        One line per commit
 --graph          Show branch graph
 --all            Show all branches
 --stat           Show file change statistics
@@ -108,12 +111,13 @@ export default function HistoryCommandsPage() {
 --author         Filter by author
 --grep           Filter by commit message
 -n, --max-count  Limit number of commits
---follow         Follow file renames`}</code>
-      </pre>
+--follow         Follow file renames`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Basic log
+      <CodeBlock
+        language="bash"
+        code={`# Basic log
 $ dits log
 commit a1b2c3d4 (HEAD -> main, origin/main)
 Author: Jane Editor <jane@example.com>
@@ -155,8 +159,8 @@ commit a1b2c3d
     Add color grading to scene 1
 
  footage/scene1.mov | 10.2 GB → 10.2 GB (1.5% changed)
- 1 file changed`}</code>
-      </pre>
+ 1 file changed`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Eye className="h-5 w-5" />
@@ -168,22 +172,25 @@ commit a1b2c3d
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits show [options] &lt;object&gt;...</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits show [options] &lt;object&gt;...`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--stat           Show file statistics
+      <CodeBlock
+        language="bash"
+        code={`--stat           Show file statistics
 --name-only      Show only changed file names
 --name-status    Show file names with change type
 --format         Custom output format
---no-patch       Don't show diff`}</code>
-      </pre>
+--no-patch       Don't show diff`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Show commit details
+      <CodeBlock
+        language="bash"
+        code={`# Show commit details
 $ dits show a1b2c3d
 commit a1b2c3d4
 Author: Jane Editor <jane@example.com>
@@ -208,8 +215,8 @@ $ dits show --name-status a1b2c3d
 M    footage/scene1.mov
 
 # Show a tag
-$ dits show v1.0`}</code>
-      </pre>
+$ dits show v1.0`}
+      />
 
       <h2 className="flex items-center gap-2">
         <GitCompare className="h-5 w-5" />
@@ -222,24 +229,27 @@ $ dits show v1.0`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>{`dits diff [options] [<commit>] [<commit>] [-- <path>...]`}</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits diff [options] [<commit>] [<commit>] [-- <path>...]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--staged         Compare staging area to HEAD
+      <CodeBlock
+        language="bash"
+        code={`--staged         Compare staging area to HEAD
 --cached         Same as --staged
 --stat           Show statistics only
 --name-only      Show only file names
 --name-status    Show file names with status
 --video-aware    Show video-specific diff info
---summary        Show summary of changes`}</code>
-      </pre>
+--summary        Show summary of changes`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Working directory vs staging
+      <CodeBlock
+        language="bash"
+        code={`# Working directory vs staging
 $ dits diff
 Changes not staged for commit:
  M footage/scene1.mov
@@ -268,8 +278,8 @@ footage/scene1.mov:
   Changed segments:
     00:45.00 - 01:12.00 (27 seconds)
     03:22.00 - 03:45.00 (23 seconds)
-  Frames affected: ~1,500 of ~9,000 (16.7%)`}</code>
-      </pre>
+  Frames affected: ~1,500 of ~9,000 (16.7%)`}
+      />
 
       <h2 className="flex items-center gap-2">
         <UserCheck className="h-5 w-5" />
@@ -281,21 +291,24 @@ footage/scene1.mov:
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits blame [options] &lt;file&gt;</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits blame [options] &lt;file&gt;`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`-L <range>       Only show specified lines/chunks
+      <CodeBlock
+        language="bash"
+        code={`-L <range>       Only show specified lines/chunks
 --since          Ignore changes before date
 --root           Show root revision
--e               Show author email instead of name`}</code>
-      </pre>
+-e               Show author email instead of name`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Blame for text file
+      <CodeBlock
+        language="bash"
+        code={`# Blame for text file
 $ dits blame project.prproj
 a1b2c3d4 (Jane Editor 2024-01-15) line 1: <?xml version="1.0"?>
 a1b2c3d4 (Jane Editor 2024-01-15) line 2: <Project>
@@ -311,8 +324,8 @@ Offset      Size      Commit   Author          Date
 1.0 MB      1.2 MB    9f8e7d6  John Editor     2024-01-14
 2.2 MB      980 KB    a1b2c3d  Jane Editor     2024-01-15  ← modified
 3.2 MB      1.1 MB    9f8e7d6  John Editor     2024-01-14
-...`}</code>
-      </pre>
+...`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Clock className="h-5 w-5" />
@@ -324,13 +337,15 @@ Offset      Size      Commit   Author          Date
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits reflog [options] [ref]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits reflog [options] [ref]`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Show reflog for HEAD
+      <CodeBlock
+        language="bash"
+        code={`# Show reflog for HEAD
 $ dits reflog
 a1b2c3d HEAD@{0}: commit: Add color grading to scene 1
 9f8e7d6 HEAD@{1}: commit: Initial footage import
@@ -346,8 +361,8 @@ a1b2c3d HEAD@{0}: reset: moving to HEAD~3
 f5e4d3c HEAD@{1}: commit: Important work
 ...
 $ dits reset --hard HEAD@{1}
-HEAD is now at f5e4d3c Important work`}</code>
-      </pre>
+HEAD is now at f5e4d3c Important work`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Search className="h-5 w-5" />
@@ -359,16 +374,18 @@ HEAD is now at f5e4d3c Important work`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>{`dits bisect start
+      <CodeBlock
+        language="bash"
+        code={`dits bisect start
 dits bisect good <commit>
 dits bisect bad <commit>
-dits bisect reset`}</code>
-      </pre>
+dits bisect reset`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Start bisecting
+      <CodeBlock
+        language="bash"
+        code={`# Start bisecting
 $ dits bisect start
 $ dits bisect bad HEAD
 $ dits bisect good v1.0
@@ -389,8 +406,8 @@ $ dits bisect good
 d4e5f6g is the first bad commit
 
 # Return to original state
-$ dits bisect reset`}</code>
-      </pre>
+$ dits bisect reset`}
+      />
 
       <h2>Related Commands</h2>
       <ul>

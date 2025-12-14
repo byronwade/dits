@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Network Protocol",
@@ -39,8 +40,9 @@ export default function ProtocolPage() {
         <li><strong>Better congestion control:</strong> Designed for modern networks</li>
       </ul>
 
-      <pre className="not-prose">
-        <code>{`Connection Setup:
+      <CodeBlock
+        language="bash"
+        code={`Connection Setup:
 Client                              Server
    |                                   |
    |-------- QUIC Handshake --------→ |
@@ -50,8 +52,8 @@ Client                              Server
    |←----- Auth Result Frame -------- |
    |                                   |
    | (Multiple bidirectional streams) |
-   |←------------------------------- →|`}</code>
-      </pre>
+   |←------------------------------- →|`}
+      />
 
       <h2>Protocol Messages</h2>
       <p>
@@ -118,8 +120,9 @@ Client                              Server
       <h2>Message Formats</h2>
 
       <h3>Authentication</h3>
-      <pre className="not-prose">
-        <code>{`message Auth {
+      <CodeBlock
+        language="bash"
+        code={`message Auth {
     // Authentication method
     method: AuthMethod,
 
@@ -141,12 +144,13 @@ message AuthResult {
     user_id: Option<String>,
     permissions: Vec<Permission>,
     error: Option<String>,
-}`}</code>
-      </pre>
+}`}
+      />
 
       <h3>Reference Negotiation</h3>
-      <pre className="not-prose">
-        <code>{`message ListRefsRequest {
+      <CodeBlock
+        language="bash"
+        code={`message ListRefsRequest {
     // Optional prefix filter
     prefix: Option<String>,
 }
@@ -159,12 +163,13 @@ message RefInfo {
     name: String,           // e.g., "refs/heads/main"
     hash: [u8; 32],         // Commit hash
     peeled: Option<[u8; 32]>,  // For annotated tags
-}`}</code>
-      </pre>
+}`}
+      />
 
       <h3>Chunk Negotiation</h3>
-      <pre className="not-prose">
-        <code>{`// Client advertises what it has
+      <CodeBlock
+        language="bash"
+        code={`// Client advertises what it has
 message HaveChunks {
     // List of chunk hashes client has
     chunks: Vec<[u8; 32]>,
@@ -187,12 +192,13 @@ enum Priority {
     Normal,   // Standard fetch
     High,     // User is waiting
     Urgent,   // Blocking operation
-}`}</code>
-      </pre>
+}`}
+      />
 
       <h3>Chunk Transfer</h3>
-      <pre className="not-prose">
-        <code>{`message ChunkData {
+      <CodeBlock
+        language="bash"
+        code={`message ChunkData {
     // Chunk hash (for verification)
     hash: [u8; 32],
 
@@ -213,12 +219,13 @@ message ChunkAck {
 
     // Hashes of chunks to resend
     resend: Vec<[u8; 32]>,
-}`}</code>
-      </pre>
+}`}
+      />
 
       <h2>Fetch Protocol</h2>
-      <pre className="not-prose">
-        <code>{`Fetch Flow:
+      <CodeBlock
+        language="bash"
+        code={`Fetch Flow:
 
 Client                              Server
    |                                   |
@@ -240,12 +247,13 @@ Client                              Server
    |←------- CHUNK (delta) ---------- |
    |-------- ACK -------------------→ |
    |                                   |
-   |-------- DONE ------------------→ |`}</code>
-      </pre>
+   |-------- DONE ------------------→ |`}
+      />
 
       <h2>Push Protocol</h2>
-      <pre className="not-prose">
-        <code>{`Push Flow:
+      <CodeBlock
+        language="bash"
+        code={`Push Flow:
 
 Client                              Server
    |                                   |
@@ -267,8 +275,8 @@ Client                              Server
    |-------- OBJECT (commits) ------→ |
    |                                   |
    |-------- UPDATE_REF ------------→ |
-   |←------- ACK/ERROR -------------- |`}</code>
-      </pre>
+   |←------- ACK/ERROR -------------- |`}
+      />
 
       <h2>Parallel Streams</h2>
       <p>
@@ -276,8 +284,9 @@ Client                              Server
         chunk transfer:
       </p>
 
-      <pre className="not-prose">
-        <code>{`// Stream allocation
+      <CodeBlock
+        language="rust"
+        code={`// Stream allocation
 Stream 0: Control messages (AUTH, LIST_REFS, UPDATE_REF)
 Stream 1: Object transfer (commits, trees, assets)
 Stream 2-N: Parallel chunk transfer
@@ -293,16 +302,17 @@ fn transfer_chunks(chunks: Vec<Chunk>, connection: &Connection) {
         let stream = &streams[i % 8];
         stream.send(ChunkData::from(chunk)).await?;
     }
-}`}</code>
-      </pre>
+}`}
+      />
 
       <h2>Resumable Transfers</h2>
       <p>
         Transfers can be resumed after interruption:
       </p>
 
-      <pre className="not-prose">
-        <code>{`// Client tracks transfer state
+      <CodeBlock
+        language="bash"
+        code={`// Client tracks transfer state
 struct TransferState {
     // Unique transfer ID
     id: Uuid,
@@ -329,16 +339,17 @@ message ResumeResponse {
 
     // Resume from this point
     resume_from: u64,
-}`}</code>
-      </pre>
+}`}
+      />
 
       <h2>Bandwidth Adaptation</h2>
       <p>
         Dits adjusts transfer parameters based on network conditions:
       </p>
 
-      <pre className="not-prose">
-        <code>{`struct BandwidthEstimator {
+      <CodeBlock
+        language="rust"
+        code={`struct BandwidthEstimator {
     // Exponentially weighted moving average
     estimated_bandwidth: f64,
 
@@ -367,16 +378,17 @@ impl BandwidthEstimator {
         let bdp = self.estimated_bandwidth * self.rtt.as_secs_f64();
         (bdp / 1_000_000.0) as usize + 1
     }
-}`}</code>
-      </pre>
+}`}
+      />
 
       <h2>REST API (Fallback)</h2>
       <p>
         For environments where QUIC is blocked, Dits supports HTTP/2 REST API:
       </p>
 
-      <pre className="not-prose">
-        <code>{`Endpoints:
+      <CodeBlock
+        language="text"
+        code={`Endpoints:
 
 GET  /api/v1/repos/{repo}/refs
 GET  /api/v1/repos/{repo}/objects/{hash}
@@ -399,8 +411,8 @@ POST /api/v1/repos/{repo}/batch
          {"op": "get_chunk", "hash": "..."},
          {"op": "get_chunk", "hash": "..."},
        ]
-     }`}</code>
-      </pre>
+     }`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />

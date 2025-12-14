@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Repository Configuration",
@@ -59,26 +60,28 @@ export default function RepositoryConfigPage() {
         repository root. It overrides global and system configuration.
       </p>
 
-      <pre className="not-prose">
-        <code>{`my-project/
+      <CodeBlock
+        language="bash"
+        code={`my-project/
 ├── .dits/
 │   ├── config          ← Repository configuration
 │   ├── HEAD
 │   └── ...
-└── ...`}</code>
-      </pre>
+└── ...`}
+      />
 
       <h2>Setting Repository Options</h2>
-      <pre className="not-prose">
-        <code>{`# Set a repository-specific value
+      <CodeBlock
+        language="bash"
+        code={`# Set a repository-specific value
 $ dits config user.email "project-specific@example.com"
 
 # View repository config
 $ dits config --list --local
 user.email=project-specific@example.com
 core.compression=9
-remote.origin.url=https://example.com/project`}</code>
-      </pre>
+remote.origin.url=https://example.com/project`}
+      />
 
       <h2>Core Options</h2>
       <Table className="not-prose my-6">
@@ -105,9 +108,10 @@ remote.origin.url=https://example.com/project`}</code>
         When true, Dits tracks file permission changes (executable bit). Disable
         on systems where permissions aren&apos;t meaningful.
       </p>
-      <pre className="not-prose">
-        <code>{`$ dits config core.filemode false`}</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`$ dits config core.filemode false`}
+      />
 
       <h3>core.ignorecase</h3>
       <p>
@@ -134,18 +138,20 @@ remote.origin.url=https://example.com/project`}</code>
         <li><code>6</code> - Balanced (default)</li>
         <li><code>9</code> - Maximum compression (slowest)</li>
       </ul>
-      <pre className="not-prose">
-        <code>{`# For already-compressed video files, lower compression
-$ dits config core.compression 3`}</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`# For already-compressed video files, lower compression
+$ dits config core.compression 3`}
+      />
 
       <h2>Remote Configuration</h2>
       <p>
         Remote repositories are configured under <code>[remote &quot;name&quot;]</code> sections:
       </p>
 
-      <pre className="not-prose">
-        <code>{`# .dits/config
+      <CodeBlock
+        language="bash"
+        code={`# .dits/config
 [remote "origin"]
     url = https://example.com/team/project
     fetch = +refs/heads/*:refs/remotes/origin/*
@@ -153,28 +159,30 @@ $ dits config core.compression 3`}</code>
 
 [remote "backup"]
     url = https://backup.example.com/project
-    fetch = +refs/heads/*:refs/remotes/backup/*`}</code>
-      </pre>
+    fetch = +refs/heads/*:refs/remotes/backup/*`}
+      />
 
       <h3>Remote Options</h3>
-      <pre className="not-prose">
-        <code>{`# Set fetch URL
+      <CodeBlock
+        language="bash"
+        code={`# Set fetch URL
 $ dits config remote.origin.url https://example.com/project
 
 # Set separate push URL
 $ dits config remote.origin.pushurl ssh://git@example.com/project
 
 # Add multiple fetch refspecs
-$ dits config --add remote.origin.fetch +refs/tags/*:refs/tags/*`}</code>
-      </pre>
+$ dits config --add remote.origin.fetch +refs/tags/*:refs/tags/*`}
+      />
 
       <h2>Branch Configuration</h2>
       <p>
         Configure tracking relationships and merge behavior per branch:
       </p>
 
-      <pre className="not-prose">
-        <code>{`# .dits/config
+      <CodeBlock
+        language="bash"
+        code={`# .dits/config
 [branch "main"]
     remote = origin
     merge = refs/heads/main
@@ -182,12 +190,13 @@ $ dits config --add remote.origin.fetch +refs/tags/*:refs/tags/*`}</code>
 
 [branch "develop"]
     remote = origin
-    merge = refs/heads/develop`}</code>
-      </pre>
+    merge = refs/heads/develop`}
+      />
 
       <h3>Branch Options</h3>
-      <pre className="not-prose">
-        <code>{`# Set upstream branch
+      <CodeBlock
+        language="bash"
+        code={`# Set upstream branch
 $ dits config branch.main.remote origin
 $ dits config branch.main.merge refs/heads/main
 
@@ -195,20 +204,21 @@ $ dits config branch.main.merge refs/heads/main
 $ dits config branch.main.rebase true
 
 # Or set via push
-$ dits push -u origin main`}</code>
-      </pre>
+$ dits push -u origin main`}
+      />
 
       <h2>Hooks Configuration</h2>
       <p>
         Configure which hooks are enabled:
       </p>
 
-      <pre className="not-prose">
-        <code>{`[hooks]
+      <CodeBlock
+        language="json"
+        code={`[hooks]
     pre-commit = true
     pre-push = true
-    post-checkout = true`}</code>
-      </pre>
+    post-checkout = true`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -224,8 +234,9 @@ $ dits push -u origin main`}</code>
         Configure video and large file handling:
       </p>
 
-      <pre className="not-prose">
-        <code>{`[media]
+      <CodeBlock
+        language="json"
+        code={`[media]
     # Video file extensions for special handling
     videoExtensions = mp4,mov,mxf,avi,mkv,prores
 
@@ -236,16 +247,17 @@ $ dits push -u origin main`}</code>
     generateProxies = false
 
     # Proxy resolution
-    proxyResolution = 1280x720`}</code>
-      </pre>
+    proxyResolution = 1280x720`}
+      />
 
       <h2>Cache Configuration</h2>
       <p>
         Control local caching behavior:
       </p>
 
-      <pre className="not-prose">
-        <code>{`[cache]
+      <CodeBlock
+        language="json"
+        code={`[cache]
     # Maximum cache size
     size = 50GB
 
@@ -253,12 +265,13 @@ $ dits push -u origin main`}</code>
     path = cache
 
     # Enable chunk deduplication
-    deduplicate = true`}</code>
-      </pre>
+    deduplicate = true`}
+      />
 
       <h2>Example Full Configuration</h2>
-      <pre className="not-prose">
-        <code>{`# .dits/config
+      <CodeBlock
+        language="bash"
+        code={`# .dits/config
 [core]
     repositoryformatversion = 0
     filemode = true
@@ -282,17 +295,18 @@ $ dits push -u origin main`}</code>
     videoExtensions = mp4,mov,mxf
 
 [cache]
-    size = 100GB`}</code>
-      </pre>
+    size = 100GB`}
+      />
 
       <h2>Editing Configuration</h2>
-      <pre className="not-prose">
-        <code>{`# Edit in default editor
+      <CodeBlock
+        language="bash"
+        code={`# Edit in default editor
 $ dits config --edit
 
 # Edit specific file
-$ dits config --local --edit`}</code>
-      </pre>
+$ dits config --local --edit`}
+      />
 
       <h2>Related Topics</h2>
       <ul>

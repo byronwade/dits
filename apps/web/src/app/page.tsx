@@ -22,6 +22,12 @@ import {
   FileVideo,
   Users,
   Github,
+  Rocket,
+  Clipboard,
+  Globe,
+  Link as LinkIcon,
+  Folder,
+  X,
 } from "lucide-react";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -47,15 +53,15 @@ const features = [
     icon: Zap,
     title: "Blazing Fast",
     description:
-      "BLAKE3 hashing at 10GB/s. Content-defined chunking that makes even 100GB files manageable.",
-    highlight: "10GB/s hashing",
+      "BLAKE3 hashing at 3+ GB/s per core. FastCDC chunking at 2+ GB/s. Even 100GB files are manageable.",
+    highlight: "3+ GB/s hashing",
   },
   {
     icon: HardDrive,
     title: "Smart Deduplication",
     description:
-      "Store 10 versions of a 50GB project in under 60GB. Similar footage shares chunks automatically.",
-    highlight: "Up to 90% savings",
+      "1-byte edit in 10GB file? Only ~1MB new storage. Video trims typically reuse 50-80% of chunks.",
+    highlight: "High dedup",
   },
   {
     icon: GitBranch,
@@ -68,21 +74,21 @@ const features = [
     icon: Film,
     title: "Video-Native",
     description:
-      "Understands MP4, MOV, MXF containers. Chunks align to keyframes for optimal deduplication.",
+      "Understands MP4, MOV, MXF containers. Chunks can align to keyframes for better deduplication.",
     highlight: "Format-aware",
   },
   {
     icon: Shield,
     title: "Data Integrity",
     description:
-      "Every chunk cryptographically verified with BLAKE3. Corruption detected instantly.",
+      "Every chunk cryptographically verified with BLAKE3. Corruption detected on read.",
     highlight: "Zero bit rot",
   },
   {
     icon: Layers,
     title: "Virtual Filesystem",
     description:
-      "Mount repos as drives. Access any file instantly - only touched chunks download.",
+      "Mount repos as drives. Access files on-demand—only touched chunks download.",
     highlight: "On-demand access",
   },
   {
@@ -96,19 +102,21 @@ const features = [
     icon: Database,
     title: "Distributed Storage",
     description:
-      "QUIC-based transport with end-to-end encryption. NAT traversal for any network.",
+      "QUIC-based transport with end-to-end encryption. NAT traversal for most networks.",
     highlight: "P2P powered",
   },
 ];
 
 
 const stats = [
-  { value: "65%", label: "Average storage savings", icon: Database },
-  { value: "<2s", label: "To chunk 1GB file", icon: Clock },
-  { value: "10GB/s", label: "BLAKE3 hash speed", icon: Gauge },
-  { value: "80+", label: "Commands implemented", icon: Terminal },
-  { value: "P2P", label: "Direct file sharing", icon: Users },
-  { value: "QUIC", label: "Fast encrypted transport", icon: Zap },
+  { value: "99%+", label: "Chunk reuse", sublabel: "on file edits*", icon: Database, color: "emerald" },
+  { value: "~4s", label: "To chunk", sublabel: "1GB video*", icon: Clock, color: "blue" },
+  { value: "3GB/s", label: "BLAKE3 hash", sublabel: "per core", icon: Gauge, color: "purple" },
+  { value: "80+", label: "CLI commands", sublabel: "full-featured", icon: Terminal, color: "orange" },
+  { value: "P2P", label: "Direct sharing", sublabel: "no cloud required", icon: Users, color: "pink" },
+  { value: "QUIC", label: "Transport", sublabel: "fast & encrypted", icon: Zap, color: "yellow" },
+  { value: "100%", label: "Open source", sublabel: "MIT licensed", icon: Github, color: "slate" },
+  { value: "MP4", label: "Video aware", sublabel: "keyframe splitting", icon: FileVideo, color: "red" },
 ];
 
 const useCases = [
@@ -305,24 +313,81 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Stats Bar */}
-        <section className="border-y bg-muted/30" aria-label="Dits performance statistics">
-          <div className="container py-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8" role="list">
-              {stats.map((stat) => (
-                <div key={stat.label} className="text-center" role="listitem">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    {/* AGENTS.md: Decorative icons are aria-hidden */}
-                    <stat.icon className="h-5 w-5 text-primary" aria-hidden="true" />
-                    {/* AGENTS.md: Tabular numbers for data */}
-                    <span className="text-3xl font-bold tabular-nums">
-                      <AnimatedCounter value={stat.value} />
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                </div>
-              ))}
+        {/* Stats Section - Modern Bento Grid */}
+        <section className="relative overflow-hidden" aria-label="Dits performance statistics">
+          {/* Background decoration */}
+          <div className="absolute inset-0 bg-gradient-to-b from-muted/30 via-muted/50 to-muted/30" aria-hidden="true" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" aria-hidden="true" />
+
+          <div className="container relative py-16">
+            {/* Section header */}
+            <div className="text-center mb-10">
+              <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">By the Numbers</Badge>
+              <h2 className="text-2xl font-bold tracking-tight sm:text-3xl mb-2">
+                Built for Performance
+              </h2>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                Every component optimized for speed and efficiency with large files
+              </p>
             </div>
+
+            {/* Bento grid stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-5xl mx-auto" role="list">
+              {stats.map((stat, i) => {
+                const colorClasses = {
+                  emerald: "from-emerald-500/20 to-emerald-500/5 border-emerald-500/20 group-hover:border-emerald-500/40",
+                  blue: "from-blue-500/20 to-blue-500/5 border-blue-500/20 group-hover:border-blue-500/40",
+                  purple: "from-purple-500/20 to-purple-500/5 border-purple-500/20 group-hover:border-purple-500/40",
+                  orange: "from-orange-500/20 to-orange-500/5 border-orange-500/20 group-hover:border-orange-500/40",
+                  pink: "from-pink-500/20 to-pink-500/5 border-pink-500/20 group-hover:border-pink-500/40",
+                  yellow: "from-yellow-500/20 to-yellow-500/5 border-yellow-500/20 group-hover:border-yellow-500/40",
+                  slate: "from-slate-500/20 to-slate-500/5 border-slate-500/20 group-hover:border-slate-500/40",
+                  red: "from-red-500/20 to-red-500/5 border-red-500/20 group-hover:border-red-500/40",
+                };
+                const iconColorClasses = {
+                  emerald: "bg-emerald-500/10 text-emerald-500",
+                  blue: "bg-blue-500/10 text-blue-500",
+                  purple: "bg-purple-500/10 text-purple-500",
+                  orange: "bg-orange-500/10 text-orange-500",
+                  pink: "bg-pink-500/10 text-pink-500",
+                  yellow: "bg-yellow-500/10 text-yellow-500",
+                  slate: "bg-slate-500/10 text-slate-400",
+                  red: "bg-red-500/10 text-red-500",
+                };
+                return (
+                  <div
+                    key={stat.label}
+                    className={cn(
+                      "group relative rounded-2xl border bg-gradient-to-br p-4 md:p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg",
+                      colorClasses[stat.color as keyof typeof colorClasses]
+                    )}
+                    role="listitem"
+                  >
+                    {/* Icon */}
+                    <div className={cn(
+                      "w-9 h-9 rounded-xl flex items-center justify-center mb-3",
+                      iconColorClasses[stat.color as keyof typeof iconColorClasses]
+                    )}>
+                      <stat.icon className="h-4 w-4" aria-hidden="true" />
+                    </div>
+
+                    {/* Value */}
+                    <div className="text-2xl md:text-3xl font-bold tabular-nums mb-1">
+                      <AnimatedCounter value={stat.value} />
+                    </div>
+
+                    {/* Labels */}
+                    <p className="text-sm font-medium">{stat.label}</p>
+                    <p className="text-xs text-muted-foreground">{stat.sublabel}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Footnote */}
+            <p className="text-xs text-muted-foreground text-center mt-6 max-w-2xl mx-auto">
+              *Based on typical use cases with content-defined chunking. Actual results vary by content type and edit patterns.
+            </p>
           </div>
         </section>
 
@@ -424,14 +489,23 @@ export default function Home() {
                       Initialized empty Dits repository in /project/.dits
                     </div>
                     <div className="pt-2">
+                      <span className="text-zinc-400 text-xs"># Adding raw footage + two edits from same source</span>
+                    </div>
+                    <div>
                       <span className="text-green-400">$</span> dits add footage/
                     </div>
                     <div className="text-zinc-500">
                       Adding 3 files (2.4 GB)...
                       <br />
-                      Chunking: 2,456 chunks created
+                      <span className="text-zinc-600">  raw_interview.mov (800 MB)</span>
                       <br />
-                      Dedup: 1,892 unique (847 MB stored)
+                      <span className="text-zinc-600">  edit_v1.mov (800 MB) — shares 70% with raw</span>
+                      <br />
+                      <span className="text-zinc-600">  edit_v2.mov (800 MB) — shares 85% with v1</span>
+                      <br />
+                      Chunking: 2,400 chunks created (~10s)
+                      <br />
+                      Dedup: 600 duplicates found → 1,800 unique chunks
                     </div>
                     <div className="pt-2">
                       <span className="text-green-400">$</span> dits commit -m &quot;Add raw footage&quot;
@@ -439,23 +513,25 @@ export default function Home() {
                     <div className="text-zinc-500">
                       [main abc1234] Add raw footage
                       <br />
-                      <span className="text-green-400">3 files, 2.4 GB logical → 847 MB stored (65% saved)</span>
+                      <span className="text-green-400">3 files, 2.4 GB logical → 840 MB stored (65% saved)</span>
+                      <br />
+                      <span className="text-zinc-600 text-xs">↳ Savings from shared content between edits</span>
                     </div>
                     <div className="pt-2">
                       <span className="text-green-400">$</span> dits push origin main
                     </div>
                     <div className="text-zinc-500">
-                      Uploading 847 MB to origin...
+                      Uploading 840 MB to origin...
                       <br />
-                      <span className="text-green-400">Done in 12s (70 MB/s)</span>
+                      <span className="text-green-400">Done in 4s (200+ MB/s)</span>
                     </div>
                     <div className="pt-4">
                       <span className="text-green-400">$</span> dits p2p share --name "Project V1"
                     </div>
                     <div className="text-zinc-500">
-                      🚀 P2P repository share active!
+                      <span className="flex items-center gap-2"><Rocket className="h-4 w-4" /> P2P repository share active!</span>
                       <br />
-                      📋 Join code: <span className="text-green-400">ABC-123</span>
+                      <span className="flex items-center gap-2"><Clipboard className="h-4 w-4" /> Join code: <span className="text-green-400">ABC-123</span></span>
                     </div>
                   </div>
                 </div>
@@ -505,7 +581,7 @@ export default function Home() {
                     </div>
 
                     <div className="text-center md:text-left">
-                      <p className="font-semibold">2,456 Chunks</p>
+                      <p className="font-semibold">2,400 Chunks</p>
                       <p className="text-sm text-muted-foreground">~1MB each</p>
                     </div>
                   </div>
@@ -584,13 +660,14 @@ export default function Home() {
                     </div>
                     <ArrowRight className="h-4 w-4 text-muted-foreground rotate-90 sm:rotate-0" aria-hidden="true" />
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-emerald-500 tabular-nums">847 MB</p>
+                      <p className="text-2xl font-bold text-emerald-500 tabular-nums">840 MB</p>
                       <p className="text-xs text-muted-foreground">Actually stored</p>
                     </div>
                     <Badge variant="secondary" className="text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
-                      65% space saved
+                      65% space saved*
                     </Badge>
                   </div>
+                  <p className="text-xs text-muted-foreground text-center mt-3">*Savings vary by content. Based on typical video with shared segments.</p>
                 </div>
               </div>
 
@@ -635,7 +712,7 @@ export default function Home() {
                   <div className="rounded-2xl border bg-card p-6">
                     <div className="flex items-center gap-2 mb-4">
                       <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
-                        <span className="text-red-500 text-lg">✗</span>
+                        <X className="h-5 w-5 text-red-500" />
                       </div>
                       <h4 className="font-semibold">Traditional Cloud Storage</h4>
                     </div>
@@ -773,10 +850,10 @@ export default function Home() {
                 {/* Bottom stats */}
                 <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
                   {[
-                    { value: "79%", label: "Less bandwidth", sub: "after initial upload" },
-                    { value: "1×", label: "Storage per chunk", sub: "across all users" },
-                    { value: "<1min", label: "Sync time", sub: "for typical edits" },
-                    { value: "∞", label: "Version history", sub: "without multiplying storage" },
+                    { value: "99%+", label: "Delta sync ratio", sub: "typical for small edits" },
+                    { value: "1×", label: "Storage per chunk", sub: "shared across all users" },
+                    { value: "<10ms", label: "First-byte latency", sub: "local/cached data" },
+                    { value: "∞", label: "Version history", sub: "no duplicate storage" },
                   ].map((stat, i) => (
                     <div key={i} className="rounded-xl border bg-card p-4 text-center">
                       <p className="text-2xl font-bold tabular-nums text-primary">{stat.value}</p>
@@ -834,11 +911,11 @@ export default function Home() {
                       <span className="text-green-400">$</span> dits p2p share ./my-project
                     </div>
                     <div className="text-zinc-500">
-                      🚀 P2P repository share active!
+                      <span className="flex items-center gap-2"><Rocket className="h-4 w-4" /> P2P repository share active!</span>
                       <br />
-                      📋 Join code: <span className="text-green-400">7KJM-XBCD</span>
+                      <span className="flex items-center gap-2"><Clipboard className="h-4 w-4" /> Join code: <span className="text-green-400">7KJM-XBCD</span></span>
                       <br />
-                      🌐 Listening on 0.0.0.0:4433
+                      <span className="flex items-center gap-2"><Globe className="h-4 w-4" /> Listening on 0.0.0.0:4433</span>
                     </div>
                     <div className="pt-2">
                       <span className="text-zinc-500"># On another computer:</span>
@@ -847,11 +924,11 @@ export default function Home() {
                       <span className="text-green-400">$</span> dits p2p connect 7KJM-XBCD ./shared-project
                     </div>
                     <div className="text-zinc-500">
-                      🔗 Connecting to P2P repository...
+                      <span className="flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Connecting to P2P repository...</span>
                       <br />
-                      📁 Repository mounted at: ./shared-project
+                      <span className="flex items-center gap-2"><Folder className="h-4 w-4" /> Repository mounted at: ./shared-project</span>
                       <br />
-                      <span className="text-green-400">✅ Connected successfully!</span>
+                      <span className="text-green-400 flex items-center gap-2"><Check className="h-4 w-4" /> Connected successfully!</span>
                     </div>
                   </div>
                 </div>
@@ -945,14 +1022,14 @@ export default function Home() {
                         {[
                           {
                             metric: "Hash speed (1GB file)",
-                            dits: { value: "~100ms", note: "BLAKE3", best: true },
+                            dits: { value: "~330ms", note: "BLAKE3 (3GB/s)", best: true },
                             lfs: { value: "~600ms", note: "SHA-256" },
                             perforce: { value: "~500ms", note: "MD5" },
                             dropbox: { value: "N/A", note: "—" },
                           },
                           {
                             metric: "Chunking throughput",
-                            dits: { value: ">1 GB/s", note: "FastCDC", best: true },
+                            dits: { value: "2 GB/s", note: "FastCDC", best: true },
                             lfs: { value: "N/A", note: "Full file" },
                             perforce: { value: "~200 MB/s", note: "Delta" },
                             dropbox: { value: "~300 MB/s", note: "Block sync" },
@@ -1004,7 +1081,7 @@ export default function Home() {
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-3">
-                  * BLAKE3 benchmarks from official testing. Git LFS speeds from GitHub issues #2328, #4144. Perforce claims from official documentation.
+                  * Dits benchmarks from internal testing (see <a href="/docs/architecture" className="underline hover:text-foreground">docs</a>). BLAKE3 benchmarks from official testing. Git LFS speeds from GitHub issues #2328, #4144.
                 </p>
               </div>
 
@@ -1105,9 +1182,9 @@ export default function Home() {
                     <div>
                       <p className="font-semibold text-emerald-600 dark:text-emerald-400">Dits</p>
                       <p className="text-sm text-muted-foreground">
-                        Content-defined chunking (FastCDC). BLAKE3 hashing at 10GB/s. Video-aware splitting at keyframes.
+                        Content-defined chunking (FastCDC at 2GB/s). BLAKE3 hashing at 3+ GB/s per core. Video-aware splitting at keyframes.
                         Cross-file deduplication. VFS streaming. Git-compatible workflow. QUIC transport. Self-hostable.
-                        <span className="font-medium text-foreground"> Free & open source.</span>
+                        <span className="font-medium text-foreground"> Free &amp; open source.</span>
                       </p>
                     </div>
                   </div>
@@ -1235,80 +1312,136 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Development Progress */}
-        <section className="border-y bg-muted/30" aria-labelledby="roadmap-heading">
-          <div className="container py-20">
-            <div className="mx-auto max-w-4xl">
-              <div className="text-center mb-12">
-                <Badge className="mb-4">Roadmap</Badge>
-                <h2 id="roadmap-heading" className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-                  Active Development
+        {/* Development Progress - Modern Roadmap */}
+        <section className="border-y bg-gradient-to-b from-background via-muted/30 to-background" aria-labelledby="roadmap-heading">
+          <div className="container py-24">
+            <div className="mx-auto max-w-6xl">
+              {/* Header */}
+              <div className="text-center mb-16">
+                <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">Roadmap</Badge>
+                <h2 id="roadmap-heading" className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl mb-4">
+                  Building the Future of
+                  <span className="block bg-gradient-to-r from-primary via-emerald-500 to-primary bg-clip-text text-transparent">
+                    Large File Version Control
+                  </span>
                 </h2>
-                <p className="text-lg text-muted-foreground">
-                  5&nbsp;phases complete, more on the way
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                  Track our progress as we build the most advanced content-addressable storage system for creative professionals.
                 </p>
               </div>
 
-              <div className="relative" role="list" aria-label="Development phases">
-                {/* Progress line - decorative */}
-                <div className="absolute left-0 right-0 top-1/2 h-1 bg-muted -translate-y-1/2 hidden md:block" aria-hidden="true" />
-                <div
-                  className="absolute left-0 top-1/2 h-1 bg-primary -translate-y-1/2 hidden md:block"
-                  style={{ width: "55%" }}
-                  aria-hidden="true"
-                />
-
-                <div className="grid grid-cols-3 md:grid-cols-9 gap-4">
-                  {phases.map((phase, i) => (
-                    <TooltipProvider key={phase.name}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex flex-col items-center" role="listitem">
-                            <div
-                              className={cn(
-                                // AGENTS.md: motion-safe for animations
-                                "relative z-10 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                                phase.status === "complete"
-                                  ? "bg-primary text-primary-foreground"
-                                  : phase.status === "active"
-                                  ? "bg-primary/20 text-primary border-2 border-primary motion-safe:animate-pulse"
-                                  : "bg-muted text-muted-foreground"
-                              )}
-                              tabIndex={0}
-                              aria-label={`Phase ${i + 1}: ${phase.name} - ${phase.description} (${phase.status})`}
-                            >
-                              {phase.status === "complete" ? (
-                                <Check className="h-5 w-5" aria-hidden="true" />
-                              ) : (
-                                <span aria-hidden="true">{i + 1}</span>
-                              )}
-                            </div>
-                            <span className="mt-2 text-xs font-medium text-center">
-                              {phase.name}
-                            </span>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{phase.description}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  ))}
+              {/* Progress Overview */}
+              <div className="mb-12">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium">Development Progress</span>
+                  <span className="text-sm text-muted-foreground">
+                    <span className="text-primary font-bold">6</span> of <span className="font-medium">10</span> phases complete
+                  </span>
+                </div>
+                <div className="h-3 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-primary via-emerald-500 to-primary rounded-full transition-all duration-1000 relative"
+                    style={{ width: "60%" }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent motion-safe:animate-pulse" />
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-12 text-center">
-                <Button variant="outline" asChild>
-                  <Link
-                    href="https://github.com/byronwade/dits"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Follow Dits development on GitHub (opens in new tab)"
+              {/* Bento Grid Roadmap */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4" role="list" aria-label="Development phases">
+                {phases.map((phase, i) => (
+                  <div
+                    key={phase.name}
+                    role="listitem"
+                    className={cn(
+                      "group relative rounded-2xl border p-5 transition-all duration-300 hover:scale-[1.02] cursor-default",
+                      phase.status === "complete"
+                        ? "bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10"
+                        : phase.status === "active"
+                          ? "bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border-emerald-500/30 hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/10"
+                          : "bg-gradient-to-br from-muted/50 to-transparent border-border/50 hover:border-border"
+                    )}
+                    tabIndex={0}
+                    aria-label={`Phase ${i + 1}: ${phase.name} - ${phase.description} (${phase.status})`}
                   >
-                    <Github className="mr-2 h-4 w-4" aria-hidden="true" />
-                    Follow Development on GitHub
-                  </Link>
-                </Button>
+                    {/* Status indicator */}
+                    <div className="flex items-center justify-between mb-3">
+                      <span className={cn(
+                        "text-xs font-medium px-2 py-0.5 rounded-full",
+                        phase.status === "complete"
+                          ? "bg-primary/20 text-primary"
+                          : phase.status === "active"
+                            ? "bg-emerald-500/20 text-emerald-500"
+                            : "bg-muted text-muted-foreground"
+                      )}>
+                        {phase.status === "complete" ? "Complete" : phase.status === "active" ? "In Progress" : "Planned"}
+                      </span>
+                      <span className="text-xs text-muted-foreground font-mono">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                    </div>
+
+                    {/* Icon/Status */}
+                    <div className={cn(
+                      "w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-colors",
+                      phase.status === "complete"
+                        ? "bg-primary text-primary-foreground"
+                        : phase.status === "active"
+                          ? "bg-emerald-500/20 text-emerald-500 border border-emerald-500/30"
+                          : "bg-muted text-muted-foreground"
+                    )}>
+                      {phase.status === "complete" ? (
+                        <Check className="h-5 w-5" aria-hidden="true" />
+                      ) : phase.status === "active" ? (
+                        <div className="relative">
+                          <div className="w-3 h-3 bg-emerald-500 rounded-full motion-safe:animate-ping absolute" />
+                          <div className="w-3 h-3 bg-emerald-500 rounded-full relative" />
+                        </div>
+                      ) : (
+                        <span className="text-sm font-bold" aria-hidden="true">{i + 1}</span>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <h3 className={cn(
+                      "font-semibold mb-1",
+                      phase.status === "complete" || phase.status === "active" ? "text-foreground" : "text-muted-foreground"
+                    )}>
+                      {phase.name}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {phase.description}
+                    </p>
+
+                    {/* Active phase glow effect */}
+                    {phase.status === "active" && (
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-transparent to-emerald-500/10 motion-safe:animate-pulse pointer-events-none" aria-hidden="true" />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Bottom CTA */}
+              <div className="mt-16 text-center">
+                <div className="inline-flex flex-col sm:flex-row items-center gap-4 p-6 rounded-2xl border bg-card/50 backdrop-blur-sm">
+                  <div className="text-left">
+                    <p className="font-semibold">Want to contribute or follow along?</p>
+                    <p className="text-sm text-muted-foreground">Join our open-source community on GitHub</p>
+                  </div>
+                  <Button asChild className="gap-2">
+                    <Link
+                      href="https://github.com/byronwade/dits"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Follow Dits development on GitHub (opens in new tab)"
+                    >
+                      <Github className="h-4 w-4" aria-hidden="true" />
+                      View on GitHub
+                      <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -1327,7 +1460,7 @@ export default function Home() {
                 Ready to Take Control?
               </h2>
               <p className="text-xl text-primary-foreground/80 mb-8">
-                Join thousands of creators who&apos;ve switched to Dits.
+                Start versioning your large files today.
                 Free, open source, and built for your workflow.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">

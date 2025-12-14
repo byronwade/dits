@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { CodeBlock } from "@/components/ui/code-block";
 import { CheckCircle2, Info, Terminal, AlertTriangle } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -81,16 +82,17 @@ export default function InstallationPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <pre className="bg-zinc-950 text-zinc-100 rounded-lg p-4 overflow-x-auto">
-                <code>{`# npm
+              <CodeBlock
+        language="bash"
+        code={`# npm
 npm install -g @byronwade/dits
 
 # bun
 bun install -g @byronwade/dits
 
 # pnpm
-pnpm install -g @byronwade/dits`}</code>
-              </pre>
+pnpm install -g @byronwade/dits`}
+      />
             </CardContent>
           </Card>
         </TabsContent>
@@ -104,9 +106,10 @@ pnpm install -g @byronwade/dits`}</code>
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <pre className="bg-zinc-950 text-zinc-100 rounded-lg p-4 overflow-x-auto">
-                <code>curl -fsSL https://raw.githubusercontent.com/byronwade/dits/main/install.sh | sh</code>
-              </pre>
+              <CodeBlock
+        language="bash"
+        code={`curl -fsSL https://raw.githubusercontent.com/byronwade/dits/main/install.sh | sh`}
+      />
               <Alert className="mt-4">
                 <Info className="h-4 w-4" />
                 <AlertTitle>Security Note</AlertTitle>
@@ -128,13 +131,14 @@ pnpm install -g @byronwade/dits`}</code>
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <pre className="bg-zinc-950 text-zinc-100 rounded-lg p-4 overflow-x-auto">
-                <code>{`# Add the tap
+              <CodeBlock
+        language="bash"
+        code={`# Add the tap
 brew tap byronwade/dits
 
 # Install
-brew install dits`}</code>
-              </pre>
+brew install dits`}
+      />
             </CardContent>
           </Card>
         </TabsContent>
@@ -148,13 +152,14 @@ brew install dits`}</code>
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <pre className="bg-zinc-950 text-zinc-100 rounded-lg p-4 overflow-x-auto">
-                <code>{`# Install Rust if needed
+              <CodeBlock
+        language="bash"
+        code={`# Install Rust if needed
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Install Dits
-cargo install dits`}</code>
-              </pre>
+cargo install dits`}
+      />
             </CardContent>
           </Card>
         </TabsContent>
@@ -195,8 +200,9 @@ cargo install dits`}</code>
 
       <h2>Verify Installation</h2>
       <p>After installation, verify that Dits is working correctly:</p>
-      <pre className="not-prose">
-        <code>{`$ dits --version
+      <CodeBlock
+        language="bash"
+        code={`$ dits --version
 dits 0.1.2
 
 $ dits --help
@@ -210,8 +216,8 @@ Commands:
   status    Show repository status
   add       Add files to staging
   commit    Create a commit
-  ...`}</code>
-      </pre>
+  ...`}
+      />
 
       <h2>Installing FUSE (Optional)</h2>
       <p>
@@ -233,9 +239,10 @@ Commands:
               <CardTitle>macFUSE</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <pre className="bg-zinc-950 text-zinc-100 rounded-lg p-4">
-                <code>brew install macfuse</code>
-              </pre>
+              <CodeBlock
+        language="bash"
+        code={`brew install macfuse`}
+      />
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>System Extension Required</AlertTitle>
@@ -254,16 +261,17 @@ Commands:
               <CardTitle>FUSE3</CardTitle>
             </CardHeader>
             <CardContent>
-              <pre className="bg-zinc-950 text-zinc-100 rounded-lg p-4 overflow-x-auto">
-                <code>{`# Debian/Ubuntu
+              <CodeBlock
+        language="bash"
+        code={`# Debian/Ubuntu
 sudo apt install fuse3
 
 # Fedora
 sudo dnf install fuse3
 
 # Arch Linux
-sudo pacman -S fuse3`}</code>
-              </pre>
+sudo pacman -S fuse3`}
+      />
             </CardContent>
           </Card>
         </TabsContent>
@@ -297,35 +305,38 @@ sudo pacman -S fuse3`}</code>
         If you get a &quot;command not found&quot; error after installation, ensure that the
         installation directory is in your PATH:
       </p>
-      <pre className="not-prose">
-        <code>{`# For npm global installs, add to your shell profile:
+      <CodeBlock
+        language="bash"
+        code={`# For npm global installs, add to your shell profile:
 export PATH="$PATH:$(npm config get prefix)/bin"
 
 # For cargo installs:
-export PATH="$PATH:$HOME/.cargo/bin"`}</code>
-      </pre>
+export PATH="$PATH:$HOME/.cargo/bin"`}
+      />
 
       <h3>Permission denied</h3>
       <p>
         On macOS or Linux, if you get permission errors with the curl installer:
       </p>
-      <pre className="not-prose">
-        <code>{`# Install to a local directory
-curl -fsSL https://raw.githubusercontent.com/byronwade/dits/main/install.sh | sh -s -- --prefix=$HOME/.local`}</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`# Install to a local directory
+curl -fsSL https://raw.githubusercontent.com/byronwade/dits/main/install.sh | sh -s -- --prefix=$HOME/.local`}
+      />
 
       <h3>SSL/TLS errors</h3>
       <p>
         If you encounter SSL certificate errors, ensure your system&apos;s CA
         certificates are up to date:
       </p>
-      <pre className="not-prose">
-        <code>{`# macOS
+      <CodeBlock
+        language="bash"
+        code={`# macOS
 brew install ca-certificates
 
 # Ubuntu/Debian
-sudo apt update && sudo apt install ca-certificates`}</code>
-      </pre>
+sudo apt update && sudo apt install ca-certificates`}
+      />
 
       <h2>Next Steps</h2>
       <ul>

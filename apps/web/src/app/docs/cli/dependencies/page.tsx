@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Activity, Info, CheckCircle, GitBranch, List } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Dependency Commands",
@@ -74,21 +75,24 @@ export default function DependencyCommandsPage() {
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits dep-check [OPTIONS] [PATH]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits dep-check [OPTIONS] [PATH]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--strict            Fail on any untracked dependency
+      <CodeBlock
+        language="bash"
+        code={`--strict            Fail on any untracked dependency
 --fix               Suggest fixes for issues
 --json              Output as JSON
--v, --verbose       Show all dependencies, not just issues`}</code>
-      </pre>
+-v, --verbose       Show all dependencies, not just issues`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Check all project files
+      <CodeBlock
+        language="bash"
+        code={`# Check all project files
 $ dits dep-check
 
 Checking dependencies...
@@ -133,8 +137,8 @@ Dependencies for project.prproj:
 # Strict mode (CI/CD)
 $ dits dep-check --strict
 Error: 2 untracked dependencies found
-Exit code: 1`}</code>
-      </pre>
+Exit code: 1`}
+      />
 
       <h2 className="flex items-center gap-2">
         <GitBranch className="h-5 w-5" />
@@ -146,21 +150,24 @@ Exit code: 1`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits dep-graph [OPTIONS] [FILE]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits dep-graph [OPTIONS] [FILE]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--format <FMT>      Output format (tree, dot, json)
+      <CodeBlock
+        language="bash"
+        code={`--format <FMT>      Output format (tree, dot, json)
 --depth <N>         Maximum depth to display
 --reverse           Show reverse dependencies (what uses this file)
---shared            Highlight shared dependencies`}</code>
-      </pre>
+--shared            Highlight shared dependencies`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Show dependency tree for project
+      <CodeBlock
+        language="bash"
+        code={`# Show dependency tree for project
 $ dits dep-graph project.prproj
 
 project.prproj
@@ -204,8 +211,8 @@ Shared Assets (used by multiple projects):
 
   audio/music.wav
     ├── project.prproj
-    └── trailer.prproj`}</code>
-      </pre>
+    └── trailer.prproj`}
+      />
 
       <h2 className="flex items-center gap-2">
         <List className="h-5 w-5" />
@@ -217,20 +224,23 @@ Shared Assets (used by multiple projects):
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits dep-list [OPTIONS]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits dep-list [OPTIONS]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--type <TYPE>       Filter by application (premiere, resolve, ae, fcpx)
+      <CodeBlock
+        language="bash"
+        code={`--type <TYPE>       Filter by application (premiere, resolve, ae, fcpx)
 --format <FMT>      Output format (table, json)
---with-deps         Include dependency count`}</code>
-      </pre>
+--with-deps         Include dependency count`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# List all project files
+      <CodeBlock
+        language="bash"
+        code={`# List all project files
 $ dits dep-list
 
 Project Files (5):
@@ -258,8 +268,8 @@ $ dits dep-list --type premiere
 
 Premiere Pro Projects (2):
   project.prproj            24.0    2025-01-15
-  trailer.prproj            24.0    2025-01-12`}</code>
-      </pre>
+  trailer.prproj            24.0    2025-01-12`}
+      />
 
       <h2>Supported Project Formats</h2>
       <Table className="not-prose my-6">
@@ -300,8 +310,9 @@ Premiere Pro Projects (2):
       </Table>
 
       <h2>Workflow Integration</h2>
-      <pre className="not-prose">
-        <code>{`# Pre-commit hook: Ensure all dependencies are tracked
+      <CodeBlock
+        language="bash"
+        code={`# Pre-commit hook: Ensure all dependencies are tracked
 # .dits/hooks/pre-commit
 
 #!/bin/bash
@@ -314,8 +325,8 @@ fi
 
 # CI check: Verify project completeness
 $ dits dep-check --strict --json | jq '.issues | length'
-0  # No issues = ready to merge`}</code>
-      </pre>
+0  # No issues = ready to merge`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />

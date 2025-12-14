@@ -9,11 +9,58 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, FolderGit2, Database, Cloud } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
+import { FileTree } from "@/components/docs/file-tree";
 
 export const metadata: Metadata = {
   title: "Repositories",
   description: "Understanding Dits repositories and their structure",
 };
+
+const repositoryStructure = [
+  {
+    name: ".dits",
+    type: "folder" as const,
+    comment: "Dits repository data",
+    children: [
+      { name: "config", type: "file" as const, comment: "Repository configuration" },
+      { name: "HEAD", type: "file" as const, comment: "Current branch reference" },
+      { name: "index", type: "file" as const, comment: "Staging area" },
+      {
+        name: "objects",
+        type: "folder" as const,
+        comment: "Content-addressed storage",
+        children: [
+          { name: "chunks", type: "folder" as const, comment: "File chunks" },
+          { name: "assets", type: "folder" as const, comment: "File manifests" },
+          { name: "trees", type: "folder" as const, comment: "Directory manifests" },
+          { name: "commits", type: "folder" as const, comment: "Commit objects" },
+        ],
+      },
+      {
+        name: "refs",
+        type: "folder" as const,
+        comment: "Branch and tag references",
+        children: [
+          { name: "heads", type: "folder" as const, comment: "Local branches" },
+          { name: "remotes", type: "folder" as const, comment: "Remote tracking branches" },
+          { name: "tags", type: "folder" as const, comment: "Tags" },
+        ],
+      },
+      { name: "hooks", type: "folder" as const, comment: "Repository hooks" },
+    ],
+  },
+  {
+    name: "footage",
+    type: "folder" as const,
+    comment: "Your working files",
+    children: [
+      { name: "scene1.mov", type: "file" as const },
+      { name: "scene2.mov", type: "file" as const },
+    ],
+  },
+  { name: "project.prproj", type: "file" as const },
+];
 
 export default function RepositoriesPage() {
   return (
@@ -28,23 +75,25 @@ export default function RepositoriesPage() {
       <p>
         Initialize a new repository with <code>dits init</code>:
       </p>
-      <pre className="not-prose">
-        <code>{`$ mkdir my-project
+      <CodeBlock
+        language="bash"
+        code={`$ mkdir my-project
 $ cd my-project
 $ dits init
 
 Initialized empty Dits repository in /home/user/my-project/.dits
-Created default branch: main`}</code>
-      </pre>
+Created default branch: main`}
+      />
 
       <p>Or clone an existing repository:</p>
-      <pre className="not-prose">
-        <code>{`$ dits clone https://example.com/team/project
+      <CodeBlock
+        language="bash"
+        code={`$ dits clone https://example.com/team/project
 
 Cloning into 'project'...
 Fetching metadata... done
-Repository cloned (12 commits, 45 GB)`}</code>
-      </pre>
+Repository cloned (12 commits, 45 GB)`}
+      />
 
       <h2>Repository Structure</h2>
       <p>
@@ -52,28 +101,10 @@ Repository cloned (12 commits, 45 GB)`}</code>
         (your files) and the <code>.dits</code> directory (version control data).
       </p>
 
-      <pre className="not-prose">
-        <code>{`my-project/
-├── .dits/                    # Dits repository data
-│   ├── config                # Repository configuration
-│   ├── HEAD                  # Current branch reference
-│   ├── index                 # Staging area
-│   ├── objects/              # Content-addressed storage
-│   │   ├── chunks/           # File chunks
-│   │   ├── assets/           # File manifests
-│   │   ├── trees/            # Directory manifests
-│   │   └── commits/          # Commit objects
-│   ├── refs/                 # Branch and tag references
-│   │   ├── heads/            # Local branches
-│   │   ├── remotes/          # Remote tracking branches
-│   │   └── tags/             # Tags
-│   └── hooks/                # Repository hooks
-│
-├── footage/                  # Your working files
-│   ├── scene1.mov
-│   └── scene2.mov
-└── project.prproj`}</code>
-      </pre>
+      <div className="not-prose my-6">
+        <FileTree items={repositoryStructure} />
+      </div>
+
 
       <h2>Key Components</h2>
 
@@ -131,8 +162,9 @@ Repository cloned (12 commits, 45 GB)`}</code>
         (chunked and hashed) but not yet committed.
       </p>
 
-      <pre className="not-prose">
-        <code>{`Working Directory → Staging Area → Repository
+      <CodeBlock
+        language="bash"
+        code={`Working Directory → Staging Area → Repository
                     (dits add)     (dits commit)
 
 $ dits add footage/scene1.mov
@@ -144,16 +176,17 @@ Changes to be committed:
 
 $ dits commit -m "Add scene 1 footage"
 [main a1b2c3d] Add scene 1 footage
- 1 file changed, 10 GB added`}</code>
-      </pre>
+ 1 file changed, 10 GB added`}
+      />
 
       <h2>Repository Configuration</h2>
       <p>
         Each repository has its own configuration in <code>.dits/config</code>:
       </p>
 
-      <pre className="not-prose">
-        <code>{`# .dits/config
+      <CodeBlock
+        language="bash"
+        code={`# .dits/config
 [core]
     repositoryformatversion = 0
 
@@ -167,8 +200,8 @@ $ dits commit -m "Add scene 1 footage"
 
 [user]
     name = Jane Editor
-    email = jane@example.com`}</code>
-      </pre>
+    email = jane@example.com`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -185,14 +218,15 @@ $ dits commit -m "Add scene 1 footage"
         contents. These are typically used for central/server repositories.
       </p>
 
-      <pre className="not-prose">
-        <code>{`$ dits init --bare project.dits
+      <CodeBlock
+        language="bash"
+        code={`$ dits init --bare project.dits
 
 Initialized empty bare Dits repository in /home/user/project.dits
 
 $ ls project.dits/
-config  HEAD  hooks/  objects/  refs/`}</code>
-      </pre>
+config  HEAD  hooks/  objects/  refs/`}
+      />
 
       <h2>Repository States</h2>
       <p>
@@ -201,46 +235,51 @@ config  HEAD  hooks/  objects/  refs/`}</code>
 
       <h3>Clean</h3>
       <p>Working directory matches the latest commit.</p>
-      <pre className="not-prose">
-        <code>{`$ dits status
+      <CodeBlock
+        language="bash"
+        code={`$ dits status
 On branch main
-nothing to commit, working tree clean`}</code>
-      </pre>
+nothing to commit, working tree clean`}
+      />
 
       <h3>Modified</h3>
       <p>Files have been changed but not staged.</p>
-      <pre className="not-prose">
-        <code>{`$ dits status
+      <CodeBlock
+        language="bash"
+        code={`$ dits status
 On branch main
 Changes not staged for commit:
-  modified: footage/scene1.mov`}</code>
-      </pre>
+  modified: footage/scene1.mov`}
+      />
 
       <h3>Staged</h3>
       <p>Files have been added to the staging area.</p>
-      <pre className="not-prose">
-        <code>{`$ dits status
+      <CodeBlock
+        language="bash"
+        code={`$ dits status
 On branch main
 Changes to be committed:
-  modified: footage/scene1.mov`}</code>
-      </pre>
+  modified: footage/scene1.mov`}
+      />
 
       <h3>Untracked</h3>
       <p>New files that aren&apos;t yet tracked by Dits.</p>
-      <pre className="not-prose">
-        <code>{`$ dits status
+      <CodeBlock
+        language="bash"
+        code={`$ dits status
 On branch main
 Untracked files:
-  footage/new_scene.mov`}</code>
-      </pre>
+  footage/new_scene.mov`}
+      />
 
       <h2>Ignoring Files</h2>
       <p>
         Create a <code>.ditsignore</code> file to exclude files from version control:
       </p>
 
-      <pre className="not-prose">
-        <code>{`# .ditsignore
+      <CodeBlock
+        language="bash"
+        code={`# .ditsignore
 
 # Temporary files
 *.tmp
@@ -259,16 +298,17 @@ Thumbs.db
 
 # NLE autosave files
 *.autosave
-*.prproj.tmp`}</code>
-      </pre>
+*.prproj.tmp`}
+      />
 
       <h2>Repository Size</h2>
       <p>
         Check the size of your repository with <code>dits du</code>:
       </p>
 
-      <pre className="not-prose">
-        <code>{`$ dits du
+      <CodeBlock
+        language="bash"
+        code={`$ dits du
 
 Object Store:
   Chunks:    45,892 objects    (12.5 GB)
@@ -278,8 +318,8 @@ Object Store:
 
 Total repository size: 12.5 GB
 Working directory size: 45.2 GB
-Deduplication ratio: 3.6x`}</code>
-      </pre>
+Deduplication ratio: 3.6x`}
+      />
 
       <h2>Maintenance</h2>
       <p>
@@ -288,27 +328,29 @@ Deduplication ratio: 3.6x`}</code>
 
       <h3>Garbage Collection</h3>
       <p>Remove unreferenced objects to free space:</p>
-      <pre className="not-prose">
-        <code>{`$ dits gc
+      <CodeBlock
+        language="bash"
+        code={`$ dits gc
 
 Finding unreachable objects...
 Found 234 unreachable chunks (567 MB)
 Removing unreachable objects... done
-Freed 567 MB`}</code>
-      </pre>
+Freed 567 MB`}
+      />
 
       <h3>Integrity Check</h3>
       <p>Verify all objects are intact:</p>
-      <pre className="not-prose">
-        <code>{`$ dits fsck
+      <CodeBlock
+        language="bash"
+        code={`$ dits fsck
 
 Checking 45,892 chunks...
 Checking 1,234 assets...
 Checking 89 trees...
 Checking 42 commits...
 
-All objects verified. No corruption detected.`}</code>
-      </pre>
+All objects verified. No corruption detected.`}
+      />
 
       <h2>Next Steps</h2>
       <ul>

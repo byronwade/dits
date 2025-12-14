@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { HardDrive, Info, Snowflake, Sun, Settings, BarChart } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Storage Tier Commands",
@@ -77,21 +78,24 @@ export default function StorageCommandsPage() {
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits freeze-init [OPTIONS]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits freeze-init [OPTIONS]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--warm-backend <URL>    Configure warm storage backend
+      <CodeBlock
+        language="bash"
+        code={`--warm-backend <URL>    Configure warm storage backend
 --cold-backend <URL>    Configure cold storage backend
 --hot-limit <SIZE>      Maximum hot storage size (default: 100GB)
--v, --verbose           Show detailed setup`}</code>
-      </pre>
+-v, --verbose           Show detailed setup`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Initialize with defaults
+      <CodeBlock
+        language="bash"
+        code={`# Initialize with defaults
 $ dits freeze-init
 
 Initializing lifecycle tracking...
@@ -118,8 +122,8 @@ Storage Tiers:
   COLD: s3-glacier://my-bucket/cold
 
 Testing connectivity... done
-Lifecycle tracking enabled.`}</code>
-      </pre>
+Lifecycle tracking enabled.`}
+      />
 
       <h2 className="flex items-center gap-2">
         <BarChart className="h-5 w-5" />
@@ -131,21 +135,24 @@ Lifecycle tracking enabled.`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits freeze-status [OPTIONS]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits freeze-status [OPTIONS]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--cost              Show cost estimates
+      <CodeBlock
+        language="bash"
+        code={`--cost              Show cost estimates
 --files             List files by tier
 --json              Output as JSON
--v, --verbose       Show detailed information`}</code>
-      </pre>
+-v, --verbose       Show detailed information`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`$ dits freeze-status
+      <CodeBlock
+        language="bash"
+        code={`$ dits freeze-status
 
 Storage Tier Status:
 
@@ -194,8 +201,8 @@ HOT (45.2 GB, 12,456 chunks):
 WARM (234.5 GB, 45,892 chunks):
   footage/old-takes/*     45 GB    last accessed: 14d ago
   archive/2024/*          189 GB   last accessed: 30d ago
-  ...`}</code>
-      </pre>
+  ...`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Snowflake className="h-5 w-5" />
@@ -207,22 +214,25 @@ WARM (234.5 GB, 45,892 chunks):
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits freeze [OPTIONS] &lt;PATH&gt;...</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits freeze [OPTIONS] &lt;PATH&gt;...`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--tier <TIER>       Target tier (warm, cold) - default: warm
+      <CodeBlock
+        language="bash"
+        code={`--tier <TIER>       Target tier (warm, cold) - default: warm
 --reason <TEXT>     Reason for freezing
 -n, --dry-run       Show what would be frozen
 --progress          Show progress
--v, --verbose       Show detailed output`}</code>
-      </pre>
+-v, --verbose       Show detailed output`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Freeze old footage to warm storage
+      <CodeBlock
+        language="bash"
+        code={`# Freeze old footage to warm storage
 $ dits freeze footage/2023-archive/
 
 Freezing: footage/2023-archive/
@@ -257,8 +267,8 @@ Would freeze:
   footage/2023-archive/project2/  (89.1 GB)
   footage/2023-archive/project3/  (100.2 GB)
 
-Total: 234.5 GB would move to WARM`}</code>
-      </pre>
+Total: 234.5 GB would move to WARM`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Sun className="h-5 w-5" />
@@ -270,22 +280,25 @@ Total: 234.5 GB would move to WARM`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits thaw [OPTIONS] &lt;PATH&gt;...</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits thaw [OPTIONS] &lt;PATH&gt;...`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--expedited         Use expedited retrieval (faster, higher cost)
+      <CodeBlock
+        language="bash"
+        code={`--expedited         Use expedited retrieval (faster, higher cost)
 --bulk              Use bulk retrieval (slower, lower cost)
 --wait              Wait for thaw to complete
 --notify            Send notification when complete
--n, --dry-run       Show what would be thawed`}</code>
-      </pre>
+-n, --dry-run       Show what would be thawed`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Thaw archived footage
+      <CodeBlock
+        language="bash"
+        code={`# Thaw archived footage
 $ dits thaw footage/2023-archive/
 
 Thawing: footage/2023-archive/
@@ -329,8 +342,8 @@ Pending Thaw Operations:
   footage/2023-archive/  (234.5 GB)
     Status: RESTORING
     Progress: 65%
-    ETA: 1h 30m`}</code>
-      </pre>
+    ETA: 1h 30m`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Settings className="h-5 w-5" />
@@ -342,22 +355,25 @@ Pending Thaw Operations:
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits freeze-policy [OPTIONS]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits freeze-policy [OPTIONS]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--set <KEY=VALUE>   Set a policy value
+      <CodeBlock
+        language="bash"
+        code={`--set <KEY=VALUE>   Set a policy value
 --remove <KEY>      Remove a policy rule
 --list              List current policies
 --apply             Apply policies immediately
---json              Output as JSON`}</code>
-      </pre>
+--json              Output as JSON`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# View current policies
+      <CodeBlock
+        language="bash"
+        code={`# View current policies
 $ dits freeze-policy --list
 
 Lifecycle Policies:
@@ -405,12 +421,13 @@ Processing...
   Moving to WARM: 45.2 GB
   Moving to COLD: 189 GB
 
-Done.`}</code>
-      </pre>
+Done.`}
+      />
 
       <h2>Storage Backend Configuration</h2>
-      <pre className="not-prose">
-        <code>{`# .dits/config
+      <CodeBlock
+        language="bash"
+        code={`# .dits/config
 
 [storage.warm]
     type = s3
@@ -427,8 +444,8 @@ Done.`}</code>
 [lifecycle]
     warmAfter = 7d
     coldAfter = 90d
-    evictHotAfter = 30d`}</code>
-      </pre>
+    evictHotAfter = 30d`}
+      />
 
       <h2>Related Commands</h2>
       <ul>

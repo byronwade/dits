@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FileText, Info, Plus, Trash2, Move, RotateCcw, GitCommit, Archive } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "File Commands",
@@ -91,24 +92,27 @@ export default function FileCommandsPage() {
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits add [options] &lt;pathspec&gt;...</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits add [options] &lt;pathspec&gt;...`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--all, -A        Add all changes (new, modified, deleted)
+      <CodeBlock
+        language="bash"
+        code={`--all, -A        Add all changes (new, modified, deleted)
 --update, -u     Update tracked files only (no new files)
 --force, -f      Allow adding ignored files
 --dry-run, -n    Show what would be added
 --interactive    Interactive staging mode
 --patch, -p      Interactively select portions to add
---verbose, -v    Be verbose about added files`}</code>
-      </pre>
+--verbose, -v    Be verbose about added files`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Add specific file
+      <CodeBlock
+        language="bash"
+        code={`# Add specific file
 $ dits add footage/scene1.mov
 Chunking footage/scene1.mov... 10,234 chunks (10.2 GB)
 
@@ -132,8 +136,8 @@ Would add 'footage/scene2.mov'
 
 # Add with verbose output
 $ dits add -v project.prproj
-add 'project.prproj' (1,234 chunks, 1.2 MB)`}</code>
-      </pre>
+add 'project.prproj' (1,234 chunks, 1.2 MB)`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -154,21 +158,24 @@ add 'project.prproj' (1,234 chunks, 1.2 MB)`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits rm [options] &lt;file&gt;...</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits rm [options] &lt;file&gt;...`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--cached         Only remove from staging, keep in working dir
+      <CodeBlock
+        language="bash"
+        code={`--cached         Only remove from staging, keep in working dir
 --force, -f      Override up-to-date check
 --recursive, -r  Remove directories recursively
---dry-run, -n    Show what would be removed`}</code>
-      </pre>
+--dry-run, -n    Show what would be removed`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Remove a file
+      <CodeBlock
+        language="bash"
+        code={`# Remove a file
 $ dits rm footage/unused-take.mov
 rm 'footage/unused-take.mov'
 
@@ -185,8 +192,8 @@ rm 'old-footage/scene2.mov'
 # Preview removal
 $ dits rm --dry-run footage/test-*.mov
 Would remove 'footage/test-1.mov'
-Would remove 'footage/test-2.mov'`}</code>
-      </pre>
+Would remove 'footage/test-2.mov'`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Move className="h-5 w-5" />
@@ -198,20 +205,23 @@ Would remove 'footage/test-2.mov'`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits mv [options] &lt;source&gt; &lt;destination&gt;</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits mv [options] &lt;source&gt; &lt;destination&gt;`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--force, -f      Force rename even if target exists
+      <CodeBlock
+        language="bash"
+        code={`--force, -f      Force rename even if target exists
 --dry-run, -n    Show what would happen
---verbose, -v    Report renamed files`}</code>
-      </pre>
+--verbose, -v    Report renamed files`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Rename a file
+      <CodeBlock
+        language="bash"
+        code={`# Rename a file
 $ dits mv footage/scene1.mov footage/scene1-final.mov
 Renamed 'footage/scene1.mov' -> 'footage/scene1-final.mov'
 
@@ -221,8 +231,8 @@ Moved 'footage/scene1.mov' -> 'archive/scene1.mov'
 
 # Rename directory
 $ dits mv raw-footage/ source-footage/
-Renamed 'raw-footage/' -> 'source-footage/'`}</code>
-      </pre>
+Renamed 'raw-footage/' -> 'source-footage/'`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -244,22 +254,25 @@ Renamed 'raw-footage/' -> 'source-footage/'`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits restore [options] &lt;pathspec&gt;...</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits restore [options] &lt;pathspec&gt;...`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--source, -s     Restore from specified commit
+      <CodeBlock
+        language="bash"
+        code={`--source, -s     Restore from specified commit
 --staged, -S     Restore staged changes (unstage)
 --worktree, -W   Restore working tree (discard changes)
 --ours           Use our version (during merge)
---theirs         Use their version (during merge)`}</code>
-      </pre>
+--theirs         Use their version (during merge)`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Discard changes to a file
+      <CodeBlock
+        language="bash"
+        code={`# Discard changes to a file
 $ dits restore footage/scene1.mov
 Restored 'footage/scene1.mov'
 
@@ -276,8 +289,8 @@ $ dits restore footage/
 Restored 5 files
 
 # Discard all changes
-$ dits restore .`}</code>
-      </pre>
+$ dits restore .`}
+      />
 
       <h2 className="flex items-center gap-2">
         <GitCommit className="h-5 w-5" />
@@ -290,25 +303,28 @@ $ dits restore .`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits commit [options]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits commit [options]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--message, -m    Commit message
+      <CodeBlock
+        language="bash"
+        code={`--message, -m    Commit message
 --all, -a        Automatically stage modified files
 --amend          Amend the previous commit
 --no-edit        Use previous commit's message (with --amend)
 --author         Override author
 --date           Override date
 --allow-empty    Allow empty commit
---dry-run        Show what would be committed`}</code>
-      </pre>
+--dry-run        Show what would be committed`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Basic commit
+      <CodeBlock
+        language="bash"
+        code={`# Basic commit
 $ dits commit -m "Add scene 1 color grading"
 [main a1b2c3d] Add scene 1 color grading
  1 file changed, 10.2 GB modified
@@ -330,8 +346,8 @@ $ dits commit --amend -m "Better commit message"
 $ dits commit --dry-run
 Changes to be committed:
   modified: footage/scene1.mov
-  new file: footage/scene4.mov`}</code>
-      </pre>
+  new file: footage/scene4.mov`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Archive className="h-5 w-5" />
@@ -344,17 +360,19 @@ Changes to be committed:
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>{`dits stash [push [-m <message>]]
+      <CodeBlock
+        language="bash"
+        code={`dits stash [push [-m <message>]]
 dits stash list
 dits stash show [stash]
 dits stash pop [stash]
-dits stash drop [stash]`}</code>
-      </pre>
+dits stash drop [stash]`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Stash current changes
+      <CodeBlock
+        language="bash"
+        code={`# Stash current changes
 $ dits stash
 Saved working directory state WIP on main: a1b2c3d Add scene 1
 
@@ -376,8 +394,8 @@ Dropped stash@{0}
 $ dits stash apply stash@{1}
 
 # Remove a stash
-$ dits stash drop stash@{0}`}</code>
-      </pre>
+$ dits stash drop stash@{0}`}
+      />
 
       <h2>Related Commands</h2>
       <ul>

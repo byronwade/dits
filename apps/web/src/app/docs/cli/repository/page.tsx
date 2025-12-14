@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FolderGit2, Info, Plus, Copy, Globe, BarChart } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
+import { FileTree } from "@/components/docs/file-tree";
 
 export const metadata: Metadata = {
   title: "Repository Commands",
@@ -65,9 +67,10 @@ export default function RepositoryCommandsPage() {
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits init [OPTIONS] [PATH]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits init [OPTIONS] [PATH]`}
+      />
 
       <h3>Arguments</h3>
       <ul>
@@ -75,16 +78,18 @@ export default function RepositoryCommandsPage() {
       </ul>
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--bare                Create a bare repository (no working directory)
+      <CodeBlock
+        language="bash"
+        code={`--bare                Create a bare repository (no working directory)
 --template <PATH>     Use custom template directory
 --initial-branch <NAME>  Set initial branch name (default: main)
---shared              Set up for shared/team use with relaxed permissions`}</code>
-      </pre>
+--shared              Set up for shared/team use with relaxed permissions`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Initialize in current directory
+      <CodeBlock
+        language="bash"
+        code={`# Initialize in current directory
 $ dits init
 Initialized empty Dits repository in /home/user/project/.dits/
 
@@ -98,27 +103,46 @@ Initialized empty Dits repository with branch 'production'
 
 # Create a bare repository for sharing
 $ dits init --bare project.dits
-Initialized empty bare Dits repository in /home/user/project.dits/`}</code>
-      </pre>
+Initialized empty bare Dits repository in /home/user/project.dits/`}
+      />
 
       <h3>Repository Structure</h3>
-      <pre className="not-prose">
-        <code>{`.dits/
-├── HEAD                    # Current branch reference
-├── config                  # Repository configuration
-├── index                   # Staging area
-├── objects/
-│   ├── chunks/             # Content chunks
-│   ├── assets/             # Asset manifests
-│   ├── trees/              # Tree manifests
-│   ├── commits/            # Commit objects
-│   └── packs/              # Packed objects
-├── refs/
-│   ├── heads/              # Local branches
-│   ├── remotes/            # Remote tracking
-│   └── tags/               # Tags
-└── hooks/                  # Repository hooks`}</code>
-      </pre>
+      <div className="not-prose my-4">
+        <FileTree
+          items={[
+            {
+              name: ".dits",
+              type: "folder",
+              children: [
+                { name: "HEAD", type: "file", comment: "Current branch reference" },
+                { name: "config", type: "file", comment: "Repository configuration" },
+                { name: "index", type: "file", comment: "Staging area" },
+                {
+                  name: "objects",
+                  type: "folder",
+                  children: [
+                    { name: "chunks", type: "folder", comment: "Content chunks" },
+                    { name: "assets", type: "folder", comment: "Asset manifests" },
+                    { name: "trees", type: "folder", comment: "Tree manifests" },
+                    { name: "commits", type: "folder", comment: "Commit objects" },
+                    { name: "packs", type: "folder", comment: "Packed objects" },
+                  ],
+                },
+                {
+                  name: "refs",
+                  type: "folder",
+                  children: [
+                    { name: "heads", type: "folder", comment: "Local branches" },
+                    { name: "remotes", type: "folder", comment: "Remote tracking" },
+                    { name: "tags", type: "folder", comment: "Tags" },
+                  ],
+                },
+                { name: "hooks", type: "folder", comment: "Repository hooks" },
+              ],
+            },
+          ]}
+        />
+      </div>
 
       <h2 className="flex items-center gap-2">
         <Copy className="h-5 w-5" />
@@ -130,9 +154,10 @@ Initialized empty bare Dits repository in /home/user/project.dits/`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits clone [OPTIONS] &lt;URL&gt; [DIRECTORY]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits clone [OPTIONS] &lt;URL&gt; [DIRECTORY]`}
+      />
 
       <h3>Arguments</h3>
       <ul>
@@ -141,20 +166,22 @@ Initialized empty bare Dits repository in /home/user/project.dits/`}</code>
       </ul>
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--shallow              Clone only latest commit (no history)
+      <CodeBlock
+        language="bash"
+        code={`--shallow              Clone only latest commit (no history)
 --depth <N>            Clone only last N commits
 --branch <NAME>        Clone specific branch
 --single-branch        Clone only one branch
 --no-checkout          Clone without checking out files
 --sparse               Enable sparse checkout (partial working dir)
 --filter <SPEC>        Partial clone filter (e.g., blob:none)
---progress             Show progress during clone`}</code>
-      </pre>
+--progress             Show progress during clone`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Basic clone
+      <CodeBlock
+        language="bash"
+        code={`# Basic clone
 $ dits clone https://dits.example.com/team/project
 Cloning into 'project'...
 remote: Counting objects: 1,234
@@ -176,8 +203,8 @@ Metadata fetched: 15 MB
 Repository ready (125 TB of files available on demand)
 
 # Clone with limited history
-$ dits clone --depth 10 https://dits.example.com/team/project`}</code>
-      </pre>
+$ dits clone --depth 10 https://dits.example.com/team/project`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -202,50 +229,57 @@ $ dits clone --depth 10 https://dits.example.com/team/project`}</code>
       <h3>Subcommands</h3>
 
       <h4>dits remote (list)</h4>
-      <pre className="not-prose">
-        <code>{`dits remote [-v]
+      <CodeBlock
+        language="bash"
+        code={`dits remote [-v]
 
-List configured remotes. Use -v to show URLs.`}</code>
-      </pre>
+List configured remotes. Use -v to show URLs.`}
+      />
 
       <h4>dits remote add</h4>
-      <pre className="not-prose">
-        <code>{`dits remote add <NAME> <URL>
+      <CodeBlock
+        language="bash"
+        code={`dits remote add <NAME> <URL>
 
-Add a new remote.`}</code>
-      </pre>
+Add a new remote.`}
+      />
 
       <h4>dits remote remove</h4>
-      <pre className="not-prose">
-        <code>{`dits remote remove <NAME>
+      <CodeBlock
+        language="bash"
+        code={`dits remote remove <NAME>
 
-Remove a remote.`}</code>
-      </pre>
+Remove a remote.`}
+      />
 
       <h4>dits remote rename</h4>
-      <pre className="not-prose">
-        <code>{`dits remote rename <OLD> <NEW>
+      <CodeBlock
+        language="bash"
+        code={`dits remote rename <OLD> <NEW>
 
-Rename a remote.`}</code>
-      </pre>
+Rename a remote.`}
+      />
 
       <h4>dits remote set-url</h4>
-      <pre className="not-prose">
-        <code>{`dits remote set-url <NAME> <URL>
+      <CodeBlock
+        language="bash"
+        code={`dits remote set-url <NAME> <URL>
 
-Change a remote's URL.`}</code>
-      </pre>
+Change a remote's URL.`}
+      />
 
       <h4>dits remote show</h4>
-      <pre className="not-prose">
-        <code>{`dits remote show <NAME>
+      <CodeBlock
+        language="bash"
+        code={`dits remote show <NAME>
 
-Show detailed information about a remote.`}</code>
-      </pre>
+Show detailed information about a remote.`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# List remotes
+      <CodeBlock
+        language="bash"
+        code={`# List remotes
 $ dits remote
 origin
 
@@ -274,8 +308,8 @@ $ dits remote show origin
 $ dits remote set-url origin https://new.example.com/project
 
 # Remove a remote
-$ dits remote remove backup`}</code>
-      </pre>
+$ dits remote remove backup`}
+      />
 
       <h2 className="flex items-center gap-2">
         <BarChart className="h-5 w-5" />
@@ -287,22 +321,25 @@ $ dits remote remove backup`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits status [OPTIONS] [PATHSPEC...]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits status [OPTIONS] [PATHSPEC...]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`-s, --short          Give output in short format
+      <CodeBlock
+        language="bash"
+        code={`-s, --short          Give output in short format
 -b, --branch         Show branch info even in short format
 --porcelain          Machine-readable output (for scripts)
 --ignored            Show ignored files
---untracked <MODE>   Show untracked files (no, normal, all)`}</code>
-      </pre>
+--untracked <MODE>   Show untracked files (no, normal, all)`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Full status
+      <CodeBlock
+        language="bash"
+        code={`# Full status
 $ dits status
 On branch main
 Your branch is up to date with 'origin/main'.
@@ -336,8 +373,8 @@ A  footage/scene03.mov
 $ dits status footage/
 On branch main
 Changes not staged for commit:
-        modified:   footage/scene01.mov`}</code>
-      </pre>
+        modified:   footage/scene01.mov`}
+      />
 
       <h3>Status Codes</h3>
       <Table className="not-prose my-6">

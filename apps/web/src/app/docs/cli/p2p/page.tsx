@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Share2, Wifi, Globe, Zap, Info, Server, Radio } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "P2P Commands",
@@ -113,9 +114,10 @@ export default function P2PCommandsPage() {
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits p2p share [OPTIONS] &lt;PATH&gt;</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits p2p share [OPTIONS] &lt;PATH&gt;`}
+      />
 
       <h3>Arguments</h3>
       <ul>
@@ -123,20 +125,22 @@ export default function P2PCommandsPage() {
       </ul>
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`-p, --port <PORT>      Port to listen on (default: 4433)
+      <CodeBlock
+        language="bash"
+        code={`-p, --port <PORT>      Port to listen on (default: 4433)
 -n, --name <NAME>      Name for this share
     --signal <URL>     Signal server URL
     --code <CODE>      Use specific join code
     --local            Use only mDNS (local network, no internet)
     --direct           Use only direct IP mode (no discovery)
     --stun             Use STUN for external IP discovery
-    --relay            Force relay mode (guaranteed NAT traversal)`}</code>
-      </pre>
+    --relay            Force relay mode (guaranteed NAT traversal)`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Share on local network (easiest, no internet)
+      <CodeBlock
+        language="bash"
+        code={`# Share on local network (easiest, no internet)
 $ dits p2p share ./my-project --local
 DITS P2P - Sharing Active
 ============================================================
@@ -172,8 +176,8 @@ DITS P2P - Sharing Active
 ============================================================
 
 # Share with custom signal server
-$ dits p2p share ./my-project --signal ws://localhost:8080`}</code>
-      </pre>
+$ dits p2p share ./my-project --signal ws://localhost:8080`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Globe className="h-5 w-5" />
@@ -185,9 +189,10 @@ $ dits p2p share ./my-project --signal ws://localhost:8080`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits p2p connect [OPTIONS] &lt;TARGET&gt;</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits p2p connect [OPTIONS] &lt;TARGET&gt;`}
+      />
 
       <h3>Arguments</h3>
       <ul>
@@ -195,17 +200,19 @@ $ dits p2p share ./my-project --signal ws://localhost:8080`}</code>
       </ul>
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`-o, --output <PATH>    Output directory
+      <CodeBlock
+        language="bash"
+        code={`-o, --output <PATH>    Output directory
     --signal <URL>     Signal server URL
     --local            Use only mDNS (local network)
     --direct           Use only direct IP mode
-    --relay            Force relay mode (guaranteed NAT traversal)`}</code>
-      </pre>
+    --relay            Force relay mode (guaranteed NAT traversal)`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Connect on local network
+      <CodeBlock
+        language="bash"
+        code={`# Connect on local network
 $ dits p2p connect ABC-123 --local
 DITS P2P - Connecting
 ============================================================
@@ -236,8 +243,8 @@ $ dits p2p connect 192.168.1.100:4433
   Found:     192.168.1.100:4433 [direct] (local)
 
 # Connect using share link
-$ dits p2p connect https://dits.byronwade.com/j/ABC-123`}</code>
-      </pre>
+$ dits p2p connect https://dits.byronwade.com/j/ABC-123`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Zap className="h-5 w-5" />
@@ -248,8 +255,9 @@ $ dits p2p connect https://dits.byronwade.com/j/ABC-123`}</code>
       </p>
 
       <h3>Send a File</h3>
-      <pre className="not-prose">
-        <code>{`dits p2p send <FILE> <TARGET>
+      <CodeBlock
+        language="bash"
+        code={`dits p2p send <FILE> <TARGET>
 
 # Example
 $ dits p2p send video.mp4 ABC-123
@@ -258,12 +266,13 @@ DITS P2P - Sending File
   File:   video.mp4
   Size:   1,234,567 bytes
   Chunks: 10
-============================================================`}</code>
-      </pre>
+============================================================`}
+      />
 
       <h3>Receive a File</h3>
-      <pre className="not-prose">
-        <code>{`dits p2p receive [OPTIONS]
+      <CodeBlock
+        language="bash"
+        code={`dits p2p receive [OPTIONS]
 
 Options:
   -o, --output <PATH>    Output path
@@ -276,8 +285,8 @@ DITS P2P - Ready to Receive
 ============================================================
   Share code: DEF-456
   Sender should run:  dits p2p send <file> DEF-456
-============================================================`}</code>
-      </pre>
+============================================================`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Server className="h-5 w-5" />
@@ -287,8 +296,9 @@ DITS P2P - Ready to Receive
         Show P2P status including available discovery methods.
       </p>
 
-      <pre className="not-prose">
-        <code>{`$ dits p2p status
+      <CodeBlock
+        language="bash"
+        code={`$ dits p2p status
 DITS P2P Status
 ============================================================
   Protocol Version: 1
@@ -303,8 +313,8 @@ DITS P2P Status
 
   Active Shares:    0
   Active Connects:  0
-============================================================`}</code>
-      </pre>
+============================================================`}
+      />
 
       <h2>Choosing the Right Method</h2>
       <Table className="not-prose my-6">
@@ -371,13 +381,14 @@ DITS P2P Status
       </ul>
 
       <h3>Debug Mode</h3>
-      <pre className="not-prose">
-        <code>{`# Show discovery process
+      <CodeBlock
+        language="bash"
+        code={`# Show discovery process
 $ dits -v p2p connect ABC-123
 
 # Show detailed debug info
-$ dits -vv p2p connect ABC-123`}</code>
-      </pre>
+$ dits -vv p2p connect ABC-123`}
+      />
 
       <h2>Related Commands</h2>
       <ul>

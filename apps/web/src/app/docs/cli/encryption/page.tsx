@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Shield, Info, Key, Lock, Unlock, KeyRound, AlertTriangle } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Encryption Commands",
@@ -76,23 +77,26 @@ export default function EncryptionCommandsPage() {
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits encrypt-init [OPTIONS]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits encrypt-init [OPTIONS]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--key-file <PATH>   Use existing key file
+      <CodeBlock
+        language="bash"
+        code={`--key-file <PATH>   Use existing key file
 --password          Use password-based encryption
 --hardware-key      Use hardware security key (YubiKey, etc.)
 --algorithm <ALG>   Encryption algorithm (default: aes-256-gcm)
 --kdf <KDF>         Key derivation function (default: argon2id)
--v, --verbose       Show detailed setup`}</code>
-      </pre>
+-v, --verbose       Show detailed setup`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Initialize with password
+      <CodeBlock
+        language="bash"
+        code={`# Initialize with password
 $ dits encrypt-init --password
 
 Initializing repository encryption...
@@ -110,7 +114,7 @@ Encrypting existing objects... 100% ██████████████�
 
 Encryption initialized successfully!
 
-⚠️  IMPORTANT: If you lose your password, your data cannot be recovered.
+<span className="flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> IMPORTANT: If you lose your password, your data cannot be recovered.</span>
    Consider backing up your key file at: .dits/keys/master.key
 
 # Initialize with key file
@@ -126,8 +130,8 @@ Waiting for hardware key...
 Touch your YubiKey...
 Hardware key detected: YubiKey 5 NFC
 
-Encryption initialized with hardware key protection.`}</code>
-      </pre>
+Encryption initialized with hardware key protection.`}
+      />
 
       <Alert className="not-prose my-6">
         <AlertTriangle className="h-4 w-4" />
@@ -149,19 +153,22 @@ Encryption initialized with hardware key protection.`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits encrypt-status [OPTIONS]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits encrypt-status [OPTIONS]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--json              Output as JSON
--v, --verbose       Show detailed information`}</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`--json              Output as JSON
+-v, --verbose       Show detailed information`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`$ dits encrypt-status
+      <CodeBlock
+        language="bash"
+        code={`$ dits encrypt-status
 
 Encryption Status: ENABLED
 
@@ -196,8 +203,8 @@ $ dits encrypt-status
 Encryption Status: ENABLED (LOCKED)
 
 You are not logged in.
-Run 'dits login' to unlock the repository.`}</code>
-      </pre>
+Run 'dits login' to unlock the repository.`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Unlock className="h-5 w-5" />
@@ -209,21 +216,24 @@ Run 'dits login' to unlock the repository.`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits login [OPTIONS]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits login [OPTIONS]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--key-file <PATH>   Use key file instead of password
+      <CodeBlock
+        language="bash"
+        code={`--key-file <PATH>   Use key file instead of password
 --ttl <DURATION>    Session duration (default: 8h)
 --no-cache          Don't cache credentials
--v, --verbose       Show detailed login info`}</code>
-      </pre>
+-v, --verbose       Show detailed login info`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Login with password
+      <CodeBlock
+        language="bash"
+        code={`# Login with password
 $ dits login
 
 Repository is encrypted.
@@ -252,8 +262,8 @@ $ dits login
 
 Hardware key detected.
 Touch your YubiKey...
-Logged in successfully.`}</code>
-      </pre>
+Logged in successfully.`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Lock className="h-5 w-5" />
@@ -265,19 +275,22 @@ Logged in successfully.`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits logout [OPTIONS]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits logout [OPTIONS]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--all               Logout from all repositories
--f, --force         Force logout (don't prompt)`}</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`--all               Logout from all repositories
+-f, --force         Force logout (don't prompt)`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Logout from current repository
+      <CodeBlock
+        language="bash"
+        code={`# Logout from current repository
 $ dits logout
 
 Clearing cached keys... done
@@ -294,8 +307,8 @@ Logging out from 3 repositories...
   /path/to/project2... done
   /path/to/project3... done
 
-All sessions ended.`}</code>
-      </pre>
+All sessions ended.`}
+      />
 
       <h2 className="flex items-center gap-2">
         <KeyRound className="h-5 w-5" />
@@ -307,19 +320,22 @@ All sessions ended.`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits change-password [OPTIONS]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits change-password [OPTIONS]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--verify-old        Require old password verification
--v, --verbose       Show detailed information`}</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`--verify-old        Require old password verification
+-v, --verbose       Show detailed information`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`$ dits change-password
+      <CodeBlock
+        language="bash"
+        code={`$ dits change-password
 
 Changing encryption password...
 
@@ -333,12 +349,13 @@ Updating key protection... done
 Password changed successfully.
 
 Note: This does not re-encrypt existing data.
-The underlying encryption key remains the same.`}</code>
-      </pre>
+The underlying encryption key remains the same.`}
+      />
 
       <h2>How Encryption Works</h2>
-      <pre className="not-prose">
-        <code>{`Encryption Architecture:
+      <CodeBlock
+        language="bash"
+        code={`Encryption Architecture:
 
                     ┌─────────────────┐
                     │   Your Files    │
@@ -370,8 +387,8 @@ The underlying encryption key remains the same.`}</code>
 Key Hierarchy:
   Master Key (protected by password/hardware key)
     └── Repository Key (encrypted by master)
-          └── Per-chunk keys (derived from content + repo key)`}</code>
-      </pre>
+          └── Per-chunk keys (derived from content + repo key)`}
+      />
 
       <h3>Convergent Encryption</h3>
       <p>
@@ -379,8 +396,9 @@ Key Hierarchy:
         chunks encrypt to identical ciphertext, allowing deduplication to work on
         encrypted data.
       </p>
-      <pre className="not-prose">
-        <code>{`# Same content = same encrypted chunk
+      <CodeBlock
+        language="bash"
+        code={`# Same content = same encrypted chunk
 
 chunk_key = HKDF(repo_key, content_hash)
 ciphertext = AES-256-GCM(chunk_key, content)
@@ -392,8 +410,8 @@ Benefits:
 
 Trade-offs:
   ⚠ Identical files across repos can be detected
-  ⚠ Per-repo salt prevents cross-repo dedup`}</code>
-      </pre>
+  ⚠ Per-repo salt prevents cross-repo dedup`}
+      />
 
       <h2>Security Recommendations</h2>
       <ul>

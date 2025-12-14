@@ -3,7 +3,16 @@ import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { CheckCircle, XCircle, AlertTriangle, Zap, HardDrive, Network } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Why Dits vs Git",
@@ -29,10 +38,10 @@ export default function WhyDitsPage() {
         </AlertDescription>
       </Alert>
 
-      <Alert className="not-prose my-6 border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-800">
-        <CheckCircle className="h-4 w-4 text-green-600" />
-        <AlertTitle className="text-green-900 dark:text-green-100">Production-Ready with Comprehensive Testing</AlertTitle>
-        <AlertDescription className="text-green-800 dark:text-green-200">
+      <Alert className="not-prose my-6 bg-primary/10 border-primary/20">
+        <CheckCircle className="h-4 w-4 text-primary" />
+        <AlertTitle className="text-foreground">Production-Ready with Comprehensive Testing</AlertTitle>
+        <AlertDescription className="text-muted-foreground">
           <strong>120+ automated tests</strong> covering Git operations on binaries, 80+ file formats,
           cross-platform compatibility, 1TB+ workload simulation, and enterprise security.
           Every feature is thoroughly tested and production-hardened.
@@ -67,48 +76,48 @@ export default function WhyDitsPage() {
       </p>
 
       <div className="not-prose grid gap-4 md:grid-cols-2 my-6">
-        <Card className="border-red-200">
+        <Card className="border-destructive/30">
           <CardHeader>
-            <CardTitle className="text-red-600 flex items-center gap-2">
+            <CardTitle className="text-destructive flex items-center gap-2">
               <XCircle className="h-5 w-5" />
               Git LFS Problems
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="text-sm">
-              <strong className="text-red-600">No deduplication:</strong> Same content stored multiple times
+              <strong className="text-destructive">No deduplication:</strong> Same content stored multiple times
             </div>
             <div className="text-sm">
-              <strong className="text-red-600">Full file transfers:</strong> Tiny changes = full re-upload
+              <strong className="text-destructive">Full file transfers:</strong> Tiny changes = full re-upload
             </div>
             <div className="text-sm">
-              <strong className="text-red-600">Complex setup:</strong> Requires server infrastructure
+              <strong className="text-destructive">Complex setup:</strong> Requires server infrastructure
             </div>
             <div className="text-sm">
-              <strong className="text-red-600">Lock-in:</strong> Proprietary protocol, vendor dependencies
+              <strong className="text-destructive">Lock-in:</strong> Proprietary protocol, vendor dependencies
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-green-200">
+        <Card className="border-primary/30">
           <CardHeader>
-            <CardTitle className="text-green-600 flex items-center gap-2">
+            <CardTitle className="text-primary flex items-center gap-2">
               <CheckCircle className="h-5 w-5" />
               Dits Solutions
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="text-sm">
-              <strong className="text-green-600">Content-defined chunking:</strong> Automatic deduplication
+              <strong className="text-primary">Content-defined chunking:</strong> Automatic deduplication
             </div>
             <div className="text-sm">
-              <strong className="text-green-600">Delta transfers:</strong> Only changed chunks uploaded
+              <strong className="text-primary">Delta transfers:</strong> Only changed chunks uploaded
             </div>
             <div className="text-sm">
-              <strong className="text-green-600">Self-contained:</strong> Works offline, no server required
+              <strong className="text-primary">Self-contained:</strong> Works offline, no server required
             </div>
             <div className="text-sm">
-              <strong className="text-green-600">Open protocol:</strong> Self-hostable, interoperable
+              <strong className="text-primary">Open protocol:</strong> Self-hostable, interoperable
             </div>
           </CardContent>
         </Card>
@@ -132,11 +141,11 @@ export default function WhyDitsPage() {
               <div>
                 <h4 className="font-semibold mb-2">Git Handles:</h4>
                 <ul className="text-sm space-y-1">
-                  <li>• Source code (.rs, .js, .py, .cpp)</li>
-                  <li>• Configuration files (.json, .yaml)</li>
-                  <li>• Documentation (.md, .txt)</li>
-                  <li>• Small assets (icons, fonts)</li>
-                  <li>• Build scripts and pipelines</li>
+                  <li>Source code (.rs, .js, .py, .cpp)</li>
+                  <li>Configuration files (.json, .yaml)</li>
+                  <li>Documentation (.md, .txt)</li>
+                  <li>Small assets (icons, fonts)</li>
+                  <li>Build scripts and pipelines</li>
                 </ul>
                 <p className="text-xs text-muted-foreground mt-2">
                   <strong>Benefits:</strong> Line-based diffs, 3-way merge, blame, code review
@@ -145,11 +154,11 @@ export default function WhyDitsPage() {
               <div>
                 <h4 className="font-semibold mb-2">Dits Handles:</h4>
                 <ul className="text-sm space-y-1">
-                  <li>• Video files (.mp4, .mov, .avi)</li>
-                  <li>• 3D models (.obj, .fbx, .gltf)</li>
-                  <li>• Game assets (Unity, Unreal, Godot)</li>
-                  <li>• Large images (.psd, .raw)</li>
-                  <li>• Audio files and middleware</li>
+                  <li>Video files (.mp4, .mov, .avi)</li>
+                  <li>3D models (.obj, .fbx, .gltf)</li>
+                  <li>Game assets (Unity, Unreal, Godot)</li>
+                  <li>Large images (.psd, .raw)</li>
+                  <li>Audio files and middleware</li>
                 </ul>
                 <p className="text-xs text-muted-foreground mt-2">
                   <strong>Benefits:</strong> FastCDC chunking, automatic deduplication, delta transfers
@@ -272,42 +281,42 @@ export default function WhyDitsPage() {
       <p>Real-world performance differences for a 10GB video file:</p>
 
       <div className="not-prose overflow-x-auto my-6">
-        <table className="w-full border-collapse border border-gray-300 dark:border-gray-700">
-          <thead>
-            <tr className="bg-gray-50 dark:bg-gray-800">
-              <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Operation</th>
-              <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Git LFS</th>
-              <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Dits</th>
-              <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Improvement</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Initial commit</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">10GB upload</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">10GB upload</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">-</td>
-            </tr>
-            <tr>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Small edit (1MB change)</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">10GB upload</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">~200KB upload</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-green-600 font-semibold">50,000x faster</td>
-            </tr>
-            <tr>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Clone repository</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">10GB download</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">On-demand access</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-green-600 font-semibold">Lazy loading</td>
-            </tr>
-            <tr>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Storage efficiency</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">10GB per version</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">10GB + manifest</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-green-600 font-semibold">Deduplication</td>
-            </tr>
-          </tbody>
-        </table>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Operation</TableHead>
+              <TableHead>Git LFS</TableHead>
+              <TableHead>Dits</TableHead>
+              <TableHead>Improvement</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>Initial commit</TableCell>
+              <TableCell>10GB upload</TableCell>
+              <TableCell>10GB upload</TableCell>
+              <TableCell>-</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Small edit (1MB change)</TableCell>
+              <TableCell>10GB upload</TableCell>
+              <TableCell>~200KB upload</TableCell>
+              <TableCell className="text-primary font-semibold">50,000x faster</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Clone repository</TableCell>
+              <TableCell>10GB download</TableCell>
+              <TableCell>On-demand access</TableCell>
+              <TableCell className="text-primary font-semibold">Lazy loading</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Storage efficiency</TableCell>
+              <TableCell>10GB per version</TableCell>
+              <TableCell>10GB + manifest</TableCell>
+              <TableCell className="text-primary font-semibold">Deduplication</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </div>
 
       <h2>Can They Work Together?</h2>
@@ -315,8 +324,9 @@ export default function WhyDitsPage() {
         Absolutely! Many teams use both tools in harmony:
       </p>
 
-      <pre className="not-prose">
-        <code>{`my-project/
+      <CodeBlock
+        language="bash"
+        code={`my-project/
 ├── .git/                    # Git repository
 │   ├── code/
 │   ├── docs/
@@ -329,8 +339,8 @@ export default function WhyDitsPage() {
 │
 └── shared/                  # Both Git and Dits
     ├── config files
-    └── project metadata`}</code>
-      </pre>
+    └── project metadata`}
+      />
 
       <p>This hybrid approach gives you:</p>
       <ul>

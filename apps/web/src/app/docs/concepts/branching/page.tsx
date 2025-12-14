@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, GitBranch, GitMerge, Lock } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
+import { FileTree } from "@/components/docs/file-tree";
 
 export const metadata: Metadata = {
   title: "Branching & Merging",
@@ -85,8 +87,9 @@ export default function BranchingPage() {
       </div>
 
       <h2>Creating Branches</h2>
-      <pre className="not-prose">
-        <code>{`# Create a new branch
+      <CodeBlock
+        language="bash"
+        code={`# Create a new branch
 $ dits branch client-version
 
 # Create and switch in one command
@@ -99,19 +102,20 @@ $ dits branch hotfix a1b2c3d
 $ dits branch --list
 * main
   client-version
-  color-grade-experiment`}</code>
-      </pre>
+  color-grade-experiment`}
+      />
 
       <h2>Switching Branches</h2>
-      <pre className="not-prose">
-        <code>{`$ dits switch client-version
+      <CodeBlock
+        language="bash"
+        code={`$ dits switch client-version
 
 Switched to branch 'client-version'
 Hydrating 3 changed files... done
 
 $ dits status
-On branch client-version`}</code>
-      </pre>
+On branch client-version`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -124,8 +128,9 @@ On branch client-version`}</code>
       </Alert>
 
       <h2>Branch Visualization</h2>
-      <pre className="not-prose">
-        <code>{`$ dits log --graph --oneline --all
+      <CodeBlock
+        language="bash"
+        code={`$ dits log --graph --oneline --all
 
 * f5e4d3c (HEAD -> main) Final delivery
 | * c4d5e6f (client-version) Client revisions
@@ -134,8 +139,8 @@ On branch client-version`}</code>
 * a1b2c3d Color grading complete
 | * 9a8b7c6 (experiment/new-grade) Try film look
 |/
-* 8f7e6d5 Initial edit`}</code>
-      </pre>
+* 8f7e6d5 Initial edit`}
+      />
 
       <h2>Merging Branches</h2>
 
@@ -143,29 +148,31 @@ On branch client-version`}</code>
       <p>
         When there are no divergent changes, Dits simply moves the branch pointer:
       </p>
-      <pre className="not-prose">
-        <code>{`$ dits switch main
+      <CodeBlock
+        language="bash"
+        code={`$ dits switch main
 $ dits merge feature/audio
 
 Updating a1b2c3d..f5e4d3c
 Fast-forward
  audio/sound-effects.wav | new file
  audio/music.wav         | new file
- 2 files changed, 500 MB added`}</code>
-      </pre>
+ 2 files changed, 500 MB added`}
+      />
 
       <h3>Three-Way Merge</h3>
       <p>
         When both branches have changes, Dits creates a merge commit:
       </p>
-      <pre className="not-prose">
-        <code>{`$ dits merge client-version
+      <CodeBlock
+        language="bash"
+        code={`$ dits merge client-version
 
 Auto-merging project files...
 Merge made by the 'ort' strategy.
  project.prproj | modified
- 1 file changed`}</code>
-      </pre>
+ 1 file changed`}
+      />
 
       <h2>Handling Conflicts</h2>
       <p>
@@ -173,8 +180,9 @@ Merge made by the 'ort' strategy.
         rather than trying to merge content:
       </p>
 
-      <pre className="not-prose">
-        <code>{`$ dits merge client-version
+      <CodeBlock
+        language="bash"
+        code={`$ dits merge client-version
 
 CONFLICT (content): Merge conflict in footage/scene1.mov
 Automatic merge failed; fix conflicts and then commit.
@@ -185,12 +193,13 @@ You have unmerged paths.
   (fix conflicts and run "dits commit")
 
 Unmerged paths:
-  both modified: footage/scene1.mov`}</code>
-      </pre>
+  both modified: footage/scene1.mov`}
+      />
 
       <h3>Resolving Conflicts</h3>
-      <pre className="not-prose">
-        <code>{`# Keep the version from main (ours)
+      <CodeBlock
+        language="bash"
+        code={`# Keep the version from main (ours)
 $ dits checkout --ours footage/scene1.mov
 
 # Keep the version from client-version (theirs)
@@ -198,8 +207,8 @@ $ dits checkout --theirs footage/scene1.mov
 
 # Or manually place the file you want, then:
 $ dits add footage/scene1.mov
-$ dits commit -m "Merge client-version, keep our scene1"`}</code>
-      </pre>
+$ dits commit -m "Merge client-version, keep our scene1"`}
+      />
 
       <h2>File Locking</h2>
       <p>
@@ -220,9 +229,10 @@ $ dits commit -m "Merge client-version, keep our scene1"`}</code>
               Signal to teammates that you&apos;re working on a file. Others can still
               edit but will see a warning.
             </CardDescription>
-            <pre className="mt-4 bg-zinc-950 text-zinc-100 rounded-lg p-3 text-sm">
-              <code>dits lock footage/scene1.mov</code>
-            </pre>
+            <CodeBlock
+              language="bash"
+              code={`dits lock footage/scene1.mov`}
+            />
           </CardContent>
         </Card>
 
@@ -238,15 +248,17 @@ $ dits commit -m "Merge client-version, keep our scene1"`}</code>
               Prevent others from editing the file entirely until you release the
               lock.
             </CardDescription>
-            <pre className="mt-4 bg-zinc-950 text-zinc-100 rounded-lg p-3 text-sm">
-              <code>dits lock --strict footage/scene1.mov</code>
-            </pre>
+            <CodeBlock
+              language="bash"
+              code={`dits lock --strict footage/scene1.mov`}
+            />
           </CardContent>
         </Card>
       </div>
 
-      <pre className="not-prose">
-        <code>{`# Lock a file
+      <CodeBlock
+        language="bash"
+        code={`# Lock a file
 $ dits lock footage/scene1.mov
 Locked 'footage/scene1.mov'
 
@@ -256,8 +268,8 @@ footage/scene1.mov    locked by jane@example.com    2 hours ago
 
 # Unlock when done
 $ dits unlock footage/scene1.mov
-Unlocked 'footage/scene1.mov'`}</code>
-      </pre>
+Unlocked 'footage/scene1.mov'`}
+      />
 
       <h2>Branch Strategies</h2>
 
@@ -265,40 +277,70 @@ Unlocked 'footage/scene1.mov'`}</code>
       <p>
         Create a branch for each distinct piece of work:
       </p>
-      <pre className="not-prose">
-        <code>{`main
-├── feature/scene1-color
-├── feature/scene2-audio
-├── feature/titles
-└── feature/credits`}</code>
-      </pre>
+      <div className="not-prose my-4">
+        <FileTree
+          items={[
+            {
+              name: "main",
+              type: "folder",
+              children: [
+                { name: "feature/scene1-color", type: "folder" },
+                { name: "feature/scene2-audio", type: "folder" },
+                { name: "feature/titles", type: "folder" },
+                { name: "feature/credits", type: "folder" },
+              ],
+            },
+          ]}
+        />
+      </div>
 
       <h3>Client/Version Branches</h3>
       <p>
         Maintain different versions for different audiences:
       </p>
-      <pre className="not-prose">
-        <code>{`main (master edit)
-├── version/theatrical
-├── version/streaming
-├── version/tv-broadcast
-└── version/airline`}</code>
-      </pre>
+      <div className="not-prose my-4">
+        <FileTree
+          items={[
+            {
+              name: "main",
+              type: "folder",
+              comment: "master edit",
+              children: [
+                { name: "version/theatrical", type: "folder" },
+                { name: "version/streaming", type: "folder" },
+                { name: "version/tv-broadcast", type: "folder" },
+                { name: "version/airline", type: "folder" },
+              ],
+            },
+          ]}
+        />
+      </div>
 
       <h3>Release Branches</h3>
       <p>
         Stabilize releases while continuing development:
       </p>
-      <pre className="not-prose">
-        <code>{`main (development)
-├── release/v1.0
-├── release/v1.1
-└── release/v2.0`}</code>
-      </pre>
+      <div className="not-prose my-4">
+        <FileTree
+          items={[
+            {
+              name: "main",
+              type: "folder",
+              comment: "development",
+              children: [
+                { name: "release/v1.0", type: "folder" },
+                { name: "release/v1.1", type: "folder" },
+                { name: "release/v2.0", type: "folder" },
+              ],
+            },
+          ]}
+        />
+      </div>
 
       <h2>Deleting Branches</h2>
-      <pre className="not-prose">
-        <code>{`# Delete a merged branch
+      <CodeBlock
+        language="bash"
+        code={`# Delete a merged branch
 $ dits branch -d feature/completed
 Deleted branch feature/completed.
 
@@ -307,8 +349,8 @@ $ dits branch -D experiment/abandoned
 Deleted branch experiment/abandoned.
 
 # Delete a remote branch
-$ dits push origin --delete feature/completed`}</code>
-      </pre>
+$ dits push origin --delete feature/completed`}
+      />
 
       <h2>Rebasing</h2>
       <p>
@@ -316,16 +358,17 @@ $ dits push origin --delete feature/completed`}</code>
         history:
       </p>
 
-      <pre className="not-prose">
-        <code>{`$ dits switch feature/audio
+      <CodeBlock
+        language="bash"
+        code={`$ dits switch feature/audio
 $ dits rebase main
 
 Rebasing (1/3): Add sound effects
 Rebasing (2/3): Add music track
 Rebasing (3/3): Adjust audio levels
 
-Successfully rebased and updated refs/heads/feature/audio.`}</code>
-      </pre>
+Successfully rebased and updated refs/heads/feature/audio.`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -343,16 +386,17 @@ Successfully rebased and updated refs/heads/feature/audio.`}</code>
       <p>
         Apply specific commits from other branches:
       </p>
-      <pre className="not-prose">
-        <code>{`# Apply a single commit to current branch
+      <CodeBlock
+        language="bash"
+        code={`# Apply a single commit to current branch
 $ dits cherry-pick a1b2c3d
 
 [main f6g7h8i] Add sound effects
  1 file changed, 150 MB added
 
 # Cherry-pick multiple commits
-$ dits cherry-pick a1b2c3d b2c3d4e c3d4e5f`}</code>
-      </pre>
+$ dits cherry-pick a1b2c3d b2c3d4e c3d4e5f`}
+      />
 
       <h2>Next Steps</h2>
       <ul>

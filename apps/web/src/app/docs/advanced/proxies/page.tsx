@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, Image, Film, ArrowLeftRight } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Proxy Files",
@@ -78,8 +79,9 @@ export default function ProxiesPage() {
       </div>
 
       <h2>Proxy Workflow Overview</h2>
-      <pre className="not-prose">
-        <code>{`1. Add full-quality masters to repository
+      <CodeBlock
+        language="bash"
+        code={`1. Add full-quality masters to repository
    $ dits add footage/*.mov
 
 2. Generate proxies
@@ -91,14 +93,15 @@ export default function ProxiesPage() {
 
 4. Switch to masters for final render
    $ dits proxy-unuse
-   → Now footage/ shows full-quality masters`}</code>
-      </pre>
+   → Now footage/ shows full-quality masters`}
+      />
 
       <h2>Generating Proxies</h2>
 
       <h3>Basic Generation</h3>
-      <pre className="not-prose">
-        <code>{`# Generate proxies for all video files
+      <CodeBlock
+        language="bash"
+        code={`# Generate proxies for all video files
 $ dits proxy-gen footage/
 
 Generating proxies...
@@ -106,12 +109,13 @@ Generating proxies...
   footage/scene2.mov → proxies/scene2.mov (720p H.264)
   footage/scene3.mov → proxies/scene3.mov (720p H.264)
 
-Generated 3 proxies (45 GB → 1.2 GB)`}</code>
-      </pre>
+Generated 3 proxies (45 GB → 1.2 GB)`}
+      />
 
       <h3>Custom Settings</h3>
-      <pre className="not-prose">
-        <code>{`# Custom resolution
+      <CodeBlock
+        language="bash"
+        code={`# Custom resolution
 $ dits proxy-gen --resolution 1280x720 footage/
 
 # Custom codec
@@ -126,12 +130,13 @@ $ dits proxy-gen \
     --codec h264 \
     --bitrate 8M \
     --fps preserve \
-    footage/`}</code>
-      </pre>
+    footage/`}
+      />
 
       <h3>Proxy Presets</h3>
-      <pre className="not-prose">
-        <code>{`# Use a preset
+      <CodeBlock
+        language="bash"
+        code={`# Use a preset
 $ dits proxy-gen --preset editing footage/    # 720p H.264
 $ dits proxy-gen --preset review footage/     # 1080p H.264
 $ dits proxy-gen --preset mobile footage/     # 480p H.264
@@ -143,14 +148,15 @@ $ dits proxy-gen --preset mobile footage/     # 480p H.264
     bitrate = 10M
     audio = aac-256k
 
-$ dits proxy-gen --preset dailies footage/`}</code>
-      </pre>
+$ dits proxy-gen --preset dailies footage/`}
+      />
 
       <h2>Using Proxies</h2>
 
       <h3>Switch to Proxies</h3>
-      <pre className="not-prose">
-        <code>{`# Enable proxy mode
+      <CodeBlock
+        language="bash"
+        code={`# Enable proxy mode
 $ dits proxy-use
 
 Switching to proxy mode...
@@ -165,12 +171,13 @@ $ dits proxy-status
 Mode: PROXY
 Files linked: 3
 Original size: 45 GB
-Proxy size: 1.2 GB`}</code>
-      </pre>
+Proxy size: 1.2 GB`}
+      />
 
       <h3>Switch to Masters</h3>
-      <pre className="not-prose">
-        <code>{`# Disable proxy mode
+      <CodeBlock
+        language="bash"
+        code={`# Disable proxy mode
 $ dits proxy-unuse
 
 Switching to master mode...
@@ -178,25 +185,27 @@ Switching to master mode...
   Restoring footage/scene2.mov (15 GB)
   Restoring footage/scene3.mov (15 GB)
 
-Master mode enabled.`}</code>
-      </pre>
+Master mode enabled.`}
+      />
 
       <h3>Partial Proxy Mode</h3>
-      <pre className="not-prose">
-        <code>{`# Only use proxies for specific files
+      <CodeBlock
+        language="bash"
+        code={`# Only use proxies for specific files
 $ dits proxy-use footage/scene1.mov footage/scene2.mov
 
 # Use proxies for a directory
 $ dits proxy-use footage/b-roll/
 
 # Keep specific files as masters
-$ dits proxy-use --except footage/hero-shot.mov`}</code>
-      </pre>
+$ dits proxy-use --except footage/hero-shot.mov`}
+      />
 
       <h2>Configuration</h2>
 
-      <pre className="not-prose">
-        <code>{`# .dits/config
+      <CodeBlock
+        language="bash"
+        code={`# .dits/config
 [proxy]
     # Default proxy resolution
     resolution = 1280x720
@@ -215,16 +224,17 @@ $ dits proxy-use --except footage/hero-shot.mov`}</code>
 
     # Audio handling
     audioCodec = aac
-    audioBitrate = 192k`}</code>
-      </pre>
+    audioBitrate = 192k`}
+      />
 
       <h2>Proxy Attributes</h2>
       <p>
         Control proxy generation per file pattern:
       </p>
 
-      <pre className="not-prose">
-        <code>{`# .ditsattributes
+      <CodeBlock
+        language="bash"
+        code={`# .ditsattributes
 
 # Generate proxies for raw footage
 footage/*.mov proxy=auto
@@ -237,8 +247,8 @@ footage/hero-*.mov proxy=auto proxy-preset=review
 renders/*.mp4 proxy=none
 
 # Custom proxy settings
-*.r3d proxy=auto proxy-resolution=1920x1080 proxy-codec=prores-proxy`}</code>
-      </pre>
+*.r3d proxy=auto proxy-resolution=1920x1080 proxy-codec=prores-proxy`}
+      />
 
       <h2>Remote Workflows</h2>
       <p>
@@ -246,8 +256,9 @@ renders/*.mp4 proxy=none
       </p>
 
       <h3>Scenario: Remote Editor</h3>
-      <pre className="not-prose">
-        <code>{`# On-set (full masters available)
+      <CodeBlock
+        language="bash"
+        code={`# On-set (full masters available)
 $ dits add footage/*.mov
 $ dits proxy-gen footage/
 $ dits commit -m "Day 1 footage with proxies"
@@ -268,12 +279,13 @@ scene1.mov (proxy)  scene2.mov (proxy)  scene3.mov (proxy)
 
 # For final render, fetch masters for specific clips
 $ dits proxy-unuse footage/scene1.mov
-Hydrating footage/scene1.mov... 15 GB`}</code>
-      </pre>
+Hydrating footage/scene1.mov... 15 GB`}
+      />
 
       <h3>Scenario: Review and Approval</h3>
-      <pre className="not-prose">
-        <code>{`# Generate review proxies
+      <CodeBlock
+        language="bash"
+        code={`# Generate review proxies
 $ dits proxy-gen --preset review footage/
 
 # Share proxy-only branch
@@ -282,14 +294,15 @@ $ dits proxy-use
 $ dits push origin review-v1
 
 # Client clones proxy-only
-$ dits clone --proxy-only --branch review-v1 https://example.com/project`}</code>
-      </pre>
+$ dits clone --proxy-only --branch review-v1 https://example.com/project`}
+      />
 
       <h2>Commands Reference</h2>
 
       <h3>dits proxy-gen</h3>
-      <pre className="not-prose">
-        <code>{`$ dits proxy-gen [OPTIONS] <PATH>...
+      <CodeBlock
+        language="bash"
+        code={`$ dits proxy-gen [OPTIONS] <PATH>...
 
 Options:
   --resolution <WxH>    Output resolution (default: 1280x720)
@@ -297,30 +310,33 @@ Options:
   --bitrate <RATE>      Target bitrate (e.g., "5M")
   --preset <NAME>       Use named preset
   --force               Regenerate existing proxies
-  --output <DIR>        Custom output directory`}</code>
-      </pre>
+  --output <DIR>        Custom output directory`}
+      />
 
       <h3>dits proxy-use</h3>
-      <pre className="not-prose">
-        <code>{`$ dits proxy-use [OPTIONS] [PATH]...
+      <CodeBlock
+        language="bash"
+        code={`$ dits proxy-use [OPTIONS] [PATH]...
 
 Options:
   --except <PATH>       Exclude files from proxy mode
-  --force               Overwrite local changes`}</code>
-      </pre>
+  --force               Overwrite local changes`}
+      />
 
       <h3>dits proxy-unuse</h3>
-      <pre className="not-prose">
-        <code>{`$ dits proxy-unuse [OPTIONS] [PATH]...
+      <CodeBlock
+        language="bash"
+        code={`$ dits proxy-unuse [OPTIONS] [PATH]...
 
 Options:
   --keep-proxies        Don't delete local proxy files
-  --no-hydrate          Don't download masters (just unlink)`}</code>
-      </pre>
+  --no-hydrate          Don't download masters (just unlink)`}
+      />
 
       <h3>dits proxy-status</h3>
-      <pre className="not-prose">
-        <code>{`$ dits proxy-status
+      <CodeBlock
+        language="bash"
+        code={`$ dits proxy-status
 
 Mode: PROXY
 Files:
@@ -331,8 +347,8 @@ Files:
 Totals:
   Proxy files: 2 (87 MB)
   Master files: 1 (16 GB)
-  Unmaterialized masters: 2 (29 GB)`}</code>
-      </pre>
+  Unmaterialized masters: 2 (29 GB)`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />

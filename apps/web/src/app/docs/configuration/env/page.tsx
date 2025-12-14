@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Environment Variables",
@@ -156,48 +157,52 @@ export default function EnvVarsPage() {
       <p>
         Override the location of the <code>.dits</code> directory:
       </p>
-      <pre className="not-prose">
-        <code>{`# Use a different .dits location
+      <CodeBlock
+        language="bash"
+        code={`# Use a different .dits location
 $ DITS_DIR=/custom/path/.dits dits status
 
 # Useful for working with multiple repositories
 $ DITS_DIR=/repo1/.dits dits log
-$ DITS_DIR=/repo2/.dits dits log`}</code>
-      </pre>
+$ DITS_DIR=/repo2/.dits dits log`}
+      />
 
       <h3>DITS_WORK_TREE</h3>
       <p>
         Set the working tree location independently from the repository:
       </p>
-      <pre className="not-prose">
-        <code>{`# Work tree in different location
+      <CodeBlock
+        language="bash"
+        code={`# Work tree in different location
 $ DITS_DIR=/repo/.dits DITS_WORK_TREE=/worktree dits status
 
 # Useful for bare repositories with worktrees
 $ export DITS_DIR=/srv/repo.dits
 $ export DITS_WORK_TREE=/var/www/site
-$ dits pull`}</code>
-      </pre>
+$ dits pull`}
+      />
 
       <h3>DITS_CACHE_DIR</h3>
       <p>
         Override where Dits stores cached chunks:
       </p>
-      <pre className="not-prose">
-        <code>{`# Use faster storage for cache
+      <CodeBlock
+        language="bash"
+        code={`# Use faster storage for cache
 $ export DITS_CACHE_DIR=/ssd/dits-cache
 
 # Shared cache for CI runners
-$ export DITS_CACHE_DIR=/shared/cache/dits`}</code>
-      </pre>
+$ export DITS_CACHE_DIR=/shared/cache/dits`}
+      />
 
       <h2>Author/Committer Override</h2>
       <p>
         Override the author and committer information for commits:
       </p>
 
-      <pre className="not-prose">
-        <code>{`# In a CI pipeline, commit as the CI system
+      <CodeBlock
+        language="bash"
+        code={`# In a CI pipeline, commit as the CI system
 $ export DITS_AUTHOR_NAME="CI Bot"
 $ export DITS_AUTHOR_EMAIL="ci@example.com"
 $ export DITS_COMMITTER_NAME="CI Bot"
@@ -205,30 +210,32 @@ $ export DITS_COMMITTER_EMAIL="ci@example.com"
 $ dits commit -m "Automated commit"
 
 # Backdate a commit (for importing history)
-$ DITS_AUTHOR_DATE="2023-06-15T14:30:00" dits commit -m "Import"`}</code>
-      </pre>
+$ DITS_AUTHOR_DATE="2023-06-15T14:30:00" dits commit -m "Import"`}
+      />
 
       <h2>Editor and Pager</h2>
-      <pre className="not-prose">
-        <code>{`# Use a specific editor for this session
+      <CodeBlock
+        language="bash"
+        code={`# Use a specific editor for this session
 $ DITS_EDITOR="nano" dits commit
 
 # Disable pager
 $ DITS_PAGER="" dits log
 
 # Use a custom pager
-$ DITS_PAGER="less -FRSX" dits diff`}</code>
-      </pre>
+$ DITS_PAGER="less -FRSX" dits diff`}
+      />
 
       <h2>SSH Configuration</h2>
-      <pre className="not-prose">
-        <code>{`# Use a specific SSH key
+      <CodeBlock
+        language="bash"
+        code={`# Use a specific SSH key
 $ DITS_SSH_COMMAND="ssh -i ~/.ssh/deploy_key" dits clone git@example.com:repo
 
 # Use SSH with custom options
 $ export DITS_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"
-$ dits push`}</code>
-      </pre>
+$ dits push`}
+      />
 
       <h2>Debug and Trace Variables</h2>
       <Table className="not-prose my-6">
@@ -251,8 +258,9 @@ $ dits push`}</code>
       </Table>
 
       <h3>Debugging Commands</h3>
-      <pre className="not-prose">
-        <code>{`# Enable trace logging
+      <CodeBlock
+        language="bash"
+        code={`# Enable trace logging
 $ DITS_TRACE=1 dits fetch
 trace: fetch origin
 trace: connecting to example.com
@@ -268,14 +276,15 @@ $ DITS_TRACE_PACKET=1 dits clone https://example.com/repo
 $ DITS_TRACE_PERFORMANCE=1 dits add large-file.mov
 performance: chunking: 2.345s
 performance: hashing: 0.567s
-performance: staging: 0.123s`}</code>
-      </pre>
+performance: staging: 0.123s`}
+      />
 
       <h2>CI/CD Examples</h2>
 
       <h3>GitHub Actions</h3>
-      <pre className="not-prose">
-        <code>{`# .github/workflows/deploy.yml
+      <CodeBlock
+        language="bash"
+        code={`# .github/workflows/deploy.yml
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -293,12 +302,13 @@ jobs:
         run: |
           dits add .
           dits commit -m "Deploy from CI"
-          dits push`}</code>
-      </pre>
+          dits push`}
+      />
 
       <h3>GitLab CI</h3>
-      <pre className="not-prose">
-        <code>{`# .gitlab-ci.yml
+      <CodeBlock
+        language="bash"
+        code={`# .gitlab-ci.yml
 variables:
   DITS_AUTHOR_NAME: "GitLab CI"
   DITS_AUTHOR_EMAIL: "ci@gitlab.com"
@@ -306,12 +316,13 @@ variables:
 
 deploy:
   script:
-    - dits push`}</code>
-      </pre>
+    - dits push`}
+      />
 
       <h3>Jenkins</h3>
-      <pre className="not-prose">
-        <code>{`// Jenkinsfile
+      <CodeBlock
+        language="bash"
+        code={`// Jenkinsfile
 pipeline {
     environment {
         DITS_AUTHOR_NAME = 'Jenkins'
@@ -325,16 +336,17 @@ pipeline {
             }
         }
     }
-}`}</code>
-      </pre>
+}`}
+      />
 
       <h2>Shell Configuration</h2>
       <p>
         Add environment variables to your shell profile:
       </p>
 
-      <pre className="not-prose">
-        <code>{`# ~/.bashrc or ~/.zshrc
+      <CodeBlock
+        language="bash"
+        code={`# ~/.bashrc or ~/.zshrc
 
 # Dits configuration
 export DITS_EDITOR="code --wait"
@@ -344,12 +356,13 @@ export DITS_PAGER="less -R"
 export DITS_CACHE_DIR="$HOME/.cache/dits"
 
 # Debug mode (uncomment when needed)
-# export DITS_TRACE=1`}</code>
-      </pre>
+# export DITS_TRACE=1`}
+      />
 
       <h2>Checking Active Configuration</h2>
-      <pre className="not-prose">
-        <code>{`# See effective configuration including env vars
+      <CodeBlock
+        language="bash"
+        code={`# See effective configuration including env vars
 $ dits config --show-origin --list
 
 # Check specific value source
@@ -358,8 +371,8 @@ file:~/.ditsconfig    user.email=jane@example.com
 
 # With environment override
 $ DITS_AUTHOR_EMAIL="override@example.com" dits config --show-origin user.email
-command line: user.email=override@example.com`}</code>
-      </pre>
+command line: user.email=override@example.com`}
+      />
 
       <h2>Related Topics</h2>
       <ul>

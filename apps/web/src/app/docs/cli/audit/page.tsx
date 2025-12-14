@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FileSearch, Info, List, BarChart, Download } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Audit Commands",
@@ -73,25 +74,28 @@ export default function AuditCommandsPage() {
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits audit [OPTIONS]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits audit [OPTIONS]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--since <DATE>      Show events since date
+      <CodeBlock
+        language="bash"
+        code={`--since <DATE>      Show events since date
 --until <DATE>      Show events until date
 --user <USER>       Filter by user
 --action <ACTION>   Filter by action type
 --file <PATH>       Filter by file path
 --limit <N>         Limit number of results (default: 50)
 --json              Output as JSON
--v, --verbose       Show detailed event data`}</code>
-      </pre>
+-v, --verbose       Show detailed event data`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# View recent audit events
+      <CodeBlock
+        language="bash"
+        code={`# View recent audit events
 $ dits audit
 
 Audit Log (last 50 events):
@@ -151,8 +155,8 @@ Event: push (2025-01-15 16:45:32)
   Bytes transferred: 1.2 GB
   Duration: 45s
   Status: SUCCESS
-  ...`}</code>
-      </pre>
+  ...`}
+      />
 
       <h3>Tracked Events</h3>
       <Table className="not-prose my-6">
@@ -222,21 +226,24 @@ Event: push (2025-01-15 16:45:32)
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits audit-stats [OPTIONS]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits audit-stats [OPTIONS]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--period <PERIOD>   Time period (day, week, month, year)
+      <CodeBlock
+        language="bash"
+        code={`--period <PERIOD>   Time period (day, week, month, year)
 --group-by <FIELD>  Group by field (user, action, file)
 --json              Output as JSON
--v, --verbose       Show detailed statistics`}</code>
-      </pre>
+-v, --verbose       Show detailed statistics`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`$ dits audit-stats
+      <CodeBlock
+        language="bash"
+        code={`$ dits audit-stats
 
 Audit Statistics (last 30 days):
 
@@ -298,8 +305,8 @@ Activity by User:
     Commits: 67
     Pushes: 34
     Locks: 15
-  ...`}</code>
-      </pre>
+  ...`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Download className="h-5 w-5" />
@@ -311,23 +318,26 @@ Activity by User:
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits audit-export [OPTIONS]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits audit-export [OPTIONS]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--since <DATE>      Export events since date
+      <CodeBlock
+        language="bash"
+        code={`--since <DATE>      Export events since date
 --until <DATE>      Export events until date
 --format <FMT>      Output format (json, csv, jsonl)
 --output <FILE>     Output file (default: stdout)
 --compress          Compress output (gzip)
---filter <EXPR>     Filter expression`}</code>
-      </pre>
+--filter <EXPR>     Filter expression`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Export last month's logs
+      <CodeBlock
+        language="bash"
+        code={`# Export last month's logs
 $ dits audit-export --since 2025-01-01 --output audit-jan-2025.json
 
 Exporting audit logs...
@@ -359,12 +369,13 @@ $ dits audit-export \\
 Exporting full year audit...
   Events: 45,678
   Size: 12.3 MB (compressed: 1.2 MB)
-  Output: audit-2024-full.json.gz`}</code>
-      </pre>
+  Output: audit-2024-full.json.gz`}
+      />
 
       <h3>Export Format</h3>
-      <pre className="not-prose">
-        <code>{`// JSON format (audit-export --format json)
+      <CodeBlock
+        language="bash"
+        code={`// JSON format (audit-export --format json)
 {
   "events": [
     {
@@ -400,14 +411,15 @@ Exporting full year audit...
       "until": "2025-01-31T23:59:59Z"
     }
   }
-}`}</code>
-      </pre>
+}`}
+      />
 
       <h2>Use Cases</h2>
 
       <h3>Security Investigation</h3>
-      <pre className="not-prose">
-        <code>{`# Find all access attempts for a file
+      <CodeBlock
+        language="bash"
+        code={`# Find all access attempts for a file
 $ dits audit --file sensitive-project.prproj --since 2025-01-01
 
 # Check for failed access attempts
@@ -416,20 +428,21 @@ $ dits audit --action access-denied
 # Export for SIEM integration
 $ dits audit-export --format jsonl | curl -X POST \\
     -H "Content-Type: application/x-ndjson" \\
-    https://siem.example.com/ingest`}</code>
-      </pre>
+    https://siem.example.com/ingest`}
+      />
 
       <h3>Compliance Reporting</h3>
-      <pre className="not-prose">
-        <code>{`# Generate quarterly audit report
+      <CodeBlock
+        language="bash"
+        code={`# Generate quarterly audit report
 $ dits audit-export \\
     --since 2025-01-01 \\
     --until 2025-03-31 \\
     --output Q1-2025-audit.json
 
 # Count unique users with access
-$ dits audit --since 2025-01-01 | grep -o '[^ ]*@[^ ]*' | sort -u | wc -l`}</code>
-      </pre>
+$ dits audit --since 2025-01-01 | grep -o '[^ ]*@[^ ]*' | sort -u | wc -l`}
+      />
 
       <h2>Related Commands</h2>
       <ul>

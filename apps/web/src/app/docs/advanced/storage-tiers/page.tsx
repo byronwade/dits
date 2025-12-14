@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Info, HardDrive, Cloud, Archive } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Storage Tiers",
@@ -86,8 +87,9 @@ export default function StorageTiersPage() {
       </div>
 
       <h2>How It Works</h2>
-      <pre className="not-prose">
-        <code>{`Data Flow:
+      <CodeBlock
+        language="bash"
+        code={`Data Flow:
 
   Add file → HOT (local .dits/objects/)
       ↓
@@ -96,14 +98,15 @@ export default function StorageTiersPage() {
   Age out → COLD (archive)
 
 Access triggers promotion:
-  Request archived file → Restore from COLD → WARM → HOT`}</code>
-      </pre>
+  Request archived file → Restore from COLD → WARM → HOT`}
+      />
 
       <h2>Tier Configuration</h2>
 
       <h3>Basic Setup</h3>
-      <pre className="not-prose">
-        <code>{`# .dits/config
+      <CodeBlock
+        language="bash"
+        code={`# .dits/config
 [storage]
     # Local hot storage
     hotPath = .dits/objects
@@ -119,8 +122,8 @@ Access triggers promotion:
     # Glacier for archive
     type = s3-glacier
     bucket = my-project-archive
-    region = us-west-2`}</code>
-      </pre>
+    region = us-west-2`}
+      />
 
       <h3>Storage Backends</h3>
       <Table className="not-prose my-6">
@@ -177,8 +180,9 @@ Access triggers promotion:
         Define rules for automatic data movement:
       </p>
 
-      <pre className="not-prose">
-        <code>{`# .dits/config
+      <CodeBlock
+        language="bash"
+        code={`# .dits/config
 [lifecycle]
     # Move to warm after not accessed for 7 days
     warmAfter = 7d
@@ -199,14 +203,15 @@ Access triggers promotion:
     # Raw footage moves to cold faster
     pattern = raw/**
     warmAfter = 3d
-    coldAfter = 30d`}</code>
-      </pre>
+    coldAfter = 30d`}
+      />
 
       <h2>Manual Tier Management</h2>
 
       <h3>Check Storage Status</h3>
-      <pre className="not-prose">
-        <code>{`$ dits storage status
+      <CodeBlock
+        language="bash"
+        code={`$ dits storage status
 
 Storage Tiers:
   HOT (local):
@@ -225,12 +230,13 @@ Storage Tiers:
 Recent Activity:
   Promoted to HOT: 234 chunks (2.1 GB) today
   Demoted to WARM: 0 chunks
-  Archived to COLD: 1,234 chunks (15 GB) this week`}</code>
-      </pre>
+  Archived to COLD: 1,234 chunks (15 GB) this week`}
+      />
 
       <h3>Move Data Between Tiers</h3>
-      <pre className="not-prose">
-        <code>{`# Promote specific file to hot storage
+      <CodeBlock
+        language="bash"
+        code={`# Promote specific file to hot storage
 $ dits storage promote footage/scene1.mov
 Promoting footage/scene1.mov...
   Restoring from WARM... done
@@ -246,12 +252,13 @@ Demoting footage/old-takes/...
 $ dits storage archive footage/2023-archive/
 Archiving footage/2023-archive/...
   Moving to COLD... done
-  Note: Retrieval will take 3-5 hours`}</code>
-      </pre>
+  Note: Retrieval will take 3-5 hours`}
+      />
 
       <h3>Pin Data to Tier</h3>
-      <pre className="not-prose">
-        <code>{`# Keep file always in hot storage
+      <CodeBlock
+        language="bash"
+        code={`# Keep file always in hot storage
 $ dits storage pin hot footage/hero-shot.mov
 Pinned footage/hero-shot.mov to HOT tier
 
@@ -265,8 +272,8 @@ $ dits storage unpin footage/hero-shot.mov
 $ dits storage pinned
 HOT:
   footage/hero-shot.mov (15 GB)
-  project-files/ (45 MB)`}</code>
-      </pre>
+  project-files/ (45 MB)`}
+      />
 
       <h2>Retrieval from Cold Storage</h2>
 
@@ -283,8 +290,9 @@ HOT:
         </AlertDescription>
       </Alert>
 
-      <pre className="not-prose">
-        <code>{`# Request restoration (async)
+      <CodeBlock
+        language="bash"
+        code={`# Request restoration (async)
 $ dits storage restore footage/2023-archive/
 Initiating restore from COLD storage...
 Restore request submitted.
@@ -301,14 +309,15 @@ In Progress:
 # Fast restore (higher cost)
 $ dits storage restore --expedited footage/urgent-file.mov
 Expedited restore initiated.
-Estimated completion: 1-5 minutes`}</code>
-      </pre>
+Estimated completion: 1-5 minutes`}
+      />
 
       <h2>Cost Optimization</h2>
 
       <h3>Analyze Storage Costs</h3>
-      <pre className="not-prose">
-        <code>{`$ dits storage cost-report
+      <CodeBlock
+        language="bash"
+        code={`$ dits storage cost-report
 
 Monthly Cost Estimate:
 
@@ -329,12 +338,13 @@ Monthly Cost Estimate:
 
 Optimization Suggestions:
   - Move 45 GB of inactive warm data to cold: Save $0.87/mo
-  - Use Glacier Deep for 500 GB archive: Save $1.50/mo`}</code>
-      </pre>
+  - Use Glacier Deep for 500 GB archive: Save $1.50/mo`}
+      />
 
       <h3>Optimize Storage</h3>
-      <pre className="not-prose">
-        <code>{`# Run optimization analysis
+      <CodeBlock
+        language="bash"
+        code={`# Run optimization analysis
 $ dits storage optimize --dry-run
 
 Optimization Plan:
@@ -347,12 +357,13 @@ Optimization Plan:
 
 Total potential savings: $1.27/month
 
-Apply optimizations? [y/N]`}</code>
-      </pre>
+Apply optimizations? [y/N]`}
+      />
 
       <h2>Multi-Region Configuration</h2>
-      <pre className="not-prose">
-        <code>{`# .dits/config
+      <CodeBlock
+        language="bash"
+        code={`# .dits/config
 [storage.warm.primary]
     type = s3
     bucket = project-us-west
@@ -366,41 +377,44 @@ Apply optimizations? [y/N]`}</code>
 [storage.replication]
     enabled = true
     targets = primary, replica
-    consistency = eventual`}</code>
-      </pre>
+    consistency = eventual`}
+      />
 
       <h2>Storage Backends Configuration</h2>
 
       <h3>AWS S3</h3>
-      <pre className="not-prose">
-        <code>{`[storage.warm]
+      <CodeBlock
+        language="json"
+        code={`[storage.warm]
     type = s3
     bucket = my-dits-bucket
     region = us-west-2
     accessKey = \${DITS_AWS_ACCESS_KEY}
     secretKey = \${DITS_AWS_SECRET_KEY}
-    storageClass = STANDARD_IA  # or STANDARD, ONEZONE_IA`}</code>
-      </pre>
+    storageClass = STANDARD_IA  # or STANDARD, ONEZONE_IA`}
+      />
 
       <h3>Google Cloud Storage</h3>
-      <pre className="not-prose">
-        <code>{`[storage.warm]
+      <CodeBlock
+        language="json"
+        code={`[storage.warm]
     type = gcs
     bucket = my-dits-bucket
     project = my-project
     credentialsFile = ~/.config/gcloud/credentials.json
-    storageClass = NEARLINE  # or STANDARD, COLDLINE, ARCHIVE`}</code>
-      </pre>
+    storageClass = NEARLINE  # or STANDARD, COLDLINE, ARCHIVE`}
+      />
 
       <h3>Azure Blob Storage</h3>
-      <pre className="not-prose">
-        <code>{`[storage.warm]
+      <CodeBlock
+        language="json"
+        code={`[storage.warm]
     type = azure
     container = my-dits-container
     accountName = myaccount
     accountKey = \${DITS_AZURE_KEY}
-    tier = Cool  # or Hot, Archive`}</code>
-      </pre>
+    tier = Cool  # or Hot, Archive`}
+      />
 
       <h2>Related Topics</h2>
       <ul>

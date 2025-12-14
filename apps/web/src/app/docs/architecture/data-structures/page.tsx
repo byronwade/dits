@@ -2,6 +2,9 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
+import { FileTree } from "@/components/docs/file-tree";
+import { CommitGraph } from "@/components/docs/commit-graph";
 
 export const metadata: Metadata = {
   title: "Data Structures",
@@ -18,24 +21,40 @@ export default function DataStructuresPage() {
       </p>
 
       <h2>Object Hierarchy</h2>
-      <pre className="not-prose">
-        <code>{`Commit
-  └── Tree (Manifest)
-        └── Entry → Asset
-                      └── ChunkRef → Chunk
-                      └── ChunkRef → Chunk
-                      └── ...
-
-Example:
-Commit a1b2c3d4
-  └── Tree def45678
-        ├── "footage/scene1.mov" → Asset abc123
-        │                            ├── Chunk 001 (1MB)
-        │                            ├── Chunk 002 (1MB)
-        │                            └── ...
-        ├── "footage/scene2.mov" → Asset def456
-        └── "project.prproj" → Asset ghi789`}</code>
-      </pre>
+      <div className="not-prose my-6">
+        <FileTree
+          items={[
+            {
+              name: "Commit a1b2c3d4",
+              type: "folder",
+              children: [
+                {
+                  name: "Tree def45678",
+                  type: "folder",
+                  comment: "Manifest",
+                  children: [
+                    {
+                      name: "footage/scene1.mov",
+                      type: "file",
+                      comment: "→ Asset abc123 (Chunks: 001, 002, ...)",
+                    },
+                    {
+                      name: "footage/scene2.mov",
+                      type: "file",
+                      comment: "→ Asset def456",
+                    },
+                    {
+                      name: "project.prproj",
+                      type: "file",
+                      comment: "→ Asset ghi789",
+                    },
+                  ],
+                },
+              ],
+            },
+          ]}
+        />
+      </div>
 
       <h2>Chunk</h2>
       <p>
@@ -43,8 +62,9 @@ Commit a1b2c3d4
         content, typically 256KB to 4MB.
       </p>
 
-      <pre className="not-prose">
-        <code>{`struct Chunk {
+      <CodeBlock
+        language="bash"
+        code={`struct Chunk {
     // 32-byte BLAKE3 hash of the raw content
     hash: [u8; 32],
 
@@ -67,8 +87,8 @@ enum Compression {
 // Storage format on disk:
 // .dits/objects/chunks/a1/b2c3d4e5f6...
 //                      ^^
-//                      First 2 hex chars of hash`}</code>
-      </pre>
+//                      First 2 hex chars of hash`}
+      />
 
       <h3>Chunk Properties</h3>
       <ul>
@@ -84,8 +104,9 @@ enum Compression {
         list of chunk references that reconstruct the file.
       </p>
 
-      <pre className="not-prose">
-        <code>{`struct Asset {
+      <CodeBlock
+        language="bash"
+        code={`struct Asset {
     // Hash of the entire file content (for verification)
     content_hash: [u8; 32],
 
@@ -124,8 +145,8 @@ struct MediaMetadata {
     frame_rate: Option<f32>,
     codec: Option<String>,
     keyframe_positions: Vec<u64>,
-}`}</code>
-      </pre>
+}`}
+      />
 
       <h3>Asset Properties</h3>
       <ul>
@@ -140,8 +161,9 @@ struct MediaMetadata {
         to assets.
       </p>
 
-      <pre className="not-prose">
-        <code>{`struct Tree {
+      <CodeBlock
+        language="bash"
+        code={`struct Tree {
     // Hash of the tree (computed from sorted entries)
     hash: [u8; 32],
 
@@ -169,8 +191,8 @@ enum FileMode {
 // Serialization (sorted by path for consistent hashing):
 footage/scene1.mov  100644  abc123...
 footage/scene2.mov  100644  def456...
-project.prproj      100644  ghi789...`}</code>
-      </pre>
+project.prproj      100644  ghi789...`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -188,8 +210,9 @@ project.prproj      100644  ghi789...`}</code>
         made the change and when.
       </p>
 
-      <pre className="not-prose">
-        <code>{`struct Commit {
+      <CodeBlock
+        language="bash"
+        code={`struct Commit {
     // Hash of this commit
     hash: [u8; 32],
 
@@ -225,24 +248,24 @@ parent 9f8e7d6c...
 author Jane Editor <jane@example.com> 1705340400 -0800
 committer Jane Editor <jane@example.com> 1705340400 -0800
 
-Add color grading to scene 1`}</code>
-      </pre>
+Add color grading to scene 1`}
+      />
 
       <h3>Commit Graph</h3>
       <p>
         Commits form a directed acyclic graph (DAG) through parent references:
       </p>
-      <pre className="not-prose">
-        <code>{`    a1b2c3d ← HEAD, main
-        │
-    9f8e7d6
-        │
-    5c4b3a2
-       / \\
-  1234567  7654321 ← merge commit
-       \\ /
-    abcdef0`}</code>
-      </pre>
+      <div className="not-prose my-6">
+        <CommitGraph
+          commits={[
+            { hash: "a1b2c3d", labels: ["HEAD", "main"] },
+            { hash: "9f8e7d6" },
+            { hash: "5c4b3a2", isMerge: true, label: "merge commit" },
+            { hash: "1234567" },
+            { hash: "abcdef0" },
+          ]}
+        />
+      </div>
 
       <h2>Reference</h2>
       <p>
@@ -250,8 +273,9 @@ Add color grading to scene 1`}</code>
         functionality.
       </p>
 
-      <pre className="not-prose">
-        <code>{`// Reference types:
+      <CodeBlock
+        language="bash"
+        code={`// Reference types:
 
 // Branch - mutable pointer to a commit
 // .dits/refs/heads/main → a1b2c3d4...
@@ -265,8 +289,8 @@ Add color grading to scene 1`}</code>
 // HEAD - current position (symbolic or direct)
 // .dits/HEAD → ref: refs/heads/main
 // or
-// .dits/HEAD → a1b2c3d4...  (detached)`}</code>
-      </pre>
+// .dits/HEAD → a1b2c3d4...  (detached)`}
+      />
 
       <h2>Index (Staging Area)</h2>
       <p>
@@ -274,8 +298,9 @@ Add color grading to scene 1`}</code>
         last commit.
       </p>
 
-      <pre className="not-prose">
-        <code>{`struct Index {
+      <CodeBlock
+        language="bash"
+        code={`struct Index {
     // Version for format compatibility
     version: u32,
 
@@ -309,16 +334,17 @@ struct FileStat {
     uid: u32,
     gid: u32,
     size: u64,
-}`}</code>
-      </pre>
+}`}
+      />
 
       <h2>Pack Files</h2>
       <p>
         For efficient storage and transfer, objects can be packed together:
       </p>
 
-      <pre className="not-prose">
-        <code>{`struct PackFile {
+      <CodeBlock
+        language="bash"
+        code={`struct PackFile {
     // Pack header
     magic: [u8; 4],    // "PACK"
     version: u32,
@@ -342,39 +368,46 @@ struct PackIndex {
 
 // Storage:
 // .dits/objects/packs/pack-a1b2c3d4.pack
-// .dits/objects/packs/pack-a1b2c3d4.idx`}</code>
-      </pre>
+// .dits/objects/packs/pack-a1b2c3d4.idx`}
+      />
 
       <h2>Object Storage Layout</h2>
-      <pre className="not-prose">
-        <code>{`.dits/
-├── HEAD                    # Current branch reference
-├── config                  # Repository configuration
-├── index                   # Staging area
-├── objects/
-│   ├── chunks/             # Loose chunk objects
-│   │   ├── a1/
-│   │   │   └── b2c3d4...   # Chunk file
-│   │   └── ...
-│   ├── assets/             # Asset manifests
-│   │   └── ...
-│   ├── trees/              # Tree manifests
-│   │   └── ...
-│   ├── commits/            # Commit objects
-│   │   └── ...
-│   └── packs/              # Packed objects
-│       ├── pack-xxx.pack
-│       └── pack-xxx.idx
-├── refs/
-│   ├── heads/              # Local branches
-│   │   └── main
-│   ├── remotes/            # Remote tracking
-│   │   └── origin/
-│   │       └── main
-│   └── tags/               # Tags
-│       └── v1.0
-└── hooks/                  # Repository hooks`}</code>
-      </pre>
+      <div className="not-prose my-6">
+        <FileTree
+          items={[
+            {
+              name: ".dits",
+              type: "folder",
+              children: [
+                { name: "HEAD", type: "file", comment: "Current branch reference" },
+                { name: "config", type: "file", comment: "Repository configuration" },
+                { name: "index", type: "file", comment: "Staging area" },
+                {
+                  name: "objects",
+                  type: "folder",
+                  children: [
+                    { name: "chunks", type: "folder", comment: "Loose chunk objects" },
+                    { name: "assets", type: "folder", comment: "Asset manifests" },
+                    { name: "trees", type: "folder", comment: "Tree manifests" },
+                    { name: "commits", type: "folder", comment: "Commit objects" },
+                    { name: "packs", type: "folder", comment: "Packed objects" },
+                  ],
+                },
+                {
+                  name: "refs",
+                  type: "folder",
+                  children: [
+                    { name: "heads", type: "folder", comment: "Local branches" },
+                    { name: "remotes", type: "folder", comment: "Remote tracking" },
+                    { name: "tags", type: "folder", comment: "Tags" },
+                  ],
+                },
+                { name: "hooks", type: "folder", comment: "Repository hooks" },
+              ],
+            },
+          ]}
+        />
+      </div>
 
       <h2>Related Topics</h2>
       <ul>

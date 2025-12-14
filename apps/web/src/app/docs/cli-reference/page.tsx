@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CodeBlock } from "@/components/ui/code-block";
 import {
   FolderGit2,
   Files,
@@ -186,6 +187,15 @@ const commandCategories = [
     color: "text-slate-500",
     bgColor: "bg-slate-500/10",
   },
+  {
+    title: "Telemetry",
+    description: "Manage telemetry and usage analytics",
+    icon: Activity,
+    href: "/docs/architecture/security#telemetry--usage-analytics",
+    commands: ["telemetry enable", "telemetry disable", "telemetry status"],
+    color: "text-gray-500",
+    bgColor: "bg-gray-500/10",
+  },
 ];
 
 const allCommands = [
@@ -283,6 +293,10 @@ const allCommands = [
   { name: "fsck", description: "Verify repository integrity", category: "Maintenance", status: "stable" },
   { name: "repo-stats", description: "Show repository statistics", category: "Maintenance", status: "stable" },
   { name: "config", description: "Get and set configuration", category: "Maintenance", status: "stable" },
+  // Telemetry
+  { name: "telemetry enable", description: "Enable telemetry data collection", category: "Telemetry", status: "stable" },
+  { name: "telemetry disable", description: "Disable telemetry data collection", category: "Telemetry", status: "stable" },
+  { name: "telemetry status", description: "Show current telemetry settings", category: "Telemetry", status: "stable" },
 ];
 
 export default function CLIReferencePage() {
@@ -308,16 +322,17 @@ export default function CLIReferencePage() {
 
       <h2>Global Options</h2>
       <p>These options can be used with any command:</p>
-      <pre className="not-prose">
-        <code>{`-v, --verbose       Increase output verbosity (use -vv for debug)
+      <CodeBlock
+        language="text"
+        code={`-v, --verbose       Increase output verbosity (use -vv for debug)
 -q, --quiet         Suppress non-essential output
 --no-color          Disable colored output
 --json              Output in JSON format (for scripting)
 -C <path>           Run as if dits was started in <path>
 --config <key=val>  Override config value for this command
 -h, --help          Show help for command
---version           Show dits version`}</code>
-      </pre>
+--version           Show dits version`}
+      />
 
       <h2>Command Categories</h2>
       <p>
@@ -530,8 +545,9 @@ export default function CLIReferencePage() {
       <h2>Common Workflows</h2>
 
       <h3>Initial Setup</h3>
-      <pre className="not-prose">
-        <code>{`# Configure your identity
+      <CodeBlock
+        language="bash"
+        code={`# Configure your identity
 dits config --global user.name "Your Name"
 dits config --global user.email "you@example.com"
 
@@ -541,12 +557,13 @@ cd project
 
 # Or initialize a new one
 dits init my-new-project
-cd my-new-project`}</code>
-      </pre>
+cd my-new-project`}
+      />
 
       <h3>Daily Workflow</h3>
-      <pre className="not-prose">
-        <code>{`# Start day: get latest changes
+      <CodeBlock
+        language="bash"
+        code={`# Start day: get latest changes
 dits pull
 
 # Check what's changed
@@ -565,12 +582,13 @@ dits commit -m "Color grade scene 1"
 dits push
 
 # Unlock when done
-dits unlock footage/scene01.mov`}</code>
-      </pre>
+dits unlock footage/scene01.mov`}
+      />
 
       <h3>Using Virtual Filesystem</h3>
-      <pre className="not-prose">
-        <code>{`# Mount repository as virtual drive
+      <CodeBlock
+        language="bash"
+        code={`# Mount repository as virtual drive
 dits mount /mnt/project
 
 # Files appear instantly, hydrate on-demand
@@ -580,12 +598,13 @@ ls /mnt/project/footage/
 # Edit as normal - no full download required
 
 # When done
-dits unmount /mnt/project`}</code>
-      </pre>
+dits unmount /mnt/project`}
+      />
 
       <h3>Working with Video</h3>
-      <pre className="not-prose">
-        <code>{`# Inspect video structure
+      <CodeBlock
+        language="bash"
+        code={`# Inspect video structure
 dits inspect footage/hero.mov
 
 # Check deduplication stats
@@ -595,8 +614,8 @@ dits inspect-file footage/hero.mov
 dits proxy-generate --resolution 1080p footage/
 
 # Check proxy status
-dits proxy-status`}</code>
-      </pre>
+dits proxy-status`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { HardDrive, Info, Database, Unplug, BarChart3 } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "VFS Commands",
@@ -74,13 +75,15 @@ export default function VFSCommandsPage() {
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits mount [OPTIONS] [MOUNTPOINT]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits mount [OPTIONS] [MOUNTPOINT]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--read-only           Mount as read-only (no modifications)
+      <CodeBlock
+        language="bash"
+        code={`--read-only           Mount as read-only (no modifications)
 --allow-other         Allow other users to access mount
 --commit <REF>        Mount a specific commit or tag
 --branch <NAME>       Mount a specific branch
@@ -90,12 +93,13 @@ export default function VFSCommandsPage() {
 --prefetch            Enable aggressive prefetching
 --prefetch-size <N>   Prefetch next N chunks
 --no-sparse           Disable sparse file support
--v, --verbose         Show detailed mount information`}</code>
-      </pre>
+-v, --verbose         Show detailed mount information`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Mount to default location
+      <CodeBlock
+        language="bash"
+        code={`# Mount to default location
 $ dits mount
 
 Mounting repository at /Volumes/dits-project...
@@ -129,12 +133,13 @@ $ dits mount --branch feature/color-grade /mnt/color-grade
 $ dits mount --cache-size 100GB /mnt/project
 
 # Mount with prefetching for smoother playback
-$ dits mount --prefetch --prefetch-size 10 /mnt/project`}</code>
-      </pre>
+$ dits mount --prefetch --prefetch-size 10 /mnt/project`}
+      />
 
       <h3>How It Works</h3>
-      <pre className="not-prose">
-        <code>{`Mount Architecture:
+      <CodeBlock
+        language="bash"
+        code={`Mount Architecture:
 
 ┌─────────────────────────────────────────────────────┐
 │                   Your Application                   │
@@ -160,8 +165,8 @@ $ dits mount --prefetch --prefetch-size 10 /mnt/project`}</code>
    ┌──────────────┐           ┌──────────────┐
    │ Local Cache  │           │    Remote    │
    │ .dits/cache/ │           │   Storage    │
-   └──────────────┘           └──────────────┘`}</code>
-      </pre>
+   └──────────────┘           └──────────────┘`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Unplug className="h-5 w-5" />
@@ -173,20 +178,23 @@ $ dits mount --prefetch --prefetch-size 10 /mnt/project`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits unmount [OPTIONS] [MOUNTPOINT]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits unmount [OPTIONS] [MOUNTPOINT]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`-f, --force         Force unmount (may lose unsaved data)
+      <CodeBlock
+        language="bash"
+        code={`-f, --force         Force unmount (may lose unsaved data)
 --all               Unmount all Dits mounts
---wait              Wait for operations to complete`}</code>
-      </pre>
+--wait              Wait for operations to complete`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Unmount default location
+      <CodeBlock
+        language="bash"
+        code={`# Unmount default location
 $ dits unmount
 Unmounting /Volumes/dits-project...
 Syncing pending changes... done
@@ -205,8 +213,8 @@ $ dits unmount --all
 Unmounting 3 mounts...
   /Volumes/dits-project... done
   /mnt/v1-release... done
-  /mnt/color-grade... done`}</code>
-      </pre>
+  /mnt/color-grade... done`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -228,21 +236,24 @@ Unmounting 3 mounts...
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits cache-stats [OPTIONS]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits cache-stats [OPTIONS]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--json              Output in JSON format
+      <CodeBlock
+        language="bash"
+        code={`--json              Output in JSON format
 --clear             Clear the cache
 --top <N>           Show top N cached files
--v, --verbose       Show detailed statistics`}</code>
-      </pre>
+-v, --verbose       Show detailed statistics`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`$ dits cache-stats
+      <CodeBlock
+        language="bash"
+        code={`$ dits cache-stats
 
 VFS Cache Statistics:
 
@@ -287,14 +298,15 @@ Cache Configuration:
   Max Size: 10 GB
   Eviction Policy: LRU
   Prefetch: enabled (5 chunks ahead)
-  ...`}</code>
-      </pre>
+  ...`}
+      />
 
       <h2>VFS Use Cases</h2>
 
       <h3>Instant Access to Large Repositories</h3>
-      <pre className="not-prose">
-        <code>{`# Clone metadata only (fast!)
+      <CodeBlock
+        language="bash"
+        code={`# Clone metadata only (fast!)
 $ dits clone --filter blob:none https://dits.example.com/huge-project
 Cloning into 'huge-project'...
 Metadata fetched: 15 MB
@@ -306,12 +318,13 @@ Files available at /mnt/huge
 
 # Open files - they stream on demand
 $ vlc /mnt/huge/footage/scene01.mov
-# Video plays immediately, chunks stream as needed`}</code>
-      </pre>
+# Video plays immediately, chunks stream as needed`}
+      />
 
       <h3>Multi-Version Access</h3>
-      <pre className="not-prose">
-        <code>{`# Mount multiple versions simultaneously
+      <CodeBlock
+        language="bash"
+        code={`# Mount multiple versions simultaneously
 $ dits mount --commit v1.0 /mnt/v1 &
 $ dits mount --commit v2.0 /mnt/v2 &
 $ dits mount --branch main /mnt/current &
@@ -321,12 +334,13 @@ $ diff /mnt/v1/config.json /mnt/v2/config.json
 
 # Reference old footage while working on new cut
 $ ls /mnt/v1/footage/
-$ ls /mnt/current/footage/`}</code>
-      </pre>
+$ ls /mnt/current/footage/`}
+      />
 
       <h3>Remote Editing Workflow</h3>
-      <pre className="not-prose">
-        <code>{`# On a remote machine with limited storage
+      <CodeBlock
+        language="bash"
+        code={`# On a remote machine with limited storage
 $ dits mount --cache-size 5GB /mnt/project
 
 # Edit uses local cache intelligently
@@ -336,8 +350,8 @@ $ dits mount --cache-size 5GB /mnt/project
 
 # Check cache efficiency
 $ dits cache-stats
-Hit Rate: 96.5%  # Most reads from local cache`}</code>
-      </pre>
+Hit Rate: 96.5%  # Most reads from local cache`}
+      />
 
       <h2>Platform Support</h2>
       <Table className="not-prose my-6">

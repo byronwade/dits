@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, GitCommit, History, Search } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Commits & History",
@@ -38,8 +39,9 @@ export default function CommitsPage() {
         <li><strong>Message:</strong> Description of what changed</li>
       </ul>
 
-      <pre className="not-prose">
-        <code>{`Commit a1b2c3d4
+      <CodeBlock
+        language="bash"
+        code={`Commit a1b2c3d4
 ├── Tree: def456...
 │   ├── footage/scene1.mov → asset:789abc...
 │   ├── footage/scene2.mov → asset:012def...
@@ -47,16 +49,17 @@ export default function CommitsPage() {
 ├── Parent: 9f8e7d6c
 ├── Author: Jane Editor <jane@example.com>
 ├── Date: 2024-01-15 10:30:00 -0800
-└── Message: Add color grading to scene 1`}</code>
-      </pre>
+└── Message: Add color grading to scene 1`}
+      />
 
       <h2>Creating Commits</h2>
       <p>
         Stage your changes with <code>dits add</code>, then create a commit:
       </p>
 
-      <pre className="not-prose">
-        <code>{`# Stage specific files
+      <CodeBlock
+        language="bash"
+        code={`# Stage specific files
 $ dits add footage/scene1.mov
 
 # Stage all changes
@@ -66,15 +69,16 @@ $ dits add .
 $ dits commit -m "Add scene 1 footage"
 
 [main a1b2c3d] Add scene 1 footage
- 1 file changed, 10 GB added`}</code>
-      </pre>
+ 1 file changed, 10 GB added`}
+      />
 
       <h3>Interactive Staging</h3>
       <p>
         For fine-grained control, use interactive mode:
       </p>
-      <pre className="not-prose">
-        <code>{`$ dits add -i
+      <CodeBlock
+        language="bash"
+        code={`$ dits add -i
 
 *** Commands ***
   1: status     2: add       3: revert
@@ -85,8 +89,8 @@ What now> 2
   2: footage/scene2.mov (new file)
 
 Add>> 1
-Staged footage/scene1.mov`}</code>
-      </pre>
+Staged footage/scene1.mov`}
+      />
 
       <h2>Commit Messages</h2>
       <p>
@@ -106,8 +110,9 @@ Staged footage/scene1.mov`}</code>
         </AlertDescription>
       </Alert>
 
-      <pre className="not-prose">
-        <code>{`# Short message
+      <CodeBlock
+        language="bash"
+        code={`# Short message
 $ dits commit -m "Add scene 1 color grading"
 
 # Multi-line message (opens editor)
@@ -118,8 +123,8 @@ $ dits commit -m "Add scene 1 color grading
 
 - Applied LUT: Kodak 2383
 - Adjusted shadows +10
-- Fixed skin tone in shots 5-8"`}</code>
-      </pre>
+- Fixed skin tone in shots 5-8"`}
+      />
 
       <h2>Viewing History</h2>
 
@@ -168,8 +173,9 @@ $ dits commit -m "Add scene 1 color grading
       </div>
 
       <h3>Basic Log</h3>
-      <pre className="not-prose">
-        <code>{`$ dits log
+      <CodeBlock
+        language="bash"
+        code={`$ dits log
 
 commit a1b2c3d4 (HEAD -> main)
 Author: Jane Editor <jane@example.com>
@@ -181,12 +187,13 @@ commit 9f8e7d6c
 Author: John Editor <john@example.com>
 Date:   Sun Jan 14 16:45:00 2024 -0800
 
-    Initial footage import`}</code>
-      </pre>
+    Initial footage import`}
+      />
 
       <h3>Formatted Log</h3>
-      <pre className="not-prose">
-        <code>{`# One-line format
+      <CodeBlock
+        language="bash"
+        code={`# One-line format
 $ dits log --oneline
 a1b2c3d Add color grading to scene 1
 9f8e7d6 Initial footage import
@@ -204,14 +211,15 @@ $ dits log --stat
 commit a1b2c3d
     Add color grading to scene 1
  footage/scene1.mov | 10.2 GB → 10.2 GB (modified)
- 1 file changed`}</code>
-      </pre>
+ 1 file changed`}
+      />
 
       <h2>Inspecting Commits</h2>
 
       <h3>Show Commit Details</h3>
-      <pre className="not-prose">
-        <code>{`$ dits show a1b2c3d
+      <CodeBlock
+        language="bash"
+        code={`$ dits show a1b2c3d
 
 commit a1b2c3d4
 Author: Jane Editor <jane@example.com>
@@ -222,12 +230,13 @@ Date:   Mon Jan 15 10:30:00 2024 -0800
 Changed files:
  M footage/scene1.mov
    Chunks: 10,234 total, 156 changed (1.5%)
-   Size:   10.2 GB (unchanged)`}</code>
-      </pre>
+   Size:   10.2 GB (unchanged)`}
+      />
 
       <h3>Show File at Commit</h3>
-      <pre className="not-prose">
-        <code>{`# View file list at a commit
+      <CodeBlock
+        language="bash"
+        code={`# View file list at a commit
 $ dits show a1b2c3d --name-only
 
 footage/scene1.mov
@@ -235,14 +244,15 @@ footage/scene2.mov
 project.prproj
 
 # Export a file from a specific commit
-$ dits show a1b2c3d:footage/scene1.mov > old_scene1.mov`}</code>
-      </pre>
+$ dits show a1b2c3d:footage/scene1.mov > old_scene1.mov`}
+      />
 
       <h2>Comparing Commits</h2>
 
       <h3>Diff Between Commits</h3>
-      <pre className="not-prose">
-        <code>{`# Compare two commits
+      <CodeBlock
+        language="bash"
+        code={`# Compare two commits
 $ dits diff 9f8e7d6 a1b2c3d
 
 Changed: footage/scene1.mov
@@ -253,30 +263,32 @@ Changed: footage/scene1.mov
 $ dits diff HEAD
 
 # Compare specific file
-$ dits diff 9f8e7d6 a1b2c3d -- footage/scene1.mov`}</code>
-      </pre>
+$ dits diff 9f8e7d6 a1b2c3d -- footage/scene1.mov`}
+      />
 
       <h3>Video-Aware Diff</h3>
       <p>
         For video files, Dits can show time-based differences:
       </p>
-      <pre className="not-prose">
-        <code>{`$ dits diff --video-aware a1b2c3d HEAD -- scene1.mov
+      <CodeBlock
+        language="bash"
+        code={`$ dits diff --video-aware a1b2c3d HEAD -- scene1.mov
 
 footage/scene1.mov:
   Duration: 5:00.00 (unchanged)
   Changed segments:
     00:45.00 - 01:12.00 (color grading applied)
-    03:22.00 - 03:45.00 (color grading applied)`}</code>
-      </pre>
+    03:22.00 - 03:45.00 (color grading applied)`}
+      />
 
       <h2>Commit References</h2>
       <p>
         You can reference commits in various ways:
       </p>
 
-      <pre className="not-prose">
-        <code>{`# Full hash
+      <CodeBlock
+        language="bash"
+        code={`# Full hash
 a1b2c3d4e5f6789...
 
 # Short hash (first 7+ characters)
@@ -296,22 +308,23 @@ HEAD^2    # Second parent (for merge commits)
 
 # By date
 main@{yesterday}
-main@{2024-01-15}`}</code>
-      </pre>
+main@{2024-01-15}`}
+      />
 
       <h2>Amending Commits</h2>
       <p>
         Fix the most recent commit without creating a new one:
       </p>
 
-      <pre className="not-prose">
-        <code>{`# Add forgotten files and amend
+      <CodeBlock
+        language="bash"
+        code={`# Add forgotten files and amend
 $ dits add forgotten_file.mov
 $ dits commit --amend
 
 # Just fix the message
-$ dits commit --amend -m "Better commit message"`}</code>
-      </pre>
+$ dits commit --amend -m "Better commit message"`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -326,25 +339,27 @@ $ dits commit --amend -m "Better commit message"`}</code>
 
       <h3>Revert (Safe)</h3>
       <p>Create a new commit that undoes changes from a previous commit:</p>
-      <pre className="not-prose">
-        <code>{`$ dits revert a1b2c3d
+      <CodeBlock
+        language="bash"
+        code={`$ dits revert a1b2c3d
 
 Reverting "Add color grading to scene 1"
-[main b2c3d4e] Revert "Add color grading to scene 1"`}</code>
-      </pre>
+[main b2c3d4e] Revert "Add color grading to scene 1"`}
+      />
 
       <h3>Reset (Careful)</h3>
       <p>Move the branch pointer to a different commit:</p>
-      <pre className="not-prose">
-        <code>{`# Keep changes in working directory
+      <CodeBlock
+        language="bash"
+        code={`# Keep changes in working directory
 $ dits reset --soft HEAD~1
 
 # Keep changes unstaged
 $ dits reset --mixed HEAD~1
 
 # Discard all changes (dangerous!)
-$ dits reset --hard HEAD~1`}</code>
-      </pre>
+$ dits reset --hard HEAD~1`}
+      />
 
       <h2>Next Steps</h2>
       <ul>

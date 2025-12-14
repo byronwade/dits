@@ -4,7 +4,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Server, Key, Database, Users, GitBranch, Webhook, Zap, Info } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "REST API",
@@ -68,13 +77,14 @@ export default function RestApiPage() {
                 <CardDescription>For session-based authentication</CardDescription>
               </CardHeader>
               <CardContent>
-                <pre className="bg-muted p-3 rounded text-sm">
-                  <code>{`Authorization: Bearer <session_token>
+                <CodeBlock
+                  language="text"
+                  code={`Authorization: Bearer <session_token>
 Content-Type: application/json
 
 # Token expires after 24 hours
-# Obtained via POST /auth/login`}</code>
-                </pre>
+# Obtained via POST /auth/login`}
+                />
                 <p className="text-sm text-muted-foreground mt-3">
                   Use for interactive applications and short-lived sessions.
                 </p>
@@ -90,13 +100,14 @@ Content-Type: application/json
                 <CardDescription>For programmatic access</CardDescription>
               </CardHeader>
               <CardContent>
-                <pre className="bg-muted p-3 rounded text-sm">
-                  <code>{`Authorization: Bearer dits_<api_token>
+                <CodeBlock
+                  language="text"
+                  code={`Authorization: Bearer dits_<api_token>
 Content-Type: application/json
 
 # Scoped permissions available
-# Created in user settings`}</code>
-                </pre>
+# Created in user settings`}
+                />
                 <p className="text-sm text-muted-foreground mt-3">
                   Use for CI/CD, integrations, and long-running processes.
                 </p>
@@ -106,32 +117,32 @@ Content-Type: application/json
 
           <h3>Authentication Endpoints</h3>
           <div className="not-prose overflow-x-auto my-4">
-            <table className="w-full border-collapse border border-gray-300 dark:border-gray-700">
-              <thead>
-                <tr className="bg-gray-50 dark:bg-gray-800">
-                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Method</th>
-                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Endpoint</th>
-                  <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>POST</code></td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/auth/login</code></td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Login with username/password</td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>POST</code></td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/auth/refresh</code></td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Refresh session token</td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>POST</code></td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/auth/logout</code></td>
-                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Invalidate session</td>
-                </tr>
-              </tbody>
-            </table>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Method</TableHead>
+                  <TableHead>Endpoint</TableHead>
+                  <TableHead>Description</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell><code>POST</code></TableCell>
+                  <TableCell><code>/auth/login</code></TableCell>
+                  <TableCell>Login with username/password</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell><code>POST</code></TableCell>
+                  <TableCell><code>/auth/refresh</code></TableCell>
+                  <TableCell>Refresh session token</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell><code>POST</code></TableCell>
+                  <TableCell><code>/auth/logout</code></TableCell>
+                  <TableCell>Invalidate session</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </div>
         </TabsContent>
 
@@ -274,38 +285,42 @@ Content-Type: application/json
           <h2>API Examples</h2>
 
           <h3>Create a Repository</h3>
-          <pre className="bg-muted p-4 rounded text-sm">
-            <code>{`curl -X POST https://api.dits.io/v1/repos \\
+          <CodeBlock
+            language="bash"
+            code={`curl -X POST https://api.dits.io/v1/repos \\
   -H "Authorization: Bearer your_token" \\
   -H "Content-Type: application/json" \\
   -d '{
     "name": "my-project",
     "description": "Video editing project",
     "private": false
-  }'`}</code>
-          </pre>
+  }'`}
+          />
 
           <h3>List Repository Commits</h3>
-          <pre className="bg-muted p-4 rounded text-sm">
-            <code>{`curl https://api.dits.io/v1/repos/123/commits \\
-  -H "Authorization: Bearer your_token"`}</code>
-          </pre>
+          <CodeBlock
+            language="bash"
+            code={`curl https://api.dits.io/v1/repos/123/commits \\
+  -H "Authorization: Bearer your_token"`}
+          />
 
           <h3>Create a Webhook</h3>
-          <pre className="bg-muted p-4 rounded text-sm">
-            <code>{`curl -X POST https://api.dits.io/v1/repos/123/webhooks \\
+          <CodeBlock
+            language="bash"
+            code={`curl -X POST https://api.dits.io/v1/repos/123/webhooks \\
   -H "Authorization: Bearer your_token" \\
   -H "Content-Type: application/json" \\
   -d '{
     "url": "https://example.com/webhook",
     "events": ["push", "pull_request"],
     "secret": "your_webhook_secret"
-  }'`}</code>
-          </pre>
+  }'`}
+          />
 
-      <h3>CI/CD Integration Example</h3>
-      <pre className="bg-muted p-4 rounded text-sm">
-        <code>{`# .github/workflows/deploy.yml
+          <h3>CI/CD Integration Example</h3>
+          <CodeBlock
+            language="bash"
+            code={`# .github/workflows/deploy.yml
 name: Deploy
 on: push
 
@@ -322,8 +337,8 @@ jobs:
                https://api.dits.io/v1/repos/myorg/myrepo/commits/main
 
       - name: Deploy assets
-        run: echo "Deploying assets..."`}</code>
-      </pre>
+        run: echo "Deploying assets..."`}
+          />
         </TabsContent>
 
         <TabsContent value="sdks" className="mt-6">
@@ -336,9 +351,10 @@ jobs:
                 <CardDescription>Official SDK for Node.js and browsers</CardDescription>
               </CardHeader>
               <CardContent>
-                <pre className="bg-muted p-3 rounded text-sm mb-3">
-                  <code>npm install @dits/sdk</code>
-                </pre>
+                <CodeBlock
+                  language="bash"
+                  code={`npm install @dits/sdk`}
+                />
                 <Link href="/docs/api/sdks/javascript" className="text-primary hover:underline">
                   View JavaScript SDK docs →
                 </Link>
@@ -351,9 +367,10 @@ jobs:
                 <CardDescription>For Python applications and scripts</CardDescription>
               </CardHeader>
               <CardContent>
-                <pre className="bg-muted p-3 rounded text-sm mb-3">
-                  <code>pip install dits-sdk</code>
-                </pre>
+                <CodeBlock
+                  language="bash"
+                  code={`pip install dits-sdk`}
+                />
                 <Link href="/docs/api/sdks/python" className="text-primary hover:underline">
                   View Python SDK docs →
                 </Link>
@@ -366,9 +383,10 @@ jobs:
                 <CardDescription>For Go applications and microservices</CardDescription>
               </CardHeader>
               <CardContent>
-                <pre className="bg-muted p-3 rounded text-sm mb-3">
-                  <code>go get github.com/dits-io/go-sdk</code>
-                </pre>
+                <CodeBlock
+                  language="bash"
+                  code={`go get github.com/dits-io/go-sdk`}
+                />
                 <Link href="/docs/api/sdks/go" className="text-primary hover:underline">
                   View Go SDK docs →
                 </Link>
@@ -381,9 +399,10 @@ jobs:
                 <CardDescription>Native Rust library for performance-critical applications</CardDescription>
               </CardHeader>
               <CardContent>
-                <pre className="bg-muted p-3 rounded text-sm mb-3">
-                  <code>cargo add dits-sdk</code>
-                </pre>
+                <CodeBlock
+                  language="bash"
+                  code={`cargo add dits-sdk`}
+                />
                 <Link href="/docs/api/sdks/rust" className="text-primary hover:underline">
                   View Rust SDK docs →
                 </Link>
@@ -392,8 +411,9 @@ jobs:
           </div>
 
           <h3>SDK Usage Example</h3>
-          <pre className="bg-muted p-4 rounded text-sm">
-            <code>{`import { Dits } from '@dits/sdk';
+          <CodeBlock
+            language="bash"
+            code={`import { Dits } from '@dits/sdk';
 
 const client = new Dits({
   token: process.env.DITS_TOKEN,
@@ -410,8 +430,8 @@ const repo = await client.repos.create({
 });
 
 // Get repository commits
-const commits = await client.repos.listCommits(repo.id);`}</code>
-          </pre>
+const commits = await client.repos.listCommits(repo.id);`}
+          />
         </TabsContent>
       </Tabs>
 

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Global Configuration",
@@ -62,23 +63,25 @@ export default function GlobalConfigPage() {
       </p>
 
       <h2>Configuration File Location</h2>
-      <pre className="not-prose">
-        <code>{`# Global config (applies to all your repos)
+      <CodeBlock
+        language="bash"
+        code={`# Global config (applies to all your repos)
 ~/.ditsconfig
 
 # On Windows
-C:\\Users\\<username>\\.ditsconfig`}</code>
-      </pre>
+C:\\Users\\<username>\\.ditsconfig`}
+      />
 
       <h2>Essential Setup</h2>
       <p>
         Before using Dits, configure your identity for commits:
       </p>
 
-      <pre className="not-prose">
-        <code>{`$ dits config --global user.name "Your Name"
-$ dits config --global user.email "you@example.com"`}</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`$ dits config --global user.name "Your Name"
+$ dits config --global user.email "you@example.com"`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -131,8 +134,9 @@ $ dits config --global user.email "you@example.com"`}</code>
       </Table>
 
       <h3>Setting Your Editor</h3>
-      <pre className="not-prose">
-        <code>{`# VS Code
+      <CodeBlock
+        language="bash"
+        code={`# VS Code
 $ dits config --global core.editor "code --wait"
 
 # Sublime Text
@@ -142,16 +146,17 @@ $ dits config --global core.editor "subl -n -w"
 $ dits config --global core.editor "vim"
 
 # Nano
-$ dits config --global core.editor "nano"`}</code>
-      </pre>
+$ dits config --global core.editor "nano"`}
+      />
 
       <h3>Global Ignore Patterns</h3>
       <p>
         Create a global ignore file for patterns that apply to all repositories:
       </p>
 
-      <pre className="not-prose">
-        <code>{`# Set the global excludes file
+      <CodeBlock
+        language="bash"
+        code={`# Set the global excludes file
 $ dits config --global core.excludesFile ~/.ditsignore
 
 # Create the file
@@ -170,16 +175,17 @@ desktop.ini
 # Build artifacts
 *.log
 *.tmp
-EOF`}</code>
-      </pre>
+EOF`}
+      />
 
       <h2>Aliases</h2>
       <p>
         Create shortcuts for frequently used commands:
       </p>
 
-      <pre className="not-prose">
-        <code>{`# Common aliases
+      <CodeBlock
+        language="bash"
+        code={`# Common aliases
 $ dits config --global alias.co checkout
 $ dits config --global alias.br branch
 $ dits config --global alias.ci commit
@@ -196,16 +202,17 @@ $ dits config --global alias.last "log -1 HEAD"
 $ dits config --global alias.unstage "restore --staged"
 
 $ dits lg  # Shows nice graph
-$ dits last  # Shows last commit`}</code>
-      </pre>
+$ dits last  # Shows last commit`}
+      />
 
       <h2>Credential Storage</h2>
       <p>
         Configure how Dits stores your credentials:
       </p>
 
-      <pre className="not-prose">
-        <code>{`# Store credentials in memory for 15 minutes
+      <CodeBlock
+        language="bash"
+        code={`# Store credentials in memory for 15 minutes
 $ dits config --global credential.helper cache
 
 # Store credentials longer
@@ -218,16 +225,17 @@ $ dits config --global credential.helper store
 $ dits config --global credential.helper osxkeychain
 
 # Use Windows Credential Manager
-$ dits config --global credential.helper manager`}</code>
-      </pre>
+$ dits config --global credential.helper manager`}
+      />
 
       <h2>Transfer Settings</h2>
       <p>
         Configure network transfer behavior:
       </p>
 
-      <pre className="not-prose">
-        <code>{`# Limit upload bandwidth
+      <CodeBlock
+        language="bash"
+        code={`# Limit upload bandwidth
 $ dits config --global transfer.uploadLimit 50M
 
 # Limit download bandwidth
@@ -237,16 +245,17 @@ $ dits config --global transfer.downloadLimit 100M
 $ dits config --global transfer.parallel 4
 
 # Connection timeout (seconds)
-$ dits config --global transfer.timeout 30`}</code>
-      </pre>
+$ dits config --global transfer.timeout 30`}
+      />
 
       <h2>Default Behaviors</h2>
       <p>
         Set default behaviors for common operations:
       </p>
 
-      <pre className="not-prose">
-        <code>{`# Rebase on pull instead of merge
+      <CodeBlock
+        language="bash"
+        code={`# Rebase on pull instead of merge
 $ dits config --global pull.rebase true
 
 # Push current branch by default
@@ -259,12 +268,13 @@ $ dits config --global push.autoSetupRemote true
 $ dits config --global color.ui auto
 
 # Set default branch name
-$ dits config --global init.defaultBranch main`}</code>
-      </pre>
+$ dits config --global init.defaultBranch main`}
+      />
 
       <h2>View Global Configuration</h2>
-      <pre className="not-prose">
-        <code>{`# List all global settings
+      <CodeBlock
+        language="bash"
+        code={`# List all global settings
 $ dits config --global --list
 user.name=Jane Editor
 user.email=jane@example.com
@@ -279,21 +289,23 @@ Jane Editor
 
 # Show where a value is set
 $ dits config --show-origin user.name
-file:~/.ditsconfig    user.name=Jane Editor`}</code>
-      </pre>
+file:~/.ditsconfig    user.name=Jane Editor`}
+      />
 
       <h2>Edit Global Configuration</h2>
-      <pre className="not-prose">
-        <code>{`# Open in editor
+      <CodeBlock
+        language="bash"
+        code={`# Open in editor
 $ dits config --global --edit
 
 # Unset a value
-$ dits config --global --unset alias.old`}</code>
-      </pre>
+$ dits config --global --unset alias.old`}
+      />
 
       <h2>Example Global Configuration</h2>
-      <pre className="not-prose">
-        <code>{`# ~/.ditsconfig
+      <CodeBlock
+        language="bash"
+        code={`# ~/.ditsconfig
 [user]
     name = Jane Editor
     email = jane@example.com
@@ -328,8 +340,8 @@ $ dits config --global --unset alias.old`}</code>
     ui = auto
 
 [transfer]
-    parallel = 4`}</code>
-      </pre>
+    parallel = 4`}
+      />
 
       <h2>Related Topics</h2>
       <ul>

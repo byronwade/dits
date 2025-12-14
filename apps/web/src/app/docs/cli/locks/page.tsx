@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Lock, Info, Unlock, List, AlertTriangle } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Lock Commands",
@@ -73,23 +74,26 @@ export default function LockCommandsPage() {
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits lock [OPTIONS] &lt;PATHSPEC&gt;...</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits lock [OPTIONS] &lt;PATHSPEC&gt;...`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--reason <TEXT>     Provide a reason for locking
+      <CodeBlock
+        language="bash"
+        code={`--reason <TEXT>     Provide a reason for locking
 --ttl <DURATION>    Lock time-to-live (default: 8h)
                     Examples: 1h, 8h, 24h, 7d
 -f, --force         Force acquire lock (break existing)
 --json              Output lock info as JSON
--v, --verbose       Show detailed information`}</code>
-      </pre>
+-v, --verbose       Show detailed information`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Lock a single file
+      <CodeBlock
+        language="bash"
+        code={`# Lock a single file
 $ dits lock footage/scene01.mov
 
 Locked: footage/scene01.mov
@@ -128,8 +132,8 @@ $ dits lock footage/vfx/
 $ dits lock -f footage/scene01.mov
 
 Warning: Breaking lock held by jane@example.com
-Locked: footage/scene01.mov`}</code>
-      </pre>
+Locked: footage/scene01.mov`}
+      />
 
       <Alert className="not-prose my-6">
         <AlertTriangle className="h-4 w-4" />
@@ -151,20 +155,23 @@ Locked: footage/scene01.mov`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits unlock [OPTIONS] &lt;PATHSPEC&gt;...</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits unlock [OPTIONS] &lt;PATHSPEC&gt;...`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`-f, --force         Force unlock (admin only)
+      <CodeBlock
+        language="bash"
+        code={`-f, --force         Force unlock (admin only)
 --all               Unlock all your locks
---json              Output result as JSON`}</code>
-      </pre>
+--json              Output result as JSON`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Unlock a single file
+      <CodeBlock
+        language="bash"
+        code={`# Unlock a single file
 $ dits unlock footage/scene01.mov
 
 Unlocked: footage/scene01.mov
@@ -188,8 +195,8 @@ Unlocked 8 files.
 $ dits unlock -f footage/scene01.mov
 
 Warning: Force unlocking file locked by jane@example.com
-Unlocked: footage/scene01.mov`}</code>
-      </pre>
+Unlocked: footage/scene01.mov`}
+      />
 
       <h2 className="flex items-center gap-2">
         <List className="h-5 w-5" />
@@ -201,22 +208,25 @@ Unlocked: footage/scene01.mov`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits locks [OPTIONS] [PATH]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits locks [OPTIONS] [PATH]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--mine              Show only your locks
+      <CodeBlock
+        language="bash"
+        code={`--mine              Show only your locks
 --all               Show all locks (including expired)
 --expired           Show only expired locks
 --json              Output as JSON
--v, --verbose       Show detailed information`}</code>
-      </pre>
+-v, --verbose       Show detailed information`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# List all active locks
+      <CodeBlock
+        language="bash"
+        code={`# List all active locks
 $ dits locks
 
 Active Locks (5):
@@ -266,12 +276,13 @@ Lock Details:
   Expires: 2025-01-15 22:30:00 UTC (6h 30m remaining)
   Reason: Color grading
   Lock ID: lock-a1b2c3d4
-  Branch: main`}</code>
-      </pre>
+  Branch: main`}
+      />
 
       <h2>Lock Workflow</h2>
-      <pre className="not-prose">
-        <code>{`# Typical locking workflow:
+      <CodeBlock
+        language="bash"
+        code={`# Typical locking workflow:
 
 1. Check if file is locked
    $ dits locks footage/scene01.mov
@@ -294,8 +305,8 @@ Lock Details:
 
 5. Unlock when done
    $ dits unlock footage/scene01.mov
-   Unlocked: footage/scene01.mov`}</code>
-      </pre>
+   Unlocked: footage/scene01.mov`}
+      />
 
       <h2>Lock Behavior</h2>
 
@@ -315,8 +326,9 @@ Lock Details:
       </ul>
 
       <h3>Lock Expiration</h3>
-      <pre className="not-prose">
-        <code>{`# Locks automatically expire to prevent abandoned locks
+      <CodeBlock
+        language="bash"
+        code={`# Locks automatically expire to prevent abandoned locks
 
 Default TTL: 8 hours
 
@@ -327,8 +339,8 @@ When a lock expires:
 
 Extend a lock:
 $ dits lock --ttl 8h footage/scene01.mov
-Lock extended: expires in 8h`}</code>
-      </pre>
+Lock extended: expires in 8h`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Cloud, Info, Download, Upload, RefreshCw, Globe } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Remote Commands",
@@ -80,23 +81,26 @@ export default function RemoteCommandsPage() {
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits fetch [options] [remote] [refspec...]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits fetch [options] [remote] [refspec...]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--all            Fetch all remotes
+      <CodeBlock
+        language="bash"
+        code={`--all            Fetch all remotes
 --prune, -p      Remove stale remote-tracking branches
 --tags           Fetch all tags
 --depth          Limit fetch to specified depth
 --dry-run        Show what would be fetched
---verbose, -v    Be verbose`}</code>
-      </pre>
+--verbose, -v    Be verbose`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Fetch from default remote (origin)
+      <CodeBlock
+        language="bash"
+        code={`# Fetch from default remote (origin)
 $ dits fetch
 Fetching origin...
 remote: Counting objects: 45, done
@@ -121,8 +125,8 @@ From https://example.com/project
 $ dits fetch --dry-run
 Would fetch:
   main: a1b2c3d → f5e4d3c (12 new chunks)
-  feature: new branch (8,456 chunks)`}</code>
-      </pre>
+  feature: new branch (8,456 chunks)`}
+      />
 
       <h2 className="flex items-center gap-2">
         <RefreshCw className="h-5 w-5" />
@@ -134,23 +138,26 @@ Would fetch:
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits pull [options] [remote] [branch]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits pull [options] [remote] [branch]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--rebase         Rebase instead of merge
+      <CodeBlock
+        language="bash"
+        code={`--rebase         Rebase instead of merge
 --no-rebase      Merge even if pull.rebase is set
 --ff-only        Only fast-forward
 --no-ff          Create merge commit
 --autostash      Stash changes before pull
---verbose, -v    Be verbose`}</code>
-      </pre>
+--verbose, -v    Be verbose`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Pull from tracked branch
+      <CodeBlock
+        language="bash"
+        code={`# Pull from tracked branch
 $ dits pull
 Fetching origin...
 Updating a1b2c3d..f5e4d3c
@@ -173,8 +180,8 @@ $ dits pull --autostash
 Stashing local changes...
 Fetching origin...
 Updating a1b2c3d..f5e4d3c
-Applying stashed changes...`}</code>
-      </pre>
+Applying stashed changes...`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -196,25 +203,28 @@ Applying stashed changes...`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits push [options] [remote] [refspec...]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits push [options] [remote] [refspec...]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--all            Push all branches
+      <CodeBlock
+        language="bash"
+        code={`--all            Push all branches
 --tags           Push all tags
 --force, -f      Force push (overwrite remote)
 --force-with-lease  Safer force push
 --delete         Delete remote branch
 --set-upstream, -u  Set upstream for branch
 --dry-run, -n    Show what would be pushed
---verbose, -v    Be verbose`}</code>
-      </pre>
+--verbose, -v    Be verbose`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Push to tracked branch
+      <CodeBlock
+        language="bash"
+        code={`# Push to tracked branch
 $ dits push
 Pushing to origin...
 Uploading chunks: 100% (156/156) [1.5 GB]
@@ -247,8 +257,8 @@ $ dits push --dry-run
 Would push:
   main: a1b2c3d → f5e4d3c
   Chunks to upload: 156 (1.5 GB)
-  Already on remote: 10,078`}</code>
-      </pre>
+  Already on remote: 10,078`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -270,18 +280,20 @@ Would push:
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>{`dits remote [-v]
+      <CodeBlock
+        language="bash"
+        code={`dits remote [-v]
 dits remote add <name> <url>
 dits remote remove <name>
 dits remote rename <old> <new>
 dits remote set-url <name> <url>
-dits remote show <name>`}</code>
-      </pre>
+dits remote show <name>`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# List remotes
+      <CodeBlock
+        language="bash"
+        code={`# List remotes
 $ dits remote -v
 origin  https://example.com/team/project (fetch)
 origin  https://example.com/team/project (push)
@@ -310,15 +322,16 @@ $ dits remote show origin
 $ dits remote set-url origin https://new.example.com/project
 
 # Remove a remote
-$ dits remote remove backup`}</code>
-      </pre>
+$ dits remote remove backup`}
+      />
 
       <h2>Transfer Progress</h2>
       <p>
         Dits shows detailed progress during transfers:
       </p>
-      <pre className="not-prose">
-        <code>{`$ dits push
+      <CodeBlock
+        language="bash"
+        code={`$ dits push
 Pushing to origin...
 
 Analyzing commits... 3 commits
@@ -331,8 +344,8 @@ Uploading: [====================] 100% (156/156)
   Time: 12 seconds
 
 To https://example.com/project
-   a1b2c3d..f5e4d3c  main -> main`}</code>
-      </pre>
+   a1b2c3d..f5e4d3c  main -> main`}
+      />
 
       <h2>Authentication</h2>
       <p>
@@ -340,44 +353,48 @@ To https://example.com/project
       </p>
 
       <h3>SSH Keys</h3>
-      <pre className="not-prose">
-        <code>{`# Use SSH URL
+      <CodeBlock
+        language="bash"
+        code={`# Use SSH URL
 $ dits remote add origin git@example.com:team/project.git
 
-# SSH key is used automatically from ~/.ssh/`}</code>
-      </pre>
+# SSH key is used automatically from ~/.ssh/`}
+      />
 
       <h3>Access Tokens</h3>
-      <pre className="not-prose">
-        <code>{`# Set credential helper
+      <CodeBlock
+        language="bash"
+        code={`# Set credential helper
 $ dits config --global credential.helper store
 
 # Or use token in URL (not recommended for shared configs)
-$ dits remote set-url origin https://token@example.com/project`}</code>
-      </pre>
+$ dits remote set-url origin https://token@example.com/project`}
+      />
 
       <h3>Interactive Login</h3>
-      <pre className="not-prose">
-        <code>{`$ dits push
+      <CodeBlock
+        language="bash"
+        code={`$ dits push
 Username for 'https://example.com': jane
 Password for 'https://jane@example.com': ****
-Pushing to origin...`}</code>
-      </pre>
+Pushing to origin...`}
+      />
 
       <h2>Bandwidth Management</h2>
       <p>
         Control upload and download speeds:
       </p>
-      <pre className="not-prose">
-        <code>{`# Limit upload speed
+      <CodeBlock
+        language="bash"
+        code={`# Limit upload speed
 $ dits config --global transfer.uploadLimit 50M
 
 # Limit download speed
 $ dits config --global transfer.downloadLimit 100M
 
 # Set concurrent transfer streams
-$ dits config --global transfer.parallel 4`}</code>
-      </pre>
+$ dits config --global transfer.parallel 4`}
+      />
 
       <h2>Related Commands</h2>
       <ul>

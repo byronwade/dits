@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Settings, Info, Trash2, ShieldCheck, BarChart, FileSearch, Wrench } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Maintenance Commands",
@@ -67,24 +68,27 @@ export default function MaintenanceCommandsPage() {
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits gc [OPTIONS]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits gc [OPTIONS]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--aggressive        Run aggressive GC (more thorough, slower)
+      <CodeBlock
+        language="bash"
+        code={`--aggressive        Run aggressive GC (more thorough, slower)
 --dry-run           Show what would be collected without deleting
 --prune <DATE>      Prune objects older than date
 --auto              Run only if needed (based on heuristics)
 --keep-packs        Don't repack objects
 --progress          Show progress bar
--v, --verbose       Show detailed output`}</code>
-      </pre>
+-v, --verbose       Show detailed output`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Run garbage collection
+      <CodeBlock
+        language="bash"
+        code={`# Run garbage collection
 $ dits gc
 
 Running garbage collection...
@@ -136,8 +140,8 @@ Pruning objects older than 30 days...
 $ dits gc --auto
 
 Repository doesn't need GC yet.
-(Run 'dits gc' to force)`}</code>
-      </pre>
+(Run 'dits gc' to force)`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -159,23 +163,26 @@ Repository doesn't need GC yet.
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits fsck [OPTIONS]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits fsck [OPTIONS]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--full              Full verification (verify all chunk hashes)
+      <CodeBlock
+        language="bash"
+        code={`--full              Full verification (verify all chunk hashes)
 --strict            Strict mode (treat warnings as errors)
 --repair            Attempt to repair issues
 --progress          Show progress bar
 --json              Output as JSON
--v, --verbose       Show all checks, not just issues`}</code>
-      </pre>
+-v, --verbose       Show all checks, not just issues`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Quick integrity check
+      <CodeBlock
+        language="bash"
+        code={`# Quick integrity check
 $ dits fsck
 
 Checking repository integrity...
@@ -227,8 +234,8 @@ Repair complete.
 
 # Strict mode (for CI/CD)
 $ dits fsck --strict
-Exit code: 0  # All checks passed`}</code>
-      </pre>
+Exit code: 0  # All checks passed`}
+      />
 
       <h3>What fsck Checks</h3>
       <Table className="not-prose my-6">
@@ -283,20 +290,23 @@ Exit code: 0  # All checks passed`}</code>
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits repo-stats [OPTIONS]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits repo-stats [OPTIONS]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`-v, --verbose       Show per-file breakdown
+      <CodeBlock
+        language="bash"
+        code={`-v, --verbose       Show per-file breakdown
 --json              Output as JSON
---format <FMT>      Output format (table, json)`}</code>
-      </pre>
+--format <FMT>      Output format (table, json)`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`$ dits repo-stats
+      <CodeBlock
+        language="bash"
+        code={`$ dits repo-stats
 
 Repository Statistics (commit abc1234)
 
@@ -339,8 +349,8 @@ Per-File Breakdown:
 Most Deduplicated Files:
   footage/scene01_v2.mov - 98% shared with other files
   footage/interview_b.mov - 95% shared with other files
-  ...`}</code>
-      </pre>
+  ...`}
+      />
 
       <h2 className="flex items-center gap-2">
         <FileSearch className="h-5 w-5" />
@@ -351,20 +361,23 @@ Most Deduplicated Files:
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits inspect-file [OPTIONS] &lt;PATH&gt;</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits inspect-file [OPTIONS] &lt;PATH&gt;`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--chunks            List all chunk hashes
+      <CodeBlock
+        language="bash"
+        code={`--chunks            List all chunk hashes
 --shared            Show which files share chunks
---json              Output as JSON`}</code>
-      </pre>
+--json              Output as JSON`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`$ dits inspect-file footage/scene01.mov
+      <CodeBlock
+        language="bash"
+        code={`$ dits inspect-file footage/scene01.mov
 
 Inspecting: footage/scene01.mov
 
@@ -393,8 +406,8 @@ $ dits inspect-file --shared footage/scene01_v2.mov
 
 Shares chunks with:
   footage/scene01.mov     9,856 chunks (96.2%)
-  footage/scene01_v3.mov  10,012 chunks (97.8%)`}</code>
-      </pre>
+  footage/scene01_v3.mov  10,012 chunks (97.8%)`}
+      />
 
       <h2 className="flex items-center gap-2">
         <Wrench className="h-5 w-5" />
@@ -406,24 +419,27 @@ Shares chunks with:
       </p>
 
       <h3>Synopsis</h3>
-      <pre className="not-prose">
-        <code>dits config [OPTIONS] &lt;KEY&gt; [VALUE]</code>
-      </pre>
+      <CodeBlock
+        language="bash"
+        code={`dits config [OPTIONS] &lt;KEY&gt; [VALUE]`}
+      />
 
       <h3>Options</h3>
-      <pre className="not-prose">
-        <code>{`--global            Use global config (~/.config/dits/config)
+      <CodeBlock
+        language="bash"
+        code={`--global            Use global config (~/.config/dits/config)
 --local             Use local config (.dits/config) - default
 --system            Use system config
 --list              List all config values
 --unset             Remove a config key
 --edit              Open config in editor
---get               Get value (explicit)`}</code>
-      </pre>
+--get               Get value (explicit)`}
+      />
 
       <h3>Examples</h3>
-      <pre className="not-prose">
-        <code>{`# Set user identity (global)
+      <CodeBlock
+        language="bash"
+        code={`# Set user identity (global)
 $ dits config --global user.name "John Editor"
 $ dits config --global user.email "john@example.com"
 
@@ -449,8 +465,8 @@ $ dits config --unset cache.size
 
 # Edit config file
 $ dits config --global --edit
-# Opens ~/.config/dits/config in editor`}</code>
-      </pre>
+# Opens ~/.config/dits/config in editor`}
+      />
 
       <h3>Common Configuration Keys</h3>
       <Table className="not-prose my-6">

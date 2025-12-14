@@ -11,6 +11,14 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   Server,
   Cloud,
   Shield,
@@ -47,10 +55,10 @@ export default function DeploymentPage() {
       <h2>Deployment Options</h2>
 
       <div className="grid gap-6 md:grid-cols-3 my-8">
-        <Card className="border-green-200">
+        <Card className="border-primary/30">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Server className="h-5 w-5 text-green-600" />
+              <Server className="h-5 w-5 text-primary" />
               Self-Hosted
             </CardTitle>
             <CardDescription>
@@ -59,10 +67,10 @@ export default function DeploymentPage() {
           </CardHeader>
           <CardContent>
             <ul className="text-sm space-y-2">
-              <li>• Complete data sovereignty</li>
-              <li>• Custom scaling policies</li>
-              <li>• On-premise deployment</li>
-              <li>• Enterprise security</li>
+              <li>Complete data sovereignty</li>
+              <li>Custom scaling policies</li>
+              <li>On-premise deployment</li>
+              <li>Enterprise security</li>
             </ul>
             <div className="mt-4">
               <Badge variant="secondary">Most Flexible</Badge>
@@ -70,10 +78,10 @@ export default function DeploymentPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200">
+        <Card className="border-accent">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Cloud className="h-5 w-5 text-blue-600" />
+              <Cloud className="h-5 w-5 text-accent-foreground" />
               Cloud Managed
             </CardTitle>
             <CardDescription>
@@ -82,10 +90,10 @@ export default function DeploymentPage() {
           </CardHeader>
           <CardContent>
             <ul className="text-sm space-y-2">
-              <li>• Zero infrastructure management</li>
-              <li>• Automatic scaling</li>
-              <li>• Built-in backups</li>
-              <li>• Global CDN</li>
+              <li>Zero infrastructure management</li>
+              <li>Automatic scaling</li>
+              <li>Built-in backups</li>
+              <li>Global CDN</li>
             </ul>
             <div className="mt-4">
               <Badge variant="secondary">Easiest</Badge>
@@ -93,10 +101,10 @@ export default function DeploymentPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-purple-200">
+        <Card className="border-secondary">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-purple-600" />
+              <Shield className="h-5 w-5 text-muted-foreground" />
               Hybrid
             </CardTitle>
             <CardDescription>
@@ -105,10 +113,10 @@ export default function DeploymentPage() {
           </CardHeader>
           <CardContent>
             <ul className="text-sm space-y-2">
-              <li>• Sensitive data on-premise</li>
-              <li>• Public assets in cloud</li>
-              <li>• Geographic compliance</li>
-              <li>• Cost optimization</li>
+              <li>Sensitive data on-premise</li>
+              <li>Public assets in cloud</li>
+              <li>Geographic compliance</li>
+              <li>Cost optimization</li>
             </ul>
             <div className="mt-4">
               <Badge variant="secondary">Balanced</Badge>
@@ -347,10 +355,10 @@ export default function DeploymentPage() {
               <div className="text-sm">
                 <strong>Components:</strong>
                 <ul className="mt-1 space-y-1">
-                  <li>• PostgreSQL database</li>
-                  <li>• Redis cache</li>
-                  <li>• Dits API server</li>
-                  <li>• MinIO object storage</li>
+                  <li>PostgreSQL database</li>
+                  <li>Redis cache</li>
+                  <li>Dits API server</li>
+                  <li>MinIO object storage</li>
                 </ul>
               </div>
               <div className="text-sm">
@@ -378,10 +386,10 @@ export default function DeploymentPage() {
               <div className="text-sm">
                 <strong>Features:</strong>
                 <ul className="mt-1 space-y-1">
-                  <li>• Auto-scaling</li>
-                  <li>• Rolling updates</li>
-                  <li>• Persistent storage</li>
-                  <li>• Service mesh</li>
+                  <li>Auto-scaling</li>
+                  <li>Rolling updates</li>
+                  <li>Persistent storage</li>
+                  <li>Service mesh</li>
                 </ul>
               </div>
               <div className="text-sm">
@@ -399,48 +407,48 @@ export default function DeploymentPage() {
 
       <h3>Environment Variables</h3>
       <div className="overflow-x-auto my-6">
-        <table className="w-full text-sm border-collapse border border-gray-300 dark:border-gray-700">
-          <thead>
-            <tr className="bg-gray-50 dark:bg-gray-800">
-              <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Variable</th>
-              <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Description</th>
-              <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Default</th>
-              <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Required</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">DATABASE_URL</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">PostgreSQL connection string</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">-</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><CheckCircle className="h-4 w-4 text-green-500" /></td>
-            </tr>
-            <tr>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">REDIS_URL</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Redis connection URL</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">redis://localhost:6379</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">-</td>
-            </tr>
-            <tr>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">JWT_SECRET</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Secret for JWT token signing</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">-</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><CheckCircle className="h-4 w-4 text-green-500" /></td>
-            </tr>
-            <tr>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">STORAGE_TYPE</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Storage backend (local, s3, minio)</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">local</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">-</td>
-            </tr>
-            <tr>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">API_PORT</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Port for API server</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">8080</td>
-              <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">-</td>
-            </tr>
-          </tbody>
-        </table>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Variable</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Default</TableHead>
+              <TableHead>Required</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell className="font-mono">DATABASE_URL</TableCell>
+              <TableCell>PostgreSQL connection string</TableCell>
+              <TableCell>-</TableCell>
+              <TableCell><CheckCircle className="h-4 w-4 text-primary" /></TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="font-mono">REDIS_URL</TableCell>
+              <TableCell>Redis connection URL</TableCell>
+              <TableCell>redis://localhost:6379</TableCell>
+              <TableCell>-</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="font-mono">JWT_SECRET</TableCell>
+              <TableCell>Secret for JWT token signing</TableCell>
+              <TableCell>-</TableCell>
+              <TableCell><CheckCircle className="h-4 w-4 text-primary" /></TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="font-mono">STORAGE_TYPE</TableCell>
+              <TableCell>Storage backend (local, s3, minio)</TableCell>
+              <TableCell>local</TableCell>
+              <TableCell>-</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="font-mono">API_PORT</TableCell>
+              <TableCell>Port for API server</TableCell>
+              <TableCell>8080</TableCell>
+              <TableCell>-</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </div>
 
       <h2>Security Considerations</h2>
@@ -451,10 +459,10 @@ export default function DeploymentPage() {
             <CardTitle>Network Security</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <li className="text-sm">• HTTPS/TLS 1.3 encryption</li>
-            <li className="text-sm">• Network segmentation</li>
-            <li className="text-sm">• Firewall rules</li>
-            <li className="text-sm">• VPN for admin access</li>
+            <li className="text-sm">HTTPS/TLS 1.3 encryption</li>
+            <li className="text-sm">Network segmentation</li>
+            <li className="text-sm">Firewall rules</li>
+            <li className="text-sm">VPN for admin access</li>
           </CardContent>
         </Card>
 
@@ -463,10 +471,10 @@ export default function DeploymentPage() {
             <CardTitle>Data Security</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <li className="text-sm">• At-rest encryption</li>
-            <li className="text-sm">• Content integrity verification</li>
-            <li className="text-sm">• Backup encryption</li>
-            <li className="text-sm">• Secure key management</li>
+            <li className="text-sm">At-rest encryption</li>
+            <li className="text-sm">Content integrity verification</li>
+            <li className="text-sm">Backup encryption</li>
+            <li className="text-sm">Secure key management</li>
           </CardContent>
         </Card>
       </div>
@@ -488,10 +496,10 @@ export default function DeploymentPage() {
             <CardTitle className="text-lg">Performance</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <li className="text-sm">• API response times</li>
-            <li className="text-sm">• Chunk upload/download speeds</li>
-            <li className="text-sm">• Database query latency</li>
-            <li className="text-sm">• Cache hit rates</li>
+            <li className="text-sm">API response times</li>
+            <li className="text-sm">Chunk upload/download speeds</li>
+            <li className="text-sm">Database query latency</li>
+            <li className="text-sm">Cache hit rates</li>
           </CardContent>
         </Card>
 
@@ -500,10 +508,10 @@ export default function DeploymentPage() {
             <CardTitle className="text-lg">Resources</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <li className="text-sm">• CPU utilization</li>
-            <li className="text-sm">• Memory usage</li>
-            <li className="text-sm">• Disk I/O</li>
-            <li className="text-sm">• Network bandwidth</li>
+            <li className="text-sm">CPU utilization</li>
+            <li className="text-sm">Memory usage</li>
+            <li className="text-sm">Disk I/O</li>
+            <li className="text-sm">Network bandwidth</li>
           </CardContent>
         </Card>
 
@@ -512,10 +520,10 @@ export default function DeploymentPage() {
             <CardTitle className="text-lg">Business</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <li className="text-sm">• Active users</li>
-            <li className="text-sm">• Storage usage</li>
-            <li className="text-sm">• Repository count</li>
-            <li className="text-sm">• API call volume</li>
+            <li className="text-sm">Active users</li>
+            <li className="text-sm">Storage usage</li>
+            <li className="text-sm">Repository count</li>
+            <li className="text-sm">API call volume</li>
           </CardContent>
         </Card>
       </div>
@@ -528,19 +536,19 @@ export default function DeploymentPage() {
           <div>
             <h4 className="font-medium mb-2">Database Backups</h4>
             <ul className="text-sm space-y-1">
-              <li>• Daily full backups</li>
-              <li>• Hourly incremental backups</li>
-              <li>• Point-in-time recovery</li>
-              <li>• Encrypted storage</li>
+              <li>Daily full backups</li>
+              <li>Hourly incremental backups</li>
+              <li>Point-in-time recovery</li>
+              <li>Encrypted storage</li>
             </ul>
           </div>
           <div>
             <h4 className="font-medium mb-2">Chunk Storage Backups</h4>
             <ul className="text-sm space-y-1">
-              <li>• Cross-region replication</li>
-              <li>• Immutable backups</li>
-              <li>• Content verification</li>
-              <li>• Retention policies</li>
+              <li>Cross-region replication</li>
+              <li>Immutable backups</li>
+              <li>Content verification</li>
+              <li>Retention policies</li>
             </ul>
           </div>
         </div>
@@ -581,10 +589,10 @@ export default function DeploymentPage() {
           </CardHeader>
           <CardContent>
             <ul className="text-sm space-y-1">
-              <li>• Deployment consulting</li>
-              <li>• Performance optimization</li>
-              <li>• Enterprise integration</li>
-              <li>• Custom development</li>
+              <li>Deployment consulting</li>
+              <li>Performance optimization</li>
+              <li>Enterprise integration</li>
+              <li>Custom development</li>
             </ul>
           </CardContent>
         </Card>

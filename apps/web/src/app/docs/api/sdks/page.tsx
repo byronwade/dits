@@ -10,6 +10,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { CodeBlock } from "@/components/ui/code-block";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Code,
   Download,
@@ -51,9 +60,10 @@ export default function SDKsPage() {
                 <Badge variant="secondary">ESM</Badge>
                 <Badge variant="secondary">TypeScript</Badge>
               </div>
-              <pre className="bg-muted p-2 rounded text-sm">
-                <code>npm install @dits/sdk</code>
-              </pre>
+              <CodeBlock
+                language="bash"
+                code={`npm install @dits/sdk`}
+              />
               <div className="text-xs text-muted-foreground">
                 • REST API client<br />
                 • File upload/download<br />
@@ -79,9 +89,10 @@ export default function SDKsPage() {
                 <Badge variant="secondary">asyncio</Badge>
                 <Badge variant="secondary">Type hints</Badge>
               </div>
-              <pre className="bg-muted p-2 rounded text-sm">
-                <code>pip install dits-sdk</code>
-              </pre>
+              <CodeBlock
+                language="bash"
+                code={`pip install dits-sdk`}
+              />
               <div className="text-xs text-muted-foreground">
                 • Async/await support<br />
                 • Data science workflows<br />
@@ -107,9 +118,10 @@ export default function SDKsPage() {
                 <Badge variant="secondary">Concurrent</Badge>
                 <Badge variant="secondary">Streaming</Badge>
               </div>
-              <pre className="bg-muted p-2 rounded text-sm">
-                <code>go get github.com/dits-io/go-sdk</code>
-              </pre>
+              <CodeBlock
+                language="bash"
+                code={`go get github.com/dits-io/go-sdk`}
+              />
               <div className="text-xs text-muted-foreground">
                 • Concurrent operations<br />
                 • Streaming uploads<br />
@@ -135,9 +147,10 @@ export default function SDKsPage() {
                 <Badge variant="secondary">Zero-copy</Badge>
                 <Badge variant="secondary">Async</Badge>
               </div>
-              <pre className="bg-muted p-2 rounded text-sm">
-                <code>cargo add dits-sdk</code>
-              </pre>
+              <CodeBlock
+                language="bash"
+                code={`cargo add dits-sdk`}
+              />
               <div className="text-xs text-muted-foreground">
                 • Memory-safe operations<br />
                 • Zero-copy chunking<br />
@@ -161,17 +174,19 @@ export default function SDKsPage() {
           <h2>JavaScript/TypeScript SDK</h2>
 
           <h3>Installation</h3>
-          <pre className="bg-muted p-4 rounded text-sm">
-            <code>npm install @dits/sdk
+          <CodeBlock
+            language="bash"
+            code={`npm install @dits/sdk
 # or
 yarn add @dits/sdk
 # or
-pnpm add @dits/sdk</code>
-          </pre>
+pnpm add @dits/sdk`}
+          />
 
           <h3>Basic Usage</h3>
-          <pre className="bg-muted p-4 rounded text-sm">
-            <code>{`import { DitsClient } from '@dits/sdk';
+          <CodeBlock
+            language="javascript"
+            code={`import { DitsClient } from '@dits/sdk';
 
 const client = new DitsClient({
   baseURL: 'https://api.dits.io/v1',
@@ -190,8 +205,8 @@ await client.files.upload('path/to/video.mp4', {
 // Download a file
 const buffer = await client.files.download('abc123...', {
   repository: 'my-project'
-});`}</code>
-          </pre>
+});`}
+          />
 
           <h3>Advanced Features</h3>
           <ul>
@@ -221,17 +236,19 @@ const buffer = await client.files.download('abc123...', {
           <h2>Python SDK</h2>
 
           <h3>Installation</h3>
-          <pre className="bg-muted p-4 rounded text-sm">
-            <code>pip install dits-sdk
+          <CodeBlock
+            language="bash"
+            code={`pip install dits-sdk
 # or
 poetry add dits-sdk
 # or
-conda install dits-sdk</code>
-          </pre>
+conda install dits-sdk`}
+          />
 
           <h3>Basic Usage</h3>
-          <pre className="bg-muted p-4 rounded text-sm">
-            <code>{`import asyncio
+          <CodeBlock
+            language="python"
+            code={`import asyncio
 from dits import DitsClient
 
 async def main():
@@ -253,8 +270,8 @@ async def main():
         progress=progress_callback
     )
 
-asyncio.run(main())`}</code>
-          </pre>
+asyncio.run(main())`}
+          />
 
           <h3>Advanced Features</h3>
           <ul>
@@ -284,15 +301,17 @@ asyncio.run(main())`}</code>
           <h2>Go SDK</h2>
 
           <h3>Installation</h3>
-          <pre className="bg-muted p-4 rounded text-sm">
-            <code>go get github.com/dits-io/go-sdk
+          <CodeBlock
+            language="bash"
+            code={`go get github.com/dits-io/go-sdk
 # or with Go modules
-go mod tidy</code>
-          </pre>
+go mod tidy`}
+          />
 
           <h3>Basic Usage</h3>
-          <pre className="bg-muted p-4 rounded text-sm">
-            <code>{`package main
+          <CodeBlock
+            language="go"
+            code={`package main
 
 import (
     "context"
@@ -334,8 +353,8 @@ func main() {
             }
         }(file)
     }
-}`}</code>
-          </pre>
+}`}
+          />
 
           <h3>Advanced Features</h3>
           <ul>
@@ -365,18 +384,20 @@ func main() {
           <h2>Rust SDK</h2>
 
           <h3>Installation</h3>
-          <pre className="bg-muted p-4 rounded text-sm">
-            <code># Add to Cargo.toml
+          <CodeBlock
+            language="bash"
+            code={`# Add to Cargo.toml
 [dependencies]
 dits-sdk = "0.1"
 
 # Or use cargo add
-cargo add dits-sdk</code>
-          </pre>
+cargo add dits-sdk`}
+          />
 
           <h3>Basic Usage</h3>
-          <pre className="bg-muted p-4 rounded text-sm">
-            <code>{`use dits_sdk::{Client, Config};
+          <CodeBlock
+            language="python"
+            code={`use dits_sdk::{Client, Config};
 use tokio;
 
 #[tokio::main]
@@ -406,8 +427,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 fn process_chunk(chunk: &[u8]) {
     // Zero-copy processing
-}`}</code>
-          </pre>
+}`}
+          />
 
           <h3>Advanced Features</h3>
           <ul>
@@ -437,82 +458,82 @@ fn process_chunk(chunk: &[u8]) {
       <div className="bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-lg p-6 my-8">
         <h2 className="font-semibold mb-4">SDK Comparison</h2>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left p-2">Feature</th>
-                <th className="p-2 text-center">JavaScript</th>
-                <th className="p-2 text-center">Python</th>
-                <th className="p-2 text-center">Go</th>
-                <th className="p-2 text-center">Rust</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b">
-                <td className="p-2 font-medium">REST API</td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-              </tr>
-              <tr className="border-b">
-                <td className="p-2 font-medium">File Upload/Download</td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-              </tr>
-              <tr className="border-b">
-                <td className="p-2 font-medium">Streaming Support</td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-              </tr>
-              <tr className="border-b">
-                <td className="p-2 font-medium">Webhook Handling</td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-              </tr>
-              <tr className="border-b">
-                <td className="p-2 font-medium">Async/Await</td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-              </tr>
-              <tr className="border-b">
-                <td className="p-2 font-medium">Progress Callbacks</td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-              </tr>
-              <tr className="border-b">
-                <td className="p-2 font-medium">Type Safety</td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-              </tr>
-              <tr className="border-b">
-                <td className="p-2 font-medium">Zero-Copy Operations</td>
-                <td className="p-2 text-center">—</td>
-                <td className="p-2 text-center">—</td>
-                <td className="p-2 text-center">—</td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-              </tr>
-              <tr>
-                <td className="p-2 font-medium">Concurrent Operations</td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-                <td className="p-2 text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></td>
-              </tr>
-            </tbody>
-          </table>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Feature</TableHead>
+                <TableHead className="text-center">JavaScript</TableHead>
+                <TableHead className="text-center">Python</TableHead>
+                <TableHead className="text-center">Go</TableHead>
+                <TableHead className="text-center">Rust</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell className="font-medium">REST API</TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium">File Upload/Download</TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium">Streaming Support</TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium">Webhook Handling</TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium">Async/Await</TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium">Progress Callbacks</TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium">Type Safety</TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium">Zero-Copy Operations</TableCell>
+                <TableCell className="text-center">—</TableCell>
+                <TableCell className="text-center">—</TableCell>
+                <TableCell className="text-center">—</TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium">Concurrent Operations</TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         </div>
       </div>
 
@@ -529,10 +550,10 @@ fn process_chunk(chunk: &[u8]) {
           </CardHeader>
           <CardContent>
             <ul className="text-sm space-y-1">
-              <li>• Clone the SDK repository</li>
-              <li>• Install dependencies</li>
-              <li>• Run test suite</li>
-              <li>• Follow contribution guidelines</li>
+              <li>Clone the SDK repository</li>
+              <li>Install dependencies</li>
+              <li>Run test suite</li>
+              <li>Follow contribution guidelines</li>
             </ul>
           </CardContent>
         </Card>
@@ -543,10 +564,10 @@ fn process_chunk(chunk: &[u8]) {
           </CardHeader>
           <CardContent>
             <ul className="text-sm space-y-1">
-              <li>• Unit tests for all functionality</li>
-              <li>• Integration tests with live API</li>
-              <li>• Performance benchmarks</li>
-              <li>• Cross-platform compatibility</li>
+              <li>Unit tests for all functionality</li>
+              <li>Integration tests with live API</li>
+              <li>Performance benchmarks</li>
+              <li>Cross-platform compatibility</li>
             </ul>
           </CardContent>
         </Card>

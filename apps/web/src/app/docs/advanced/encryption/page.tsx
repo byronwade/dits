@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, Shield, Key, Lock, AlertTriangle } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Encryption",
@@ -79,8 +80,9 @@ export default function EncryptionPage() {
       <h2>Quick Start</h2>
 
       <h3>Enable Encryption on New Repository</h3>
-      <pre className="not-prose">
-        <code>{`# Initialize with encryption
+      <CodeBlock
+        language="bash"
+        code={`# Initialize with encryption
 $ dits init --encrypt
 
 Enter encryption passphrase: ********
@@ -90,12 +92,13 @@ Initialized encrypted Dits repository in .dits
 Encryption: AES-256-GCM
 Key derivation: Argon2id
 
-Your repository is now encrypted. Keep your passphrase safe!`}</code>
-      </pre>
+Your repository is now encrypted. Keep your passphrase safe!`}
+      />
 
       <h3>Enable Encryption on Existing Repository</h3>
-      <pre className="not-prose">
-        <code>{`$ dits encrypt enable
+      <CodeBlock
+        language="bash"
+        code={`$ dits encrypt enable
 
 Enter encryption passphrase: ********
 Confirm passphrase: ********
@@ -104,8 +107,8 @@ Encrypting repository...
   Encrypting 45,892 chunks... done
   Updating metadata... done
 
-Repository encrypted. All existing and new data is now protected.`}</code>
-      </pre>
+Repository encrypted. All existing and new data is now protected.`}
+      />
 
       <h2>Encryption Algorithms</h2>
 
@@ -123,21 +126,23 @@ Repository encrypted. All existing and new data is now protected.`}</code>
       <p>
         Passphrases are converted to keys using Argon2id:
       </p>
-      <pre className="not-prose">
-        <code>{`Key Derivation Parameters:
+      <CodeBlock
+        language="bash"
+        code={`Key Derivation Parameters:
   Algorithm: Argon2id
   Memory: 64 MB
   Iterations: 3
   Parallelism: 4
   Salt: 32 bytes (random per repository)
-  Output: 256-bit key`}</code>
-      </pre>
+  Output: 256-bit key`}
+      />
 
       <h2>Key Management</h2>
 
       <h3>Passphrase</h3>
-      <pre className="not-prose">
-        <code>{`# Set passphrase interactively
+      <CodeBlock
+        language="bash"
+        code={`# Set passphrase interactively
 $ dits encrypt set-passphrase
 
 # Use environment variable
@@ -146,12 +151,13 @@ $ dits pull
 
 # Use passphrase file
 $ dits config encrypt.passphraseFile ~/.dits-passphrase
-$ chmod 600 ~/.dits-passphrase`}</code>
-      </pre>
+$ chmod 600 ~/.dits-passphrase`}
+      />
 
       <h3>Key Files</h3>
-      <pre className="not-prose">
-        <code>{`# Generate a key file
+      <CodeBlock
+        language="bash"
+        code={`# Generate a key file
 $ dits encrypt generate-key ~/.dits-key
 Generated 256-bit key file: ~/.dits-key
 Keep this file secure!
@@ -160,17 +166,18 @@ Keep this file secure!
 $ dits config encrypt.keyFile ~/.dits-key
 
 # Or via environment
-$ export DITS_KEY_FILE=~/.dits-key`}</code>
-      </pre>
+$ export DITS_KEY_FILE=~/.dits-key`}
+      />
 
       <h3>Combining Methods</h3>
-      <pre className="not-prose">
-        <code>{`# Use both passphrase AND key file (most secure)
+      <CodeBlock
+        language="bash"
+        code={`# Use both passphrase AND key file (most secure)
 $ dits config encrypt.keyFile ~/.dits-key
 $ dits config encrypt.requirePassphrase true
 
-# Now both are required to decrypt`}</code>
-      </pre>
+# Now both are required to decrypt`}
+      />
 
       <Alert className="not-prose my-6">
         <AlertTriangle className="h-4 w-4" />
@@ -187,8 +194,9 @@ $ dits config encrypt.requirePassphrase true
         Encrypt specific files while leaving others unencrypted:
       </p>
 
-      <pre className="not-prose">
-        <code>{`# .ditsattributes
+      <CodeBlock
+        language="bash"
+        code={`# .ditsattributes
 
 # Encrypt confidential files
 contracts/*.pdf encrypt=true
@@ -202,12 +210,13 @@ public/** encrypt=false
 
 # Encrypt by default for entire repo
 * encrypt=true
-public/** encrypt=false`}</code>
-      </pre>
+public/** encrypt=false`}
+      />
 
       <h3>Check Encryption Status</h3>
-      <pre className="not-prose">
-        <code>{`$ dits encrypt status
+      <CodeBlock
+        language="bash"
+        code={`$ dits encrypt status
 
 Repository Encryption: ENABLED
 Algorithm: AES-256-GCM
@@ -220,8 +229,8 @@ File Status:
   public/logo.png             UNENCRYPTED
 
 Encrypted: 45,890 chunks (12.5 GB)
-Unencrypted: 2 chunks (150 KB)`}</code>
-      </pre>
+Unencrypted: 2 chunks (150 KB)`}
+      />
 
       <h2>Convergent Encryption</h2>
       <p>
@@ -229,8 +238,9 @@ Unencrypted: 2 chunks (150 KB)`}</code>
         deduplication to work across encrypted data:
       </p>
 
-      <pre className="not-prose">
-        <code>{`Standard encryption:
+      <CodeBlock
+        language="bash"
+        code={`Standard encryption:
   Same file → Different ciphertext (random IV)
   Result: No deduplication possible
 
@@ -243,8 +253,8 @@ Dits approach:
   ciphertext = AES-GCM(chunk_key, nonce, plaintext)
 
   Same chunk + same master key = same ciphertext
-  Deduplication preserved across encrypted repos!`}</code>
-      </pre>
+  Deduplication preserved across encrypted repos!`}
+      />
 
       <Alert className="not-prose my-6">
         <Info className="h-4 w-4" />
@@ -259,19 +269,21 @@ Dits approach:
       <h2>Team Encryption</h2>
 
       <h3>Shared Key Distribution</h3>
-      <pre className="not-prose">
-        <code>{`# Export encrypted key for team member
+      <CodeBlock
+        language="bash"
+        code={`# Export encrypted key for team member
 $ dits encrypt export-key --for jane@example.com > jane-key.enc
 
 # Jane imports the key
 $ dits encrypt import-key jane-key.enc
 Enter your personal passphrase: ********
-Repository key imported.`}</code>
-      </pre>
+Repository key imported.`}
+      />
 
       <h3>Role-Based Access</h3>
-      <pre className="not-prose">
-        <code>{`# Set up key hierarchy
+      <CodeBlock
+        language="bash"
+        code={`# Set up key hierarchy
 $ dits encrypt add-key --role editor
 $ dits encrypt add-key --role reviewer --read-only
 
@@ -279,12 +291,13 @@ $ dits encrypt add-key --role reviewer --read-only
 $ dits encrypt grant editor jane@example.com
 $ dits encrypt grant reviewer client@example.com
 
-# Reviewers can read but not modify encrypted content`}</code>
-      </pre>
+# Reviewers can read but not modify encrypted content`}
+      />
 
       <h2>Configuration</h2>
-      <pre className="not-prose">
-        <code>{`# .dits/config
+      <CodeBlock
+        language="bash"
+        code={`# .dits/config
 [encrypt]
     # Enable encryption
     enabled = true
@@ -306,8 +319,8 @@ $ dits encrypt grant reviewer client@example.com
 
     # Key derivation parameters
     argon2Memory = 65536
-    argon2Iterations = 3`}</code>
-      </pre>
+    argon2Iterations = 3`}
+      />
 
       <h2>Best Practices</h2>
 
@@ -335,8 +348,9 @@ $ dits encrypt grant reviewer client@example.com
       </ol>
 
       <h2>Commands Reference</h2>
-      <pre className="not-prose">
-        <code>{`# Enable/disable encryption
+      <CodeBlock
+        language="bash"
+        code={`# Enable/disable encryption
 $ dits encrypt enable
 $ dits encrypt disable
 
@@ -352,8 +366,8 @@ $ dits encrypt verify
 # Team management
 $ dits encrypt add-key --role <role>
 $ dits encrypt grant <role> <email>
-$ dits encrypt revoke <email>`}</code>
-      </pre>
+$ dits encrypt revoke <email>`}
+      />
 
       <h2>Related Topics</h2>
       <ul>

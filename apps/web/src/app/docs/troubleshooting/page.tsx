@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle, CheckCircle, Info, Terminal, HardDrive, Network } from "lucide-react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Troubleshooting",
@@ -38,16 +39,17 @@ export default function TroubleshootingPage() {
             <AlertTitle>Solution</AlertTitle>
             <AlertDescription>
               <p>Check if Dits is in your PATH:</p>
-              <pre className="bg-muted p-3 rounded text-sm mt-2">
-                <code>{`# Check where dits was installed
+              <CodeBlock
+        language="bash"
+        code={`# Check where dits was installed
 which dits
 
 # If not found, add to PATH
 export PATH="$HOME/.dits/bin:$PATH"
 
 # Or move to system location (requires sudo)
-sudo cp $(which dits) /usr/local/bin/`}</code>
-              </pre>
+sudo cp $(which dits) /usr/local/bin/`}
+      />
             </AlertDescription>
           </Alert>
 
@@ -57,13 +59,14 @@ sudo cp $(which dits) /usr/local/bin/`}</code>
             <AlertTitle>Solution</AlertTitle>
             <AlertDescription>
               <p>Use a local installation directory:</p>
-              <pre className="bg-muted p-3 rounded text-sm mt-2">
-                <code>{`# Install to user directory
+              <CodeBlock
+        language="bash"
+        code={`# Install to user directory
 curl -fsSL https://raw.githubusercontent.com/byronwade/dits/main/install.sh | bash -s -- --prefix ~/.local
 
 # Add to PATH
-export PATH="$HOME/.local/bin:$PATH"`}</code>
-              </pre>
+export PATH="$HOME/.local/bin:$PATH"`}
+      />
             </AlertDescription>
           </Alert>
 
@@ -73,14 +76,15 @@ export PATH="$HOME/.local/bin:$PATH"`}</code>
             <AlertTitle>For building from source</AlertTitle>
             <AlertDescription>
               <p>Install Rust using rustup:</p>
-              <pre className="bg-muted p-3 rounded text-sm mt-2">
-                <code>{`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+              <CodeBlock
+        language="bash"
+        code={`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source ~/.cargo/env
 
 # Verify installation
 rustc --version
-cargo --version`}</code>
-              </pre>
+cargo --version`}
+      />
             </AlertDescription>
           </Alert>
         </TabsContent>
@@ -94,13 +98,14 @@ cargo --version`}</code>
             <AlertTitle>Solution</AlertTitle>
             <AlertDescription>
               <p>You need to initialize a Dits repository first:</p>
-              <pre className="bg-muted p-3 rounded text-sm mt-2">
-                <code>{`# Initialize in current directory
+              <CodeBlock
+        language="bash"
+        code={`# Initialize in current directory
 dits init
 
 # Check if .dits directory was created
-ls -la .dits/`}</code>
-              </pre>
+ls -la .dits/`}
+      />
             </AlertDescription>
           </Alert>
 
@@ -110,16 +115,17 @@ ls -la .dits/`}</code>
             <AlertTitle>Solution</AlertTitle>
             <AlertDescription>
               <p>Files need to be explicitly added to staging:</p>
-              <pre className="bg-muted p-3 rounded text-sm mt-2">
-                <code>{`# Add specific file
+              <CodeBlock
+        language="bash"
+        code={`# Add specific file
 dits add myfile.mp4
 
 # Add all files in directory
 dits add .
 
 # Check status
-dits status`}</code>
-              </pre>
+dits status`}
+      />
             </AlertDescription>
           </Alert>
 
@@ -129,16 +135,17 @@ dits status`}</code>
             <AlertTitle>Solution</AlertTitle>
             <AlertDescription>
               <p>You need staged changes to commit:</p>
-              <pre className="bg-muted p-3 rounded text-sm mt-2">
-                <code>{`# Check what's staged
+              <CodeBlock
+        language="bash"
+        code={`# Check what's staged
 dits status
 
 # Stage files if needed
 dits add .
 
 # Then commit
-dits commit -m "Your message"`}</code>
-              </pre>
+dits commit -m "Your message"`}
+      />
             </AlertDescription>
           </Alert>
 
@@ -148,13 +155,14 @@ dits commit -m "Your message"`}</code>
             <AlertTitle>Solution</AlertTitle>
             <AlertDescription>
               <p>Dits uses streaming chunking, but very large files may need more memory:</p>
-              <pre className="bg-muted p-3 rounded text-sm mt-2">
-                <code>{`# Increase available memory
+              <CodeBlock
+        language="bash"
+        code={`# Increase available memory
 export DITS_CHUNK_MEMORY_MB=1024
 
 # Or use smaller chunk sizes (trades speed for memory)
-dits config chunk.avg_size 32KB`}</code>
-              </pre>
+dits config chunk.avg_size 32KB`}
+      />
             </AlertDescription>
           </Alert>
         </TabsContent>
@@ -174,13 +182,14 @@ dits config chunk.avg_size 32KB`}</code>
                 <li><strong>SSD storage:</strong> Much faster than HDD</li>
               </ul>
               <p className="mt-2">If significantly slower, check:</p>
-              <pre className="bg-muted p-3 rounded text-sm mt-2">
-                <code>{`# CPU usage during chunking
+              <CodeBlock
+        language="bash"
+        code={`# CPU usage during chunking
 top -p $(pgrep dits)
 
 # Disk I/O
-iostat -x 1`}</code>
-              </pre>
+iostat -x 1`}
+      />
             </AlertDescription>
           </Alert>
 
@@ -190,16 +199,17 @@ iostat -x 1`}</code>
             <AlertTitle>Solution</AlertTitle>
             <AlertDescription>
               <p>Optimize network settings:</p>
-              <pre className="bg-muted p-3 rounded text-sm mt-2">
-                <code>{`# Increase connection pool
+              <CodeBlock
+        language="bash"
+        code={`# Increase connection pool
 dits config network.max_connections 16
 
 # Use resumable uploads
 dits config network.resumable_uploads true
 
 # Check network speed
-dits config network.bandwidth_test`}</code>
-              </pre>
+dits config network.bandwidth_test`}
+      />
             </AlertDescription>
           </Alert>
 
@@ -209,16 +219,17 @@ dits config network.bandwidth_test`}</code>
             <AlertTitle>Solution</AlertTitle>
             <AlertDescription>
               <p>Configure memory limits:</p>
-              <pre className="bg-muted p-3 rounded text-sm mt-2">
-                <code>{`# Limit memory per operation
+              <CodeBlock
+        language="bash"
+        code={`# Limit memory per operation
 dits config memory.max_per_operation 512MB
 
 # Use disk buffering for large files
 dits config storage.use_disk_buffer true
 
 # Monitor memory usage
-dits config debug.memory_profile true`}</code>
-              </pre>
+dits config debug.memory_profile true`}
+      />
             </AlertDescription>
           </Alert>
         </TabsContent>
@@ -232,8 +243,9 @@ dits config debug.memory_profile true`}</code>
             <AlertTitle>FUSE Requirements</AlertTitle>
             <AlertDescription>
               <p>Install FUSE for your platform:</p>
-              <pre className="bg-muted p-3 rounded text-sm mt-2">
-                <code>{`# macOS
+              <CodeBlock
+        language="bash"
+        code={`# macOS
 brew install macfuse
 
 # Ubuntu/Debian
@@ -243,8 +255,8 @@ sudo apt install fuse3 libfuse3-dev
 sudo yum install fuse3 fuse3-devel
 
 # Test FUSE
-dits mount --test /tmp/test-mount`}</code>
-              </pre>
+dits mount --test /tmp/test-mount`}
+      />
             </AlertDescription>
           </Alert>
 
@@ -254,16 +266,17 @@ dits mount --test /tmp/test-mount`}</code>
             <AlertTitle>Critical: Check data integrity</AlertTitle>
             <AlertDescription>
               <p>This indicates data corruption:</p>
-              <pre className="bg-muted p-3 rounded text-sm mt-2">
-                <code>{`# Verify repository integrity
+              <CodeBlock
+        language="bash"
+        code={`# Verify repository integrity
 dits fsck
 
 # Find corrupted chunks
 dits fsck --verbose
 
 # Recover from backup or remote
-dits pull origin main --force`}</code>
-              </pre>
+dits pull origin main --force`}
+      />
               <p className="mt-2 text-sm">
                 <strong>Never ignore checksum failures.</strong> They indicate data corruption that needs immediate attention.
               </p>
@@ -276,16 +289,17 @@ dits pull origin main --force`}</code>
             <AlertTitle>Solution</AlertTitle>
             <AlertDescription>
               <p>Check and resolve locks:</p>
-              <pre className="bg-muted p-3 rounded text-sm mt-2">
-                <code>{`# See all locks
+              <CodeBlock
+        language="bash"
+        code={`# See all locks
 dits locks
 
 # Unlock specific file
 dits unlock path/to/file.mp4
 
 # Force unlock (admin only)
-dits unlock path/to/file.mp4 --force`}</code>
-              </pre>
+dits unlock path/to/file.mp4 --force`}
+      />
             </AlertDescription>
           </Alert>
 
@@ -295,8 +309,9 @@ dits unlock path/to/file.mp4 --force`}</code>
             <AlertTitle>Solution</AlertTitle>
             <AlertDescription>
               <p>Manage storage usage:</p>
-              <pre className="bg-muted p-3 rounded text-sm mt-2">
-                <code>{`# Check storage usage
+              <CodeBlock
+        language="bash"
+        code={`# Check storage usage
 dits repo-stats
 
 # Run garbage collection
@@ -306,8 +321,8 @@ dits gc
 dits branch --list --merged | xargs dits branch -d
 
 # Move to cold storage
-dits storage archive --older-than 90d`}</code>
-              </pre>
+dits storage archive --older-than 90d`}
+      />
             </AlertDescription>
           </Alert>
         </TabsContent>
@@ -350,24 +365,74 @@ dits storage archive --older-than 90d`}</code>
             <CardDescription>Collect info for bug reports</CardDescription>
           </CardHeader>
           <CardContent>
-            <pre className="bg-muted p-2 rounded text-xs">
-              <code>{`dits --version
+            <CodeBlock
+        language="bash"
+        code={`dits --version
 dits config --list
 dits repo-stats
-uname -a`}</code>
-            </pre>
+uname -a`}
+      />
           </CardContent>
         </Card>
       </div>
+
+      <h3>Telemetry Issues</h3>
+
+      <h4>Check if telemetry is enabled</h4>
+      <Alert className="not-prose my-4">
+        <Info className="h-4 w-4" />
+        <AlertTitle>Telemetry Status</AlertTitle>
+        <AlertDescription>
+          <p>Check your current telemetry settings:</p>
+          <CodeBlock
+        language="bash"
+        code={`dits telemetry status`}
+      />
+          <p className="text-sm mt-2">
+            This shows if telemetry is enabled, your anonymized user ID, and when data was last uploaded.
+          </p>
+        </AlertDescription>
+      </Alert>
+
+      <h4>Disable telemetry if needed</h4>
+      <Alert className="not-prose my-4">
+        <CheckCircle className="h-4 w-4" />
+        <AlertTitle>Disable Telemetry</AlertTitle>
+        <AlertDescription>
+          <p>To disable telemetry collection:</p>
+          <CodeBlock
+        language="bash"
+        code={`dits telemetry disable`}
+      />
+          <p className="text-sm mt-2">
+            This immediately stops all telemetry collection and clears any pending data.
+          </p>
+        </AlertDescription>
+      </Alert>
+
+      <h4>Network connectivity issues with telemetry</h4>
+      <Alert className="not-prose my-4">
+        <Network className="h-4 w-4" />
+        <AlertTitle>Offline Mode</AlertTitle>
+        <AlertDescription>
+          <p>If telemetry uploads are failing due to network issues:</p>
+          <ul className="text-sm mt-2 space-y-1">
+            <li>Telemetry data is stored locally until network is available</li>
+            <li>Failed uploads are retried automatically on next use</li>
+            <li>You can disable telemetry if network issues persist</li>
+          </ul>
+        </AlertDescription>
+      </Alert>
 
       <Alert className="not-prose my-6">
         <CheckCircle className="h-4 w-4" />
         <AlertTitle>Debug Mode</AlertTitle>
         <AlertDescription>
           For advanced troubleshooting, enable debug logging:
-          <pre className="bg-muted p-3 rounded text-sm mt-2">
-            <code>dits config debug.enabled true</code>
-          </pre>
+          <CodeBlock
+        language="bash"
+        code={`dits config debug.enabled true`}
+      />
         </AlertDescription>
       </Alert>
     </div>
