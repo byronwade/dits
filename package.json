@@ -21,9 +21,5 @@
   "packageManager": "npm@10.2.0",
   "engines": {
     "node": ">=18"
-  },
-  "dependencies": {
-    "@next/swc-darwin-arm64": "^16.0.8",
-    "next": "^16.0.8"
   }
 }
