@@ -9,8 +9,11 @@ pub mod offset_patcher;
 pub mod deconstructor;
 pub mod reconstructor;
 
-pub use parser::{Mp4Parser, Mp4Structure, ParseError};
-pub use atoms::{Atom, AtomType};
-pub use offset_patcher::{OffsetPatcher, create_mdat_header};
-pub use deconstructor::{Deconstructor, DeconstructedMp4};
-pub use reconstructor::{Reconstructor, verify_mp4_structure};
+#[allow(unused_imports)]
+pub use {
+    atoms::{Atom, AtomType},
+    deconstructor::{DeconstructedMp4, Deconstructor},
+    offset_patcher::{create_mdat_header, OffsetPatcher},
+    parser::{Mp4Parser, Mp4Structure, ParseError},
+    reconstructor::{verify_mp4_structure, Reconstructor},
+};

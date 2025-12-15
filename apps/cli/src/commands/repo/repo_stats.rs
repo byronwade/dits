@@ -5,7 +5,6 @@
 use crate::store::Repository;
 use anyhow::{Context, Result};
 use console::style;
-use std::path::Path;
 
 /// Display comprehensive repository deduplication statistics.
 pub fn repo_stats(verbose: bool) -> Result<()> {
@@ -68,12 +67,12 @@ pub fn repo_stats(verbose: bool) -> Result<()> {
     println!("{}", style("Storage:").bold());
     println!(
         "  Logical size:  {} {}",
-        style(format_bytes(dedup_stats.logical_size)).white().bold(),
+        style(format_bytes_with_raw(dedup_stats.logical_size)).white().bold(),
         style("(sum of all file sizes)").dim()
     );
     println!(
         "  Physical size: {} {}",
-        style(format_bytes(dedup_stats.physical_size)).white().bold(),
+        style(format_bytes_with_raw(dedup_stats.physical_size)).white().bold(),
         style("(actual storage used)").dim()
     );
     println!();
@@ -86,7 +85,7 @@ pub fn repo_stats(verbose: bool) -> Result<()> {
     );
     println!(
         "  Space saved:   {} ({:.1}%)",
-        style(format_bytes(dedup_stats.saved_bytes)).green().bold(),
+        style(format_bytes_with_raw(dedup_stats.saved_bytes)).green().bold(),
         dedup_stats.savings_percentage
     );
     println!(
@@ -139,7 +138,7 @@ pub fn repo_stats(verbose: bool) -> Result<()> {
         );
         println!(
             "  Storage bytes:   {}",
-            format_bytes(basic_stats.storage_bytes)
+            format_bytes_with_raw(basic_stats.storage_bytes)
         );
 
         // Per-file breakdown
@@ -162,7 +161,7 @@ pub fn repo_stats(verbose: bool) -> Result<()> {
             println!(
                 "  {:<40} {:>12} {:>8} {:>8}",
                 display_path,
-                format_bytes_short(fs.file_size),
+                format_bytes_short_with_raw(fs.file_size),
                 fs.chunk_count,
                 file_type
             );
@@ -173,7 +172,7 @@ pub fn repo_stats(verbose: bool) -> Result<()> {
 }
 
 /// Format bytes as human-readable string.
-fn format_bytes(bytes: u64) -> String {
+fn format_bytes_with_raw(bytes: u64) -> String {
     const KB: u64 = 1024;
     const MB: u64 = KB * 1024;
     const GB: u64 = MB * 1024;
@@ -190,7 +189,7 @@ fn format_bytes(bytes: u64) -> String {
 }
 
 /// Short format for tables.
-fn format_bytes_short(bytes: u64) -> String {
+fn format_bytes_short_with_raw(bytes: u64) -> String {
     const KB: u64 = 1024;
     const MB: u64 = KB * 1024;
     const GB: u64 = MB * 1024;

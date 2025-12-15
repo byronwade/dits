@@ -9,5 +9,5 @@
 pub mod manifest;
 pub mod segmenter;
 
-pub use manifest::{Segment, VideoManifest};
-pub use segmenter::{SegmentConfig, Segmenter};
+#[allow(unused_imports)]
+pub use {manifest::{Segment, VideoManifest}, segmenter::{SegmentConfig, Segmenter}};

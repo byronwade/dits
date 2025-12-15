@@ -36,6 +36,15 @@ pub fn status() -> Result<()> {
         for file in &status.staged_deleted {
             println!("        {}: {}", style("deleted").green(), file);
         }
+        for (old_path, new_path) in &status.staged_renamed {
+            println!("        {}: {} -> {}", style("renamed").green(), old_path, new_path);
+        }
+        for file in &status.staged_type_changed {
+            println!("        {}: {}", style("type changed").green(), file);
+        }
+        for file in &status.staged_mode_changed {
+            println!("        {}: {}", style("mode changed").green(), file);
+        }
         println!();
     }
 
@@ -47,6 +56,18 @@ pub fn status() -> Result<()> {
 
         for file in &status.modified {
             println!("        {}: {}", style("modified").red(), file);
+        }
+        println!();
+    }
+
+    // Print unstaged renames
+    if !status.unstaged_renamed.is_empty() {
+        println!("Unstaged renames:");
+        println!("  (use \"dits add <file>...\" to include in what will be committed)");
+        println!();
+
+        for (old_path, new_path) in &status.unstaged_renamed {
+            println!("        {}: {} -> {}", style("renamed").yellow(), old_path, new_path);
         }
         println!();
     }
@@ -64,9 +85,9 @@ pub fn status() -> Result<()> {
     }
 
     // Clean status
-    if status.is_clean() && status.untracked.is_empty() {
+    if status.is_clean() && status.untracked.is_empty() && status.unstaged_renamed.is_empty() {
         println!("nothing to commit, working tree clean");
-    } else if status.is_clean() && !status.untracked.is_empty() {
+    } else if status.is_clean() && (!status.untracked.is_empty() || !status.unstaged_renamed.is_empty()) {
         println!(
             "nothing added to commit but untracked files present (use \"dits add\" to track)"
         );

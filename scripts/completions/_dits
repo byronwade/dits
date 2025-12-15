@@ -1,0 +1,332 @@
+#compdef dits
+
+# Dits Zsh Completion
+# Add this to your ~/.zshrc:
+# fpath=(/path/to/dits/completions $fpath)
+# autoload -U compinit && compinit
+
+_dits() {
+    local curcontext="$curcontext" state line
+    typeset -A opt_args
+
+    _arguments -C \
+        '1: :->cmds' \
+        '*:: :->args'
+
+    case $state in
+        cmds)
+            local commands=(
+                "init:Initialize a new repository"
+                "add:Add files to staging"
+                "commit:Record changes to the repository"
+                "status:Show the working tree status"
+                "log:Show commit logs"
+                "show:Show various types of objects"
+                "diff:Show changes between commits"
+                "branch:List, create, or delete branches"
+                "switch:Switch branches"
+                "merge:Join two or more development histories"
+                "tag:Create, list, delete or verify tags"
+                "reset:Reset current HEAD to the specified state"
+                "restore:Restore working tree files"
+                "stash:Stash the changes in a dirty working directory"
+                "clone:Clone a repository"
+                "push:Update remote refs"
+                "pull:Fetch from and integrate with another repository"
+                "fetch:Download objects and refs from another repository"
+                "remote:Manage set of tracked repositories"
+                "config:Get and set repository or global options"
+                "mount:Mount repository as virtual filesystem"
+                "unmount:Unmount virtual filesystem"
+                "fsck:Verify the connectivity and validity of objects"
+                "gc:Cleanup unnecessary files and optimize the local repository"
+                "clean:Remove untracked files from the working tree"
+                "help:Display help information"
+            )
+            _describe -t commands 'dits command' commands
+            ;;
+        args)
+            case $words[2] in
+                init)
+                    _arguments \
+                        '*:directory:_directories'
+                    ;;
+                add)
+                    _arguments \
+                        '*:file:_files'
+                    ;;
+                commit)
+                    _arguments \
+                        '(-m --message)'{-m,--message}'[use given message as commit message]:message:' \
+                        '(-a --all)'{-a,--all}'[commit all changed files]' \
+                        '(-amend --amend)'{--amend}'[amend previous commit]' \
+                        '*:file:_files'
+                    ;;
+                log)
+                    _arguments \
+                        '--oneline[condense log output]' \
+                        '--graph[draw commit graph]' \
+                        '--decorate[show ref names]' \
+                        '--all[show all branches]' \
+                        '--since[show commits since date]:date:' \
+                        '--until[show commits until date]:date:' \
+                        '--author[show commits by author]:author:' \
+                        '--grep[show commits with log message matching pattern]:pattern:' \
+                        '-n[limit number of commits]:count:' \
+                        '--follow[continue listing file history beyond renames]' \
+                        '-p[show patch]'
+                    ;;
+                show)
+                    _arguments \
+                        '--format[pretty-print with given format]:format:' \
+                        '--abbrev-commit[show only partial hashes]' \
+                        '--oneline[show each commit on a single line]' \
+                        '*:object:__dits_objects'
+                    ;;
+                diff)
+                    _arguments \
+                        '--cached[show diff of staged changes]' \
+                        '--name-only[show only names of changed files]' \
+                        '--name-status[show names and status of changed files]' \
+                        '-p[show patch]' \
+                        '--stat[show diffstat]' \
+                        '--word-diff[show word diff]' \
+                        '*: :__dits_refs_and_files'
+                    ;;
+                branch)
+                    _arguments \
+                        '(-d --delete)'{-d,--delete}'[delete branch]:branch:__dits_branches' \
+                        '(-m --move)'{-m,--move}'[move/rename branch]: :__dits_branch_rename' \
+                        '(-l --list)'{-l,--list}'[list branches]' \
+                        '(-a --all)'{-a,--all}'[list all branches]' \
+                        '(-r --remotes)'{-r,--remotes}'[list remote branches]' \
+                        '*:branch:__dits_branches'
+                    ;;
+                switch)
+                    _arguments \
+                        '(-c --create)'{-c,--create}'[create and switch to branch]:branch:' \
+                        '(-d --detach)'{-d,--detach}'[detach HEAD]' \
+                        '*: :__dits_branches_and_tags'
+                    ;;
+                merge)
+                    _arguments \
+                        '--no-ff[create merge commit even for fast-forward]' \
+                        '--ff-only[refuse to merge unless it can be fast-forwarded]' \
+                        '--squash[create single commit instead of merge commit]' \
+                        '--abort[abort the current merge operation]' \
+                        '*: :__dits_branches_and_tags'
+                    ;;
+                tag)
+                    _arguments \
+                        '(-l --list)'{-l,--list}'[list tags]' \
+                        '(-d --delete)'{-d,--delete}'[delete tag]:tag:__dits_tags' \
+                        '(-a --annotate)'{-a,--annotate}'[create annotated tag]' \
+                        '(-m --message)'{-m,--message}'[use given tag message]:message:' \
+                        '*:tag:'
+                    ;;
+                reset)
+                    _arguments \
+                        '--soft[reset index but not working tree]' \
+                        '--mixed[reset index but not working tree (default)]' \
+                        '--hard[reset index and working tree]' \
+                        '*: :__dits_refs'
+                    ;;
+                restore)
+                    _arguments \
+                        '(-s --source)'{-s,--source}'[restore from given commit]: :__dits_refs' \
+                        '--staged[restore staged files]' \
+                        '--worktree[restore working tree files]' \
+                        '*:file:_files'
+                    ;;
+                stash)
+                    local stash_cmds=(push pop apply drop create list show clear)
+                    _arguments \
+                        '*:stash_cmd:($stash_cmds)'
+                    ;;
+                clone)
+                    _arguments \
+                        '--depth[create shallow clone]:depth:' \
+                        '--branch[checkout given branch]:branch:' \
+                        '--bare[create bare repository]' \
+                        '*:repository:_urls'
+                    ;;
+                push)
+                    _arguments \
+                        '--all[push all branches]' \
+                        '--tags[push tags]' \
+                        '--force[force push]' \
+                        '--dry-run[show what would be pushed]' \
+                        '*: :__dits_push_args'
+                    ;;
+                pull)
+                    _arguments \
+                        '--rebase[rebase instead of merge]' \
+                        '--no-rebase[merge instead of rebase]' \
+                        '*:remote:__dits_remotes'
+                    ;;
+                remote)
+                    local remote_cmds=(add rm remove set-head set-branches get-url set-url show prune update)
+                    _arguments \
+                        '*:remote_cmd:($remote_cmds)' \
+                        '*:remote:__dits_remotes'
+                    ;;
+                config)
+                    _arguments \
+                        '--global[use global config]' \
+                        '--local[use local config]' \
+                        '--list[list all config]' \
+                        '*: :__dits_config_keys'
+                    ;;
+                mount)
+                    _arguments \
+                        '--background[run in background]' \
+                        '--read-only[mount read-only]' \
+                        '*:directory:_directories'
+                    ;;
+                fsck)
+                    _arguments \
+                        '--full[do full check]' \
+                        '--strict[do strict checking]' \
+                        '--lost-found[write dangling objects to .dits/lost-found]'
+                    ;;
+                help)
+                    _arguments \
+                        '*:command:__dits_commands'
+                    ;;
+            esac
+            ;;
+    esac
+}
+
+__dits_commands() {
+    local commands=(
+        "init:Initialize a new repository"
+        "add:Add files to staging"
+        "commit:Record changes to the repository"
+        "status:Show the working tree status"
+        "log:Show commit logs"
+        "show:Show various types of objects"
+        "diff:Show changes between commits"
+        "branch:List, create, or delete branches"
+        "switch:Switch branches"
+        "merge:Join two or more development histories"
+        "tag:Create, list, delete or verify tags"
+        "reset:Reset current HEAD to the specified state"
+        "restore:Restore working tree files"
+        "stash:Stash the changes in a dirty working directory"
+        "clone:Clone a repository"
+        "push:Update remote refs"
+        "pull:Fetch from and integrate with another repository"
+        "fetch:Download objects and refs from another repository"
+        "remote:Manage set of tracked repositories"
+        "config:Get and set repository or global options"
+        "mount:Mount repository as virtual filesystem"
+        "unmount:Unmount virtual filesystem"
+        "fsck:Verify the connectivity and validity of objects"
+        "gc:Cleanup unnecessary files and optimize the local repository"
+        "clean:Remove untracked files from the working tree"
+        "help:Display help information"
+    )
+    _describe -t commands 'dits command' commands
+}
+
+__dits_refs() {
+    local refs
+    if command -v dits >/dev/null 2>&1; then
+        refs=(${${${(f)"$(dits branch -a 2>/dev/null)"}#\* }#  })
+        refs+=(${${(f)"$(dits tag -l 2>/dev/null)"}%% *})
+    fi
+    _wanted refs expl 'reference' compadd -a refs
+}
+
+__dits_branches() {
+    local branches
+    if command -v dits >/dev/null 2>&1; then
+        branches=(${${${(f)"$(dits branch 2>/dev/null)"}#\* }#  })
+    fi
+    _wanted branches expl 'branch' compadd -a branches
+}
+
+__dits_branches_and_tags() {
+    local refs
+    if command -v dits >/dev/null 2>&1; then
+        refs=(${${${(f)"$(dits branch -a 2>/dev/null)"}#\* }#  })
+        refs+=(${${(f)"$(dits tag -l 2>/dev/null)"}%% *})
+    fi
+    _wanted refs expl 'branch or tag' compadd -a refs
+}
+
+__dits_tags() {
+    local tags
+    if command -v dits >/dev/null 2>&1; then
+        tags=(${${(f)"$(dits tag -l 2>/dev/null)"}%% *})
+    fi
+    _wanted tags expl 'tag' compadd -a tags
+}
+
+__dits_remotes() {
+    local remotes
+    if command -v dits >/dev/null 2>&1; then
+        remotes=(${${(f)"$(dits remote 2>/dev/null)"}%% *})
+    fi
+    _wanted remotes expl 'remote' compadd -a remotes
+}
+
+__dits_config_keys() {
+    local keys=(
+        "user.name"
+        "user.email"
+        "core.editor"
+        "core.pager"
+        "merge.tool"
+        "diff.tool"
+        "color.ui"
+        "credential.helper"
+        "http.proxy"
+        "https.proxy"
+        "remote.origin.url"
+        "remote.origin.fetch"
+        "branch.master.remote"
+        "branch.master.merge"
+    )
+    _wanted config-keys expl 'config key' compadd -a keys
+}
+
+__dits_objects() {
+    local objects
+    if command -v dits >/dev/null 2>&1; then
+        objects=(${${${(f)"$(dits branch -a 2>/dev/null)"}#\* }#  })
+        objects+=(${${(f)"$(dits tag -l 2>/dev/null)"}%% *})
+        objects+=(${${(f)"$(dits log --oneline -10 2>/dev/null)"}%% *})
+    fi
+    _wanted objects expl 'object' compadd -a objects
+}
+
+__dits_refs_and_files() {
+    if [[ $CURRENT -eq 3 ]]; then
+        __dits_refs
+    else
+        _files
+    fi
+}
+
+__dits_push_args() {
+    if [[ $CURRENT -eq 3 ]]; then
+        __dits_remotes
+    elif [[ $CURRENT -eq 4 ]]; then
+        __dits_branches
+    fi
+}
+
+__dits_branch_rename() {
+    if [[ $CURRENT -eq 3 ]]; then
+        __dits_branches
+    elif [[ $CURRENT -eq 4 ]]; then
+        _message 'new branch name'
+    fi
+}
+
+_dits
+
+
+

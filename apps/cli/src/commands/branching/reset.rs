@@ -124,6 +124,9 @@ fn reset_to_commit(repo: &Repository, target: Option<&str>, mode: ResetMode) -> 
                     entry.content_hash,
                     entry.size,
                     0,
+                    0o644, // Default mode
+                    entry.file_type,
+                    entry.symlink_target.clone(),
                     entry.chunks.clone(),
                 );
                 new_index.stage(idx_entry);

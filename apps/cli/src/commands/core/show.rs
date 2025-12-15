@@ -1,6 +1,7 @@
 //! Show command - display commit details.
 
 use crate::store::Repository;
+use crate::util::{format_bytes, format_size_change};
 use anyhow::{Context, Result};
 use console::style;
 use std::path::Path;
@@ -91,7 +92,7 @@ pub fn show(object: &str, stat: bool, name_only: bool, name_status: bool, no_pat
                     " {} {} | {} (new file)",
                     style("A").green(),
                     style(path).cyan(),
-                    format_size(*size)
+                    format_bytes(*size)
                 );
             }
         }
@@ -102,19 +103,11 @@ pub fn show(object: &str, stat: bool, name_only: bool, name_status: bool, no_pat
             } else if name_status {
                 println!("{}\t{}", style("M").yellow(), path);
             } else {
-                let change = if new_size > old_size {
-                    format!("+{}", format_size(new_size - old_size))
-                } else if new_size < old_size {
-                    format!("-{}", format_size(old_size - new_size))
-                } else {
-                    "~".to_string()
-                };
                 println!(
-                    " {} {} | {} ({})",
+                    " {} {} | {}",
                     style("M").yellow(),
                     style(path).cyan(),
-                    format_size(*new_size),
-                    change
+                    format_size_change(*new_size, *old_size)
                 );
             }
         }
@@ -169,7 +162,7 @@ pub fn show(object: &str, stat: bool, name_only: bool, name_status: bool, no_pat
             println!(
                 "   Chunks: {} total, Size: {}",
                 entry.chunks.len(),
-                format_size(entry.size)
+                format_bytes(entry.size)
             );
         }
 
@@ -186,15 +179,3 @@ pub fn show(object: &str, stat: bool, name_only: bool, name_status: bool, no_pat
     Ok(())
 }
 
-/// Format file size in human-readable form.
-fn format_size(bytes: u64) -> String {
-    if bytes >= 1024 * 1024 * 1024 {
-        format!("{:.1} GB", bytes as f64 / (1024.0 * 1024.0 * 1024.0))
-    } else if bytes >= 1024 * 1024 {
-        format!("{:.1} MB", bytes as f64 / (1024.0 * 1024.0))
-    } else if bytes >= 1024 {
-        format!("{:.1} KB", bytes as f64 / 1024.0)
-    } else {
-        format!("{} bytes", bytes)
-    }
-}

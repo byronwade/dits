@@ -16,7 +16,7 @@ This test covers ALL major creative industry file formats including:
 '
 
 . ./test-lib.sh
-. lib-chunking.sh
+. "$TEST_DIRECTORY/lib-chunking.sh"
 
 # ============================================================================
 # 3D MODEL FORMATS - COMPREHENSIVE

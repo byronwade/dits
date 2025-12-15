@@ -4,7 +4,6 @@
 
 use anyhow::{Context, Result, bail};
 use crate::store::locks::{Lock, LockStore};
-use std::path::Path;
 
 /// Lock a file.
 pub fn lock(

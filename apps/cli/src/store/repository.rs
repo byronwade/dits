@@ -12,7 +12,7 @@
 use crate::config::Config;
 use crate::core::{
     chunk_data_with_refs, chunk_data_with_refs_parallel, Author, ChunkerConfig, Commit,
-    FileClassifier, FileStatus, Hash, Hasher, Index, IndexEntry, IgnoreMatcher, Manifest,
+    FileClassifier, FileMode, FileStatus, FileType, Hash, Hasher, Index, IndexEntry, IgnoreMatcher, Manifest,
     ManifestEntry, Mp4Metadata, StorageStrategy, StoredAtom,
 };
 use crate::mp4::{Deconstructor, Mp4Parser};
@@ -21,6 +21,7 @@ use crate::store::{GitTextEngine, ObjectStore, RefStore};
 use bincode;
 use std::fs::{self, File};
 use std::io::{self, BufWriter, Read, Seek, SeekFrom, Write};
+use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use thiserror::Error;
@@ -523,13 +524,10 @@ impl Repository {
         Ok(index)
     }
 
-    /// Save the index.
-    /// Uses binary format for Phase 6 performance optimization.
     fn save_index(&self, index: &Index) -> Result<(), RepoError> {
         let index_path = self.dits_dir.join("index");
-        let data = bincode::serialize(index)
+        fs::write(&index_path, index.to_json())
             .map_err(|e| RepoError::IndexError(e.to_string()))?;
-        fs::write(&index_path, &data)?;
 
         // Update cache with new mtime
         let mtime = index_path.metadata()?.modified()?;
@@ -664,6 +662,21 @@ impl Repository {
                     .as_secs() as i64
             })
             .unwrap_or(0);
+        let mode = metadata.permissions().mode();
+        let file_type = if metadata.is_dir() {
+            FileType::Directory
+        } else if metadata.is_symlink() {
+            FileType::Symlink
+        } else {
+            FileType::Regular
+        };
+        let symlink_target = if file_type == FileType::Symlink {
+            fs::read_link(full_path)
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_default()
+        } else {
+            String::new()
+        };
 
         // Store in Git object store if available
         let git_oid = if let Some(ref engine) = self.git_engine {
@@ -698,6 +711,9 @@ impl Repository {
                 content_hash,
                 data.len() as u64,
                 mtime,
+                mode,
+                file_type,
+                symlink_target.clone(),
                 chunk_refs,
             );
             entry.status = if index.is_staged(rel_path) {
@@ -716,6 +732,9 @@ impl Repository {
             content_hash,
             data.len() as u64,
             mtime,
+            mode,
+            file_type,
+            symlink_target,
             git_oid.unwrap_or_default(),
         );
         entry.status = if index.is_staged(rel_path) {
@@ -769,6 +788,21 @@ impl Repository {
                     .as_secs() as i64
             })
             .unwrap_or(0);
+        let mode = metadata.permissions().mode();
+        let file_type = if metadata.is_dir() {
+            FileType::Directory
+        } else if metadata.is_symlink() {
+            FileType::Symlink
+        } else {
+            FileType::Regular
+        };
+        let symlink_target = if file_type == FileType::Symlink {
+            fs::read_link(full_path)
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_default()
+        } else {
+            String::new()
+        };
 
         // Create index entry
         let mut entry = IndexEntry::new(
@@ -776,6 +810,9 @@ impl Repository {
             content_hash,
             data.len() as u64,
             mtime,
+            mode,
+            file_type,
+            symlink_target,
             chunk_refs,
         );
         entry.status = if index.is_staged(rel_path) {
@@ -833,6 +870,7 @@ impl Repository {
         // Compute content hash of the full file for change detection
         let data = fs::read(full_path)?;
         let content_hash = Hasher::hash(&data);
+        let actual_file_size = data.len() as u64;
 
         // Check if file has changed
         if let Some(existing) = index.get(rel_path) {
@@ -918,11 +956,11 @@ impl Repository {
         let other_atoms_size: u64 = deconstructed.other_atoms.iter()
             .map(|(_, data)| data.len() as u64)
             .sum();
-        let reconstructed_size = deconstructed.ftyp_data.len() as u64
-            + other_atoms_size
-            + deconstructed.moov_data.len() as u64
-            + 8  // mdat header
-            + deconstructed.mdat_data_size;
+        let _reconstructed_size = (deconstructed.ftyp_data.len() as u64)
+            .saturating_add(other_atoms_size)
+            .saturating_add(deconstructed.moov_data.len() as u64)
+            .saturating_add(8)  // mdat header
+            .saturating_add(deconstructed.mdat_data_size);
 
         // Build MP4 metadata
         // We always normalize offsets, so we always need to denormalize on checkout
@@ -958,13 +996,31 @@ impl Repository {
                     .as_secs() as i64
             })
             .unwrap_or(0);
+        let mode = metadata.permissions().mode();
+        let file_type = if metadata.is_dir() {
+            FileType::Directory
+        } else if metadata.is_symlink() {
+            FileType::Symlink
+        } else {
+            FileType::Regular
+        };
+        let symlink_target = if file_type == FileType::Symlink {
+            fs::read_link(full_path)
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_default()
+        } else {
+            String::new()
+        };
 
         // Create MP4-aware index entry
         let mut entry = IndexEntry::new_mp4(
             rel_path.to_string(),
             content_hash,
-            reconstructed_size,
+            actual_file_size,  // Use actual file size for consistency
             mtime,
+            mode,
+            file_type,
+            symlink_target,
             chunk_refs,
             mp4_metadata,
         );
@@ -1028,12 +1084,32 @@ impl Repository {
             })
             .unwrap_or(0);
 
+        // Get file mode and type
+        let mode = metadata.permissions().mode();
+        let file_type = if metadata.is_dir() {
+            FileType::Directory
+        } else if metadata.file_type().is_symlink() {
+            FileType::Symlink
+        } else {
+            FileType::Regular
+        };
+        let symlink_target = if file_type == FileType::Symlink {
+            fs::read_link(full_path)?
+                .to_string_lossy()
+                .to_string()
+        } else {
+            String::new()
+        };
+
         // Create index entry
         let mut entry = IndexEntry::new(
             rel_path.to_string(),
             content_hash,
             data.len() as u64,
             mtime,
+            mode,
+            file_type,
+            symlink_target,
             chunk_refs,
         );
         entry.status = if index.is_staged(rel_path) {
@@ -1059,16 +1135,23 @@ impl Repository {
         status.branch = self.refs.current_branch()?;
 
         // Check staged files
+        let mut staged_added = Vec::new();
         for (path, entry) in &index.entries {
             match entry.status {
-                FileStatus::Added => status.staged_new.push(path.clone()),
+                FileStatus::Added => staged_added.push((path.clone(), entry.content_hash)),
                 FileStatus::Modified => status.staged_modified.push(path.clone()),
-                FileStatus::Deleted => status.staged_deleted.push(path.clone()),
+                FileStatus::Deleted => {
+                    status.staged_deleted.push(path.clone());
+                }
+                FileStatus::TypeChanged => status.staged_type_changed.push(path.clone()),
+                FileStatus::ModeChanged => status.staged_mode_changed.push(path.clone()),
                 _ => {}
             }
         }
 
-        // Check working directory for untracked/modified files
+        // Build set of working directory files early (needed for rename detection)
+        let mut working_file_paths = std::collections::HashSet::new();
+        let mut working_files = Vec::new();
         for entry in WalkDir::new(&self.work_dir)
             .into_iter()
             .filter_map(|e| e.ok())
@@ -1079,29 +1162,166 @@ impl Repository {
                 .strip_prefix(&self.work_dir)
                 .unwrap()
                 .to_string_lossy()
-                .to_string();
+                .replace('\\', "/"); // Normalize path separators
 
             // Skip ignored files (includes .dits directory)
             if self.ignore.is_ignored_str(&rel_path) {
                 continue;
             }
 
-            if !index.is_staged(&rel_path) {
-                // Check if in HEAD manifest
-                if let Some(ref manifest) = head_manifest {
-                    if manifest.contains(&rel_path) {
-                        // In HEAD but not staged - check if modified
-                        let data = fs::read(entry.path())?;
-                        let hash = Hasher::hash(&data);
-                        if let Some(manifest_entry) = manifest.get(&rel_path) {
-                            if manifest_entry.content_hash != hash {
-                                status.modified.push(rel_path);
-                            }
-                        }
+            working_file_paths.insert(rel_path.clone());
+            working_files.push((rel_path, entry.path().to_path_buf()));
+        }
+
+        if let Some(ref manifest) = head_manifest {
+            let mut matched_old_paths = std::collections::HashSet::new();
+
+            for (new_path, new_hash) in &staged_added {
+                let mut rename_source = None;
+                let new_path_norm = new_path.replace('\\', "/");
+
+                for (head_path, head_entry) in manifest.iter() {
+                    if matched_old_paths.contains(head_path) {
+                        continue;
+                    }
+                    if head_entry.content_hash != *new_hash {
+                        continue;
+                    }
+
+                    let head_path_norm = head_path.replace('\\', "/");
+                    if head_path_norm == new_path_norm {
+                        continue;
+                    }
+                    if working_file_paths.contains(&head_path_norm) {
+                        continue;
+                    }
+
+                    rename_source = Some(head_path.clone());
+                    break;
+                }
+
+                if let Some(old_path) = rename_source {
+                    status
+                        .staged_renamed
+                        .push((old_path.clone(), new_path.clone()));
+                    matched_old_paths.insert(old_path);
+                } else {
+                    status.staged_new.push(new_path.clone());
+                }
+            }
+
+            if !matched_old_paths.is_empty() && !status.staged_deleted.is_empty() {
+                status
+                    .staged_deleted
+                    .retain(|path| !matched_old_paths.contains(path));
+            }
+        } else {
+            for (path, _) in staged_added {
+                status.staged_new.push(path);
+            }
+        }
+
+        // Process working files and detect unstaged renames
+        if let Some(ref manifest) = head_manifest {
+            let mut potential_renames = Vec::new();
+            let mut head_files_in_working = std::collections::HashSet::new();
+
+            // First pass: identify modified, type-changed files and collect working files
+            for (rel_path, full_path) in &working_files {
+                head_files_in_working.insert(rel_path.clone());
+
+                let is_staged_change = index
+                    .get(rel_path)
+                    .map(|entry| entry.status != FileStatus::Unchanged)
+                    .unwrap_or(false);
+                if is_staged_change {
+                    continue;
+                }
+
+                if manifest.contains(rel_path) {
+                    // File exists in HEAD - check various change types
+                    let metadata = fs::metadata(full_path)?;
+                    let current_mode = metadata.permissions().mode();
+                    let current_file_type = if metadata.is_dir() {
+                        FileType::Directory
+                    } else if metadata.is_symlink() {
+                        FileType::Symlink
                     } else {
-                        status.untracked.push(rel_path);
+                        FileType::Regular
+                    };
+
+                    if let Some(manifest_entry) = manifest.get(rel_path) {
+                        let data = fs::read(full_path)?;
+                        let hash = Hasher::hash(&data);
+
+                        // Check for content changes
+                        let content_changed = manifest_entry.content_hash != hash;
+
+                        // Check for type changes (only for files that exist in both)
+                        let type_changed = !matches!(manifest_entry.mp4_metadata, Some(_)) &&
+                                         (current_file_type != FileType::Regular ||
+                                          manifest_entry.file_type != current_file_type);
+
+                        // Check for mode changes - convert FileMode to comparable u32
+                        let manifest_mode_u32 = match manifest_entry.mode {
+                            FileMode::Executable => 0o755,
+                            FileMode::Symlink => 0o777, // symlinks typically have this mode
+                            FileMode::Regular => 0o644,
+                        };
+                        let mode_changed = manifest_mode_u32 != (current_mode & 0o777);
+
+                        // Prioritize change types: content > type > mode
+                        if content_changed {
+                            status.modified.push(rel_path.clone());
+                        } else if type_changed {
+                            status.modified.push(rel_path.clone());
+                        } else if mode_changed {
+                            status.modified.push(rel_path.clone());
+                        }
                     }
                 } else {
+                    // File doesn't exist in HEAD - could be new or renamed
+                    status.untracked.push(rel_path.clone());
+                    potential_renames.push((rel_path.clone(), full_path.clone()));
+                }
+            }
+
+            // Find files that are in HEAD but missing from working directory
+            let mut missing_from_working = Vec::new();
+            for (head_path, head_entry) in manifest.iter() {
+                if head_files_in_working.contains(head_path) {
+                    continue;
+                }
+                let staged = index
+                    .get(head_path)
+                    .map(|entry| entry.status != FileStatus::Unchanged)
+                    .unwrap_or(false);
+                if staged {
+                    continue;
+                }
+                missing_from_working.push((head_path.clone(), head_entry.content_hash));
+            }
+
+            // Second pass: detect renames by matching content hashes
+            for (old_path, old_hash) in &missing_from_working {
+                // Look for an untracked file with the same content hash
+                for (new_path, new_full_path) in &potential_renames {
+                    if let Ok(data) = fs::read(new_full_path) {
+                        let new_hash = Hasher::hash(&data);
+                        if new_hash == *old_hash {
+                            // Found an unstaged rename!
+                            status.unstaged_renamed.push((old_path.clone(), new_path.clone()));
+                            // Remove from untracked since it's a rename
+                            status.untracked.retain(|p| p != new_path);
+                            break;
+                        }
+                    }
+                }
+            }
+        } else {
+            // No HEAD manifest, all working files are untracked
+            for (rel_path, _) in working_files {
+                if !index.is_staged(&rel_path) {
                     status.untracked.push(rel_path);
                 }
             }
@@ -1135,29 +1355,62 @@ impl Repository {
         let mut manifest = Manifest::new();
         for (path, entry) in &index.entries {
             let manifest_entry = if let Some(ref mp4_meta) = entry.mp4_metadata {
-                ManifestEntry::new_mp4(
+                let index_mode = entry.mode;
+                let mut manifest_entry = ManifestEntry::new_mp4(
                     path.clone(),
                     entry.size,
                     entry.content_hash,
                     entry.chunks.clone(),
                     mp4_meta.clone(),
-                )
+                );
+                manifest_entry.mode = if index_mode & 0o111 != 0 {
+                    FileMode::Executable
+                } else if entry.file_type == FileType::Symlink {
+                    FileMode::Symlink
+                } else {
+                    FileMode::Regular
+                };
+                manifest_entry.file_type = entry.file_type;
+                manifest_entry.symlink_target = entry.symlink_target.clone();
+                manifest_entry
             } else if entry.is_git_text() {
                 // Phase 3.6: Text file stored in Git
-                ManifestEntry::new_text(
+                let index_mode = entry.mode;
+                let mut manifest_entry = ManifestEntry::new_text(
                     path.clone(),
                     entry.size,
                     entry.content_hash,
                     entry.git_oid.clone().unwrap_or_default(),
-                )
+                );
+                manifest_entry.mode = if index_mode & 0o111 != 0 {
+                    FileMode::Executable
+                } else if entry.file_type == FileType::Symlink {
+                    FileMode::Symlink
+                } else {
+                    FileMode::Regular
+                };
+                manifest_entry.file_type = entry.file_type;
+                manifest_entry.symlink_target = entry.symlink_target.clone();
+                manifest_entry
             } else {
                 // Binary file stored as chunks
-                ManifestEntry::new(
+                let index_mode = entry.mode;
+                let mut manifest_entry = ManifestEntry::new(
                     path.clone(),
                     entry.size,
                     entry.content_hash,
                     entry.chunks.clone(),
-                )
+                );
+                manifest_entry.mode = if index_mode & 0o111 != 0 {
+                    FileMode::Executable
+                } else if entry.file_type == FileType::Symlink {
+                    FileMode::Symlink
+                } else {
+                    FileMode::Regular
+                };
+                manifest_entry.file_type = entry.file_type;
+                manifest_entry.symlink_target = entry.symlink_target.clone();
+                manifest_entry
             };
             manifest.add(manifest_entry);
         }
@@ -1184,7 +1437,7 @@ impl Repository {
 
         // Update index base commit
         let mut new_index = Index::from_commit(commit.hash);
-        for (path, entry) in index.entries {
+        for (_path, entry) in index.entries {
             let mut new_entry = entry;
             new_entry.status = FileStatus::Unchanged;
             new_index.stage(new_entry);
@@ -1198,10 +1451,53 @@ impl Repository {
 
     /// Checkout a commit, restoring all files.
     pub fn checkout(&self, hash: &Hash) -> Result<CheckoutResult, RepoError> {
+        // Capture the current HEAD manifest (if any) so we can remove files that no longer exist
+        // in the target commit (branch switches should not leave tracked leftovers behind).
+        let previous_manifest = match self.head()? {
+            Some(prev_hash) => {
+                let prev_commit = self.objects.load_commit(&prev_hash)?;
+                Some(self.objects.load_manifest(&prev_commit.manifest)?)
+            }
+            None => None,
+        };
+
         let commit = self.objects.load_commit(hash)?;
         let manifest = self.objects.load_manifest(&commit.manifest)?;
 
         let mut result = CheckoutResult::default();
+
+        // Remove files that were tracked in the previous commit but do not exist in the target.
+        if let Some(prev_manifest) = previous_manifest {
+            for (old_path, old_entry) in prev_manifest.iter() {
+                if manifest.contains(old_path) {
+                    continue;
+                }
+
+                let full_old_path = self.work_dir.join(old_path);
+                if !full_old_path.exists() {
+                    continue;
+                }
+
+                // Best-effort safety: only remove if the working tree matches the previous commit
+                // (otherwise leave it in place).
+                let should_remove = match old_entry.file_type {
+                    FileType::Symlink => fs::read_link(&full_old_path)
+                        .ok()
+                        .and_then(|p| p.to_str().map(|s| s.to_string()))
+                        .map(|target| target == old_entry.symlink_target)
+                        .unwrap_or(false),
+                    _ => fs::read(&full_old_path)
+                        .ok()
+                        .map(|data| Hasher::hash(&data) == old_entry.content_hash)
+                        .unwrap_or(false),
+                };
+
+                if should_remove {
+                    // If this was a file or symlink, remove it. (We don't expect directories in manifests.)
+                    let _ = fs::remove_file(&full_old_path);
+                }
+            }
+        }
 
         for (path, entry) in manifest.iter() {
             let full_path = self.work_dir.join(path);
@@ -1225,25 +1521,63 @@ impl Repository {
         // Update index
         let mut index = Index::from_commit(*hash);
         for (path, entry) in manifest.iter() {
-            // Create IndexEntry with MP4 metadata if present
-            let idx_entry = if let Some(ref mp4_meta) = entry.mp4_metadata {
+            let full_path = self.work_dir.join(path);
+
+            // Get file metadata if possible
+            let (mode, file_type, symlink_target) = if full_path.exists() {
+                if let Ok(metadata) = fs::metadata(&full_path) {
+                    let mode = metadata.permissions().mode();
+                    let file_type = if metadata.is_dir() {
+                        FileType::Directory
+                    } else if metadata.is_symlink() {
+                        FileType::Symlink
+                    } else {
+                        FileType::Regular
+                    };
+                    let symlink_target = if file_type == FileType::Symlink {
+                        fs::read_link(&full_path)
+                            .map(|p| p.to_string_lossy().to_string())
+                            .unwrap_or_default()
+                    } else {
+                        String::new()
+                    };
+                    (mode, file_type, symlink_target)
+                } else {
+                    (0o644, FileType::Regular, String::new())
+                }
+            } else {
+                (0o644, FileType::Regular, String::new())
+            };
+
+            // Recreate index entries from the manifest. These are tracked files, so mark them
+            // unchanged (not staged), and preserve storage strategy metadata.
+            let mut idx_entry = if let Some(ref mp4_meta) = entry.mp4_metadata {
                 IndexEntry::new_mp4(
                     path.clone(),
                     entry.content_hash,
                     entry.size,
                     0,
+                    mode,
+                    file_type,
+                    symlink_target,
                     entry.chunks.clone(),
                     mp4_meta.clone(),
                 )
             } else {
-                IndexEntry::new(
+                IndexEntry::new_with_strategy(
                     path.clone(),
                     entry.content_hash,
                     entry.size,
                     0,
+                    mode,
+                    file_type,
+                    symlink_target,
                     entry.chunks.clone(),
+                    entry.storage,
+                    entry.git_oid.clone(),
                 )
             };
+            idx_entry.status = FileStatus::Unchanged;
             index.stage(idx_entry);
         }
         self.save_index(&index)?;
@@ -1716,8 +2050,12 @@ pub struct Status {
     pub staged_new: Vec<String>,
     pub staged_modified: Vec<String>,
     pub staged_deleted: Vec<String>,
+    pub staged_renamed: Vec<(String, String)>, // (old_path, new_path)
+    pub staged_type_changed: Vec<String>,
+    pub staged_mode_changed: Vec<String>,
     pub modified: Vec<String>,
     pub untracked: Vec<String>,
+    pub unstaged_renamed: Vec<(String, String)>, // (old_path, new_path)
 }
 
 impl Status {
@@ -1726,7 +2064,11 @@ impl Status {
         self.staged_new.is_empty()
             && self.staged_modified.is_empty()
             && self.staged_deleted.is_empty()
+            && self.staged_renamed.is_empty()
+            && self.staged_type_changed.is_empty()
+            && self.staged_mode_changed.is_empty()
             && self.modified.is_empty()
+            && self.unstaged_renamed.is_empty()
     }
 
     /// Check if there are staged changes.
@@ -1734,6 +2076,9 @@ impl Status {
         !self.staged_new.is_empty()
             || !self.staged_modified.is_empty()
             || !self.staged_deleted.is_empty()
+            || !self.staged_renamed.is_empty()
+            || !self.staged_type_changed.is_empty()
+            || !self.staged_mode_changed.is_empty()
     }
 }
 

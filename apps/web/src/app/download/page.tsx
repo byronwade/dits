@@ -31,10 +31,38 @@ import {
  * - MUST: Links are links (using <a>/<Link>)
  */
 
-export const metadata: Metadata = {
-  title: "Download",
-  description: "Download Dits for your platform",
-};
+import { generateMetadata as genMeta } from "@/lib/seo";
+
+export const metadata: Metadata = genMeta({
+  title: "Download Dits - Version Control for Video & Large Files",
+  description: "Download Dits for macOS, Linux, and Windows. Install via npm, Homebrew, Cargo, or download binaries directly. Free and open source version control for video production.",
+  canonical: "https://dits.dev/download",
+  keywords: [
+    "download dits",
+    "install dits",
+    "dits installation",
+    "dits download",
+    "version control download",
+    "video version control software",
+    "macos version control",
+    "linux version control",
+    "windows version control",
+  ],
+  openGraph: {
+    type: "website",
+    images: [
+      {
+        url: "/dits.png",
+        width: 1200,
+        height: 630,
+        alt: "Download Dits - Version Control for Video & Large Files",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+});
 
 const platforms = [
   {
@@ -85,7 +113,7 @@ export default function DownloadPage() {
     <div className="flex min-h-screen flex-col">
       <Header />
       {/* AGENTS.md: main with id for skip-link */}
-      <main id="main-content" className="flex-1" tabIndex={-1}>
+      <main id="main-content" className="flex-1 pt-[104px]" tabIndex={-1}>
         {/* Hero */}
         <section className="container py-16 md:py-24" aria-labelledby="download-heading">
           <div className="mx-auto max-w-3xl text-center">

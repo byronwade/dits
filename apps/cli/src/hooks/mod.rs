@@ -5,6 +5,7 @@
 mod runner;
 mod templates;
 
+#[allow(unused_imports)]
 pub use runner::{run_hook, HookResult};
 pub use templates::get_sample_hook;
 

@@ -4,6 +4,7 @@
 
 use dits::proxy::{ProxyConfig, ProxyGenerator, ProxyStore, ProxyResolution, ProxyCodec};
 use dits::store::Repository;
+use dits::core::Hasher;
 use anyhow::{Context, Result, bail};
 use console::style;
 use indicatif::{ProgressBar, ProgressStyle};
@@ -63,7 +64,7 @@ pub fn proxy_generate(
     std::fs::create_dir_all(&output_dir)?;
 
     let mut success_count = 0;
-    let mut skip_count = 0;
+    let skip_count = 0;
     let mut error_count = 0;
 
     for file_path in &video_files {
@@ -106,14 +107,26 @@ pub fn proxy_generate(
                 let proxy_data = std::fs::read(&result.proxy_path)?;
                 proxy_store.store_data(&result.variant.content_hash, &proxy_data)?;
 
-                // Clean up temp file
+                // Store thumbnail data if generated
+                let variant_size = result.variant.size;
+                if let Some(ref thumb_path) = result.thumbnail_path {
+                    if thumb_path.exists() {
+                        let thumb_data = std::fs::read(thumb_path)?;
+                        let thumb_hash = Hasher::hash(&thumb_data);
+                        proxy_store.store_data(&thumb_hash, &thumb_data)?;
+                        // Update variant with thumbnail hash
+                        let updated_variant = result.variant.with_thumbnail(thumb_hash);
+                        proxy_store.store(&updated_variant)?;
+                    }
+                }
+
+                // Clean up temp files
                 let _ = std::fs::remove_file(&result.proxy_path);
                 if let Some(ref thumb_path) = result.thumbnail_path {
-                    // Store thumbnail too if generated
                     let _ = std::fs::remove_file(thumb_path);
                 }
 
-                let size_mb = result.variant.size as f64 / (1024.0 * 1024.0);
+                let size_mb = variant_size as f64 / (1024.0 * 1024.0);
                 println!(
                     "  {} {} ({:.1} MB, {:.1}s)",
                     style("✓").green(),

@@ -4,14 +4,88 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, Check } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
-export const metadata: Metadata = {
-    title: "Algorithms",
-    description: "Core algorithms used in Dits",
-};
+import { generateMetadata as genMeta, generateArticleSchema, generateSoftwareSourceCodeSchema, generateBreadcrumbSchema } from "@/lib/seo";
+import Script from "next/script";
+
+export const metadata: Metadata = genMeta({
+    title: "Algorithms - Core Algorithms Used in Dits Version Control",
+    description: "Core algorithms used in Dits including FastCDC chunking, BLAKE3 hashing, content-defined chunking, and other specialized algorithms for efficient handling of large binary files.",
+    canonical: "https://dits.dev/docs/architecture/algorithms",
+    keywords: [
+        "dits algorithms",
+        "fastcdc",
+        "blake3",
+        "chunking algorithms",
+        "content-defined chunking",
+        "version control algorithms",
+    ],
+    openGraph: {
+        type: "article",
+        images: [
+            {
+                url: "/dits.png",
+                width: 1200,
+                height: 630,
+                alt: "Dits Algorithms",
+            },
+        ],
+    },
+    twitter: {
+        card: "summary_large_image",
+    },
+});
 
 export default function AlgorithmsPage() {
+    const articleSchema = generateArticleSchema({
+        headline: "Algorithms - Core Algorithms Used in Dits Version Control",
+        description: "Core algorithms used in Dits including FastCDC chunking, BLAKE3 hashing, and content-defined chunking algorithms.",
+        datePublished: "2024-01-01",
+        dateModified: new Date().toISOString().split("T")[0],
+        author: "Byron Wade",
+        section: "Documentation",
+        tags: ["algorithms", "fastcdc", "blake3", "chunking"],
+    });
+
+    const softwareSchema = generateSoftwareSourceCodeSchema({
+        name: "Dits Algorithms",
+        description: "Core algorithms implementation for Dits version control system including FastCDC chunking and BLAKE3 hashing",
+        codeRepository: "https://github.com/byronwade/dits",
+        programmingLanguage: ["Rust"],
+        runtimePlatform: ["Windows", "macOS", "Linux"],
+        license: "https://opensource.org/licenses/Apache-2.0",
+    });
+
+    const breadcrumbSchema = generateBreadcrumbSchema([
+        { name: "Home", url: "/" },
+        { name: "Documentation", url: "/docs" },
+        { name: "Architecture", url: "/docs/architecture" },
+        { name: "Algorithms", url: "/docs/architecture/algorithms" },
+    ]);
+
     return (
-        <div className="prose dark:prose-invert max-w-none">
+        <>
+            <Script
+                id="article-schema"
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify(articleSchema),
+                }}
+            />
+            <Script
+                id="software-schema"
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify(softwareSchema),
+                }}
+            />
+            <Script
+                id="breadcrumb-schema"
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify(breadcrumbSchema),
+                }}
+            />
+            <div className="prose dark:prose-invert max-w-none">
             <h1>Algorithms</h1>
             <p className="lead text-xl text-muted-foreground">
                 Dits uses several specialized algorithms to efficiently handle large
@@ -863,5 +937,6 @@ fn is_compressed_format(mime_type: &str) -> bool {
                 </li>
             </ul>
         </div>
+        </>
     );
 }

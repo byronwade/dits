@@ -21,10 +21,35 @@ import {
   Users,
 } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Community",
-  description: "Join the Dits community",
-};
+import { generateMetadata as genMeta } from "@/lib/seo";
+
+export const metadata: Metadata = genMeta({
+  title: "Join the Dits Community - Open Source Version Control",
+  description: "Join the Dits community on GitHub. Contribute code, report bugs, improve documentation, and help build the future of version control for large files and video production.",
+  canonical: "https://dits.dev/community",
+  keywords: [
+    "dits community",
+    "open source community",
+    "contribute to dits",
+    "github dits",
+    "dits contributors",
+    "version control community",
+  ],
+  openGraph: {
+    type: "website",
+    images: [
+      {
+        url: "/dits.png",
+        width: 1200,
+        height: 630,
+        alt: "Join the Dits Community",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+});
 
 const communityLinks = [
   {
@@ -100,7 +125,7 @@ export default function CommunityPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="flex-1">
+      <main id="main-content" className="flex-1 pt-[104px]">
         {/* Hero */}
         <section className="container py-16 md:py-24">
           <div className="mx-auto max-w-3xl text-center">

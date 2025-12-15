@@ -34,10 +34,35 @@ import {
   Code2,
 } from "lucide-react";
 
-export const metadata: Metadata = {
+import { generateMetadata as genMeta } from "@/lib/seo";
+
+export const metadata: Metadata = genMeta({
   title: "About Dits - Version Control Reimagined for Media",
   description: "Learn about Dits, the distributed version control system built for video production, game development, and large binary files. Discover our mission, technology, and roadmap.",
-};
+  canonical: "https://dits.dev/about",
+  keywords: [
+    "about dits",
+    "version control history",
+    "media version control",
+    "git alternative",
+    "video production tools",
+    "open source version control",
+  ],
+  openGraph: {
+    type: "website",
+    images: [
+      {
+        url: "/dits.png",
+        width: 1200,
+        height: 630,
+        alt: "About Dits - Version Control Reimagined for Media",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+});
 
 /**
  * About page following AGENTS.md guidelines:
@@ -245,7 +270,7 @@ export default function AboutPage() {
     <div className="flex min-h-screen flex-col">
       <Header />
       {/* AGENTS.md: main with id for skip-link */}
-      <main id="main-content" className="flex-1" tabIndex={-1}>
+      <main id="main-content" className="flex-1 pt-[104px]" tabIndex={-1}>
         {/* Hero */}
         <section className="container py-16 md:py-24" aria-labelledby="about-heading">
           <div className="mx-auto max-w-4xl text-center">

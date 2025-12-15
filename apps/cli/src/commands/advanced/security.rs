@@ -1,10 +1,8 @@
 //! Security CLI commands (Phase 9).
 
 use anyhow::{Context, Result, bail};
-use std::path::Path;
 use dits::security::{
     KeyStore, KeyStoreError, AuditLog, AuditEventType, AuditOutcome,
-    Argon2Params, KeyBundle,
 };
 
 /// Initialize encryption for a repository.
@@ -44,7 +42,7 @@ pub fn encrypt_init(password: Option<&str>) -> Result<()> {
     println!("Deriving encryption keys (this may take a moment)...");
 
     // Use default params (secure but slow)
-    let bundle = keystore.create(&password, None)
+    let _bundle = keystore.create(&password, None)
         .context("Failed to create keystore")?;
 
     audit.log_success(AuditEventType::KeystoreCreated, None)?;
@@ -104,12 +102,14 @@ pub fn login(password: Option<&str>) -> Result<()> {
     println!("Verifying password...");
 
     match keystore.load(&password) {
-        Ok(_bundle) => {
+        Ok(bundle) => {
             audit.log_success(AuditEventType::Login, None)?;
+            // Cache the keys for the session
+            keystore.cache_keys(&bundle)?;
             println!("Login successful.");
             println!();
-            println!("Note: In a full implementation, keys would be cached securely");
-            println!("in the OS keychain for the duration of the session.");
+            println!("Encryption keys cached for this session.");
+            println!("Run 'dits logout' to clear cached keys.");
             Ok(())
         }
         Err(KeyStoreError::WrongPassword) => {
@@ -126,15 +126,15 @@ pub fn login(password: Option<&str>) -> Result<()> {
 /// Logout (clear cached keys).
 pub fn logout() -> Result<()> {
     let dits_dir = find_dits_dir()?;
+    let keystore = KeyStore::new(&dits_dir);
     let audit = AuditLog::open(&dits_dir);
 
-    // In a full implementation, this would clear keys from OS keychain
+    // Clear cached keys
+    keystore.clear_cache()?;
     audit.log_success(AuditEventType::Logout, None)?;
 
     println!("Logged out successfully.");
-    println!();
-    println!("Note: In a full implementation, this would clear cached keys");
-    println!("from the OS keychain.");
+    println!("Cached encryption keys cleared.");
 
     Ok(())
 }

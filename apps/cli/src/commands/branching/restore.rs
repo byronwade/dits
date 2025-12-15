@@ -62,7 +62,7 @@ pub fn restore(
 }
 
 /// Restore files from a specific version (ours or theirs) during merge conflict.
-fn restore_conflict_version(repo: &Repository, paths: &[String], use_ours: bool) -> Result<()> {
+fn restore_conflict_version(_repo: &Repository, paths: &[String], use_ours: bool) -> Result<()> {
     // For now, this is a simplified implementation
     // In a full implementation, we'd track conflict state
     let version = if use_ours { "ours" } else { "theirs" };
@@ -112,6 +112,9 @@ fn restore_staged_files(repo: &Repository, paths: &[String]) -> Result<()> {
                         entry.content_hash,
                         entry.size,
                         0,
+                        0o644, // Default mode
+                        entry.file_type,
+                        entry.symlink_target.clone(),
                         entry.chunks.clone(),
                     );
                     index.stage(idx_entry);

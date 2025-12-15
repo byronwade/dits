@@ -6,8 +6,16 @@
 //! - **VideoAware**: Keyframe-aligned chunking for video files
 //! - **Fixed**: Fixed-size chunking (fallback)
 
+pub mod adaptive;
+pub mod ae;
+pub mod chonkers;
 pub mod fastcdc;
 pub mod fixed;
+pub mod gear_table;
+pub mod hash;
+pub mod keyed_fastcdc;
+pub mod parallel_fastcdc;
+pub mod rabin;
 pub mod video;
 
 use async_trait::async_trait;

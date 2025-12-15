@@ -13,14 +13,88 @@ import { FileClassifierDiagram, FileClassifierCompact } from "@/components/diagr
 import { DataFlowDiagram } from "@/components/diagrams/data-flow-diagram";
 import { ChunkingPipelineDiagram } from "@/components/diagrams/chunking-pipeline-diagram";
 
-export const metadata: Metadata = {
-  title: "Architecture Overview",
-  description: "Understand the architecture of Dits",
-};
+import { generateMetadata as genMeta, generateArticleSchema, generateCollectionPageSchema, generateBreadcrumbSchema } from "@/lib/seo";
+import Script from "next/script";
+
+export const metadata: Metadata = genMeta({
+  title: "Architecture Overview - Dits Version Control System Architecture",
+  description: "Understand the architecture of Dits version control system. Learn about the layered system design, core engine, transport layer, content addressing, and client interfaces.",
+  canonical: "https://dits.dev/docs/architecture",
+  keywords: [
+    "dits architecture",
+    "version control architecture",
+    "content addressing architecture",
+    "dits design",
+    "system architecture",
+  ],
+  openGraph: {
+    type: "article",
+    images: [
+      {
+        url: "/dits.png",
+        width: 1200,
+        height: 630,
+        alt: "Dits Architecture Overview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+});
 
 export default function ArchitecturePage() {
+  const articleSchema = generateArticleSchema({
+    headline: "Architecture Overview - Dits Version Control System Architecture",
+    description: "Understand the architecture of Dits version control system. Learn about the layered system design, core engine, transport layer, content addressing, and client interfaces.",
+    datePublished: "2024-01-01",
+    dateModified: new Date().toISOString().split("T")[0],
+    author: "Byron Wade",
+    section: "Documentation",
+    tags: ["architecture", "design", "system architecture", "technical"],
+  });
+
+  const collectionSchema = generateCollectionPageSchema({
+    name: "Dits Architecture Documentation",
+    description: "Collection of architecture documentation covering algorithms, data structures, internals, protocol, and security",
+    url: "/docs/architecture",
+    breadcrumb: [
+      { name: "Home", url: "/" },
+      { name: "Documentation", url: "/docs" },
+      { name: "Architecture", url: "/docs/architecture" },
+    ],
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Documentation", url: "/docs" },
+    { name: "Architecture", url: "/docs/architecture" },
+  ]);
+
   return (
-    <div className="prose dark:prose-invert max-w-none">
+    <>
+      <Script
+        id="article-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(articleSchema),
+        }}
+      />
+      <Script
+        id="collection-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(collectionSchema),
+        }}
+      />
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
+      <div className="prose dark:prose-invert max-w-none">
       <h1>Architecture Overview</h1>
       <p className="lead text-xl text-muted-foreground">
         Dits is built as a layered system with a core engine handling content
@@ -244,5 +318,6 @@ export default function ArchitecturePage() {
         </li>
       </ul>
     </div>
+    </>
   );
 }

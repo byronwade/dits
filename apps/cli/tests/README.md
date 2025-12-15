@@ -181,3 +181,6 @@ Shared test utilities:
 - Ensure binary is built (`cargo build`)
 - Check file permissions
 - Verify test environment setup
+
+
+

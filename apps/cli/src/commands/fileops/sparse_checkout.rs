@@ -4,9 +4,10 @@
 
 use anyhow::{Context, Result};
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use crate::store::Repository;
+use crate::core::ManifestEntry;
 
 /// Sparse checkout configuration
 #[derive(Debug, Clone)]
@@ -197,38 +198,95 @@ pub fn is_enabled() -> Result<bool> {
     Ok(content.contains("sparseCheckout = true"))
 }
 
-/// Apply sparse checkout - remove files not matching patterns
+/// Apply sparse checkout - remove files not matching patterns and restore matching files
 fn apply_sparse_checkout(repo: &Repository) -> Result<()> {
     let patterns = list()?;
     if patterns.is_empty() {
         return Ok(());
     }
-    
+
     // Build pattern matchers
     let matchers: Vec<glob::Pattern> = patterns
         .iter()
         .filter_map(|p| glob::Pattern::new(p).ok())
         .collect();
-    
-    // Get all files from index
-    let index = repo.load_index()?;
+
+    // Get current HEAD to determine what files to restore
+    let head_commit = repo.head()?;
+    if head_commit.is_none() {
+        return Ok(());
+    }
+    let commit = repo.load_commit(&head_commit.unwrap())?;
+    let manifest = repo.load_manifest(&commit.manifest)?;
+
+    let _index = repo.load_index()?;
     let repo_root = repo.root();
-    
-    for path in index.entries.keys() {
+
+    for (path, entry) in manifest.iter() {
         let matches = matchers.iter().any(|m| m.matches(path));
         let file_path = repo_root.join(path);
-        
+
         if !matches && file_path.exists() {
             // Remove file that doesn't match sparse patterns
             fs::remove_file(&file_path)?;
-            
+
             // Clean up empty parent directories
             cleanup_empty_parents(&file_path, repo_root)?;
+        } else if matches && !file_path.exists() {
+            // Restore file that matches sparse patterns but is missing
+            restore_file(repo, path, entry)?;
         }
-        // Note: Restoring missing files would require reconstruct_file which is complex
-        // For now, users should run `dits checkout HEAD` to restore files
     }
-    
+
+    Ok(())
+}
+
+/// Restore a single file from the current HEAD commit
+fn restore_file(repo: &Repository, path: &str, entry: &ManifestEntry) -> Result<()> {
+    let full_path = repo.root().join(path);
+
+    // Create parent directories
+    if let Some(parent) = full_path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+
+    // Check if this is an MP4 file with MP4 metadata
+    if entry.mp4_metadata.is_some() {
+        // For MP4 files, we need special handling
+        // For now, fall back to regular file reconstruction
+        // TODO: Implement proper MP4 reconstruction for sparse checkout
+        restore_regular_file(repo, &full_path, entry)?;
+    } else {
+        restore_regular_file(repo, &full_path, entry)?;
+    }
+
+    Ok(())
+}
+
+/// Restore a regular file by reconstructing it from chunks
+fn restore_regular_file(repo: &Repository, full_path: &std::path::Path, entry: &ManifestEntry) -> Result<()> {
+    use crate::store::GitTextEngine;
+
+    // Phase 3.6: Check storage strategy
+    if entry.is_git_text() {
+        // Load from Git object store
+        if let (Some(ref git_oid), Some(ref engine)) = (&entry.git_oid, &repo.git_engine()) {
+            let oid = GitTextEngine::parse_oid(git_oid)?;
+            let data = engine.read_blob(oid)?;
+            fs::write(full_path, &data)?;
+            return Ok(());
+        }
+        // Fall through to chunk-based restore if Git engine not available
+    }
+
+    // Reassemble file from chunks
+    let mut data = Vec::with_capacity(entry.size as usize);
+    for chunk_ref in &entry.chunks {
+        let chunk = repo.objects().load_chunk(&chunk_ref.hash)?;
+        data.extend_from_slice(&chunk.data);
+    }
+
+    fs::write(full_path, &data)?;
     Ok(())
 }
 

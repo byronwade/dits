@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { generateArticleSchema, generateBreadcrumbSchema } from "@/lib/seo";
+import Script from "next/script";
 import {
   Table,
   TableBody,
@@ -14,14 +16,72 @@ import {
 import { CheckCircle, XCircle, AlertTriangle, Zap, HardDrive, Network } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
-export const metadata: Metadata = {
-  title: "Why Dits vs Git",
-  description: "Understanding when and why to choose Dits over Git for version control",
-};
+import { generateMetadata as genMeta } from "@/lib/seo";
+
+export const metadata: Metadata = genMeta({
+  title: "Why Dits vs Git - When to Choose Dits for Large Files",
+  description: "Learn when and why to choose Dits over Git for version control. Compare Dits vs Git for video files, large binaries, and media workflows. Understand the advantages of content-defined chunking and deduplication.",
+  canonical: "https://dits.dev/docs/why-dits",
+  keywords: [
+    "dits vs git",
+    "why use dits",
+    "git alternative",
+    "large file version control",
+    "git limitations",
+    "dits advantages",
+    "video version control",
+    "binary file version control",
+  ],
+  openGraph: {
+    type: "article",
+    images: [
+      {
+        url: "/dits.png",
+        width: 1200,
+        height: 630,
+        alt: "Why Dits vs Git - When to Choose Dits",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+});
 
 export default function WhyDitsPage() {
+  const articleSchema = generateArticleSchema({
+    headline: "Why Dits vs Git - When to Choose Dits for Large Files",
+    description: "Learn when and why to choose Dits over Git for version control. Compare Dits vs Git for video files, large binaries, and media workflows.",
+    datePublished: "2024-01-01",
+    dateModified: new Date().toISOString().split("T")[0],
+    author: "Byron Wade",
+    section: "Documentation",
+    tags: ["dits vs git", "comparison", "large files", "video version control"],
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Documentation", url: "/docs" },
+    { name: "Why Dits", url: "/docs/why-dits" },
+  ]);
+
   return (
-    <div className="prose dark:prose-invert max-w-none">
+    <>
+      <Script
+        id="article-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(articleSchema),
+        }}
+      />
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
+      <div className="prose dark:prose-invert max-w-none">
       <h1>Why Dits vs Git?</h1>
       <p className="lead text-xl text-muted-foreground">
         Git revolutionized text-based development, but it wasn't designed for large binary files.
@@ -385,6 +445,7 @@ export default function WhyDitsPage() {
         </AlertDescription>
       </Alert>
     </div>
+    </>
   );
 }
 

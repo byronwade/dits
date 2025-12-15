@@ -21,10 +21,38 @@ import {
 import { CodeBlock } from "@/components/ui/code-block";
 import { CheckCircle2, Info, Terminal, AlertTriangle } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Installation",
-  description: "Install Dits on your system",
-};
+import { generateMetadata as genMeta, generateArticleSchema, generateHowToSchema, generateBreadcrumbSchema } from "@/lib/seo";
+import Script from "next/script";
+
+export const metadata: Metadata = genMeta({
+  title: "Install Dits - Installation Guide for macOS, Linux & Windows",
+  description: "Complete installation guide for Dits version control system. Install Dits on macOS, Linux, or Windows using npm, Homebrew, Cargo, or direct download. Includes system requirements and verification steps.",
+  canonical: "https://dits.dev/docs/installation",
+  keywords: [
+    "dits installation",
+    "install dits",
+    "dits setup",
+    "dits install guide",
+    "how to install dits",
+    "dits macos install",
+    "dits linux install",
+    "dits windows install",
+  ],
+  openGraph: {
+    type: "article",
+    images: [
+      {
+        url: "/dits.png",
+        width: 1200,
+        height: 630,
+        alt: "Install Dits - Installation Guide",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+});
 
 const platforms = [
   {
@@ -48,8 +76,69 @@ const platforms = [
 ];
 
 export default function InstallationPage() {
+  const articleSchema = generateArticleSchema({
+    headline: "Install Dits - Installation Guide for macOS, Linux & Windows",
+    description: "Complete installation guide for Dits version control system. Install Dits on macOS, Linux, or Windows using npm, Homebrew, Cargo, or direct download.",
+    datePublished: "2024-01-01",
+    dateModified: new Date().toISOString().split("T")[0],
+    author: "Byron Wade",
+    section: "Documentation",
+    tags: ["installation", "setup", "macos", "linux", "windows"],
+  });
+
+  const howToSchema = generateHowToSchema({
+    name: "How to Install Dits",
+    description: "Step-by-step guide to install Dits version control system",
+    step: [
+      {
+        name: "Choose Installation Method",
+        text: "Select npm, Homebrew, Cargo, or direct download based on your platform",
+      },
+      {
+        name: "Run Installation Command",
+        text: "Execute the appropriate installation command for your chosen method",
+      },
+      {
+        name: "Verify Installation",
+        text: "Run 'dits --version' to confirm Dits is installed correctly",
+      },
+      {
+        name: "Initialize Repository",
+        text: "Run 'dits init' in your project directory to get started",
+      },
+    ],
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Documentation", url: "/docs" },
+    { name: "Installation", url: "/docs/installation" },
+  ]);
+
   return (
-    <div className="prose dark:prose-invert max-w-none">
+    <>
+      <Script
+        id="article-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(articleSchema),
+        }}
+      />
+      <Script
+        id="howto-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(howToSchema),
+        }}
+      />
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
+      <div className="prose dark:prose-invert max-w-none">
       <h1>Installation</h1>
       <p className="lead text-xl text-muted-foreground">
         Dits can be installed on macOS, Linux, and Windows. Choose the installation
@@ -352,5 +441,6 @@ sudo apt update && sudo apt install ca-certificates`}
         </li>
       </ul>
     </div>
+    </>
   );
 }

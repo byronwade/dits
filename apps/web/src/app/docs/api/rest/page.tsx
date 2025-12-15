@@ -15,14 +15,86 @@ import {
 import { Server, Key, Database, Users, GitBranch, Webhook, Zap, Info } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
-export const metadata: Metadata = {
-  title: "REST API",
-  description: "Complete REST API reference for Dits server integration",
-};
+import { generateMetadata as genMeta, generateArticleSchema, generateSoftwareSourceCodeSchema, generateBreadcrumbSchema } from "@/lib/seo";
+import Script from "next/script";
+
+export const metadata: Metadata = genMeta({
+  title: "REST API - Complete REST API Reference for Dits Server Integration",
+  description: "Complete REST API reference for Dits server integration. Programmatic access to repositories, users, metadata, authentication, and all Dits operations via REST endpoints.",
+  canonical: "https://dits.dev/docs/api/rest",
+  keywords: [
+    "dits api",
+    "rest api",
+    "dits integration",
+    "api documentation",
+    "dits server api",
+    "version control api",
+  ],
+  openGraph: {
+    type: "article",
+    images: [
+      {
+        url: "/dits.png",
+        width: 1200,
+        height: 630,
+        alt: "Dits REST API",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+});
 
 export default function RestApiPage() {
+  const articleSchema = generateArticleSchema({
+    headline: "REST API - Complete REST API Reference for Dits Server Integration",
+    description: "Complete REST API reference for Dits server integration. Programmatic access to repositories, users, metadata, and all Dits operations.",
+    datePublished: "2024-01-01",
+    dateModified: new Date().toISOString().split("T")[0],
+    author: "Byron Wade",
+    section: "Documentation",
+    tags: ["api", "rest", "integration", "documentation"],
+  });
+
+  const softwareSchema = generateSoftwareSourceCodeSchema({
+    name: "Dits REST API",
+    description: "REST API for Dits version control system server integration",
+    codeRepository: "https://github.com/byronwade/dits",
+    programmingLanguage: ["Rust"],
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Documentation", url: "/docs" },
+    { name: "API", url: "/docs/api" },
+    { name: "REST API", url: "/docs/api/rest" },
+  ]);
+
   return (
-    <div className="prose dark:prose-invert max-w-none">
+    <>
+      <Script
+        id="article-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(articleSchema),
+        }}
+      />
+      <Script
+        id="software-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(softwareSchema),
+        }}
+      />
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
+      <div className="prose dark:prose-invert max-w-none">
       <h1>Dits REST API</h1>
       <p className="lead text-xl text-muted-foreground">
         Programmatic access to Dits repositories, users, and metadata through a comprehensive REST API.
@@ -481,6 +553,7 @@ const commits = await client.repos.listCommits(repo.id);`}
         </AlertDescription>
       </Alert>
     </div>
+    </>
   );
 }
 

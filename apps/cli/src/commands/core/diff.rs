@@ -1,6 +1,7 @@
 //! Diff command implementation.
 
 use crate::store::Repository;
+use crate::util::format_bytes;
 use anyhow::{Context, Result};
 use console::style;
 use similar::{ChangeTag, TextDiff};
@@ -50,7 +51,40 @@ fn diff_staged(repo: &Repository, file_filter: Option<&str>) -> Result<()> {
     let status = repo.status()?;
     let mut has_changes = false;
 
-    // Combine all staged files
+    // Handle renamed files
+    for (old_path, new_path) in &status.staged_renamed {
+        if let Some(filter) = file_filter {
+            if old_path != filter && new_path != filter {
+                continue;
+            }
+        }
+        show_rename_diff(repo, old_path, new_path)?;
+        has_changes = true;
+    }
+
+    // Handle type changed files
+    for path in &status.staged_type_changed {
+        if let Some(filter) = file_filter {
+            if path != filter {
+                continue;
+            }
+        }
+        show_type_change_diff(repo, path)?;
+        has_changes = true;
+    }
+
+    // Handle mode changed files
+    for path in &status.staged_mode_changed {
+        if let Some(filter) = file_filter {
+            if path != filter {
+                continue;
+            }
+        }
+        show_mode_change_diff(repo, path)?;
+        has_changes = true;
+    }
+
+    // Combine all other staged files
     let staged_files: Vec<&String> = status
         .staged_new
         .iter()
@@ -122,6 +156,43 @@ fn show_staged_file_diff(_repo: &Repository, path: &str) -> Result<()> {
         style("diff --dits").cyan(),
         style(format!("a/{} b/{}", path, path)).bold()
     );
+    println!("{}", style("(staged for commit)").dim());
+    println!();
+    Ok(())
+}
+
+/// Show diff for a renamed file.
+fn show_rename_diff(_repo: &Repository, old_path: &str, new_path: &str) -> Result<()> {
+    println!(
+        "{}",
+        style("diff --dits").cyan()
+    );
+    println!("{} {}", style("rename from").red(), style(old_path).bold());
+    println!("{} {}", style("rename to").green(), style(new_path).bold());
+    println!("{}", style("(staged for commit)").dim());
+    println!();
+    Ok(())
+}
+
+/// Show diff for a type-changed file.
+fn show_type_change_diff(_repo: &Repository, path: &str) -> Result<()> {
+    println!(
+        "{}",
+        style("diff --dits").cyan()
+    );
+    println!("{} {}", style("type changed").yellow(), style(path).bold());
+    println!("{}", style("(staged for commit)").dim());
+    println!();
+    Ok(())
+}
+
+/// Show diff for a mode-changed file.
+fn show_mode_change_diff(_repo: &Repository, path: &str) -> Result<()> {
+    println!(
+        "{}",
+        style("diff --dits").cyan()
+    );
+    println!("{} {}", style("mode changed").yellow(), style(path).bold());
     println!("{}", style("(staged for commit)").dim());
     println!();
     Ok(())
@@ -282,19 +353,3 @@ fn get_original_content(repo: &Repository, path: &str) -> Option<String> {
     String::from_utf8(content).ok()
 }
 
-/// Format bytes as human-readable string.
-fn format_bytes(bytes: u64) -> String {
-    const KB: u64 = 1024;
-    const MB: u64 = KB * 1024;
-    const GB: u64 = MB * 1024;
-
-    if bytes >= GB {
-        format!("{:.2} GB", bytes as f64 / GB as f64)
-    } else if bytes >= MB {
-        format!("{:.2} MB", bytes as f64 / MB as f64)
-    } else if bytes >= KB {
-        format!("{:.2} KB", bytes as f64 / KB as f64)
-    } else {
-        format!("{} bytes", bytes)
-    }
-}

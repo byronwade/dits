@@ -6,7 +6,6 @@ use dits::metadata::{MetadataRegistry, MetadataStore};
 use dits::store::Repository;
 use anyhow::{Context, Result};
 use console::style;
-use std::path::Path;
 
 /// Scan files in HEAD and extract metadata.
 pub fn meta_scan(verbose: bool) -> Result<()> {

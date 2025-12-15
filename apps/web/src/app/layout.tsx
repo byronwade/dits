@@ -4,6 +4,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { WebVitals } from "@/components/web-vitals";
+import { generateMetadata as genMeta, generateOrganizationSchema, generateSoftwareApplicationSchema, generateWebSiteSchema } from "@/lib/seo";
+import Script from "next/script";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,65 +36,72 @@ export const viewport: Viewport = {
   ],
 };
 
-export const metadata: Metadata = {
-  title: {
-    default: "Dits - Version Control for Video & Large Files",
-    template: "%s | Dits",
-  },
+export const metadata: Metadata = genMeta({
+  title: "Dits - Version Control for Video & Large Files",
   description:
     "Dits is a free and open source version control system designed for video production and large binary files. Like Git, but optimized for media workflows.",
-  keywords: [
-    "version control",
-    "video",
-    "large files",
-    "binary files",
-    "git alternative",
-    "media",
-    "deduplication",
-    "vcs",
-    "video production",
-    "content-defined chunking",
-    "BLAKE3",
-  ],
-  authors: [{ name: "Byron Wade" }],
-  manifest: "/manifest.json",
+  canonical: "https://dits.dev",
   openGraph: {
-    title: "Dits - Version Control for Video & Large Files",
-    description:
-      "Free and open source version control for video production. Like Git, but for large binary files.",
-    url: "https://dits.dev",
-    siteName: "Dits",
     type: "website",
+    images: [
+      {
+        url: "/dits.png",
+        width: 1200,
+        height: 630,
+        alt: "Dits - Version Control for Video & Large Files",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Dits - Version Control for Video & Large Files",
-    description:
-      "Free and open source version control for video production. Like Git, but for large binary files.",
   },
-  alternates: {
-    canonical: "https://dits.dev",
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
-};
+});
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const organizationSchema = generateOrganizationSchema();
+  const softwareApplicationSchema = generateSoftwareApplicationSchema({
+    name: "Dits",
+    description:
+      "Dits is a free and open source version control system designed for video production and large binary files.",
+  });
+  
+  // Add WebSite schema with SearchAction for homepage
+  const websiteSchema = generateWebSiteSchema({
+    potentialAction: {
+      target: "https://dits.dev/search?q={search_term_string}",
+      queryInput: "required name=search_term_string",
+    },
+  });
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <Script
+          id="organization-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationSchema),
+          }}
+        />
+        <Script
+          id="software-application-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(softwareApplicationSchema),
+          }}
+        />
+        <Script
+          id="website-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(websiteSchema),
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background`}
       >

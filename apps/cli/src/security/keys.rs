@@ -5,6 +5,7 @@ use hmac::{Hmac, Mac};
 use sha2::Sha256;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 use rand::rngs::OsRng;
+use serde::{Deserialize, Serialize};
 
 type HmacSha256 = Hmac<Sha256>;
 
@@ -57,7 +58,7 @@ impl RootKey {
 }
 
 /// User secret for convergent encryption. Zeroized on drop.
-#[derive(Zeroize, ZeroizeOnDrop)]
+#[derive(Clone, Zeroize, ZeroizeOnDrop)]
 pub struct UserSecret([u8; 32]);
 
 impl UserSecret {
@@ -80,6 +81,34 @@ pub struct KeyBundle {
     pub metadata_key: [u8; 32],
     /// Recovery key for key escrow.
     pub recovery_key: [u8; 32],
+}
+
+/// Serializable version of KeyBundle for caching.
+#[derive(Serialize, Deserialize)]
+pub struct SerializableKeyBundle {
+    pub user_secret: [u8; 32],
+    pub metadata_key: [u8; 32],
+    pub recovery_key: [u8; 32],
+}
+
+impl From<&KeyBundle> for SerializableKeyBundle {
+    fn from(bundle: &KeyBundle) -> Self {
+        Self {
+            user_secret: *bundle.user_secret.as_bytes(),
+            metadata_key: bundle.metadata_key,
+            recovery_key: bundle.recovery_key,
+        }
+    }
+}
+
+impl From<SerializableKeyBundle> for KeyBundle {
+    fn from(bundle: SerializableKeyBundle) -> Self {
+        Self {
+            user_secret: UserSecret::from_bytes(bundle.user_secret),
+            metadata_key: bundle.metadata_key,
+            recovery_key: bundle.recovery_key,
+        }
+    }
 }
 
 impl Drop for KeyBundle {

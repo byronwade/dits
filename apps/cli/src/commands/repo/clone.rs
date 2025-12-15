@@ -62,7 +62,7 @@ fn clone_local(source: &Path, dest: Option<&str>, branch: Option<&str>) -> Resul
     fs::create_dir_all(&dest_path)?;
 
     // Initialize new repository
-    let repo = Repository::init(&dest_path)
+    let _repo = Repository::init(&dest_path)
         .context("Failed to initialize destination repository")?;
 
     // Copy objects

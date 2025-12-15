@@ -136,6 +136,7 @@ const docsNavigation: DocSection[] = [
       { title: "Algorithms", href: "/docs/architecture/algorithms" },
       { title: "Internals", href: "/docs/architecture/internals" },
       { title: "Testing Framework", href: "/docs/testing" },
+      { title: "Benchmarks", href: "/docs/benchmarks" },
       { title: "Network Protocol", href: "/docs/architecture/protocol" },
       { title: "Security", href: "/docs/architecture/security" },
     ],

@@ -1,0 +1,48 @@
+{
+  "entries": {
+    "hello.txt": {
+      "path": "hello.txt",
+      "mode": "Regular",
+      "file_type": "Regular",
+      "symlink_target": "",
+      "size": 14,
+      "content_hash": [
+        98,
+        51,
+        131,
+        75,
+        206,
+        120,
+        23,
+        219,
+        30,
+        64,
+        27,
+        206,
+        234,
+        43,
+        139,
+        69,
+        193,
+        96,
+        1,
+        21,
+        210,
+        91,
+        81,
+        144,
+        108,
+        5,
+        238,
+        50,
+        21,
+        107,
+        81,
+        194
+      ],
+      "chunks": [],
+      "storage": "GitText",
+      "git_oid": "8ab686eafeb1f44702738c8b0f24f2567c36da6d"
+    }
+  }
+}

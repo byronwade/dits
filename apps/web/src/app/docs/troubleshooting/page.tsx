@@ -7,14 +7,105 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle, CheckCircle, Info, Terminal, HardDrive, Network } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
-export const metadata: Metadata = {
-  title: "Troubleshooting",
-  description: "Common issues and solutions for Dits",
-};
+import { generateMetadata as genMeta, generateArticleSchema, generateHowToSchema, generateBreadcrumbSchema } from "@/lib/seo";
+import Script from "next/script";
+
+export const metadata: Metadata = genMeta({
+  title: "Troubleshooting Guide - Common Issues and Solutions for Dits",
+  description: "Common issues and solutions for Dits version control. Troubleshooting guide for installation, basic usage, performance problems, and advanced configuration issues.",
+  canonical: "https://dits.dev/docs/troubleshooting",
+  keywords: [
+    "dits troubleshooting",
+    "dits issues",
+    "dits problems",
+    "dits errors",
+    "dits help",
+    "version control troubleshooting",
+  ],
+  openGraph: {
+    type: "article",
+    images: [
+      {
+        url: "/dits.png",
+        width: 1200,
+        height: 630,
+        alt: "Dits Troubleshooting Guide",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+});
 
 export default function TroubleshootingPage() {
+  const articleSchema = generateArticleSchema({
+    headline: "Troubleshooting Guide - Common Issues and Solutions for Dits",
+    description: "Common issues and solutions for Dits version control. Troubleshooting guide for installation, basic usage, performance problems, and advanced configuration issues.",
+    datePublished: "2024-01-01",
+    dateModified: new Date().toISOString().split("T")[0],
+    author: "Byron Wade",
+    section: "Documentation",
+    tags: ["troubleshooting", "help", "issues", "solutions"],
+  });
+
+  const howToSchema = generateHowToSchema({
+    name: "How to Troubleshoot Dits Issues",
+    description: "Step-by-step troubleshooting guide for common Dits problems",
+    step: [
+      {
+        name: "Identify the Issue",
+        text: "Determine the category: installation, basic usage, performance, or advanced",
+      },
+      {
+        name: "Check Error Messages",
+        text: "Review error messages and logs for specific error codes or messages",
+      },
+      {
+        name: "Consult Documentation",
+        text: "Search the troubleshooting guide for your specific issue",
+      },
+      {
+        name: "Try Solutions",
+        text: "Apply recommended solutions in order, testing after each step",
+      },
+      {
+        name: "Get Community Help",
+        text: "If issues persist, check GitHub Issues or community discussions",
+      },
+    ],
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Documentation", url: "/docs" },
+    { name: "Troubleshooting", url: "/docs/troubleshooting" },
+  ]);
+
   return (
-    <div className="prose dark:prose-invert max-w-none">
+    <>
+      <Script
+        id="article-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(articleSchema),
+        }}
+      />
+      <Script
+        id="howto-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(howToSchema),
+        }}
+      />
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
+      <div className="prose dark:prose-invert max-w-none">
       <h1>Troubleshooting Guide</h1>
       <p className="lead text-xl text-muted-foreground">
         Common issues and their solutions. If you can't find your issue here,
@@ -436,6 +527,7 @@ uname -a`}
         </AlertDescription>
       </Alert>
     </div>
+    </>
   );
 }
 

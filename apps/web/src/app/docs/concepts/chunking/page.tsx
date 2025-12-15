@@ -22,14 +22,72 @@ import { CodeBlock } from "@/components/ui/code-block";
 import { ComparisonBlocks } from "@/components/docs/comparison-blocks";
 import { VideoTimeline } from "@/components/docs/video-timeline";
 
-export const metadata: Metadata = {
-  title: "Chunking & Deduplication",
-  description: "How Dits breaks files into chunks for efficient storage",
-};
+import { generateMetadata as genMeta, generateArticleSchema, generateBreadcrumbSchema } from "@/lib/seo";
+import Script from "next/script";
+
+export const metadata: Metadata = genMeta({
+  title: "Chunking & Deduplication - How Dits Breaks Files into Chunks",
+  description: "How Dits breaks files into chunks for efficient storage. Learn about content-defined chunking, deduplication, chunk size optimization, and how changes affect storage.",
+  canonical: "https://dits.dev/docs/concepts/chunking",
+  keywords: [
+    "chunking",
+    "deduplication",
+    "content-defined chunking",
+    "file chunking",
+    "storage optimization",
+    "fastcdc",
+  ],
+  openGraph: {
+    type: "article",
+    images: [
+      {
+        url: "/dits.png",
+        width: 1200,
+        height: 630,
+        alt: "Chunking & Deduplication",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+});
 
 export default function ChunkingPage() {
+  const articleSchema = generateArticleSchema({
+    headline: "Chunking & Deduplication - How Dits Breaks Files into Chunks",
+    description: "How Dits breaks files into chunks for efficient storage. Learn about content-defined chunking, deduplication, and storage optimization.",
+    datePublished: "2024-01-01",
+    dateModified: new Date().toISOString().split("T")[0],
+    author: "Byron Wade",
+    section: "Documentation",
+    tags: ["chunking", "deduplication", "content-defined chunking"],
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Documentation", url: "/docs" },
+    { name: "Concepts", url: "/docs/concepts" },
+    { name: "Chunking", url: "/docs/concepts/chunking" },
+  ]);
+
   return (
-    <div className="prose dark:prose-invert max-w-none">
+    <>
+      <Script
+        id="article-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(articleSchema),
+        }}
+      />
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
+      <div className="prose dark:prose-invert max-w-none">
       <h1>Chunking & Deduplication</h1>
       <p className="lead text-xl text-muted-foreground">
         Dits uses content-defined chunking (CDC) to break files into variable-size
@@ -533,5 +591,6 @@ fn find_chunk_boundary(data: &[u8]) -> usize {
         </li>
       </ul>
     </div>
+    </>
   );
 }

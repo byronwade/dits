@@ -1,0 +1,48 @@
+{
+  "entries": {
+    "a.txt": {
+      "path": "a.txt",
+      "mode": "Regular",
+      "file_type": "Regular",
+      "symlink_target": "",
+      "size": 3,
+      "content_hash": [
+        11,
+        139,
+        96,
+        36,
+        143,
+        173,
+        122,
+        198,
+        223,
+        172,
+        34,
+        27,
+        126,
+        1,
+        168,
+        185,
+        28,
+        119,
+        36,
+        33,
+        161,
+        91,
+        56,
+        125,
+        209,
+        251,
+        45,
+        106,
+        148,
+        174,
+        228,
+        56
+      ],
+      "chunks": [],
+      "storage": "GitText",
+      "git_oid": "45b983be36b73c0788dc9cbcb76cbb80fc7bb057"
+    }
+  }
+}

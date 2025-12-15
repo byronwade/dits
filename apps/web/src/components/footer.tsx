@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Github, MessageCircle, Bug } from "lucide-react";
 
 const footerLinks = {
@@ -59,9 +60,13 @@ export function Footer() {
               className="flex items-center space-x-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 w-fit"
               aria-label="Dits - Go to homepage"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <span className="font-bold text-primary-foreground">D</span>
-              </div>
+              <Image
+                src="/dits.png"
+                alt="Dits Logo"
+                width={32}
+                height={32}
+                className="h-8 w-8 object-contain"
+              />
               <span className="font-bold">Dits</span>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">

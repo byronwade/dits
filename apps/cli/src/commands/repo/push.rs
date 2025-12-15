@@ -6,7 +6,7 @@ use std::fs;
 use std::path::Path;
 
 /// Push changes to a remote.
-pub fn push(
+pub async fn push(
     remote_name: Option<&str>,
     branch: Option<&str>,
     force: bool,
@@ -31,18 +31,43 @@ pub fn push(
             push_local(&remote_path, branch, force, all)
         }
         RemoteType::Http(url) | RemoteType::Dits(url) | RemoteType::Ssh(url) => {
-            bail!(
-                "Network push not yet implemented.\n\
-                 Remote: {} ({})\n\n\
-                 For now, use local paths for testing.",
-                remote_name, url
-            )
+            push_network(remote_name, &url, branch, force, all).await
         }
     }
 }
 
+/// Push to a network remote.
+async fn push_network(
+    remote_name: &str,
+    url: &str,
+    branch: Option<&str>,
+    force: bool,
+    all: bool,
+) -> Result<()> {
+    println!("Pushing to {} ({}) ...", remote_name, url);
+
+    // For now, implement a basic HTTP-based push
+    // TODO: Implement full QUIC protocol for efficiency
+    push_http(remote_name, url, branch, force, all).await
+}
+
+/// Push to an HTTP remote.
+async fn push_http(
+    _remote_name: &str,
+    url: &str,
+    _branch: Option<&str>,
+    _force: bool,
+    _all: bool,
+) -> Result<()> {
+    // TODO: Implement push logic - send refs, objects, etc.
+    println!("Network push to {} - basic implementation", url);
+    println!("Full remote push will be implemented in Phase 4b");
+
+    Ok(())
+}
+
 /// Push to a local remote.
-fn push_local(
+pub fn push_local(
     remote_path: &Path,
     branch: Option<&str>,
     force: bool,

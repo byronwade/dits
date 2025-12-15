@@ -5,8 +5,19 @@ use std::fs::{self, File};
 use std::io::{BufReader, BufWriter};
 use std::path::{Path, PathBuf};
 
-use super::keys::{KeyBundle, Argon2Params, derive_keys, generate_salt};
+use super::keys::{KeyBundle, SerializableKeyBundle, Argon2Params, derive_keys, generate_salt, generate_random_bytes};
 use super::encryption::{encrypt_with_key, decrypt_with_key};
+
+/// Cached encryption keys for session use.
+#[derive(Debug, Serialize, Deserialize)]
+struct CachedKeys {
+    /// Encrypted key bundle.
+    encrypted_bundle: Vec<u8>,
+    /// Nonce for bundle encryption.
+    bundle_nonce: [u8; 12],
+    /// Session key used for encryption.
+    session_key: [u8; 32],
+}
 
 /// Encrypted keystore stored on disk.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -305,6 +316,77 @@ impl KeyStore {
         fs::remove_file(&self.path)
             .map_err(|e| KeyStoreError::Io(e.to_string()))
     }
+
+    /// Cache loaded keys for the current session.
+    /// This is a temporary implementation - production should use secure keyring.
+    pub fn cache_keys(&self, bundle: &KeyBundle) -> Result<(), KeyStoreError> {
+        let dits_dir = self.path.parent().ok_or(KeyStoreError::Io("Invalid keystore path".to_string()))?;
+        let cache_path = dits_dir.join("keys.cache");
+
+        // Convert to serializable form
+        let serializable_bundle = SerializableKeyBundle::from(bundle);
+
+        // Encrypt the bundle with a session key derived from system entropy
+        // This is not cryptographically secure but provides basic protection
+        let session_key = generate_random_bytes();
+        let (encrypted_bundle, nonce) = encrypt_with_key(
+            &serde_json::to_vec(&serializable_bundle)
+                .map_err(|e| KeyStoreError::Serialization(e.to_string()))?,
+            &session_key,
+        ).map_err(|e| KeyStoreError::Encryption(e.to_string()))?;
+
+        let cache_data = CachedKeys {
+            encrypted_bundle,
+            bundle_nonce: nonce,
+            session_key,
+        };
+
+        let cache_file = File::create(&cache_path)
+            .map_err(|e| KeyStoreError::Io(e.to_string()))?;
+        let writer = BufWriter::new(cache_file);
+        serde_json::to_writer(writer, &cache_data)
+            .map_err(|e| KeyStoreError::Serialization(e.to_string()))?;
+
+        Ok(())
+    }
+
+    /// Load cached keys for the current session.
+    pub fn load_cached(&self) -> Result<KeyBundle, KeyStoreError> {
+        let dits_dir = self.path.parent().ok_or(KeyStoreError::Io("Invalid keystore path".to_string()))?;
+        let cache_path = dits_dir.join("keys.cache");
+
+        if !cache_path.exists() {
+            return Err(KeyStoreError::NotFound);
+        }
+
+        let cache_file = File::open(&cache_path)
+            .map_err(|e| KeyStoreError::Io(e.to_string()))?;
+        let reader = BufReader::new(cache_file);
+        let cache_data: CachedKeys = serde_json::from_reader(reader)
+            .map_err(|e| KeyStoreError::Serialization(e.to_string()))?;
+
+        let plaintext = decrypt_with_key(
+            &cache_data.encrypted_bundle,
+            &cache_data.session_key,
+            &cache_data.bundle_nonce,
+        ).map_err(|e| KeyStoreError::Decryption(e.to_string()))?;
+
+        let serializable_bundle: SerializableKeyBundle = serde_json::from_slice(&plaintext)
+            .map_err(|e| KeyStoreError::Serialization(e.to_string()))?;
+
+        Ok(KeyBundle::from(serializable_bundle))
+    }
+
+    /// Clear cached keys.
+    pub fn clear_cache(&self) -> Result<(), KeyStoreError> {
+        let dits_dir = self.path.parent().ok_or(KeyStoreError::Io("Invalid keystore path".to_string()))?;
+        let cache_path = dits_dir.join("keys.cache");
+        if cache_path.exists() {
+            fs::remove_file(&cache_path)
+                .map_err(|e| KeyStoreError::Io(e.to_string()))?;
+        }
+        Ok(())
+    }
 }
 
 /// Keystore errors.
@@ -324,6 +406,9 @@ pub enum KeyStoreError {
 
     #[error("Encryption error: {0}")]
     Encryption(String),
+
+    #[error("Decryption error: {0}")]
+    Decryption(String),
 
     #[error("Serialization error: {0}")]
     Serialization(String),

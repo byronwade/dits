@@ -3,7 +3,7 @@
 //! Commands for creating and managing video project timelines.
 
 use dits::core::Hash;
-use dits::project::{ProjectGraph, ProjectStore, Track, Clip, TrackType};
+use dits::project::{Clip, ProjectGraph, ProjectStore};
 use dits::store::Repository;
 use anyhow::{Context, Result, bail};
 use console::style;

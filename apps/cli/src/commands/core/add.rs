@@ -1,6 +1,7 @@
 //! Add files to staging area.
 
 use crate::store::Repository;
+use crate::util::{format_bytes, safe_percentage};
 use anyhow::{Context, Result};
 use console::style;
 use indicatif::{ProgressBar, ProgressStyle};
@@ -83,7 +84,7 @@ pub fn add(files: &[String]) -> Result<()> {
             );
 
             if total_result.dedup_bytes > 0 {
-                let saved_pct = (total_result.dedup_bytes as f64 / total_bytes as f64) * 100.0;
+                let saved_pct = safe_percentage(total_result.dedup_bytes, total_bytes);
                 println!(
                     "  {} saved through deduplication ({:.1}%)",
                     format_bytes(total_result.dedup_bytes),
@@ -111,19 +112,3 @@ pub fn add(files: &[String]) -> Result<()> {
     Ok(())
 }
 
-/// Format bytes as human-readable string.
-fn format_bytes(bytes: u64) -> String {
-    const KB: u64 = 1024;
-    const MB: u64 = KB * 1024;
-    const GB: u64 = MB * 1024;
-
-    if bytes >= GB {
-        format!("{:.2} GB", bytes as f64 / GB as f64)
-    } else if bytes >= MB {
-        format!("{:.2} MB", bytes as f64 / MB as f64)
-    } else if bytes >= KB {
-        format!("{:.2} KB", bytes as f64 / KB as f64)
-    } else {
-        format!("{} bytes", bytes)
-    }
-}

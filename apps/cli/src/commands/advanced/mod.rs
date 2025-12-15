@@ -19,5 +19,9 @@ pub use lifecycle::{freeze_init, freeze_status, freeze, thaw, freeze_policy};
 pub use security::{encrypt_init, encrypt_status, login, logout, change_password, audit_show, audit_stats, audit_export};
 pub use dependency::{dep_check, dep_graph, dep_list};
 pub use meta::{meta_scan, meta_show, meta_list};
+#[allow(unused_imports)]
 pub use hooks::{list as hooks_list, install as hooks_install, uninstall as hooks_uninstall, run as hooks_run, show as hooks_show};
 pub use lock::{lock as lock_file, unlock, locks};
+
+
+

@@ -65,6 +65,14 @@ test-integration-parallel:
 test-performance:
     cd t/perf && ../run-tests.sh
 
+# Run streaming chunking performance test
+test-streaming-chunking:
+    cd t && ./run-tests.sh -r "perf/p0003"
+
+# Run database indexing performance test
+test-db-indexing:
+    cd t && ./run-tests.sh -r "perf/p0004"
+
 # Run chainlint validation
 test-chainlint:
     cd t && find . -name "t[0-9][0-9][0-9][0-9]*.sh" -exec perl chainlint.pl {} \;

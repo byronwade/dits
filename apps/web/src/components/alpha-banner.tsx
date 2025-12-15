@@ -35,7 +35,7 @@ export function AlphaBanner() {
   return (
     // AGENTS.md: role="alert" with aria-live="polite" for screen reader announcements
     <div
-      className="bg-amber-500/10 border-b border-amber-500/20"
+      className="fixed top-16 left-0 right-0 z-40 bg-amber-500/10 border-b border-amber-500/20 backdrop-blur-sm"
       role="alert"
       aria-live="polite"
     >

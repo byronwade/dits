@@ -16,8 +16,11 @@ pub use checkout::{checkout, CheckoutMode};
 pub use merge::merge;
 pub use rebase::rebase;
 pub use cherry_pick::cherry_pick;
-pub use tag::tag;
+pub use tag::{tag, TagSort};
 pub use reset::{reset, ResetMode};
 pub use restore::restore;
 pub use stash::stash;
 pub use reflog::reflog;
+
+
+

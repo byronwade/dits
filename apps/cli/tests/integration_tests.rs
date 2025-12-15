@@ -3,7 +3,7 @@
 //! These tests cover the full workflow of the version control system.
 
 use dits::core::{
-    chunk_data_with_refs, Author, Chunk, ChunkRef, ChunkerConfig, Commit, Hash,
+    chunk_data_with_refs, Author, Chunk, ChunkRef, ChunkerConfig, Commit, FileType, Hash,
     Hasher, Index, IndexEntry, Manifest, ManifestEntry,
 };
 use dits::store::Repository;
@@ -32,7 +32,7 @@ fn create_file(dir: &Path, name: &str, content: &[u8]) {
 }
 
 fn test_data(size: usize, seed: u8) -> Vec<u8> {
-    (0..size).map(|i| ((i as u8).wrapping_add(seed))).collect()
+    (0..size).map(|i| (i as u8).wrapping_add(seed)).collect()
 }
 
 fn random_bytes(size: usize) -> Vec<u8> {
@@ -294,6 +294,9 @@ mod index_tests {
             Hasher::hash(b"content"),
             100,
             0,  // mtime
+            0o644,
+            FileType::Regular,
+            String::new(),
             vec![],  // chunks
         );
 
@@ -310,6 +313,9 @@ mod index_tests {
             Hasher::hash(b"data"),
             50,
             0,  // mtime
+            0o644,
+            FileType::Regular,
+            String::new(),
             vec![],  // chunks
         );
         index.stage(entry);
@@ -447,6 +453,79 @@ mod workflow_tests {
         let commit2 = repo.commit("Second commit").unwrap();
 
         assert_ne!(commit1.hash, commit2.hash);
+    }
+
+    #[test]
+    fn test_status_detects_modified_file() {
+        let (temp, repo) = create_test_repo();
+        create_file(temp.path(), "modify.txt", b"original");
+        repo.add("modify.txt").unwrap();
+        repo.commit("initial").unwrap();
+
+        create_file(temp.path(), "modify.txt", b"changed");
+
+        let status = repo.status().unwrap();
+        assert!(status.modified.iter().any(|p| p == "modify.txt"));
+    }
+
+    #[test]
+    fn test_status_detects_staged_rename() {
+        let (temp, repo) = create_test_repo();
+        create_file(temp.path(), "original.txt", b"content");
+        repo.add("original.txt").unwrap();
+        repo.commit("initial").unwrap();
+
+        let old_path = temp.path().join("original.txt");
+        let new_path = temp.path().join("renamed.txt");
+        fs::rename(&old_path, &new_path).unwrap();
+        repo.add("renamed.txt").unwrap();
+
+        let status = repo.status().unwrap();
+        assert_eq!(
+            status.staged_renamed,
+            vec![("original.txt".to_string(), "renamed.txt".to_string())]
+        );
+        assert!(status.staged_new.is_empty());
+    }
+
+    #[test]
+    fn test_status_detects_unstaged_rename() {
+        let (temp, repo) = create_test_repo();
+        create_file(temp.path(), "clip.mov", b"content");
+        repo.add("clip.mov").unwrap();
+        repo.commit("initial").unwrap();
+
+        fs::rename(
+            temp.path().join("clip.mov"),
+            temp.path().join("clip_renamed.mov"),
+        )
+        .unwrap();
+
+        let status = repo.status().unwrap();
+        assert_eq!(
+            status.unstaged_renamed,
+            vec![("clip.mov".to_string(), "clip_renamed.mov".to_string())]
+        );
+        assert!(!status.untracked.iter().any(|p| p == "clip_renamed.mov"));
+    }
+
+    #[test]
+    fn test_status_does_not_flag_copy_as_rename() {
+        let (temp, repo) = create_test_repo();
+        create_file(temp.path(), "base.txt", b"content");
+        repo.add("base.txt").unwrap();
+        repo.commit("initial").unwrap();
+
+        let copy_path = temp.path().join("base_copy.txt");
+        fs::copy(temp.path().join("base.txt"), &copy_path).unwrap();
+        repo.add("base_copy.txt").unwrap();
+
+        let status = repo.status().unwrap();
+        assert!(status.staged_renamed.is_empty());
+        assert!(status
+            .staged_new
+            .iter()
+            .any(|p| p == "base_copy.txt"));
     }
 
     #[test]

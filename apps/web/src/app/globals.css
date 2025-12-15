@@ -161,7 +161,7 @@ code {
   margin: 0 !important;
 }
 
-.not-prose > div[style*="code-background"] {
+.not-prose>div[style*="code-background"] {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
@@ -432,4 +432,278 @@ textarea {
 
 .prose hr {
   @apply my-8 border-border;
+}
+
+/* Particle animation for hero section */
+@keyframes particle-rise {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+
+  5% {
+    opacity: 0.6;
+  }
+
+  95% {
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: translateY(-100vh) translateX(30px);
+    opacity: 0;
+  }
+}
+
+@keyframes particle-float {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.6;
+  }
+
+  25% {
+    transform: translate(10px, -20px) scale(1.1);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: translate(-5px, -40px) scale(1);
+    opacity: 0.6;
+  }
+
+  75% {
+    transform: translate(15px, -20px) scale(0.9);
+    opacity: 0.8;
+  }
+}
+
+/* Gradient shift animation for hero text */
+@keyframes gradient-shift {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* ============================================ */
+/* Header "Chunk Flow" Design System           */
+/* ============================================ */
+
+/* Floating chunk animation for header background */
+@keyframes float-chunk {
+
+  0%,
+  100% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0.4;
+  }
+
+  25% {
+    transform: translateY(-3px) translateX(2px) scale(1.05);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: translateY(-1px) translateX(-2px) scale(0.98);
+    opacity: 0.5;
+  }
+
+  75% {
+    transform: translateY(-4px) translateX(1px) scale(1.02);
+    opacity: 0.55;
+  }
+}
+
+/* Gradient flow animation for header bottom border */
+@keyframes gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Subtle pulse for logo hover */
+@keyframes pulse-subtle {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+/* Nav link underline grow animation */
+@keyframes grow-underline {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Header glassmorphism styling */
+.header-glass {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: hsl(var(--background) / 0.8);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+}
+
+.dark .header-glass {
+  background: hsl(var(--background) / 0.85);
+}
+
+/* Header gradient border */
+.header-gradient-border {
+  /* Note: no position set here to preserve fixed/sticky from component */
+}
+
+.header-gradient-border::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+      hsl(var(--primary) / 0.3),
+      hsl(142.1 76.2% 36.3% / 0.6),
+      hsl(var(--primary) / 0.3));
+  background-size: 200% 100%;
+  animation: gradient-flow 4s ease infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-gradient-border::after {
+    animation: none;
+    background: hsl(var(--primary) / 0.4);
+  }
+}
+
+/* Header chunk particles container */
+.header-chunks {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Individual floating chunk */
+.header-chunk {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background: hsl(var(--primary) / 0.15);
+  animation: float-chunk 6s ease-in-out infinite;
+}
+
+.dark .header-chunk {
+  background: hsl(84 81% 44% / 0.2);
+}
+
+/* Stagger chunk animations for natural feel */
+.header-chunk:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.header-chunk:nth-child(2) {
+  animation-delay: 0.8s;
+}
+
+.header-chunk:nth-child(3) {
+  animation-delay: 1.6s;
+}
+
+.header-chunk:nth-child(4) {
+  animation-delay: 2.4s;
+}
+
+.header-chunk:nth-child(5) {
+  animation-delay: 3.2s;
+}
+
+.header-chunk:nth-child(6) {
+  animation-delay: 4s;
+}
+
+.header-chunk:nth-child(7) {
+  animation-delay: 4.8s;
+}
+
+.header-chunk:nth-child(8) {
+  animation-delay: 5.6s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-chunk {
+    animation: none;
+    opacity: 0.3;
+  }
+}
+
+/* Logo hover effect */
+.header-logo:hover .header-logo-icon {
+  animation: pulse-subtle 0.6s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-logo:hover .header-logo-icon {
+    animation: none;
+  }
+}
+
+/* Nav link with chunk indicator */
+.nav-link-chunk {
+  position: relative;
+}
+
+.nav-link-chunk::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 16px;
+  height: 3px;
+  border-radius: 1px;
+  background: linear-gradient(90deg, hsl(var(--primary)), hsl(142.1 76.2% 36.3%));
+  transition: transform 0.2s ease;
+}
+
+.nav-link-chunk:hover::after,
+.nav-link-chunk[aria-current="page"]::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
+.nav-link-chunk[aria-current="page"]::after {
+  width: 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-link-chunk::after {
+    transition: none;
+  }
 }

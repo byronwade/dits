@@ -1,11 +1,12 @@
 {
   "name": "@byronwade/dits",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "Version control for video and large binary files - like Git, but optimized for large binary files",
   "license": "Apache-2.0 OR MIT",
-  "repository": {
+  "author": "Byron Wade",
+    "repository": {
     "type": "git",
-    "url": "https://github.com/byronwade/dits.git",
+    "url": "git+https://github.com/byronwade/dits.git",
     "directory": "packages/npm"
   },
   "homepage": "https://github.com/byronwade/dits",
@@ -21,7 +22,10 @@
     "cli",
     "git",
     "media",
-    "deduplication"
+    "deduplication",
+    "content-addressed",
+    "chunking",
+    "blake3"
   ],
   "bin": {
     "dits": "bin/dits"
@@ -29,13 +33,25 @@
   "main": "lib/index.js",
   "files": [
     "bin",
-    "lib"
+    "lib",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "echo 'Binaries built via cargo'",
-    "clean": "rm -rf bin/darwin-* bin/linux-* bin/win32-*"
+    "clean": "rm -rf bin/darwin-* bin/linux-* bin/win32-*",
+    "prepublishOnly": "node -e \"require('fs').accessSync('bin/darwin-arm64/dits')\" || (echo 'Error: Binary not found. Run: cargo build --release && cp target/release/dits packages/npm/bin/darwin-arm64/' && exit 1)"
   },
   "engines": {
     "node": ">=16.0.0"
-  }
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ]
 }

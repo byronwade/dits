@@ -1,0 +1,164 @@
+{
+  "meta": {
+    "generated_at": "2025-12-14T23:22:48.784Z",
+    "max_per_benchmark": 25
+  },
+  "benchmarks": {
+    "rust.dits-core|Chunk::from_data(1MiB)|mb_per_s": [
+      {
+        "timestamp": "2025-12-14T23:22:22.609Z",
+        "git_sha": "d824fceb7d456c5302cc3cf16495fd9c2e911dc8",
+        "suite": "rust.dits-core",
+        "name": "Chunk::from_data(1MiB)",
+        "unit": "mb_per_s",
+        "value": 295.5620435529144,
+        "iterations": 200,
+        "bytes_per_iter": 1048576,
+        "elapsed_ms_total": 676.676875
+      }
+    ],
+    "rust.dits-core|bincode::serialize(ChunkMeta)|ops_per_s": [
+      {
+        "timestamp": "2025-12-14T23:22:22.609Z",
+        "git_sha": "d824fceb7d456c5302cc3cf16495fd9c2e911dc8",
+        "suite": "rust.dits-core",
+        "name": "bincode::serialize(ChunkMeta)",
+        "unit": "ops_per_s",
+        "value": 213028.6322658482,
+        "iterations": 250000,
+        "bytes_per_iter": null,
+        "elapsed_ms_total": 1173.551167
+      }
+    ],
+    "rust.dits-core|serde_json::to_vec(ChunkMeta)|ops_per_s": [
+      {
+        "timestamp": "2025-12-14T23:22:22.609Z",
+        "git_sha": "d824fceb7d456c5302cc3cf16495fd9c2e911dc8",
+        "suite": "rust.dits-core",
+        "name": "serde_json::to_vec(ChunkMeta)",
+        "unit": "ops_per_s",
+        "value": 368984.7424661396,
+        "iterations": 50000,
+        "bytes_per_iter": null,
+        "elapsed_ms_total": 135.506958
+      }
+    ],
+    "rust.dits-core|Hasher::hash(1MiB)|mb_per_s": [
+      {
+        "timestamp": "2025-12-14T23:22:22.609Z",
+        "git_sha": "d824fceb7d456c5302cc3cf16495fd9c2e911dc8",
+        "suite": "rust.dits-core",
+        "name": "Hasher::hash(1MiB)",
+        "unit": "mb_per_s",
+        "value": 358.8353424823188,
+        "iterations": 250,
+        "bytes_per_iter": 1048576,
+        "elapsed_ms_total": 696.6983749999999
+      }
+    ],
+    "rust.dits-chunker|ChonkersChunker::chunk(32MiB)|mb_per_s": [
+      {
+        "timestamp": "2025-12-14T23:22:22.609Z",
+        "git_sha": "d824fceb7d456c5302cc3cf16495fd9c2e911dc8",
+        "suite": "rust.dits-chunker",
+        "name": "ChonkersChunker::chunk(32MiB)",
+        "unit": "mb_per_s",
+        "value": 115.31601485758345,
+        "iterations": 5,
+        "bytes_per_iter": 33554432,
+        "elapsed_ms_total": 1387.491583
+      }
+    ],
+    "rust.dits-chunker|FastCDCChunker::chunk(32MiB)|mb_per_s": [
+      {
+        "timestamp": "2025-12-14T23:22:22.609Z",
+        "git_sha": "d824fceb7d456c5302cc3cf16495fd9c2e911dc8",
+        "suite": "rust.dits-chunker",
+        "name": "FastCDCChunker::chunk(32MiB)",
+        "unit": "mb_per_s",
+        "value": 105.0332914135894,
+        "iterations": 8,
+        "bytes_per_iter": 33554432,
+        "elapsed_ms_total": 2437.322458
+      }
+    ],
+    "rust.dits-chunker|Blake3Hasher::hash(1MiB)|mb_per_s": [
+      {
+        "timestamp": "2025-12-14T23:22:22.609Z",
+        "git_sha": "d824fceb7d456c5302cc3cf16495fd9c2e911dc8",
+        "suite": "rust.dits-chunker",
+        "name": "Blake3Hasher::hash(1MiB)",
+        "unit": "mb_per_s",
+        "value": 311.29091059662323,
+        "iterations": 200,
+        "bytes_per_iter": 1048576,
+        "elapsed_ms_total": 642.485833
+      }
+    ],
+    "rust.dits-chunker|Sha256Hasher::hash(1MiB)|mb_per_s": [
+      {
+        "timestamp": "2025-12-14T23:22:22.609Z",
+        "git_sha": "d824fceb7d456c5302cc3cf16495fd9c2e911dc8",
+        "suite": "rust.dits-chunker",
+        "name": "Sha256Hasher::hash(1MiB)",
+        "unit": "mb_per_s",
+        "value": 48.66405410988619,
+        "iterations": 75,
+        "bytes_per_iter": 1048576,
+        "elapsed_ms_total": 1541.1786250000002
+      }
+    ],
+    "rust.dits-chunker|Sha3_256Hasher::hash(1MiB)|mb_per_s": [
+      {
+        "timestamp": "2025-12-14T23:22:22.609Z",
+        "git_sha": "d824fceb7d456c5302cc3cf16495fd9c2e911dc8",
+        "suite": "rust.dits-chunker",
+        "name": "Sha3_256Hasher::hash(1MiB)",
+        "unit": "mb_per_s",
+        "value": 132.60754659336882,
+        "iterations": 40,
+        "bytes_per_iter": 1048576,
+        "elapsed_ms_total": 301.641958
+      }
+    ],
+    "rust.dits-chunker|HashFactory(Box<dyn Hasher>)::hash(4KiB)|mb_per_s": [
+      {
+        "timestamp": "2025-12-14T23:22:22.609Z",
+        "git_sha": "d824fceb7d456c5302cc3cf16495fd9c2e911dc8",
+        "suite": "rust.dits-chunker",
+        "name": "HashFactory(Box<dyn Hasher>)::hash(4KiB)",
+        "unit": "mb_per_s",
+        "value": 262.2880777630914,
+        "iterations": 50000,
+        "bytes_per_iter": 4096,
+        "elapsed_ms_total": 744.6487910000001
+      }
+    ],
+    "node.packages/npm|getPlatformKey|ops_per_s": [
+      {
+        "timestamp": "2025-12-14T23:22:22.609Z",
+        "git_sha": "d824fceb7d456c5302cc3cf16495fd9c2e911dc8",
+        "suite": "node.packages/npm",
+        "name": "getPlatformKey",
+        "unit": "ops_per_s",
+        "value": 3504672.9135732376,
+        "iterations": 250000,
+        "bytes_per_iter": null,
+        "elapsed_ms_total": 71.33333300000001
+      }
+    ],
+    "node.packages/npm|getBinaryPath|ops_per_s": [
+      {
+        "timestamp": "2025-12-14T23:22:22.609Z",
+        "git_sha": "d824fceb7d456c5302cc3cf16495fd9c2e911dc8",
+        "suite": "node.packages/npm",
+        "name": "getBinaryPath",
+        "unit": "ops_per_s",
+        "value": 95150.1065816307,
+        "iterations": 150000,
+        "bytes_per_iter": null,
+        "elapsed_ms_total": 1576.4564579999999
+      }
+    ]
+  }
+}

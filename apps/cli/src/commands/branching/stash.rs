@@ -151,7 +151,7 @@ fn stash_push(repo: &Repository, stash_path: &Path, message: Option<&str>) -> Re
 
     // Check for unstaged changes in working tree
     let head_hash = repo.head()?;
-    let head_manifest = if let Some(ref h) = head_hash {
+    let _head_manifest = if let Some(ref h) = head_hash {
         let commit = repo.objects().load_commit(h)?;
         Some(repo.objects().load_manifest(&commit.manifest)?)
     } else {
@@ -245,6 +245,9 @@ fn stash_push(repo: &Repository, stash_path: &Path, message: Option<&str>) -> Re
                 entry.content_hash,
                 entry.size,
                 0,
+                0o644, // Default mode
+                entry.file_type,
+                entry.symlink_target.clone(),
                 entry.chunks.clone(),
             );
             new_index.stage(idx_entry);
@@ -344,6 +347,9 @@ fn stash_apply(repo: &Repository, stash_path: &Path, index: usize, remove: bool)
             manifest_entry.content_hash,
             manifest_entry.size,
             0,
+            0o644, // Default mode
+            manifest_entry.file_type,
+            manifest_entry.symlink_target.clone(),
             manifest_entry.chunks.clone(),
         );
         current_index.stage(idx_entry);

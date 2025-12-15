@@ -13,15 +13,23 @@ mod refs;
 mod git_engine;
 pub mod locks;
 pub mod remote;
+pub mod remote_server;
 pub mod repository;
 
-pub use locks::{Lock, LockStore, LockError};
-pub use objects::ObjectStore;
-pub use refs::RefStore;
-pub use remote::{Remote, RemoteStore, RemoteError, RemoteType};
-pub use repository::{Repository, RepoError, AddResult, Status, CheckoutResult, RepoStats, FileStats, RepoDedupStats, FileDedupStats};
+#[allow(unused_imports)]
+pub use {
+    locks::{Lock, LockError, LockStore},
+    objects::ObjectStore,
+    refs::RefStore,
+    remote::{Remote, RemoteError, RemoteStore, RemoteType},
+    repository::{
+        AddResult, CheckoutResult, FileDedupStats, FileStats, RepoDedupStats, RepoError, RepoStats,
+        Repository, Status,
+    },
+};
 
 // Phase 3.6: Git text engine for hybrid storage
+#[allow(unused_imports)]
 pub use git_engine::{
     GitTextEngine, GitEngineError, GitResult,
     DiffResult, DiffHunk, DiffLine, DiffLineType, DiffStats,

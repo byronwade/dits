@@ -19,6 +19,10 @@ fastcdc = { workspace = true }
 
 # Cryptography
 blake3 = { workspace = true }
+sha2 = "0.10.8"
+sha3 = "0.10.8"
+hmac = "0.12.1"
+rand = "0.8.5"
 
 # Compression
 zstd = { workspace = true }
@@ -28,6 +32,11 @@ lz4_flex = { workspace = true }
 bytes = { workspace = true }
 tracing = { workspace = true }
 
+# Parallel processing
+rayon = { workspace = true }
+num_cpus = "1.16.0"
+
 [dev-dependencies]
 tempfile = { workspace = true }
 tokio = { workspace = true, features = ["test-util", "macros"] }
+serde_json = { workspace = true }

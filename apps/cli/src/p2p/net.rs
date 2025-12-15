@@ -11,6 +11,8 @@ use quinn::{
     VarInt,
 };
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
+use std::collections::HashMap;
+use tokio::sync::Mutex;
 use tracing::{debug, info, warn};
 
 use crate::p2p::protocol::{deserialize_message, serialize_message, NetMessage, ProtocolError};
@@ -179,17 +181,37 @@ pub fn generate_self_signed_cert_with_fingerprint() -> (
     (certs, key, fingerprint)
 }
 
-/// Create NAT-friendly transport configuration
-pub fn create_nat_transport_config() -> TransportConfig {
+/// Create high-throughput transport configuration optimized for P2P file transfers
+pub fn create_high_throughput_transport_config() -> TransportConfig {
     let mut transport = TransportConfig::default();
 
+    // Keep-alive for NAT traversal
     transport.keep_alive_interval(Some(NAT_KEEPALIVE_INTERVAL));
     transport.max_idle_timeout(Some(IDLE_TIMEOUT.try_into().expect("idle timeout valid")));
-    transport.initial_rtt(Duration::from_millis(100));
-    transport.max_concurrent_bidi_streams(VarInt::from_u32(128));
-    transport.max_concurrent_uni_streams(VarInt::from_u32(128));
+
+    // Optimized for high throughput
+    transport.initial_rtt(Duration::from_millis(50));
+
+    // Massive concurrency for parallel chunk transfers
+    transport.max_concurrent_bidi_streams(VarInt::from_u32(1000));
+    transport.max_concurrent_uni_streams(VarInt::from_u32(1000));
+
+    // Large flow control windows for high bandwidth
+    transport.receive_window(VarInt::from_u32(16 * 1024 * 1024)); // 16MB
+    transport.send_window(16 * 1024 * 1024);    // 16MB
+    transport.stream_receive_window(VarInt::from_u32(4 * 1024 * 1024)); // 4MB per stream
+    transport.max_concurrent_bidi_streams(VarInt::from_u32(500));
+
+    // Enable datagrams for control messages
+    transport.datagram_receive_buffer_size(Some(65536));
+    transport.datagram_send_buffer_size(65536);
 
     transport
+}
+
+/// Create NAT-friendly transport configuration (legacy)
+pub fn create_nat_transport_config() -> TransportConfig {
+    create_high_throughput_transport_config()
 }
 
 /// Create a QUIC client endpoint with certificate pinning (SECURE)
@@ -365,6 +387,54 @@ impl rustls::client::danger::ServerCertVerifier for PinnedCertVerifier {
 /// Skip server certificate verification (DEVELOPMENT ONLY)
 #[derive(Debug)]
 struct SkipServerVerification;
+
+/// Connection pool for efficient P2P connections
+#[derive(Clone)]
+pub struct ConnectionPool {
+    endpoint: Endpoint,
+    connections: Arc<Mutex<HashMap<String, QuicConnection>>>,
+    max_idle_time: Duration,
+}
+
+impl ConnectionPool {
+    pub fn new(endpoint: Endpoint) -> Self {
+        Self {
+            endpoint,
+            connections: Arc::new(Mutex::new(HashMap::new())),
+            max_idle_time: Duration::from_secs(300), // 5 minutes
+        }
+    }
+
+    pub async fn get_connection(&self, addr: SocketAddr) -> Result<QuicConnection, ConnectionError> {
+        let key = addr.to_string();
+
+        // Check for existing connection
+        {
+            let connections = self.connections.lock().await;
+            if let Some(conn) = connections.get(&key) {
+                return Ok(conn.clone());
+            }
+        }
+
+        // Create new connection
+        let connection = connect(&self.endpoint, addr, "dits-p2p").await?;
+
+        // Store in pool
+        {
+            let mut connections = self.connections.lock().await;
+            connections.insert(key, connection.clone());
+        }
+
+        Ok(connection)
+    }
+
+    /// Clean up idle connections
+    pub async fn cleanup(&self) {
+        let _connections = self.connections.lock().await;
+        // In a real implementation, we'd track last-used times
+        // For now, just keep all connections
+    }
+}
 
 impl rustls::client::danger::ServerCertVerifier for SkipServerVerification {
     fn verify_server_cert(

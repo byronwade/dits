@@ -6,7 +6,7 @@ use std::fs;
 use std::path::Path;
 
 /// Fetch from a remote.
-pub fn fetch(
+pub async fn fetch(
     remote_name: Option<&str>,
     all: bool,
     prune: bool,
@@ -29,7 +29,7 @@ pub fn fetch(
         for name in remote_list {
             if let Some(remote) = remotes.get(&name) {
                 println!("Fetching from {} ...", name);
-                if let Err(e) = fetch_from_remote(&name, &remote.url, prune) {
+                if let Err(e) = fetch_from_remote(&name, &remote.url, prune).await {
                     println!("  Error: {}", e);
                 }
             }
@@ -40,33 +40,64 @@ pub fn fetch(
             .ok_or_else(|| anyhow::anyhow!("Remote '{}' not found", remote_name))?;
 
         println!("Fetching from {} ...", remote_name);
-        fetch_from_remote(remote_name, &remote.url, prune)?;
+        fetch_from_remote(remote_name, &remote.url, prune).await?;
     }
 
     Ok(())
 }
 
+/// Fetch from a network remote.
+async fn fetch_network(remote_name: &str, url: &str, prune: bool) -> Result<()> {
+    println!("Fetching from {} ({}) ...", remote_name, url);
+
+    // For now, implement a basic HTTP-based fetch
+    // TODO: Implement full QUIC protocol for efficiency
+    fetch_http(remote_name, url, prune).await
+}
+
+/// Fetch from an HTTP remote.
+async fn fetch_http(_remote_name: &str, url: &str, _prune: bool) -> Result<()> {
+    use reqwest::Client;
+
+    let client = Client::new();
+    let base_url = url.trim_end_matches('/');
+
+    // Get remote refs
+    let refs_url = format!("{}/refs", base_url);
+    println!("Fetching refs from {}", refs_url);
+
+    let refs_response = client.get(&refs_url).send().await?;
+    if !refs_response.status().is_success() {
+        bail!("Failed to fetch refs: HTTP {}", refs_response.status());
+    }
+
+    let _refs_data: serde_json::Value = refs_response.json().await?;
+    println!("✓ Connected to remote server at {}", url);
+
+    // For now, this is a basic implementation
+    // TODO: Implement full ref synchronization, object fetching, etc.
+    println!("Remote refs received (basic implementation)");
+    println!("Full remote sync will be implemented in Phase 4b");
+
+    Ok(())
+}
+
 /// Fetch from a specific remote.
-fn fetch_from_remote(remote_name: &str, url: &str, prune: bool) -> Result<()> {
+pub async fn fetch_from_remote(remote_name: &str, url: &str, prune: bool) -> Result<()> {
     let remote_type = RemoteType::parse(url);
 
     match remote_type {
         RemoteType::Local(remote_path) => {
-            fetch_local(remote_name, &remote_path, prune)
+            fetch_local(remote_name, &remote_path, prune).await
         }
         RemoteType::Http(url) | RemoteType::Dits(url) | RemoteType::Ssh(url) => {
-            bail!(
-                "Network fetch not yet implemented.\n\
-                 URL: {}\n\n\
-                 For now, use local paths for testing.",
-                url
-            )
+            fetch_network(remote_name, &url, prune).await
         }
     }
 }
 
 /// Fetch from a local remote.
-fn fetch_local(remote_name: &str, remote_path: &Path, prune: bool) -> Result<()> {
+async fn fetch_local(remote_name: &str, remote_path: &Path, prune: bool) -> Result<()> {
     // Verify remote is a dits repo
     let remote_dits = remote_path.join(".dits");
     if !remote_dits.exists() {
@@ -80,7 +111,6 @@ fn fetch_local(remote_name: &str, remote_path: &Path, prune: bool) -> Result<()>
     let local_remote_refs = local_dits.join("refs").join("remotes").join(remote_name);
 
     let mut fetched_branches = 0;
-    let mut fetched_objects = 0;
 
     if remote_refs.exists() {
         for entry in fs::read_dir(&remote_refs)? {
@@ -141,7 +171,7 @@ fn fetch_local(remote_name: &str, remote_path: &Path, prune: bool) -> Result<()>
     // Copy missing objects
     let remote_objects = remote_dits.join("objects");
     let local_objects = local_dits.join("objects");
-    fetched_objects = copy_missing_objects(&remote_objects, &local_objects)?;
+    let fetched_objects = copy_missing_objects(&remote_objects, &local_objects)?;
 
     // Prune stale remote-tracking refs
     if prune && local_remote_refs.exists() {

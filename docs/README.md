@@ -175,7 +175,7 @@ Dits is engineered for maximum throughput with large media files. Our performanc
   - Hardware-specific tuning
 
 ### Algorithm Optimizations
-- **[FastCDC Chunking](algorithms/fastcdc.md)** - Content-defined chunking with SIMD acceleration
+- **[FastCDC Chunking](algorithms/fastcdc.md)** - Content-defined chunking with SIMD acceleration and streaming support
   - AVX2/AVX-512 implementations for x86_64
   - ARM NEON/Apple Silicon optimizations
   - Zero-copy mmap chunking

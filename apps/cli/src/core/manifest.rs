@@ -6,7 +6,7 @@
 
 use crate::core::chunk::ChunkRef;
 use crate::core::hash::{Hash, Hasher};
-use crate::core::index::Mp4Metadata;
+use crate::core::index::{FileType, Mp4Metadata};
 use crate::core::storage_strategy::StorageStrategy;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -35,6 +35,10 @@ pub struct ManifestEntry {
     pub path: String,
     /// File mode.
     pub mode: FileMode,
+    /// File type (regular, symlink, directory, etc.).
+    pub file_type: FileType,
+    /// Symlink target (empty string for non-symlinks).
+    pub symlink_target: String,
     /// Total file size.
     pub size: u64,
     /// Hash of the file content (all chunks combined).
@@ -64,6 +68,8 @@ impl ManifestEntry {
         Self {
             path,
             mode: FileMode::Regular,
+            file_type: FileType::Regular,
+            symlink_target: String::new(),
             size,
             content_hash,
             chunks,
@@ -84,6 +90,8 @@ impl ManifestEntry {
         Self {
             path,
             mode: FileMode::Regular,
+            file_type: FileType::Regular,
+            symlink_target: String::new(),
             size,
             content_hash,
             chunks,
@@ -98,6 +106,8 @@ impl ManifestEntry {
         Self {
             path,
             mode: FileMode::Regular,
+            file_type: FileType::Regular,
+            symlink_target: String::new(),
             size,
             content_hash,
             chunks: Vec::new(),
@@ -119,6 +129,8 @@ impl ManifestEntry {
         Self {
             path,
             mode: FileMode::Regular,
+            file_type: FileType::Regular,
+            symlink_target: String::new(),
             size,
             content_hash,
             chunks,

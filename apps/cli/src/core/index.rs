@@ -22,6 +22,12 @@ pub enum FileStatus {
     Modified,
     /// File has been deleted.
     Deleted,
+    /// File has been renamed (moved).
+    Renamed,
+    /// File type changed (regular ↔ symlink, etc.).
+    TypeChanged,
+    /// File mode/permissions changed.
+    ModeChanged,
     /// File is unchanged.
     Unchanged,
     /// File is not tracked.
@@ -67,6 +73,19 @@ pub struct Mp4Metadata {
     pub other_atoms: Vec<StoredAtom>,
 }
 
+/// Type of file system object.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum FileType {
+    /// Regular file
+    Regular,
+    /// Symbolic link
+    Symlink,
+    /// Directory
+    Directory,
+    /// Other (block device, char device, etc.)
+    Other,
+}
+
 /// An entry in the index representing a staged file.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct IndexEntry {
@@ -78,6 +97,13 @@ pub struct IndexEntry {
     pub size: u64,
     /// Modification time (unix timestamp).
     pub mtime: i64,
+    /// File permissions/mode.
+    pub mode: u32,
+    /// File type (regular, symlink, directory, etc.).
+    pub file_type: FileType,
+    /// Target path for symlinks (empty for non-symlinks).
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub symlink_target: String,
     /// Chunk references for this file (mdat chunks for MP4).
     /// Empty for GitText storage strategy.
     pub chunks: Vec<ChunkRef>,
@@ -107,6 +133,9 @@ impl IndexEntry {
         content_hash: Hash,
         size: u64,
         mtime: i64,
+        mode: u32,
+        file_type: FileType,
+        symlink_target: String,
         chunks: Vec<ChunkRef>,
     ) -> Self {
         Self {
@@ -114,6 +143,9 @@ impl IndexEntry {
             content_hash,
             size,
             mtime,
+            mode,
+            file_type,
+            symlink_target,
             chunks,
             status: FileStatus::Added,
             mp4_metadata: None,
@@ -128,6 +160,9 @@ impl IndexEntry {
         content_hash: Hash,
         size: u64,
         mtime: i64,
+        mode: u32,
+        file_type: FileType,
+        symlink_target: String,
         chunks: Vec<ChunkRef>,
         mp4_metadata: Mp4Metadata,
     ) -> Self {
@@ -136,6 +171,9 @@ impl IndexEntry {
             content_hash,
             size,
             mtime,
+            mode,
+            file_type,
+            symlink_target,
             chunks,
             status: FileStatus::Added,
             mp4_metadata: Some(mp4_metadata),
@@ -152,6 +190,9 @@ impl IndexEntry {
         content_hash: Hash,
         size: u64,
         mtime: i64,
+        mode: u32,
+        file_type: FileType,
+        symlink_target: String,
         git_oid: String,
     ) -> Self {
         Self {
@@ -159,6 +200,9 @@ impl IndexEntry {
             content_hash,
             size,
             mtime,
+            mode,
+            file_type,
+            symlink_target,
             chunks: Vec::new(), // No chunks for Git storage
             status: FileStatus::Added,
             mp4_metadata: None,
@@ -173,6 +217,9 @@ impl IndexEntry {
         content_hash: Hash,
         size: u64,
         mtime: i64,
+        mode: u32,
+        file_type: FileType,
+        symlink_target: String,
         chunks: Vec<ChunkRef>,
         storage: StorageStrategy,
         git_oid: Option<String>,
@@ -182,6 +229,9 @@ impl IndexEntry {
             content_hash,
             size,
             mtime,
+            mode,
+            file_type,
+            symlink_target,
             chunks,
             status: FileStatus::Added,
             mp4_metadata: None,
@@ -320,6 +370,9 @@ mod tests {
             Hash::ZERO,
             100,
             0,
+            0o644, // mode
+            FileType::Regular,
+            String::new(), // symlink_target
             vec![],
         );
 
@@ -340,6 +393,9 @@ mod tests {
             Hash::ZERO,
             100,
             0,
+            0o644, // mode
+            FileType::Regular,
+            String::new(), // symlink_target
             vec![],
         ));
 
@@ -357,6 +413,9 @@ mod tests {
             Hash::ZERO,
             500,
             0,
+            0o644, // mode
+            FileType::Regular,
+            String::new(), // symlink_target
             "abc123def456".to_string(),
         );
 
@@ -374,6 +433,9 @@ mod tests {
             Hash::ZERO,
             1_000_000,
             0,
+            0o644,
+            FileType::Regular,
+            String::new(),
             vec![],
         );
 
@@ -393,6 +455,9 @@ mod tests {
             Hash::ZERO,
             200,
             0,
+            0o644, // mode
+            FileType::Regular,
+            String::new(), // symlink_target
             "oid123".to_string(),
         ));
 
@@ -402,6 +467,9 @@ mod tests {
             Hash::ZERO,
             50000,
             0,
+            0o644, // mode
+            FileType::Regular,
+            String::new(), // symlink_target
             vec![],
         ));
 

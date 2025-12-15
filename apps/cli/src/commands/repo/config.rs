@@ -72,7 +72,7 @@ pub fn config(
                 v
             );
         }
-        (Some(k), Some(_), true) => {
+        (Some(_), Some(_), true) => {
             // Can't both set and unset
             anyhow::bail!("Cannot both set and unset a value");
         }

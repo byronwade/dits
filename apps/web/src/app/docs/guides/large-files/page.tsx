@@ -11,14 +11,72 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CodeBlock } from "@/components/ui/code-block";
 import { Video, Image, FileArchive, Zap, HardDrive, Settings, Check, X } from "lucide-react";
 
-export const metadata: Metadata = {
-    title: "Large Files Guide",
-    description: "Best practices for managing large files - video, images, and binary assets",
-};
+import { generateMetadata as genMeta, generateArticleSchema, generateHowToSchema, generateBreadcrumbSchema } from "@/lib/seo";
+import Script from "next/script";
+
+export const metadata: Metadata = genMeta({
+    title: "Large Files Guide - Best Practices for Managing Video, Images & Binary Assets",
+    description: "Best practices for managing large files with Dits. Learn how to efficiently handle video, images, 3D models, and other binary assets to maximize storage efficiency and performance.",
+    canonical: "https://dits.dev/docs/guides/large-files",
+    keywords: [
+        "large files",
+        "video files",
+        "binary assets",
+        "file management",
+        "storage optimization",
+        "large file version control",
+    ],
+    openGraph: {
+        type: "article",
+        images: [
+            {
+                url: "/dits.png",
+                width: 1200,
+                height: 630,
+                alt: "Large Files Guide",
+            },
+        ],
+    },
+    twitter: {
+        card: "summary_large_image",
+    },
+});
 
 export default function LargeFilesPage() {
+    const articleSchema = generateArticleSchema({
+        headline: "Large Files Guide - Best Practices for Managing Video, Images & Binary Assets",
+        description: "Best practices for managing large files with Dits. Learn how to efficiently handle video, images, 3D models, and other binary assets.",
+        datePublished: "2024-01-01",
+        dateModified: new Date().toISOString().split("T")[0],
+        author: "Byron Wade",
+        section: "Documentation",
+        tags: ["large files", "video", "binary assets", "best practices"],
+    });
+
+    const breadcrumbSchema = generateBreadcrumbSchema([
+        { name: "Home", url: "/" },
+        { name: "Documentation", url: "/docs" },
+        { name: "Guides", url: "/docs/guides" },
+        { name: "Large Files", url: "/docs/guides/large-files" },
+    ]);
+
     return (
-        <div className="prose dark:prose-invert max-w-none">
+        <>
+            <Script
+                id="article-schema"
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify(articleSchema),
+                }}
+            />
+            <Script
+                id="breadcrumb-schema"
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify(breadcrumbSchema),
+                }}
+            />
+            <div className="prose dark:prose-invert max-w-none">
             <h1>Working with Large Files</h1>
             <p className="lead text-xl text-muted-foreground">
                 Dits is designed for large files. Learn best practices for video, images,
@@ -336,5 +394,6 @@ dits storage stats`}
                 <li><Link href="/docs/advanced/storage-tiers">Storage Tiers</Link> - Hot/cold storage</li>
             </ul>
         </div>
+        </>
     );
 }

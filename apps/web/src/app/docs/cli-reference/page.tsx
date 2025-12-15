@@ -37,10 +37,38 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "CLI Reference",
-  description: "Complete command line reference for Dits - 60+ commands for comprehensive version control of creative assets",
-};
+import { generateMetadata as genMeta, generateArticleSchema, generateItemListSchema, generateCollectionPageSchema, generateBreadcrumbSchema } from "@/lib/seo";
+import Script from "next/script";
+
+export const metadata: Metadata = genMeta({
+  title: "Dits CLI Reference - Complete Command Reference for 60+ Commands",
+  description: "Complete command line reference for Dits version control system. Comprehensive guide to 60+ CLI commands including core operations, branching, remotes, video features, VFS, encryption, and more.",
+  canonical: "https://dits.dev/docs/cli-reference",
+  keywords: [
+    "dits cli",
+    "dits commands",
+    "dits command reference",
+    "dits cli documentation",
+    "dits terminal commands",
+    "version control commands",
+    "dits cli guide",
+    "dits command line",
+  ],
+  openGraph: {
+    type: "article",
+    images: [
+      {
+        url: "/dits.png",
+        width: 1200,
+        height: 630,
+        alt: "Dits CLI Reference - Complete Command Reference",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+});
 
 const commandCategories = [
   {
@@ -300,8 +328,79 @@ const allCommands = [
 ];
 
 export default function CLIReferencePage() {
+  // Generate ItemList schema for all CLI commands
+  const commandListSchema = generateItemListSchema({
+    name: "Dits CLI Commands",
+    description: "Complete list of all 60+ Dits CLI commands for version control of large files and video assets",
+    items: allCommands.map((cmd, index) => ({
+      name: cmd.name,
+      description: cmd.description,
+      url: `/docs/cli-reference#${cmd.name}`,
+      position: index + 1,
+    })),
+  });
+
+  // Generate Article schema for the documentation page
+  const articleSchema = generateArticleSchema({
+    headline: "Dits CLI Reference - Complete Command Reference for 60+ Commands",
+    description: "Complete command line reference for Dits version control system. Comprehensive guide to 60+ CLI commands including core operations, branching, remotes, video features, VFS, encryption, and more.",
+    datePublished: "2024-01-01",
+    dateModified: new Date().toISOString().split("T")[0],
+    author: "Byron Wade",
+    section: "Documentation",
+    tags: ["cli", "commands", "reference", "documentation", "terminal"],
+  });
+
+  // Generate CollectionPage schema
+  const collectionSchema = generateCollectionPageSchema({
+    name: "Dits CLI Reference",
+    description: "Complete reference for all Dits CLI commands",
+    url: "/docs/cli-reference",
+    breadcrumb: [
+      { name: "Home", url: "/" },
+      { name: "Documentation", url: "/docs" },
+      { name: "CLI Reference", url: "/docs/cli-reference" },
+    ],
+    mainEntity: commandListSchema,
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Documentation", url: "/docs" },
+    { name: "CLI Reference", url: "/docs/cli-reference" },
+  ]);
+
   return (
-    <div className="prose dark:prose-invert max-w-none">
+    <>
+      <Script
+        id="command-list-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(commandListSchema),
+        }}
+      />
+      <Script
+        id="article-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(articleSchema),
+        }}
+      />
+      <Script
+        id="collection-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(collectionSchema),
+        }}
+      />
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
+      <div className="prose dark:prose-invert max-w-none">
       <div className="flex items-center gap-2 mb-2">
         <Terminal className="h-8 w-8 text-primary" />
         <h1 className="mb-0">CLI Reference</h1>
@@ -639,5 +738,6 @@ dits proxy-status`}
         </li>
       </ul>
     </div>
+    </>
   );
 }

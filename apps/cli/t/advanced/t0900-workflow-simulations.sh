@@ -15,7 +15,7 @@ This test simulates actual usage scenarios including:
 '
 
 . ./test-lib.sh
-. ./lib-video.sh
+. "$TEST_DIRECTORY/lib-video.sh"
 
 # ============================================================================
 # NLE EDITING WORKFLOW SIMULATIONS

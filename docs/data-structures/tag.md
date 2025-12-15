@@ -290,11 +290,8 @@ pub async fn list_tags(
         .map(|p| glob_to_sql(p))
         .unwrap_or("%".to_string());
 
-    let order = match sort {
-        TagSort::Name => "name ASC",
-        TagSort::CreatedAt => "created_at DESC",
-        TagSort::Version => "name ASC",  // TODO: semantic version sorting
-    };
+    // Tags are sorted in Rust code after retrieval for proper semantic versioning support
+    // TagSort::Version uses semantic version comparison (e.g., v1.10.0 > v1.2.0)
 
     let rows = sqlx::query!(
         &format!(

@@ -16,10 +16,19 @@ mod core;
 mod hooks;
 mod mp4;
 mod segment;
+mod security {
+    pub use dits::security::*;
+}
 mod store;
+mod telemetry;
+mod util {
+    pub use dits::util::*;
+}
 mod vfs;
 
 use clap::{Parser, Subcommand};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 #[derive(Parser)]
 #[command(name = "dits")]
@@ -119,12 +128,18 @@ enum Commands {
         /// Delete the tag
         #[arg(short, long)]
         delete: bool,
+        /// Sort order for listing tags: name, created, version
+        #[arg(long, default_value = "name")]
+        sort: String,
     },
 
     /// Merge a branch into the current branch
     Merge {
         /// Branch to merge into current branch
         branch: String,
+        /// Merge commit message (used when a merge commit is created)
+        #[arg(short, long)]
+        message: Option<String>,
     },
 
     /// Show details of a commit
@@ -847,12 +862,149 @@ enum Commands {
         /// Shell to generate for: bash, zsh, fish, powershell
         shell: String,
     },
+
+    /// Manage telemetry settings
+    Telemetry {
+        #[command(subcommand)]
+        command: TelemetryCommands,
+    },
+
+    /// Start a remote server for this repository
+    Serve {
+        /// Port to listen on
+        #[arg(short, long, default_value = "8080")]
+        port: u16,
+        /// Base directory containing repositories
+        #[arg(short, long)]
+        base_dir: Option<String>,
+    },
+
+    /// Synchronize with remote repository (bi-directional)
+    Sync {
+        /// Remote name (default: origin)
+        #[arg(default_value = "origin")]
+        remote: String,
+        /// Branch to sync (default: current branch)
+        branch: Option<String>,
+        /// Force sync (resolve conflicts automatically)
+        #[arg(long)]
+        force: bool,
+        /// Dry run - show what would be synced
+        #[arg(long)]
+        dry_run: bool,
+    },
 }
 
-fn main() {
+#[derive(Subcommand)]
+enum TelemetryCommands {
+    /// Enable telemetry
+    Enable,
+    /// Disable telemetry
+    Disable,
+    /// Show telemetry status
+    Status,
+}
+
+#[tokio::main]
+async fn main() {
     let cli = Cli::parse();
 
-    let result = match cli.command {
+    // Initialize telemetry (async operation)
+    let config_path = crate::config::global_config_path();
+    let config = Arc::new(Mutex::new(crate::config::Config::load(&config_path).unwrap_or_default()));
+    let telemetry = Arc::new(telemetry::TelemetryManager::new(config.clone()));
+
+    // Record command usage
+    let command_name = match &cli.command {
+        Commands::Init { .. } => "init",
+        Commands::Add { .. } => "add",
+        Commands::Status => "status",
+        Commands::Commit { .. } => "commit",
+        Commands::Log { .. } => "log",
+        Commands::Checkout { .. } => "checkout",
+        Commands::Branch { .. } => "branch",
+        Commands::Switch { .. } => "switch",
+        Commands::Diff { .. } => "diff",
+        Commands::Tag { .. } => "tag",
+        Commands::Reset { .. } => "reset",
+        Commands::Restore { .. } => "restore",
+        Commands::Stash { .. } => "stash",
+        Commands::Clone { .. } => "clone",
+        Commands::Push { .. } => "push",
+        Commands::Pull { .. } => "pull",
+        Commands::Fetch { .. } => "fetch",
+        Commands::Remote { .. } => "remote",
+        Commands::Config { .. } => "config",
+        #[cfg(feature = "fuser")]
+        Commands::Mount { .. } => "mount",
+        #[cfg(feature = "fuser")]
+        Commands::Unmount { .. } => "unmount",
+        Commands::Fsck { .. } => "fsck",
+        Commands::Gc { .. } => "gc",
+        Commands::Clean { .. } => "clean",
+        Commands::Completions { .. } => "completions",
+        Commands::Telemetry { .. } => "telemetry",
+        Commands::Serve { .. } => "serve",
+        Commands::Sync { .. } => "sync",
+        Commands::Merge { .. } => "merge",
+        Commands::Rebase { .. } => "rebase",
+        Commands::CherryPick { .. } => "cherry-pick",
+        Commands::Bisect { .. } => "bisect",
+        Commands::Reflog { .. } => "reflog",
+        Commands::Blame { .. } => "blame",
+        Commands::Show { .. } => "show",
+        Commands::Grep { .. } => "grep",
+        Commands::Worktree { .. } => "worktree",
+        Commands::SparseCheckout { .. } => "sparse-checkout",
+        Commands::Hooks { .. } => "hooks",
+        Commands::Archive { .. } => "archive",
+        Commands::Describe { .. } => "describe",
+        Commands::Shortlog { .. } => "shortlog",
+        Commands::Maintenance { .. } => "maintenance",
+        Commands::Inspect { .. } => "inspect",
+        Commands::Roundtrip { .. } => "roundtrip",
+        Commands::Segment { .. } => "segment",
+        Commands::Assemble { .. } => "assemble",
+        Commands::CacheStats => "cache-stats",
+        Commands::InspectFile { .. } => "inspect-file",
+        Commands::RepoStats { .. } => "repo-stats",
+        Commands::MetaScan { .. } => "meta-scan",
+        Commands::MetaShow { .. } => "meta-show",
+        Commands::MetaList => "meta-list",
+        Commands::VideoInit { .. } => "video-init",
+        Commands::VideoAddClip { .. } => "video-add-clip",
+        Commands::VideoShow { .. } => "video-show",
+        Commands::VideoList => "video-list",
+        Commands::ProxyGenerate { .. } => "proxy-generate",
+        Commands::ProxyStatus => "proxy-status",
+        Commands::ProxyList { .. } => "proxy-list",
+        Commands::ProxyDelete { .. } => "proxy-delete",
+        Commands::DepCheck { .. } => "dep-check",
+        Commands::DepGraph { .. } => "dep-graph",
+        Commands::DepList => "dep-list",
+        Commands::FreezeInit => "freeze-init",
+        Commands::FreezeStatus => "freeze-status",
+        Commands::Freeze { .. } => "freeze",
+        Commands::Thaw { .. } => "thaw",
+        Commands::FreezePolicy { .. } => "freeze-policy",
+        Commands::EncryptInit { .. } => "encrypt-init",
+        Commands::EncryptStatus => "encrypt-status",
+        Commands::Login { .. } => "login",
+        Commands::Logout => "logout",
+        Commands::ChangePassword { .. } => "change-password",
+        Commands::Audit { .. } => "audit",
+        Commands::AuditStats => "audit-stats",
+        Commands::AuditExport { .. } => "audit-export",
+        Commands::P2p { .. } => "p2p",
+        Commands::Lock { .. } => "lock",
+        Commands::Unlock { .. } => "unlock",
+        Commands::Locks { .. } => "locks",
+    };
+
+    let args = std::env::args().skip(1).collect::<Vec<_>>();
+    telemetry::events::record_command_usage(&telemetry, command_name, &args).await;
+
+    let result: anyhow::Result<()> = match cli.command {
         Commands::Init { path } => commands::init(&path),
         Commands::Add { files } => commands::add(&files),
         Commands::Status => commands::status(),
@@ -868,10 +1020,19 @@ fn main() {
         Commands::Diff { staged, commit, file } => {
             commands::diff(staged, commit.as_deref(), file.as_deref())
         }
-        Commands::Tag { name, commit, delete } => {
-            commands::tag(name.as_deref(), commit.as_deref(), delete)
+        Commands::Tag { name, commit, delete, sort } => {
+            let sort_mode = match sort.as_str() {
+                "name" => commands::TagSort::Name,
+                "created" => commands::TagSort::CreatedAt,
+                "version" => commands::TagSort::Version,
+                _ => {
+                    eprintln!("Invalid sort option '{}'. Valid options: name, created, version", sort);
+                    std::process::exit(1);
+                }
+            };
+            commands::tag(name.as_deref(), commit.as_deref(), delete, sort_mode)
         }
-        Commands::Merge { branch } => commands::merge(&branch),
+        Commands::Merge { branch, message } => commands::merge(&branch, message.as_deref()),
         Commands::Show { object, stat, name_only, name_status, no_patch } => {
             commands::show(&object, stat, name_only, name_status, no_patch)
         }
@@ -960,13 +1121,13 @@ fn main() {
             commands::remote(action.as_deref(), name.as_deref(), url.as_deref(), verbose, push)
         }
         Commands::Push { remote, branch, force, all } => {
-            commands::push(remote.as_deref(), branch.as_deref(), force, all)
+            commands::push(remote.as_deref(), branch.as_deref(), force, all).await
         }
         Commands::Pull { remote, branch, rebase } => {
-            commands::pull(remote.as_deref(), branch.as_deref(), rebase)
+            commands::pull(remote.as_deref(), branch.as_deref(), rebase).await
         }
         Commands::Fetch { remote, all, prune } => {
-            commands::fetch(remote.as_deref(), all, prune)
+            commands::fetch(remote.as_deref(), all, prune).await
         }
         Commands::Lock { path, reason, ttl, force } => {
             commands::lock_file(&path, reason.as_deref(), ttl, force)
@@ -986,6 +1147,7 @@ fn main() {
             };
             commands::clean::clean(&options).map(|result| {
                 commands::clean::print_results(&result, dry_run);
+                ()
             })
         }
         Commands::Grep { pattern, line_number, ignore_case, word_regexp, count, files_with_matches, fixed_strings, paths } => {
@@ -1002,16 +1164,19 @@ fn main() {
             };
             commands::grep::grep(&options).map(|result| {
                 commands::grep::print_results(&result, &options);
+                ()
             })
         }
         Commands::Worktree { action, path, branch, force } => {
             match action.as_str() {
                 "list" => commands::worktree::list().map(|wts| {
                     commands::worktree::print_list(&wts, false);
+                    ()
                 }),
                 "add" => match path {
                     Some(p) => commands::worktree::add(&p, branch.as_deref(), branch.is_none(), force).map(|wt| {
                         println!("Created worktree at {}", wt.path.display());
+                        ()
                     }),
                     None => Err(anyhow::anyhow!("Path required for worktree add")),
                 },
@@ -1027,6 +1192,7 @@ fn main() {
                             println!("Pruned {}", p.display());
                         }
                     }
+                    ()
                 }),
                 "lock" => match path {
                     Some(p) => commands::worktree::lock(&p, None),
@@ -1048,6 +1214,7 @@ fn main() {
                     for p in patterns {
                         println!("{}", p);
                     }
+                    ()
                 }),
                 "disable" => commands::sparse_checkout::disable(),
                 "status" => commands::sparse_checkout::print_status(),
@@ -1103,6 +1270,7 @@ fn main() {
             };
             commands::describe::describe(&options).map(|result| {
                 commands::describe::print_result(&result);
+                ()
             })
         }
         Commands::Shortlog { numbered, summary, email, limit } => {
@@ -1115,6 +1283,7 @@ fn main() {
             };
             commands::shortlog::shortlog(&options).map(|entries| {
                 commands::shortlog::print_shortlog(&entries, &options);
+                ()
             })
         }
         Commands::Maintenance { action, task } => {
@@ -1129,10 +1298,81 @@ fn main() {
         Commands::Completions { shell } => {
             commands::completions::generate_completions(&shell)
         }
+        Commands::Telemetry { command } => {
+            match command {
+                TelemetryCommands::Enable => {
+                    match telemetry.enable().await {
+                        Ok(()) => {
+                            println!("Telemetry enabled. Thank you for helping improve Dits!");
+                            println!("You can disable telemetry anytime with: dits telemetry disable");
+                            Ok(())
+                        }
+                        Err(e) => {
+                            eprintln!("Failed to enable telemetry: {}", e);
+                            Err(anyhow::anyhow!("Failed to enable telemetry"))
+                        }
+                    }
+                }
+                TelemetryCommands::Disable => {
+                    match telemetry.disable().await {
+                        Ok(()) => {
+                            println!("Telemetry disabled.");
+                            Ok(())
+                        }
+                        Err(e) => {
+                            eprintln!("Failed to disable telemetry: {}", e);
+                            Err(anyhow::anyhow!("Failed to disable telemetry"))
+                        }
+                    }
+                }
+                TelemetryCommands::Status => {
+                    match telemetry.status().await {
+                        Ok(status) => {
+                            println!("Telemetry status:");
+                            println!("  Enabled: {}", status.enabled);
+                            println!("  User ID: {}", status.user_id);
+                            if status.last_sent > 0 {
+                                let datetime = std::time::UNIX_EPOCH + std::time::Duration::from_secs(status.last_sent);
+                                println!("  Last sent: {}", chrono::DateTime::<chrono::Utc>::from(datetime).format("%Y-%m-%d %H:%M:%S UTC"));
+                            } else {
+                                println!("  Last sent: Never");
+                            }
+                            println!();
+                            println!("Telemetry helps us improve Dits by collecting anonymized usage data.");
+                            println!("No personal information or file contents are ever collected.");
+                            println!("Enable with: dits telemetry enable");
+                            println!("Disable with: dits telemetry disable");
+                            Ok(())
+                        }
+                        Err(e) => {
+                            eprintln!("Failed to get telemetry status: {}", e);
+                            Err(anyhow::anyhow!("Failed to get telemetry status"))
+                        }
+                    }
+                }
+            }
+        }
+        Commands::Serve { port, base_dir } => {
+            use std::path::PathBuf;
+            let base = base_dir.map(PathBuf::from).unwrap_or_else(|| std::env::current_dir().unwrap());
+            match crate::store::remote_server::start_server(base, port).await {
+                Ok(()) => Ok(()),
+                Err(e) => {
+                    eprintln!("Failed to start server: {}", e);
+                    Err(anyhow::anyhow!("Failed to start server"))
+                }
+            }
+        }
+        Commands::Sync { remote, branch, force, dry_run } => {
+            commands::sync(&remote, branch.as_deref(), force, dry_run).await
+        }
     };
 
-    if let Err(e) = result {
-        eprintln!("Error: {}", e);
-        std::process::exit(1);
+    match result {
+        Ok(_) => (),
+        Err(e) => {
+            eprintln!("Error: {}", e);
+            std::process::exit(1);
+        }
     }
 }

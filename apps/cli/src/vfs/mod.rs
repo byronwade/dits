@@ -40,8 +40,8 @@ mod entry;
 #[cfg(feature = "fuser")]
 mod fuse;
 
-pub use cache::{ChunkCache, CacheConfig};
-pub use entry::{VfsEntry, VfsEntryType, VfsTree};
+#[allow(unused_imports)]
+pub use {cache::{CacheConfig, ChunkCache}, entry::{VfsEntry, VfsEntryType, VfsTree}};
 
 #[cfg(feature = "fuser")]
 pub use fuse::{DitsFS, mount, unmount};

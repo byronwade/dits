@@ -12,6 +12,7 @@
     "clean": "turbo clean",
     "build:cli": "cargo build --release",
     "test:cli": "cargo test",
+    "bench": "node scripts/bench/run.mjs",
     "release": "turbo build && echo 'Ready for release'"
   },
   "devDependencies": {
@@ -20,5 +21,9 @@
   "packageManager": "npm@10.2.0",
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "@next/swc-darwin-arm64": "^16.0.8",
+    "next": "^16.0.8"
   }
 }

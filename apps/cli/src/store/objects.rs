@@ -294,10 +294,8 @@ impl ObjectStore {
     /// Store a manifest. Returns the hash.
     /// Uses binary format for Phase 6 performance optimization.
     pub fn store_manifest(&self, manifest: &Manifest) -> Result<Hash, ObjectError> {
-        // Use binary serialization for better performance with large manifests
-        let data = bincode::serialize(manifest)
-            .map_err(|e| ObjectError::SerializationError(e.to_string()))?;
-        let hash = Hasher::hash(&data);
+        let data = manifest.to_json();
+        let hash = Hasher::hash(data.as_bytes());
         let path = self.object_path(ObjectType::Manifest, &hash);
 
         if path.exists() {
@@ -308,7 +306,7 @@ impl ObjectStore {
             fs::create_dir_all(parent)?;
         }
 
-        fs::write(&path, &data)?;
+        fs::write(&path, data)?;
         Ok(hash)
     }
 

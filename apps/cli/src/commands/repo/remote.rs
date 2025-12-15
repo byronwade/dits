@@ -2,7 +2,6 @@
 
 use anyhow::{Context, Result, bail};
 use crate::store::remote::{Remote, RemoteStore, RemoteType};
-use std::path::Path;
 
 /// List all remotes.
 pub fn remote_list(verbose: bool) -> Result<()> {

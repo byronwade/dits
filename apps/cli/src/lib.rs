@@ -31,6 +31,7 @@ pub mod proxy;
 pub mod security;
 pub mod segment;
 pub mod store;
+pub mod util;
 pub mod vfs;
 
 // Re-export commonly used types at the crate root for convenience

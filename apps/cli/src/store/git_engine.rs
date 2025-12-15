@@ -135,7 +135,6 @@ impl GitTextEngine {
             }
 
             let first_op = &group[0];
-            let last_op = &group[group.len() - 1];
 
             let old_start = first_op.old_range().start as u32 + 1;
             let new_start = first_op.new_range().start as u32 + 1;

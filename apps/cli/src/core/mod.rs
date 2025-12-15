@@ -28,11 +28,13 @@ pub use storage_strategy::{StorageStrategy, FileClassifier};
 
 // Universal Layer exports
 pub use hash::{Hash, Hasher};
+#[allow(unused_imports)]
 pub use chunk::{Chunk, ChunkRef, ChunkerConfig, chunk_data, chunk_data_with_refs, chunk_data_parallel, chunk_data_with_refs_parallel};
 pub use manifest::{Manifest, ManifestEntry, FileMode};
 pub use commit::{Commit, Author};
-pub use index::{Index, IndexEntry, FileStatus, Mp4Metadata, StoredAtom};
+pub use index::{Index, IndexEntry, FileStatus, FileType, Mp4Metadata, StoredAtom};
 pub use ignore::IgnoreMatcher;
 
 // Smart Layer exports
+#[allow(unused_imports)]
 pub use filetype::{FileCategory, FileHandling};

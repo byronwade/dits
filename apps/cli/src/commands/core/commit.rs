@@ -10,6 +10,10 @@ pub fn commit(message: &str) -> Result<()> {
     let repo = Repository::open(Path::new("."))
         .context("Not a Dits repository (or any parent directory)")?;
 
+    // Get the number of staged files before committing
+    let index = repo.load_index()?;
+    let files_committed = index.len();
+
     match repo.commit(message) {
         Ok(commit) => {
             println!(
@@ -23,7 +27,7 @@ pub fn commit(message: &str) -> Result<()> {
             let stats = repo.stats()?;
             println!(
                 "  {} file(s) committed, {} total chunks",
-                stats.commit_count,
+                files_committed,
                 stats.chunk_count
             );
 

@@ -4,7 +4,7 @@ use crate::core::{Author, Commit, Hash, Manifest, ManifestEntry};
 use crate::store::Repository;
 use anyhow::{Context, Result};
 use console::style;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::path::Path;
 
 /// Merge result types.
@@ -41,7 +41,7 @@ pub enum ConflictType {
 }
 
 /// Merge a branch into the current branch.
-pub fn merge(branch: &str) -> Result<()> {
+pub fn merge(branch: &str, message: Option<&str>) -> Result<()> {
     let repo = Repository::open(Path::new("."))
         .context("Not a Dits repository (or any parent directory)")?;
 
@@ -123,7 +123,15 @@ pub fn merge(branch: &str) -> Result<()> {
     }
 
     // Perform three-way merge
-    three_way_merge(&repo, &current_branch, merge_base.as_ref(), &our_hash, &their_hash, branch)
+    three_way_merge(
+        &repo,
+        &current_branch,
+        merge_base.as_ref(),
+        &our_hash,
+        &their_hash,
+        branch,
+        message,
+    )
 }
 
 /// Fast-forward merge.
@@ -165,6 +173,7 @@ fn three_way_merge(
     ours: &Hash,
     theirs: &Hash,
     their_branch: &str,
+    message: Option<&str>,
 ) -> Result<()> {
     // Load manifests
     let our_commit = repo.objects().load_commit(ours)?;
@@ -186,8 +195,11 @@ fn three_way_merge(
 
     // Create merge commit
     let author = Author::from_env();
-    let message = format!("Merge branch '{}' into {}", their_branch, current_branch);
-    let commit = Commit::new_merge(*ours, vec![*theirs], manifest_hash, message, author);
+    let commit_message = message
+        .filter(|m| !m.trim().is_empty())
+        .map(|m| m.to_string())
+        .unwrap_or_else(|| format!("Merge branch '{}' into {}", their_branch, current_branch));
+    let commit = Commit::new_merge(*ours, vec![*theirs], manifest_hash, commit_message, author);
 
     // Store commit
     repo.objects().store_commit(&commit)?;

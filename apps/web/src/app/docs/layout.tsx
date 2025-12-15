@@ -19,8 +19,11 @@ export default function DocsLayout({
     <div className="flex min-h-screen flex-col">
       <Header />
 
+      {/* Spacer for fixed header + alpha banner */}
+      <div className="h-[104px]" aria-hidden="true" />
+
       {/* Mobile Menu Bar */}
-      <div className="sticky top-[var(--header-height,64px)] z-40 flex items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-2 lg:hidden">
+      <div className="sticky top-[104px] z-40 flex items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-2 lg:hidden">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -47,7 +50,7 @@ export default function DocsLayout({
           }
         >
           {/* Left Sidebar - Desktop only */}
-          <aside className="text-sidebar-foreground w-[var(--sidebar-width)] flex-col sticky top-[calc(var(--header-height,64px)+1px)] z-30 hidden h-[calc(100svh-var(--header-height,64px)-1px)] bg-transparent lg:flex">
+          <aside className="text-sidebar-foreground w-[var(--sidebar-width)] flex-col sticky top-[104px] z-30 hidden h-[calc(100svh-104px)] bg-transparent lg:flex">
             <DocsSidebar />
           </aside>
 
@@ -63,3 +66,4 @@ export default function DocsLayout({
     </div>
   );
 }
+

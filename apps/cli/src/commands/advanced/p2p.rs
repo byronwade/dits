@@ -225,7 +225,7 @@ pub fn connect_repository(args: ConnectArgs) -> Result<()> {
         .with_context(|| "Failed to create tokio runtime")?;
 
     rt.block_on(async {
-        let mut client = connect_p2p_repository(config).await?;
+        let _client = connect_p2p_repository(config).await?;
         println!("✅ Connected to P2P repository!");
         println!("📁 Repository mounted at: {}", args.path.display());
         Ok(())

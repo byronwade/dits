@@ -5,6 +5,8 @@ use super::variant::{ProxyVariant, VariantType};
 use crate::core::{chunk_data_with_refs_parallel, ChunkerConfig, Hash, Hasher};
 use std::path::Path;
 use std::process::Command;
+use tokio::sync::mpsc;
+use tokio::task;
 use thiserror::Error;
 
 /// Proxy generation errors.
@@ -34,6 +36,33 @@ pub enum GenerationError {
 
     #[error("Unsupported source format: {0}")]
     UnsupportedFormat(String),
+
+    #[error("Worker queue error: {0}")]
+    WorkerError(String),
+}
+
+/// Proxy generation job for async processing.
+#[derive(Debug, Clone)]
+pub struct ProxyJob {
+    /// Source file path.
+    pub source_path: std::path::PathBuf,
+    /// Output directory for proxy files.
+    pub output_dir: std::path::PathBuf,
+    /// Proxy configuration.
+    pub config: ProxyConfig,
+    /// Content hash of source file.
+    pub content_hash: Hash,
+    /// Relative path in repository.
+    pub repo_path: String,
+}
+
+/// Result of async proxy generation.
+#[derive(Debug)]
+pub struct AsyncProxyResult {
+    /// The proxy job that was processed.
+    pub job: ProxyJob,
+    /// Result of generation.
+    pub result: Result<ProxyResult, GenerationError>,
 }
 
 /// Result of proxy generation.
@@ -364,6 +393,63 @@ impl ProxyGenerator {
             Ok(None)
         }
     }
+
+    /// Generate proxies asynchronously using a worker queue.
+    /// This allows multiple proxy generations to run concurrently.
+    ///
+    /// # Arguments
+    /// * `jobs` - List of proxy generation jobs
+    /// * `max_workers` - Maximum number of concurrent workers (default: 4)
+    ///
+    /// # Returns
+    /// Channel receiver for getting results as they complete
+    pub fn generate_async(
+        jobs: Vec<ProxyJob>,
+        max_workers: usize,
+    ) -> mpsc::Receiver<AsyncProxyResult> {
+        let (tx, rx) = mpsc::channel(32);
+
+        tokio::spawn(async move {
+            Self::run_worker_queue(jobs, max_workers, tx).await;
+        });
+
+        rx
+    }
+
+    /// Run the worker queue for proxy generation.
+    async fn run_worker_queue(
+        jobs: Vec<ProxyJob>,
+        max_workers: usize,
+        tx: mpsc::Sender<AsyncProxyResult>,
+    ) {
+        use futures_util::stream::{self, StreamExt};
+
+        let jobs_stream = stream::iter(jobs);
+        let workers = jobs_stream.map(|job| {
+            let tx = tx.clone();
+            task::spawn(async move {
+                let result = Self::process_job_async(job.clone()).await;
+                let _ = tx.send(AsyncProxyResult {
+                    job,
+                    result,
+                }).await;
+            })
+        })
+        .buffer_unordered(max_workers);
+
+        workers.collect::<Vec<_>>().await;
+    }
+
+    /// Process a single proxy generation job asynchronously.
+    async fn process_job_async(job: ProxyJob) -> Result<ProxyResult, GenerationError> {
+        // Create a blocking task for FFmpeg operations
+        task::spawn_blocking(move || {
+            let generator = ProxyGenerator::new(job.config);
+            generator.generate(&job.source_path, &job.output_dir)
+        })
+        .await
+        .map_err(|e| GenerationError::WorkerError(format!("Task join error: {}", e)))?
+    }
 }
 
 /// Source file information from FFprobe.
@@ -385,6 +471,22 @@ pub struct SourceInfo {
     pub has_audio: bool,
     /// File size in bytes.
     pub file_size: u64,
+
+    /// Camera metadata for LUT detection.
+    pub camera_metadata: Option<CameraMetadata>,
+}
+
+/// Camera metadata for automatic LUT application.
+#[derive(Debug, Clone)]
+pub struct CameraMetadata {
+    /// Camera make (e.g., "Sony", "Canon").
+    pub make: Option<String>,
+    /// Camera model.
+    pub model: Option<String>,
+    /// Color space/gamma (e.g., "S-Log3", "Rec.709").
+    pub color_space: Option<String>,
+    /// Log profile information.
+    pub log_profile: Option<String>,
 }
 
 /// Parse FFprobe JSON output.
@@ -462,6 +564,9 @@ fn parse_ffprobe_json(json_str: &str) -> Result<SourceInfo, GenerationError> {
         .iter()
         .any(|s| s.get("codec_type").and_then(|v| v.as_str()) == Some("audio"));
 
+    // Extract camera metadata from video stream tags
+    let camera_metadata = extract_camera_metadata(video_stream);
+
     Ok(SourceInfo {
         duration,
         width,
@@ -471,7 +576,90 @@ fn parse_ffprobe_json(json_str: &str) -> Result<SourceInfo, GenerationError> {
         timecode,
         has_audio,
         file_size,
+        camera_metadata,
     })
+}
+
+/// Extract camera metadata from video stream tags for LUT detection.
+fn extract_camera_metadata(video_stream: &serde_json::Value) -> Option<CameraMetadata> {
+    let tags = video_stream.get("tags")?;
+
+    let make = tags.get("com.apple.quicktime.make")
+        .or_else(|| tags.get("make"))
+        .or_else(|| tags.get("manufacturer"))
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+
+    let model = tags.get("com.apple.quicktime.model")
+        .or_else(|| tags.get("model"))
+        .or_else(|| tags.get("camera_model"))
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+
+    // Detect color space and log profiles
+    let color_space = tags.get("color_space")
+        .or_else(|| tags.get("color_space_name"))
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+
+    let log_profile = detect_log_profile(video_stream, tags);
+
+    if make.is_some() || model.is_some() || color_space.is_some() || log_profile.is_some() {
+        Some(CameraMetadata {
+            make,
+            model,
+            color_space,
+            log_profile,
+        })
+    } else {
+        None
+    }
+}
+
+/// Detect log profile from various metadata sources.
+fn detect_log_profile(video_stream: &serde_json::Value, tags: &serde_json::Value) -> Option<String> {
+    // Check for explicit log profile tags
+    if let Some(profile) = tags.get("log_profile")
+        .or_else(|| tags.get("gamma"))
+        .or_else(|| tags.get("transfer_characteristics"))
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string())
+    {
+        return Some(profile);
+    }
+
+    // Check for S-Log profiles (Sony)
+    if let Some(true) = tags.get("slog")
+        .or_else(|| tags.get("s-log"))
+        .and_then(|v| v.as_bool())
+    {
+        return Some("S-Log".to_string());
+    }
+
+    // Check for Cineon log
+    if let Some(true) = tags.get("cineon")
+        .or_else(|| tags.get("log_c"))
+        .and_then(|v| v.as_bool())
+    {
+        return Some("Cineon Log".to_string());
+    }
+
+    // Check pixel format for common log indicators
+    if let Some(pix_fmt) = video_stream.get("pix_fmt").and_then(|v| v.as_str()) {
+        match pix_fmt {
+            "yuv422p10le" | "yuv444p10le" => {
+                // Often used with log profiles
+                if let Some(make) = tags.get("com.apple.quicktime.make").and_then(|v| v.as_str()) {
+                    if make.contains("Sony") {
+                        return Some("S-Log3".to_string());
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+
+    None
 }
 
 #[cfg(test)]

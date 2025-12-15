@@ -19,11 +19,38 @@ import {
   Check,
   Beaker,
 } from "lucide-react";
+import { generateMetadata as genMeta } from "@/lib/seo";
+import Script from "next/script";
+import { generateBreadcrumbSchema, generateWebPageSchema } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Documentation",
-  description: "Learn how to use Dits for version control of video and large files",
-};
+export const metadata: Metadata = genMeta({
+  title: "Dits Documentation - Complete Guide to Version Control for Large Files",
+  description: "Complete documentation for Dits version control system. Learn how to use Dits for video production, large binary files, and creative workflows. Tutorials, CLI reference, API docs, and more.",
+  canonical: "https://dits.dev/docs",
+  keywords: [
+    "dits documentation",
+    "version control tutorial",
+    "video version control guide",
+    "large file version control",
+    "dits commands",
+    "dits cli reference",
+    "git alternative documentation",
+  ],
+  openGraph: {
+    type: "website",
+    images: [
+      {
+        url: "/dits.png",
+        width: 1200,
+        height: 630,
+        alt: "Dits Documentation",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+});
 
 const sections = [
   {
@@ -90,8 +117,38 @@ const implementedCommands = [
 ];
 
 export default function DocsPage() {
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Documentation", url: "/docs" },
+  ]);
+
+  const webpageSchema = generateWebPageSchema({
+    name: "Dits Documentation",
+    description: "Complete documentation for Dits version control system. Learn how to use Dits for video production, large binary files, and creative workflows.",
+    url: "https://dits.dev/docs",
+    breadcrumb: [
+      { name: "Home", url: "/" },
+      { name: "Documentation", url: "/docs" },
+    ],
+  });
+
   return (
-    <div className="prose dark:prose-invert max-w-none">
+    <>
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
+      <Script
+        id="webpage-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(webpageSchema),
+        }}
+      />
+      <div className="prose dark:prose-invert max-w-none">
       <h1>Dits Documentation</h1>
       <p className="lead text-xl text-muted-foreground">
         Welcome to the Dits documentation. Dits is a comprehensive, production-ready version control system
@@ -400,5 +457,6 @@ dits clone /path/to/repo my-project`}
         </li>
       </ul>
     </div>
+    </>
   );
 }

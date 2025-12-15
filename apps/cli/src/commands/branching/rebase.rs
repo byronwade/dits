@@ -167,14 +167,14 @@ fn apply_commits(
 
         // Apply changes
         let current_commit = repo.load_commit(&current_head)?;
-        let current_manifest = repo.load_manifest(&current_commit.manifest)?;
+        let _current_manifest = repo.load_manifest(&current_commit.manifest)?;
 
         // Build new index with applied changes
         let index_path = repo.dits_dir().join("index");
         let index_json = fs::read_to_string(&index_path)?;
         let mut index = Index::from_json(&index_json)?;
 
-        let mut has_conflicts = false;
+        let has_conflicts = false;
 
         for (path, entry) in commit_manifest.iter() {
             let was_in_parent = parent_manifest.as_ref()
@@ -205,6 +205,9 @@ fn apply_commits(
                     entry.content_hash,
                     entry.size,
                     0,
+                    0o644, // Default mode
+                    entry.file_type,
+                    entry.symlink_target.clone(),
                     entry.chunks.clone(),
                 );
                 index.stage(idx_entry);

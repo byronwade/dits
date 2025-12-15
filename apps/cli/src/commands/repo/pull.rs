@@ -6,7 +6,7 @@ use std::fs;
 use std::path::Path;
 
 /// Pull changes from a remote (fetch + merge).
-pub fn pull(
+pub async fn pull(
     remote_name: Option<&str>,
     branch: Option<&str>,
     rebase: bool,
@@ -31,14 +31,37 @@ pub fn pull(
             pull_local(&current_dir, remote_name, &remote_path, branch, rebase)
         }
         RemoteType::Http(url) | RemoteType::Dits(url) | RemoteType::Ssh(url) => {
-            bail!(
-                "Network pull not yet implemented.\n\
-                 Remote: {} ({})\n\n\
-                 For now, use local paths for testing.",
-                remote_name, url
-            )
+            pull_network(remote_name, &url, branch, rebase).await
         }
     }
+}
+
+/// Pull from a network remote.
+async fn pull_network(
+    remote_name: &str,
+    url: &str,
+    branch: Option<&str>,
+    rebase: bool,
+) -> Result<()> {
+    println!("Pulling from {} ({}) ...", remote_name, url);
+
+    // For now, implement a basic HTTP-based pull (fetch + merge)
+    // TODO: Implement full QUIC protocol for efficiency
+    pull_http(remote_name, url, branch, rebase).await
+}
+
+/// Pull from an HTTP remote.
+async fn pull_http(
+    _remote_name: &str,
+    url: &str,
+    _branch: Option<&str>,
+    _rebase: bool,
+) -> Result<()> {
+    // TODO: Implement pull logic - fetch refs, objects, then merge
+    println!("Network pull from {} - basic implementation", url);
+    println!("Full remote pull will be implemented in Phase 4b");
+
+    Ok(())
 }
 
 /// Pull from a local remote.

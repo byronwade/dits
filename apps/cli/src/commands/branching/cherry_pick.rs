@@ -16,7 +16,7 @@ pub fn cherry_pick(commits: &[String], no_commit: bool) -> Result<()> {
         bail!("No commits specified");
     }
 
-    let head = repo.head()?
+    let _head = repo.head()?
         .context("No commits yet - nothing to cherry-pick onto")?;
 
     for commit_ref in commits {
@@ -113,6 +113,9 @@ fn cherry_pick_single(repo: &Repository, commit_ref: &str, no_commit: bool) -> R
                 entry.content_hash,
                 entry.size,
                 0,
+                0o644, // Default mode
+                entry.file_type,
+                entry.symlink_target.clone(),
                 entry.chunks.clone(),
             );
             index.stage(idx_entry);

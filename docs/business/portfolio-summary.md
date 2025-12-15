@@ -109,7 +109,7 @@ A Git-style, content-addressed VCS engineered for large media: video, game build
 - Tag: immutable ref to commit.
 - Lock: tracked in index; server-coordinated for multi-user workflows.
 - Remote: endpoint + auth; supports S3-compatible storage and QUIC transport.
-- Reflog: planned history of ref movements for recovery.
+- Reflog: implemented ✅ history of ref movements for recovery.
 
 ## Algorithms (FastCDC, Keyframe Alignment, Bloom Filters, Delta Sync)
 - FastCDC: rolling gear hash, content-defined boundaries, min/avg/max sizing, normalization for smooth distributions.
@@ -441,7 +441,7 @@ A Git-style, content-addressed VCS engineered for large media: video, game build
 - Prefetch heuristics for sequential reads; keyframe-aware.
 
 ## Safety and Security (Expanded)
-- AES-GCM planned for encrypted chunks; convergent scheme with salt.
+- AES-GCM implemented for encrypted chunks; convergent scheme with salt ✅.
 - Nonces derived from content hash + random component.
 - Strict input validation on paths; reject traversal and oversize inputs.
 - Zero logging of secrets; sensitive data redacted.

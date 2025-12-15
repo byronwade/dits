@@ -61,3 +61,7 @@ test_expect_success 'hashing performance - 100MB' '
 '
 
 test_done
+
+
+
+

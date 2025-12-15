@@ -10,7 +10,7 @@ work correctly with creative industry file formats and binary assets.
 '
 
 . ./test-lib.sh
-. lib-chunking.sh
+. "$TEST_DIRECTORY/lib-chunking.sh"
 
 # ============================================================================
 # GIT RECOVERY FOR 3D ASSETS

@@ -133,6 +133,9 @@ pub struct ProxyVariant {
 
     /// FFmpeg command used to generate (for reproducibility).
     pub ffmpeg_command: Option<String>,
+
+    /// Thumbnail hash (if thumbnail was generated).
+    pub thumbnail_hash: Option<Hash>,
 }
 
 impl ProxyVariant {
@@ -158,6 +161,7 @@ impl ProxyVariant {
             timecode: None,
             created_at: chrono::Utc::now(),
             ffmpeg_command: None,
+            thumbnail_hash: None,
         }
     }
 
@@ -185,6 +189,12 @@ impl ProxyVariant {
     /// Set FFmpeg command.
     pub fn with_ffmpeg_command(mut self, command: &str) -> Self {
         self.ffmpeg_command = Some(command.to_string());
+        self
+    }
+
+    /// Set thumbnail hash.
+    pub fn with_thumbnail(mut self, thumbnail_hash: Hash) -> Self {
+        self.thumbnail_hash = Some(thumbnail_hash);
         self
     }
 
