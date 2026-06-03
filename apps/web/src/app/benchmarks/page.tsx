@@ -94,9 +94,9 @@ export default async function BenchmarksPage() {
     });
 
   // Engine throughput (from the standing micro-benchmarks, if present).
-  const blake3 = engine?.results.find((r) => /Blake3Hasher::hash/.test(r.name));
-  const sha256 = engine?.results.find((r) => /Sha256Hasher::hash/.test(r.name));
-  const fastcdc = engine?.results.find((r) => /FastCDCChunker::chunk/.test(r.name));
+  const blake3 = engine?.results.find((r) => /BLAKE3 hash/.test(r.name));
+  const sha256 = engine?.results.find((r) => /SHA-256 hash/.test(r.name));
+  const fastcdc = engine?.results.find((r) => /FastCDC chunk/.test(r.name));
   const hashSpeedup = blake3 && sha256 ? Math.round(blake3.value / sha256.value) : null;
 
   return (
