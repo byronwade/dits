@@ -62,14 +62,14 @@ export default function WireProtocolPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Network className="h-5 w-5 text-blue-600" />
+              <Network className="h-5 w-5 text-info" />
               QUIC Transport
             </CardTitle>
             <CardDescription>Modern UDP-based transport protocol</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="text-sm">
-              <strong className="text-green-600">Advantages:</strong>
+              <strong className="text-success">Advantages:</strong>
               <ul className="mt-1 space-y-1">
                 <li>Built-in multiplexing (streams)</li>
                 <li>Connection migration</li>
@@ -83,14 +83,14 @@ export default function WireProtocolPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-green-600" />
+              <Shield className="h-5 w-5 text-success" />
               Security Features
             </CardTitle>
             <CardDescription>End-to-end encryption and verification</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="text-sm">
-              <strong className="text-green-600">Built-in:</strong>
+              <strong className="text-success">Built-in:</strong>
               <ul className="mt-1 space-y-1">
                 <li>TLS 1.3 encryption</li>
                 <li>Content integrity (BLAKE3)</li>
@@ -273,19 +273,19 @@ export default function WireProtocolPage() {
         <h4 className="font-semibold mb-3">Bloom Filter Sync Flow:</h4>
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-info rounded-full"></div>
             <span>Client creates Bloom filter from local chunk hashes (~1KB)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-success rounded-full"></div>
             <span>Server checks which chunks client probably has</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-warning rounded-full"></div>
             <span>Server sends list of chunks to upload/download</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-brand rounded-full"></div>
             <span>Only missing chunks are transferred</span>
           </div>
         </div>
@@ -392,7 +392,7 @@ export default function WireProtocolPage() {
         <h3 className="font-semibold mb-3">Protocol Benefits Summary</h3>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <h4 className="font-medium text-green-600 mb-2">Efficiency</h4>
+            <h4 className="font-medium text-success mb-2">Efficiency</h4>
             <ul className="text-sm space-y-1">
               <li>Minimal bandwidth overhead</li>
               <li>Resumable large file transfers</li>
@@ -401,7 +401,7 @@ export default function WireProtocolPage() {
             </ul>
           </div>
           <div>
-            <h4 className="font-medium text-blue-600 mb-2">Reliability</h4>
+            <h4 className="font-medium text-info mb-2">Reliability</h4>
             <ul className="text-sm space-y-1">
               <li>Content integrity verification</li>
               <li>Automatic error recovery</li>

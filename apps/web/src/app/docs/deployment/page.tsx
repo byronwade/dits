@@ -133,28 +133,28 @@ export default function DeploymentPage() {
             <h3 className="font-semibold mb-4">Core Components</h3>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <div className="w-3 h-3 bg-info rounded-full"></div>
                 <div>
                   <strong>API Server</strong>
                   <p className="text-sm text-muted-foreground">REST API, authentication, metadata</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <div className="w-3 h-3 bg-success rounded-full"></div>
                 <div>
                   <strong>Storage Service</strong>
                   <p className="text-sm text-muted-foreground">Chunk storage, deduplication, retrieval</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                <div className="w-3 h-3 bg-warning rounded-full"></div>
                 <div>
                   <strong>Database</strong>
                   <p className="text-sm text-muted-foreground">PostgreSQL for metadata, Redis for caching</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                <div className="w-3 h-3 bg-brand rounded-full"></div>
                 <div>
                   <strong>Worker Queue</strong>
                   <p className="text-sm text-muted-foreground">Background processing, cleanup, maintenance</p>
@@ -167,19 +167,19 @@ export default function DeploymentPage() {
             <h3 className="font-semibold mb-4">Data Flow</h3>
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2">
-                <span className="text-blue-500">→</span>
+                <span className="text-info">→</span>
                 <span>Client uploads file via API</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-green-500">→</span>
+                <span className="text-success">→</span>
                 <span>Storage service chunks and stores</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-orange-500">→</span>
+                <span className="text-warning">→</span>
                 <span>Metadata saved to database</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-purple-500">→</span>
+                <span className="text-brand">→</span>
                 <span>Workers handle cleanup and optimization</span>
               </div>
             </div>

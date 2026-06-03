@@ -243,7 +243,7 @@ dits init
 # .dits/ (Dits repository)`}
         />
 
-        <Alert className="not-prose my-4 bg-yellow-50 border-yellow-200 dark:bg-yellow-950 dark:border-yellow-800">
+        <Alert className="not-prose my-4 bg-warning/10 border-warning/20">
           <Terminal className="h-4 w-4" />
           <AlertTitle>Future Enhancement</AlertTitle>
           <AlertDescription>

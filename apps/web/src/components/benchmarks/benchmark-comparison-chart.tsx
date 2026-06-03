@@ -59,12 +59,12 @@ function ComparisonBar({
                             className={cn(
                                 "h-full rounded-md flex items-center justify-end px-2 transition-all",
                                 ditsIsBetter
-                                    ? "bg-gradient-to-r from-emerald-500/80 to-emerald-500"
+                                    ? "bg-gradient-to-r from-success/80 to-success"
                                     : "bg-gradient-to-r from-primary/60 to-primary"
                             )}
                             style={{ width: `${ditsPercent}%` }}
                         >
-                            <span className="text-xs font-semibold text-white">
+                            <span className="text-xs font-semibold text-primary-foreground">
                                 {ditsValue.toLocaleString()} {unit}
                             </span>
                         </div>
@@ -79,12 +79,12 @@ function ComparisonBar({
                             className={cn(
                                 "h-full rounded-md flex items-center justify-end px-2 transition-all",
                                 !ditsIsBetter
-                                    ? "bg-gradient-to-r from-emerald-500/80 to-emerald-500"
+                                    ? "bg-gradient-to-r from-success/80 to-success"
                                     : "bg-gradient-to-r from-muted-foreground/60 to-muted-foreground"
                             )}
                             style={{ width: `${otherPercent}%` }}
                         >
-                            <span className="text-xs font-semibold text-white">
+                            <span className="text-xs font-semibold text-primary-foreground">
                                 {otherValue.toLocaleString()} {unit}
                             </span>
                         </div>
@@ -140,7 +140,7 @@ export function BenchmarkComparisonChart({
             {/* Legend */}
             <div className="flex items-center gap-4 pt-2 border-t text-xs text-muted-foreground">
                 <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded-sm bg-emerald-500" />
+                    <div className="w-3 h-3 rounded-sm bg-success" />
                     <span>Better performance</span>
                 </div>
                 <div className="flex items-center gap-1.5">

@@ -42,8 +42,8 @@ export function SyncDiagram({
                                     className={cn(
                                         "px-2 py-0.5 rounded text-xs font-mono",
                                         sharedChunks.includes(chunk)
-                                            ? "bg-green-500/20 text-green-700 dark:text-green-400"
-                                            : "bg-orange-500/20 text-orange-700 dark:text-orange-400"
+                                            ? "bg-success/20 text-success"
+                                            : "bg-warning/20 text-warning"
                                     )}
                                 >
                                     {chunk}
@@ -63,9 +63,9 @@ export function SyncDiagram({
 
                 {/* Remote box */}
                 <div className="flex-1 max-w-[200px]">
-                    <div className="rounded-lg border-2 border-blue-500 bg-blue-500/5 p-4">
+                    <div className="rounded-lg border-2 border-chart-2 bg-chart-2/5 p-4">
                         <div className="flex items-center gap-2 mb-3">
-                            <Server className="h-5 w-5 text-blue-500" />
+                            <Server className="h-5 w-5 text-chart-2" />
                             <span className="font-semibold">Remote</span>
                         </div>
                         <div className="text-sm text-muted-foreground mb-2">Chunks:</div>
@@ -73,7 +73,7 @@ export function SyncDiagram({
                             {remoteChunks.map((chunk) => (
                                 <span
                                     key={chunk}
-                                    className="px-2 py-0.5 rounded text-xs font-mono bg-green-500/20 text-green-700 dark:text-green-400"
+                                    className="px-2 py-0.5 rounded text-xs font-mono bg-success/20 text-success"
                                 >
                                     {chunk}
                                 </span>
@@ -106,13 +106,13 @@ export function SyncDiagram({
                         <div className="text-sm text-muted-foreground flex flex-wrap items-center gap-1">
                             <span>Have:</span>
                             {sharedChunks.map((c) => (
-                                <span key={c} className="inline-flex items-center gap-0.5 text-green-600 dark:text-green-400">
+                                <span key={c} className="inline-flex items-center gap-0.5 text-success">
                                     <Check className="h-3 w-3" />{c}
                                 </span>
                             ))}
                             <span className="ml-2">Missing:</span>
                             {computedMissing.map((c) => (
-                                <span key={c} className="inline-flex items-center gap-0.5 text-orange-600 dark:text-orange-400">
+                                <span key={c} className="inline-flex items-center gap-0.5 text-warning">
                                     <X className="h-3 w-3" />{c}
                                 </span>
                             ))}
@@ -120,14 +120,14 @@ export function SyncDiagram({
                     </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                    <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-success/10 border border-success/20">
+                    <div className="w-6 h-6 rounded-full bg-success text-background flex items-center justify-center text-sm font-semibold flex-shrink-0">
                         3
                     </div>
                     <div>
-                        <div className="font-medium text-green-700 dark:text-green-400">Upload only missing chunks</div>
+                        <div className="font-medium text-success">Upload only missing chunks</div>
                         <div className="text-sm text-muted-foreground">
-                            → Transfer {computedMissing.join(", ")} <span className="text-green-600 dark:text-green-400">(not {sharedChunks.join(", ")}!)</span>
+                            → Transfer {computedMissing.join(", ")} <span className="text-success">(not {sharedChunks.join(", ")}!)</span>
                         </div>
                     </div>
                 </div>

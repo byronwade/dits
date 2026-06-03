@@ -272,7 +272,7 @@ cargo install dits`}
                 <ul className="list-none p-0 m-0 space-y-1">
                   {platform.architectures.map((arch) => (
                     <li key={arch} className="flex items-center gap-2">
-                      <CheckCircle2 className="h-3 w-3 text-green-500" />
+                      <CheckCircle2 className="h-3 w-3 text-success" />
                       {arch}
                     </li>
                   ))}

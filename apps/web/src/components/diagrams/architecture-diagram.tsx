@@ -78,10 +78,10 @@ export function ArchitectureDiagram() {
 
         {/* Core Engine */}
         <div className="mx-auto max-w-md">
-          <div className="rounded-xl border-2 border-dits-500/30 bg-gradient-to-b from-dits-500/10 to-transparent p-4">
+          <div className="rounded-xl border-2 border-brand/30 bg-gradient-to-b from-brand/10 to-transparent p-4">
             <div className="mb-3 flex items-center justify-center gap-2">
-              <Layers className="h-5 w-5 text-dits-500" />
-              <span className="font-bold text-dits-600 dark:text-dits-400">Core Engine</span>
+              <Layers className="h-5 w-5 text-brand" />
+              <span className="font-bold text-brand">Core Engine</span>
             </div>
             <div className="space-y-2 text-sm">
               <EngineFeature>Hybrid Storage (libgit2 + FastCDC)</EngineFeature>
@@ -97,10 +97,10 @@ export function ArchitectureDiagram() {
 
         {/* Transport Layer */}
         <div className="mx-auto max-w-md">
-          <div className="rounded-xl border-2 border-green-500/30 bg-gradient-to-b from-green-500/10 to-transparent p-4">
+          <div className="rounded-xl border-2 border-chart-2/30 bg-gradient-to-b from-chart-2/10 to-transparent p-4">
             <div className="mb-3 flex items-center justify-center gap-2">
-              <Server className="h-5 w-5 text-green-500" />
-              <span className="font-bold text-green-600 dark:text-green-400">Transport Layer</span>
+              <Server className="h-5 w-5 text-chart-2" />
+              <span className="font-bold text-chart-2">Transport Layer</span>
             </div>
             <div className="space-y-2 text-sm">
               <EngineFeature color="green">QUIC (quinn)</EngineFeature>
@@ -129,10 +129,10 @@ export function ArchitectureDiagram() {
               color="purple"
             />
             <ConnectorLine />
-            <div className="rounded-lg border-2 border-purple-500/30 bg-purple-500/10 px-3 py-2 text-center">
+            <div className="rounded-lg border-2 border-chart-4/30 bg-chart-4/10 px-3 py-2 text-center">
               <div className="flex items-center justify-center gap-1.5">
-                <Database className="h-4 w-4 text-purple-500" />
-                <span className="text-xs font-medium text-purple-600 dark:text-purple-400">
+                <Database className="h-4 w-4 text-chart-4" />
+                <span className="text-xs font-medium text-chart-4">
                   PostgreSQL + Redis
                 </span>
               </div>
@@ -176,8 +176,8 @@ function EngineFeature({
   color?: "dits" | "green";
 }) {
   const colors = {
-    dits: "text-dits-600 dark:text-dits-400 before:bg-dits-500",
-    green: "text-green-600 dark:text-green-400 before:bg-green-500",
+    dits: "text-brand before:bg-brand",
+    green: "text-chart-2 before:bg-chart-2",
   };
 
   return (
@@ -205,16 +205,16 @@ function StorageBox({
 }) {
   const colors = {
     amber:
-      "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+      "border-chart-3/30 bg-chart-3/10 text-chart-3",
     purple:
-      "border-purple-500/30 bg-purple-500/10 text-purple-600 dark:text-purple-400",
-    sky: "border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-400",
+      "border-chart-4/30 bg-chart-4/10 text-chart-4",
+    sky: "border-chart-5/30 bg-chart-5/10 text-chart-5",
   };
 
   const iconColors = {
-    amber: "text-amber-500",
-    purple: "text-purple-500",
-    sky: "text-sky-500",
+    amber: "text-chart-3",
+    purple: "text-chart-4",
+    sky: "text-chart-5",
   };
 
   return (

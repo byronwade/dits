@@ -59,7 +59,7 @@ export default function SecurityPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Lock className="h-5 w-5 text-green-600" />
+              <Lock className="h-5 w-5 text-success" />
               Defense in Depth
             </CardTitle>
           </CardHeader>
@@ -76,7 +76,7 @@ export default function SecurityPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Key className="h-5 w-5 text-blue-600" />
+              <Key className="h-5 w-5 text-info" />
               Zero Trust Architecture
             </CardTitle>
           </CardHeader>
@@ -486,7 +486,7 @@ export default function SecurityPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5 text-blue-600" />
+              <Database className="h-5 w-5 text-info" />
               What We Collect
             </CardTitle>
           </CardHeader>
@@ -518,7 +518,7 @@ export default function SecurityPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-green-600" />
+              <Shield className="h-5 w-5 text-success" />
               Privacy Guarantees
             </CardTitle>
           </CardHeader>

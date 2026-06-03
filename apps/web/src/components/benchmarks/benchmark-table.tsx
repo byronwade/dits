@@ -38,9 +38,9 @@ interface BenchmarkTableProps {
 function CellValue({ value }: { value: string | number | boolean }) {
     if (typeof value === "boolean") {
         return value ? (
-            <Check className="h-4 w-4 text-emerald-500 mx-auto" />
+            <Check className="h-4 w-4 text-success mx-auto" />
         ) : (
-            <X className="h-4 w-4 text-red-500 mx-auto" />
+            <X className="h-4 w-4 text-destructive mx-auto" />
         );
     }
 

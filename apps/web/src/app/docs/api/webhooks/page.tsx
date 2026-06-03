@@ -61,7 +61,7 @@ export default function WebhooksPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-green-600" />
+              <Zap className="h-5 w-5 text-success" />
               Repository Events
             </CardTitle>
           </CardHeader>
@@ -88,7 +88,7 @@ export default function WebhooksPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-blue-600" />
+              <Zap className="h-5 w-5 text-info" />
               Push Events
             </CardTitle>
           </CardHeader>
@@ -111,7 +111,7 @@ export default function WebhooksPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-purple-600" />
+              <Zap className="h-5 w-5 text-brand" />
               Branch & Tag Events
             </CardTitle>
           </CardHeader>
@@ -134,7 +134,7 @@ export default function WebhooksPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-orange-600" />
+              <Zap className="h-5 w-5 text-warning" />
               Collaboration Events
             </CardTitle>
           </CardHeader>
@@ -210,7 +210,7 @@ export default function WebhooksPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-green-600" />
+              <Shield className="h-5 w-5 text-success" />
               HMAC Signatures
             </CardTitle>
             <CardDescription>Verify webhook authenticity</CardDescription>
@@ -234,7 +234,7 @@ const expected = 'sha256=' + signature;`}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-blue-600" />
+              <Clock className="h-5 w-5 text-info" />
               Retry Logic
             </CardTitle>
             <CardDescription>Automatic redelivery on failure</CardDescription>
@@ -415,7 +415,7 @@ if __name__ == '__main__':
             <TableRow>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <CheckCircle className="h-4 w-4 text-success" />
                   <span className="text-sm font-medium">Delivered</span>
                 </div>
               </TableCell>
@@ -429,7 +429,7 @@ if __name__ == '__main__':
             <TableRow>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-yellow-600" />
+                  <Clock className="h-4 w-4 text-warning" />
                   <span className="text-sm font-medium">Retrying</span>
                 </div>
               </TableCell>
@@ -443,7 +443,7 @@ if __name__ == '__main__':
             <TableRow>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <XCircle className="h-4 w-4 text-red-600" />
+                  <XCircle className="h-4 w-4 text-destructive" />
                   <span className="text-sm font-medium">Failed</span>
                 </div>
               </TableCell>

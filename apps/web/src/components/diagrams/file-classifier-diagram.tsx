@@ -28,9 +28,9 @@ export function FileClassifierDiagram() {
 
         {/* Classifier */}
         <div className="mx-auto max-w-xs">
-          <div className="rounded-xl border-2 border-dits-500/30 bg-dits-500/10 px-6 py-4 text-center">
-            <Filter className="mx-auto h-6 w-6 text-dits-500" />
-            <div className="mt-2 font-bold text-dits-600 dark:text-dits-400">
+          <div className="rounded-xl border-2 border-brand/30 bg-brand/10 px-6 py-4 text-center">
+            <Filter className="mx-auto h-6 w-6 text-brand" />
+            <div className="mt-2 font-bold text-brand">
               Classify
             </div>
             <div className="mt-1 text-xs text-muted-foreground">(by type)</div>
@@ -121,21 +121,21 @@ function FileTypeCard({
   color: "blue" | "purple" | "amber";
 }) {
   const colors = {
-    blue: "border-blue-500/30 bg-blue-500/10",
-    purple: "border-purple-500/30 bg-purple-500/10",
-    amber: "border-amber-500/30 bg-amber-500/10",
+    blue: "border-chart-2/30 bg-chart-2/10",
+    purple: "border-chart-3/30 bg-chart-3/10",
+    amber: "border-chart-4/30 bg-chart-4/10",
   };
 
   const iconColors = {
-    blue: "text-blue-500",
-    purple: "text-purple-500",
-    amber: "text-amber-500",
+    blue: "text-chart-2",
+    purple: "text-chart-3",
+    amber: "text-chart-4",
   };
 
   const textColors = {
-    blue: "text-blue-600 dark:text-blue-400",
-    purple: "text-purple-600 dark:text-purple-400",
-    amber: "text-amber-600 dark:text-amber-400",
+    blue: "text-chart-2",
+    purple: "text-chart-3",
+    amber: "text-chart-4",
   };
 
   return (
@@ -164,29 +164,29 @@ function StorageEngineCard({
   color: "blue" | "purple" | "amber";
 }) {
   const colors = {
-    blue: "border-blue-500/30 bg-gradient-to-b from-blue-500/10 to-blue-500/5",
+    blue: "border-chart-2/30 bg-gradient-to-b from-chart-2/10 to-chart-2/5",
     purple:
-      "border-purple-500/30 bg-gradient-to-b from-purple-500/10 to-purple-500/5",
+      "border-chart-3/30 bg-gradient-to-b from-chart-3/10 to-chart-3/5",
     amber:
-      "border-amber-500/30 bg-gradient-to-b from-amber-500/10 to-amber-500/5",
+      "border-chart-4/30 bg-gradient-to-b from-chart-4/10 to-chart-4/5",
   };
 
   const iconColors = {
-    blue: "text-blue-500",
-    purple: "text-purple-500",
-    amber: "text-amber-500",
+    blue: "text-chart-2",
+    purple: "text-chart-3",
+    amber: "text-chart-4",
   };
 
   const textColors = {
-    blue: "text-blue-600 dark:text-blue-400",
-    purple: "text-purple-600 dark:text-purple-400",
-    amber: "text-amber-600 dark:text-amber-400",
+    blue: "text-chart-2",
+    purple: "text-chart-3",
+    amber: "text-chart-4",
   };
 
   const bulletColors = {
-    blue: "before:bg-blue-500",
-    purple: "before:bg-purple-500",
-    amber: "before:bg-amber-500",
+    blue: "before:bg-chart-2",
+    purple: "before:bg-chart-3",
+    amber: "before:bg-chart-4",
   };
 
   return (
@@ -229,7 +229,7 @@ export function FileClassifierCompact() {
             .txt, .md, .json, .rs, .py
           </div>
           <div className="my-2 text-lg">→</div>
-          <div className="rounded bg-blue-500/10 px-2 py-1 font-medium text-blue-600 dark:text-blue-400">
+          <div className="rounded bg-chart-2/10 px-2 py-1 font-medium text-chart-2">
             libgit2 (Git storage)
           </div>
         </div>
@@ -238,7 +238,7 @@ export function FileClassifierCompact() {
             .mp4, .mov, .psd, .blend
           </div>
           <div className="my-2 text-lg">→</div>
-          <div className="rounded bg-purple-500/10 px-2 py-1 font-medium text-purple-600 dark:text-purple-400">
+          <div className="rounded bg-chart-3/10 px-2 py-1 font-medium text-chart-3">
             Dits CDC (Chunk storage)
           </div>
         </div>
@@ -247,7 +247,7 @@ export function FileClassifierCompact() {
             .prproj, .aep, .drp
           </div>
           <div className="my-2 text-lg">→</div>
-          <div className="rounded bg-amber-500/10 px-2 py-1 font-medium text-amber-600 dark:text-amber-400">
+          <div className="rounded bg-chart-4/10 px-2 py-1 font-medium text-chart-4">
             Hybrid (Git + CDC)
           </div>
         </div>

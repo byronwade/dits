@@ -29,7 +29,7 @@ export default function EncryptionCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
       <div className="flex items-center gap-2 mb-2">
-        <Shield className="h-8 w-8 text-emerald-500" />
+        <Shield className="h-8 w-8 text-success" />
         <h1 className="mb-0">Encryption Commands</h1>
       </div>
       <p className="lead text-xl text-muted-foreground">

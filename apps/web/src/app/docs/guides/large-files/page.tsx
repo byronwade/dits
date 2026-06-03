@@ -98,7 +98,7 @@ export default function LargeFilesPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Video className="h-5 w-5 text-red-500" />
+                            <Video className="h-5 w-5 text-destructive" />
                             Video
                         </CardTitle>
                         <CardDescription>
@@ -117,7 +117,7 @@ export default function LargeFilesPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Image className="h-5 w-5 text-green-500" />
+                            <Image className="h-5 w-5 text-success" />
                             Images
                         </CardTitle>
                         <CardDescription>
@@ -136,7 +136,7 @@ export default function LargeFilesPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <FileArchive className="h-5 w-5 text-blue-500" />
+                            <FileArchive className="h-5 w-5 text-info" />
                             3D/Game
                         </CardTitle>
                         <CardDescription>
@@ -370,19 +370,19 @@ dits storage stats`}
             <div className="bg-muted p-6 rounded-lg my-6">
                 <h3 className="font-semibold mb-4">Do&apos;s</h3>
                 <ul className="space-y-2">
-                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Use proxies for daily editing, full-res for final delivery</li>
-                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Organize assets by project/version for better chunking</li>
-                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Use sparse checkout for partial access to huge repos</li>
-                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Mount with VFS for streaming access</li>
-                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Run <code>dits gc</code> periodically to clean up</li>
+                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Use proxies for daily editing, full-res for final delivery</li>
+                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Organize assets by project/version for better chunking</li>
+                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Use sparse checkout for partial access to huge repos</li>
+                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Mount with VFS for streaming access</li>
+                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Run <code>dits gc</code> periodically to clean up</li>
                 </ul>
 
                 <h3 className="font-semibold mt-6 mb-4">Don&apos;ts</h3>
                 <ul className="space-y-2">
-                    <li className="flex items-center gap-2"><X className="h-4 w-4 text-red-600" /> Don&apos;t store generated/rendered files (add to .ditsignore)</li>
-                    <li className="flex items-center gap-2"><X className="h-4 w-4 text-red-600" /> Don&apos;t commit the same file with different names</li>
-                    <li className="flex items-center gap-2"><X className="h-4 w-4 text-red-600" /> Don&apos;t recompress videos before committing</li>
-                    <li className="flex items-center gap-2"><X className="h-4 w-4 text-red-600" /> Don&apos;t forget to push proxies for team access</li>
+                    <li className="flex items-center gap-2"><X className="h-4 w-4 text-destructive" /> Don&apos;t store generated/rendered files (add to .ditsignore)</li>
+                    <li className="flex items-center gap-2"><X className="h-4 w-4 text-destructive" /> Don&apos;t commit the same file with different names</li>
+                    <li className="flex items-center gap-2"><X className="h-4 w-4 text-destructive" /> Don&apos;t recompress videos before committing</li>
+                    <li className="flex items-center gap-2"><X className="h-4 w-4 text-destructive" /> Don&apos;t forget to push proxies for team access</li>
                 </ul>
             </div>
 

@@ -59,7 +59,7 @@ export default function BranchCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
       <div className="flex items-center gap-2 mb-2">
-        <GitBranch className="h-8 w-8 text-orange-500" />
+        <GitBranch className="h-8 w-8 text-warning" />
         <h1 className="mb-0">Branch Commands</h1>
       </div>
       <p className="lead text-xl text-muted-foreground">

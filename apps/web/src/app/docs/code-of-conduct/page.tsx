@@ -49,11 +49,11 @@ export default function CodeOfConductPage() {
                         Positive Behavior
                     </h3>
                     <ul className="text-sm space-y-2">
-                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Using welcoming and inclusive language</li>
-                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Being respectful of differing viewpoints</li>
-                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Gracefully accepting constructive criticism</li>
-                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Focusing on what is best for the community</li>
-                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Showing empathy towards other community members</li>
+                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Using welcoming and inclusive language</li>
+                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Being respectful of differing viewpoints</li>
+                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Gracefully accepting constructive criticism</li>
+                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Focusing on what is best for the community</li>
+                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Showing empathy towards other community members</li>
                     </ul>
                 </div>
 
@@ -63,11 +63,11 @@ export default function CodeOfConductPage() {
                         Unacceptable Behavior
                     </h3>
                     <ul className="text-sm space-y-2">
-                        <li className="flex items-center gap-2"><X className="h-4 w-4 text-red-600" /> Sexualized language or imagery</li>
-                        <li className="flex items-center gap-2"><X className="h-4 w-4 text-red-600" /> Trolling, insulting comments, personal attacks</li>
-                        <li className="flex items-center gap-2"><X className="h-4 w-4 text-red-600" /> Public or private harassment</li>
-                        <li className="flex items-center gap-2"><X className="h-4 w-4 text-red-600" /> Publishing others&apos; private information</li>
-                        <li className="flex items-center gap-2"><X className="h-4 w-4 text-red-600" /> Other conduct inappropriate in a professional setting</li>
+                        <li className="flex items-center gap-2"><X className="h-4 w-4 text-destructive" /> Sexualized language or imagery</li>
+                        <li className="flex items-center gap-2"><X className="h-4 w-4 text-destructive" /> Trolling, insulting comments, personal attacks</li>
+                        <li className="flex items-center gap-2"><X className="h-4 w-4 text-destructive" /> Public or private harassment</li>
+                        <li className="flex items-center gap-2"><X className="h-4 w-4 text-destructive" /> Publishing others&apos; private information</li>
+                        <li className="flex items-center gap-2"><X className="h-4 w-4 text-destructive" /> Other conduct inappropriate in a professional setting</li>
                     </ul>
                 </div>
             </div>

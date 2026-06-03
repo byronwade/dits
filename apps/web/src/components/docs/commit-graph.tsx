@@ -66,8 +66,8 @@ export function CommitGraph({ commits, className }: CommitGraphProps) {
                             <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.6" />
                         </linearGradient>
                         <linearGradient id="mergeBranchGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="rgb(168, 85, 247)" stopOpacity="0.4" />
-                            <stop offset="100%" stopColor="rgb(168, 85, 247)" stopOpacity="0.6" />
+                            <stop offset="0%" stopColor="var(--chart-2)" stopOpacity="0.4" />
+                            <stop offset="100%" stopColor="var(--chart-2)" stopOpacity="0.6" />
                         </linearGradient>
                     </defs>
                     
@@ -177,9 +177,9 @@ export function CommitGraph({ commits, className }: CommitGraphProps) {
                                                     "absolute inset-0 rounded-full blur-2xl opacity-0",
                                                     "group-hover:opacity-100 transition-opacity duration-500",
                                                     commit.isMerge
-                                                        ? "bg-purple-500/40 dark:bg-purple-400/40"
+                                                        ? "bg-chart-2/40"
                                                         : isHead
-                                                        ? "bg-green-500/40 dark:bg-green-400/40"
+                                                        ? "bg-success/40"
                                                         : "bg-primary/40"
                                                 )}
                                                 style={{
@@ -190,7 +190,7 @@ export function CommitGraph({ commits, className }: CommitGraphProps) {
                                             {/* Outer ring for emphasis on HEAD */}
                                             {isHead && (
                                                 <div
-                                                    className="absolute inset-0 rounded-full border-2 border-green-500/50 dark:border-green-400/50 animate-pulse"
+                                                    className="absolute inset-0 rounded-full border-2 border-success/50 animate-pulse"
                                                     style={{
                                                         transform: 'scale(1.3)',
                                                     }}
@@ -203,25 +203,25 @@ export function CommitGraph({ commits, className }: CommitGraphProps) {
                                                     "relative rounded-full flex items-center justify-center",
                                                     "border-2 shadow-2xl transition-all duration-500",
                                                     "w-14 h-14 z-10",
-                                                    "group-hover:shadow-[0_0_30px_rgba(var(--primary),0.5)]",
+                                                    "group-hover:shadow-[0_0_30px_color-mix(in_oklch,var(--primary)_50%,transparent)]",
                                                     commit.isMerge
-                                                        ? "bg-gradient-to-br from-purple-600/90 via-purple-500/80 to-purple-700/90 dark:from-purple-500/90 dark:via-purple-400/80 dark:to-purple-600/90 border-purple-500 dark:border-purple-400"
+                                                        ? "bg-gradient-to-br from-chart-2/90 via-chart-2/80 to-chart-2/90 border-chart-2"
                                                         : isHead
-                                                        ? "bg-gradient-to-br from-green-600/90 via-green-500/80 to-green-700/90 dark:from-green-500/90 dark:via-green-400/80 dark:to-green-600/90 border-green-500 dark:border-green-400"
+                                                        ? "bg-gradient-to-br from-success/90 via-success/80 to-success/90 border-success"
                                                         : "bg-gradient-to-br from-primary/90 via-primary/80 to-primary/90 border-primary"
                                                 )}
                                                 style={{
                                                     boxShadow: commit.isMerge
-                                                        ? "0 0 0 3px rgba(168, 85, 247, 0.2), 0 8px 24px rgba(168, 85, 247, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.15)"
+                                                        ? "0 0 0 3px color-mix(in oklch, var(--chart-2) 20%, transparent), 0 8px 24px color-mix(in oklch, var(--chart-2) 40%, transparent), inset 0 2px 4px color-mix(in oklch, var(--foreground) 15%, transparent)"
                                                         : isHead
-                                                        ? "0 0 0 3px rgba(34, 197, 94, 0.2), 0 8px 24px rgba(34, 197, 94, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.15)"
-                                                        : "0 0 0 3px rgba(var(--primary), 0.2), 0 8px 24px rgba(var(--primary), 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.15)",
+                                                        ? "0 0 0 3px color-mix(in oklch, var(--success) 20%, transparent), 0 8px 24px color-mix(in oklch, var(--success) 40%, transparent), inset 0 2px 4px color-mix(in oklch, var(--foreground) 15%, transparent)"
+                                                        : "0 0 0 3px color-mix(in oklch, var(--primary) 20%, transparent), 0 8px 24px color-mix(in oklch, var(--primary) 40%, transparent), inset 0 2px 4px color-mix(in oklch, var(--foreground) 15%, transparent)",
                                                 }}
                                             >
                                                 {commit.isMerge ? (
-                                                    <GitMerge className="w-7 h-7 text-white dark:text-purple-100 drop-shadow-lg" />
+                                                    <GitMerge className="w-7 h-7 text-primary-foreground drop-shadow-lg" />
                                                 ) : (
-                                                    <GitCommit className="w-7 h-7 text-white dark:text-primary-foreground drop-shadow-lg" />
+                                                    <GitCommit className="w-7 h-7 text-primary-foreground drop-shadow-lg" />
                                                 )}
                                             </div>
                                         </div>
@@ -247,8 +247,8 @@ export function CommitGraph({ commits, className }: CommitGraphProps) {
                                                             "shadow-md border-2 backdrop-blur-sm",
                                                             "transition-all duration-300 hover:scale-110 hover:shadow-lg",
                                                             label.includes("HEAD")
-                                                                ? "bg-gradient-to-r from-green-500/30 to-green-600/30 text-green-800 dark:text-green-200 border-green-500/70 dark:border-green-400/70 shadow-green-500/30"
-                                                                : "bg-gradient-to-r from-blue-500/30 to-blue-600/30 text-blue-800 dark:text-blue-200 border-blue-500/70 dark:border-blue-400/70 shadow-blue-500/30"
+                                                                ? "bg-gradient-to-r from-success/30 to-success/30 text-success border-success/70 shadow-success/30"
+                                                                : "bg-gradient-to-r from-chart-2/30 to-chart-2/30 text-chart-2 border-chart-2/70 shadow-chart-2/30"
                                                         )}
                                                     >
                                                         {label.includes("HEAD") && <GitBranch className="inline w-3 h-3 mr-1.5" />}

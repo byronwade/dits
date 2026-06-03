@@ -45,10 +45,10 @@ export default function SDKsPage() {
       </p>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 my-8">
-        <Card className="border-blue-200">
+        <Card className="border-info/20">
           <CardHeader>
-            <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center mb-2">
-              <Code className="h-6 w-6 text-blue-600" />
+            <div className="w-12 h-12 rounded-lg bg-info/10 flex items-center justify-center mb-2">
+              <Code className="h-6 w-6 text-info" />
             </div>
             <CardTitle>JavaScript</CardTitle>
             <CardDescription>Node.js & Browser SDK</CardDescription>
@@ -74,10 +74,10 @@ export default function SDKsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-green-200">
+        <Card className="border-success/20">
           <CardHeader>
-            <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900 flex items-center justify-center mb-2">
-              <Terminal className="h-6 w-6 text-green-600" />
+            <div className="w-12 h-12 rounded-lg bg-success/10 flex items-center justify-center mb-2">
+              <Terminal className="h-6 w-6 text-success" />
             </div>
             <CardTitle>Python</CardTitle>
             <CardDescription>Python SDK with async support</CardDescription>
@@ -103,10 +103,10 @@ export default function SDKsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-cyan-200">
+        <Card className="border-brand/20">
           <CardHeader>
-            <div className="w-12 h-12 rounded-lg bg-cyan-100 dark:bg-cyan-900 flex items-center justify-center mb-2">
-              <Package className="h-6 w-6 text-cyan-600" />
+            <div className="w-12 h-12 rounded-lg bg-brand/10 flex items-center justify-center mb-2">
+              <Package className="h-6 w-6 text-brand" />
             </div>
             <CardTitle>Go</CardTitle>
             <CardDescription>High-performance Go SDK</CardDescription>
@@ -132,10 +132,10 @@ export default function SDKsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-orange-200">
+        <Card className="border-warning/20">
           <CardHeader>
-            <div className="w-12 h-12 rounded-lg bg-orange-100 dark:bg-orange-900 flex items-center justify-center mb-2">
-              <Star className="h-6 w-6 text-orange-600" />
+            <div className="w-12 h-12 rounded-lg bg-warning/10 flex items-center justify-center mb-2">
+              <Star className="h-6 w-6 text-warning" />
             </div>
             <CardTitle>Rust</CardTitle>
             <CardDescription>Native Rust SDK with zero-copy operations</CardDescription>
@@ -455,66 +455,66 @@ fn process_chunk(chunk: &[u8]) {
             <TableBody>
               <TableRow>
                 <TableCell className="font-medium">REST API</TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">File Upload/Download</TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Streaming Support</TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Webhook Handling</TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Async/Await</TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Progress Callbacks</TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Type Safety</TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Zero-Copy Operations</TableCell>
                 <TableCell className="text-center">—</TableCell>
                 <TableCell className="text-center">—</TableCell>
                 <TableCell className="text-center">—</TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Concurrent Operations</TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
-                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-green-500 mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
+                <TableCell className="text-center"><CheckCircle className="h-4 w-4 text-success mx-auto" /></TableCell>
               </TableRow>
             </TableBody>
           </Table>

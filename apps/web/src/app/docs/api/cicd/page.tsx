@@ -38,7 +38,7 @@ export default function CICDPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-yellow-600" />
+              <Zap className="h-5 w-5 text-warning" />
               Automated Workflows
             </CardTitle>
             <CardDescription>
@@ -58,7 +58,7 @@ export default function CICDPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-green-600" />
+              <Shield className="h-5 w-5 text-success" />
               Quality Assurance
             </CardTitle>
             <CardDescription>

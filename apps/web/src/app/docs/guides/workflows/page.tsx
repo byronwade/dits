@@ -125,10 +125,10 @@ dits push origin main`}</code></pre>
                     <div className="bg-muted p-6 rounded-lg">
                         <h4 className="font-semibold mb-3">When to use this workflow:</h4>
                         <ul className="text-sm space-y-1">
-                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Personal projects</li>
-                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Early prototyping</li>
-                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Documentation repos</li>
-                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Configuration files</li>
+                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Personal projects</li>
+                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Early prototyping</li>
+                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Documentation repos</li>
+                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Configuration files</li>
                         </ul>
                     </div>
                 </TabsContent>
