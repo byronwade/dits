@@ -362,6 +362,9 @@ enum Commands {
         /// Where to write the clip manifest (default: <input>.facr.json)
         #[arg(long)]
         manifest: Option<String>,
+        /// Per-frame codec: png or webp (default: webp — smaller, lossless)
+        #[arg(long = "frame-codec")]
+        frame_codec: Option<String>,
     },
 
     /// Reconstruct a playable video from a FACR manifest (requires FFmpeg)
@@ -1192,8 +1195,8 @@ async fn main() {
         Commands::Unmount { mount_point } => commands::unmount(&mount_point),
         Commands::CacheStats => commands::cache_stats(),
         Commands::FacrDemo { frames, regrade } => commands::facr_demo(frames, regrade),
-        Commands::FacrAdd { input, store, manifest } => {
-            commands::facr_add(&input, store.as_deref(), manifest.as_deref())
+        Commands::FacrAdd { input, store, manifest, frame_codec } => {
+            commands::facr_add(&input, store.as_deref(), manifest.as_deref(), frame_codec.as_deref())
         }
         Commands::FacrCheckout { manifest, output, store } => {
             commands::facr_checkout(&manifest, &output, store.as_deref())

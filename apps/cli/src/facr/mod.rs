@@ -34,4 +34,4 @@ pub use pipeline::commit_clip;
 #[allow(unused_imports)]
 pub use store::FrameStore;
 #[allow(unused_imports)]
-pub use video::{ingest_video, reconstruct_video, source_has_audio, VideoInfo};
+pub use video::{ingest_video, reconstruct_video, source_has_audio, FrameImageCodec, VideoInfo};

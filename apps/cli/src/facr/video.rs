@@ -6,9 +6,9 @@
 //! the manifest's frames and re-muxes them into a playable video.
 //!
 //! Audio is preserved: the track is extracted stream-copied (lossless), stored
-//! content-addressed (deduped like frames), and muxed back on reconstruction. Frames
-//! are stored as PNG, which is lossless and deterministic, so re-ingesting identical
-//! content dedups perfectly.
+//! content-addressed (deduped like frames), and muxed back on reconstruction. Frames are
+//! stored in a configurable lossless codec ([`FrameImageCodec`] — WebP by default, ~30%
+//! smaller than PNG). All codecs must be deterministic so identical frames dedup.
 
 use super::manifest::{AudioTrack, ClipManifest, FrameRef};
 use super::store::FrameStore;
@@ -89,19 +89,62 @@ pub fn source_has_audio(path: &Path) -> bool {
         .unwrap_or(false)
 }
 
+/// Per-frame image codec used to store decoded frames. All options are lossless and
+/// MUST be deterministic (identical pixels -> identical bytes) so frames content-address
+/// and dedup. WebP-lossless is ~30% smaller than PNG; PNG maximizes tool compatibility.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FrameImageCodec {
+    Png,
+    Webp,
+}
+
+impl FrameImageCodec {
+    pub fn from_name(s: &str) -> Option<Self> {
+        match s.to_ascii_lowercase().as_str() {
+            "png" => Some(Self::Png),
+            "webp" => Some(Self::Webp),
+            _ => None,
+        }
+    }
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::Png => "png",
+            Self::Webp => "webp",
+        }
+    }
+    /// ffmpeg encode args (codec selection + bit-exact). Empty for PNG (image2 default).
+    fn encode_args(self) -> &'static [&'static str] {
+        match self {
+            Self::Png => &[],
+            Self::Webp => &["-c:v", "libwebp", "-lossless", "1", "-fflags", "+bitexact"],
+        }
+    }
+}
+
+/// Map a manifest's recorded codec name to the on-disk frame extension.
+fn frame_ext(codec: &str) -> &str {
+    if codec.is_empty() {
+        "png"
+    } else {
+        codec
+    }
+}
+
 /// Decode `path` into content-addressed frames stored in `store`, returning a manifest.
-pub fn ingest_video(path: &Path, store: &FrameStore) -> Result<ClipManifest> {
+pub fn ingest_video(path: &Path, store: &FrameStore, codec: FrameImageCodec) -> Result<ClipManifest> {
     check_ffmpeg()?;
     let info = probe_video(path)?;
 
     let work = std::env::temp_dir().join(format!("dits-facr-ingest-{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&work).context("create ingest temp dir")?;
-    let pattern = work.join("f_%08d.png");
+    let ext = codec.name();
+    let pattern = work.join(format!("f_%08d.{ext}"));
 
-    // Decode every frame to a lossless PNG.
+    // Decode every frame to a lossless image in the chosen codec.
     let out = Command::new("ffmpeg")
         .args(["-v", "error", "-i"])
         .arg(path)
+        .args(codec.encode_args())
         .arg(&pattern)
         .output()
         .context("running ffmpeg decode")?;
@@ -114,11 +157,11 @@ pub fn ingest_video(path: &Path, store: &FrameStore) -> Result<ClipManifest> {
     let mut entries: Vec<_> = std::fs::read_dir(&work)
         .context("read decoded frames")?
         .filter_map(|e| e.ok().map(|e| e.path()))
-        .filter(|p| p.extension().map(|x| x == "png").unwrap_or(false))
+        .filter(|p| p.extension().map(|x| x == ext).unwrap_or(false))
         .collect();
     entries.sort();
 
-    let mut manifest = ClipManifest::new(info.width, info.height, "png", 1);
+    let mut manifest = ClipManifest::new(info.width, info.height, codec.name(), 1);
     manifest.frame_rate = info.frame_rate;
     for (i, frame_path) in entries.iter().enumerate() {
         let bytes = std::fs::read(frame_path).context("read frame png")?;
@@ -167,12 +210,13 @@ pub fn reconstruct_video(manifest: &ClipManifest, store: &FrameStore, output: &P
 
     let work = std::env::temp_dir().join(format!("dits-facr-out-{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&work).context("create reconstruct temp dir")?;
+    let ext = frame_ext(&manifest.codec);
 
     for (i, frame) in manifest.frames.iter().enumerate() {
         let bytes = store
             .load_frame(&frame.hash)
             .with_context(|| format!("missing frame {} ({})", i, frame.hash.short()))?;
-        std::fs::write(work.join(format!("f_{:08}.png", i + 1)), bytes)
+        std::fs::write(work.join(format!("f_{:08}.{ext}", i + 1)), bytes)
             .context("write frame for reconstruction")?;
     }
 
@@ -188,7 +232,7 @@ pub fn reconstruct_video(manifest: &ClipManifest, store: &FrameStore, output: &P
         None
     };
 
-    let pattern = work.join("f_%08d.png");
+    let pattern = work.join(format!("f_%08d.{ext}"));
     let mut cmd = Command::new("ffmpeg");
     cmd.args(["-v", "error", "-y", "-framerate", &manifest.frame_rate, "-i"])
         .arg(&pattern);
@@ -245,7 +289,7 @@ mod tests {
         let store = FrameStore::new(&dir.path().join("store")).unwrap();
 
         // First ingest: decodes real frames into the store.
-        let m1 = ingest_video(&video, &store).unwrap();
+        let m1 = ingest_video(&video, &store, FrameImageCodec::Png).unwrap();
         assert!(m1.frames.len() >= 10, "expected ~20 frames, got {}", m1.frames.len());
         assert_eq!(m1.width, 160);
         assert_eq!(m1.height, 120);
@@ -253,7 +297,7 @@ mod tests {
         assert_eq!(after_first, m1.frames.len(), "each distinct frame stored once");
 
         // Re-ingesting identical content adds nothing (content-addressed dedup).
-        let m2 = ingest_video(&video, &store).unwrap();
+        let m2 = ingest_video(&video, &store, FrameImageCodec::Png).unwrap();
         assert_eq!(store.count().unwrap(), after_first, "re-ingest deduped completely");
         assert_eq!(m1.frames, m2.frames, "same video -> identical manifest");
     }
@@ -269,7 +313,7 @@ mod tests {
         assert!(make_test_video(&video, 1));
 
         let store = FrameStore::new(&dir.path().join("store")).unwrap();
-        let manifest = ingest_video(&video, &store).unwrap();
+        let manifest = ingest_video(&video, &store, FrameImageCodec::Png).unwrap();
 
         let out = dir.path().join("rebuilt.mp4");
         reconstruct_video(&manifest, &store, &out).unwrap();
@@ -304,6 +348,32 @@ mod tests {
     }
 
     #[test]
+    fn webp_frames_round_trip_and_dedup() {
+        if !ffmpeg_available() {
+            eprintln!("skipping: ffmpeg not installed");
+            return;
+        }
+        let dir = tempfile::tempdir().unwrap();
+        let video = dir.path().join("clip.mp4");
+        assert!(make_test_video(&video, 1));
+        let store = FrameStore::new(&dir.path().join("store")).unwrap();
+
+        let m = ingest_video(&video, &store, FrameImageCodec::Webp).unwrap();
+        assert_eq!(m.codec, "webp");
+        let after = store.count().unwrap();
+
+        // Re-ingest with webp dedups completely (deterministic encoding).
+        let _ = ingest_video(&video, &store, FrameImageCodec::Webp).unwrap();
+        assert_eq!(store.count().unwrap(), after, "webp frames must dedup on re-ingest");
+
+        // And it reconstructs a playable video.
+        let out = dir.path().join("out.mp4");
+        reconstruct_video(&m, &store, &out).unwrap();
+        let info = probe_video(&out).unwrap();
+        assert_eq!(info.width, 160);
+    }
+
+    #[test]
     fn reconstruction_preserves_audio() {
         if !ffmpeg_available() {
             eprintln!("skipping: ffmpeg not installed");
@@ -315,7 +385,7 @@ mod tests {
         assert!(has_audio_stream(&video), "test video should have audio");
 
         let store = FrameStore::new(&dir.path().join("store")).unwrap();
-        let manifest = ingest_video(&video, &store).unwrap();
+        let manifest = ingest_video(&video, &store, FrameImageCodec::Png).unwrap();
 
         let out = dir.path().join("rebuilt.mp4");
         reconstruct_video(&manifest, &store, &out).unwrap();
