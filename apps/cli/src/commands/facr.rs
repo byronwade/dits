@@ -41,9 +41,21 @@ fn human(bytes: u64) -> String {
 }
 
 /// Ingest a real video into the frame-addressable store.
-pub fn facr_add(input: &str, store: Option<&str>, manifest_out: Option<&str>) -> Result<()> {
+pub fn facr_add(
+    input: &str,
+    store: Option<&str>,
+    manifest_out: Option<&str>,
+    frame_codec: Option<&str>,
+) -> Result<()> {
     let input_path = Path::new(input);
     anyhow::ensure!(input_path.exists(), "input not found: {}", input);
+
+    // Default to WebP-lossless (smaller than PNG, still lossless + deterministic).
+    let codec = match frame_codec {
+        Some(name) => crate::facr::FrameImageCodec::from_name(name)
+            .with_context(|| format!("unknown frame codec '{name}' (use: png, webp)"))?,
+        None => crate::facr::FrameImageCodec::Webp,
+    };
 
     let store_path = store_dir(store);
     std::fs::create_dir_all(&store_path).context("create FACR store dir")?;
@@ -59,7 +71,7 @@ pub fn facr_add(input: &str, store: Option<&str>, manifest_out: Option<&str>) ->
             style("\u{266a}").cyan()
         );
     }
-    let manifest = ingest_video(input_path, &frame_store)?;
+    let manifest = ingest_video(input_path, &frame_store, codec)?;
 
     let after = frame_store.count()?;
     let after_bytes = dir_size(&store_path);
