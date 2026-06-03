@@ -18,9 +18,9 @@ export function FileClassifierDiagram() {
       <div className="min-w-[500px] space-y-4">
         {/* File Input */}
         <div className="mx-auto max-w-xs">
-          <div className="rounded-xl border-2 border-primary/30 bg-primary/10 px-6 py-4 text-center">
-            <FileText className="mx-auto h-6 w-6 text-primary" />
-            <div className="mt-2 font-bold text-primary">File In</div>
+          <div className="rounded-xl border-2 border-brand/30 bg-brand/10 px-6 py-4 text-center">
+            <FileText className="mx-auto h-6 w-6 text-brand" />
+            <div className="mt-2 font-bold text-brand">File In</div>
           </div>
         </div>
 

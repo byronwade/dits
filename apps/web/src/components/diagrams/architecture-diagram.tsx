@@ -22,7 +22,7 @@ interface DiagramBoxProps {
 
 function DiagramBox({ children, className, variant = "primary" }: DiagramBoxProps) {
   const variants = {
-    primary: "bg-primary/10 border-primary/30 text-primary",
+    primary: "bg-brand/10 border-brand/30 text-brand",
     secondary: "bg-muted border-border text-foreground",
     accent: "bg-accent/10 border-accent/30 text-accent-foreground",
   };
@@ -61,8 +61,8 @@ export function ArchitectureDiagram() {
     <div className="not-prose my-8 overflow-x-auto">
       <div className="min-w-[600px] space-y-4">
         {/* Client Layer */}
-        <div className="rounded-xl border-2 border-primary/20 bg-gradient-to-b from-primary/5 to-transparent p-4">
-          <div className="mb-3 text-center text-sm font-bold uppercase tracking-wider text-primary">
+        <div className="rounded-xl border-2 border-brand/20 bg-gradient-to-b from-brand/5 to-transparent p-4">
+          <div className="mb-3 text-center text-sm font-bold uppercase tracking-wider text-brand">
             Client Layer
           </div>
           <div className="grid grid-cols-5 gap-3">
@@ -160,8 +160,8 @@ function ClientBox({
   tech: string;
 }) {
   return (
-    <div className="rounded-lg border border-primary/20 bg-card p-3 text-center shadow-sm transition-all hover:border-primary/40 hover:shadow-md">
-      <Icon className="mx-auto h-5 w-5 text-primary" />
+    <div className="rounded-lg border border-brand/20 bg-card p-3 text-center shadow-sm transition-all hover:border-brand/40 hover:shadow-md">
+      <Icon className="mx-auto h-5 w-5 text-brand" />
       <div className="mt-1.5 text-sm font-semibold">{label}</div>
       <div className="text-xs text-muted-foreground">({tech})</div>
     </div>

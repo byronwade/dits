@@ -53,14 +53,14 @@ function ComparisonBar({
             {/* Dits bar */}
             <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                    <div className="w-16 text-xs font-medium text-primary">{ditsLabel}</div>
+                    <div className="w-16 text-xs font-medium text-brand">{ditsLabel}</div>
                     <div className="flex-1 h-6 bg-muted rounded-md overflow-hidden">
                         <div
                             className={cn(
                                 "h-full rounded-md flex items-center justify-end px-2 transition-all",
                                 ditsIsBetter
                                     ? "bg-gradient-to-r from-success/80 to-success"
-                                    : "bg-gradient-to-r from-primary/60 to-primary"
+                                    : "bg-gradient-to-r from-brand/60 to-brand"
                             )}
                             style={{ width: `${ditsPercent}%` }}
                         >

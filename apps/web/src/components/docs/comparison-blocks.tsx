@@ -66,10 +66,10 @@ export function ComparisonBlocks({
                 </div>
 
                 {/* After */}
-                <div className="p-6 bg-primary/5">
+                <div className="p-6 bg-brand/5">
                     <div className="flex items-center gap-2 mb-4">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                            <Check className="w-4 h-4 text-primary" />
+                        <div className="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center">
+                            <Check className="w-4 h-4 text-brand" />
                         </div>
                         <h4 className="font-semibold">{after.label}</h4>
                     </div>
@@ -86,7 +86,7 @@ export function ComparisonBlocks({
                                 className={cn(
                                     "px-3 py-2 rounded font-mono text-sm border",
                                     i === 0
-                                        ? "bg-primary/20 text-primary border-primary/30"
+                                        ? "bg-brand/20 text-brand border-brand/30"
                                         : "bg-muted text-muted-foreground border-border"
                                 )}
                             >
@@ -96,7 +96,7 @@ export function ComparisonBlocks({
                     </div>
 
                     {showResult && (
-                        <div className="flex items-center gap-2 text-sm text-primary">
+                        <div className="flex items-center gap-2 text-sm text-brand">
                             <Check className="w-4 h-4" />
                             <span>{afterResult}</span>
                         </div>

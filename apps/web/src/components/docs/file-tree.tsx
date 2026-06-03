@@ -90,7 +90,7 @@ function FileTreeNode({ item, level, defaultExpanded = true }: FileTreeNodeProps
                 {/* Icon */}
                 <FileIcon className={cn(
                     "w-4 h-4 flex-shrink-0",
-                    isFolder ? "text-primary" : "text-muted-foreground"
+                    isFolder ? "text-brand" : "text-muted-foreground"
                 )} />
 
                 {/* Name */}

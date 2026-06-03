@@ -29,9 +29,9 @@ export function SyncDiagram({
             <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-8">
                 {/* Local box */}
                 <div className="flex-1 max-w-[200px]">
-                    <div className="rounded-lg border-2 border-primary bg-primary/5 p-4">
+                    <div className="rounded-lg border-2 border-brand bg-brand/5 p-4">
                         <div className="flex items-center gap-2 mb-3">
-                            <HardDrive className="h-5 w-5 text-primary" />
+                            <HardDrive className="h-5 w-5 text-brand" />
                             <span className="font-semibold">Local</span>
                         </div>
                         <div className="text-sm text-muted-foreground mb-2">Chunks:</div>
