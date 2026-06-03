@@ -566,7 +566,7 @@ impl Repository {
             for entry in WalkDir::new(&full_path)
                 .into_iter()
                 .filter_map(|e| e.ok())
-                .filter(|e| e.file_type().is_file())
+                .filter(|e| e.file_type().is_file() || e.file_type().is_symlink())
             {
                 let rel_path = entry
                     .path()
@@ -578,6 +578,13 @@ impl Repository {
                 // Skip ignored files (includes .dits directory)
                 if self.ignore.is_ignored_str(&rel_path) {
                     result.files_ignored += 1;
+                    continue;
+                }
+
+                // Symlink versioning is not supported yet. Skip them, but count them so
+                // the user is warned rather than silently losing links.
+                if entry.file_type().is_symlink() {
+                    result.symlinks_skipped += 1;
                     continue;
                 }
 
@@ -2044,6 +2051,9 @@ impl Repository {
 pub struct AddResult {
     pub files_staged: usize,
     pub files_ignored: usize,
+    /// Symbolic links encountered during a directory add. Symlink versioning is not
+    /// supported yet, so these are skipped — but reported so it is never silent.
+    pub symlinks_skipped: usize,
     pub new_chunks: usize,
     pub new_bytes: u64,
     pub dedup_chunks: usize,
