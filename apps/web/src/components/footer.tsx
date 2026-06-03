@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Github, MessageCircle, Bug } from "lucide-react";
+import { MessageCircle, Bug } from "lucide-react";
+import { GithubIcon } from "@/components/icons/github-icon";
 
 const footerLinks = {
   documentation: [
@@ -19,7 +20,7 @@ const footerLinks = {
     {
       title: "GitHub",
       href: "https://github.com/byronwade/dits",
-      icon: Github,
+      icon: GithubIcon,
       label: "View Dits on GitHub",
     },
     {
@@ -51,7 +52,7 @@ const footerLinks = {
  */
 export function Footer() {
   return (
-    <footer className="border-t bg-muted/50" role="contentinfo">
+    <footer className="border-t border-border bg-card" role="contentinfo">
       <div className="container py-12 md:py-16">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           <div className="col-span-2 md:col-span-1">
@@ -67,7 +68,7 @@ export function Footer() {
                 height={32}
                 className="h-8 w-8 object-contain"
               />
-              <span className="font-bold">Dits</span>
+              <span className="font-bold text-foreground">Dits</span>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">
               Free and open source version control for video and large files.
@@ -75,7 +76,7 @@ export function Footer() {
             </p>
           </div>
           <div>
-            <h4 className="font-semibold mb-4" id="footer-docs">Documentation</h4>
+            <h4 className="font-semibold text-foreground mb-4" id="footer-docs">Documentation</h4>
             <ul className="space-y-2 text-sm" aria-labelledby="footer-docs">
               {footerLinks.documentation.map((link) => (
                 <li key={link.href}>
@@ -90,7 +91,7 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-4" id="footer-resources">Resources</h4>
+            <h4 className="font-semibold text-foreground mb-4" id="footer-resources">Resources</h4>
             <ul className="space-y-2 text-sm" aria-labelledby="footer-resources">
               {footerLinks.resources.map((link) => (
                 <li key={link.href}>
@@ -105,7 +106,7 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-4" id="footer-community">Community</h4>
+            <h4 className="font-semibold text-foreground mb-4" id="footer-community">Community</h4>
             <ul className="space-y-2 text-sm" aria-labelledby="footer-community">
               {footerLinks.community.map((link) => (
                 <li key={link.href}>
@@ -125,7 +126,7 @@ export function Footer() {
             </ul>
           </div>
         </div>
-        <div className="mt-8 pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="mt-8 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
           <nav className="flex flex-wrap gap-4 text-sm text-muted-foreground" aria-label="Legal">
             {footerLinks.legal.map((link) => (
               <Link

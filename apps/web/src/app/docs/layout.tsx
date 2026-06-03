@@ -25,11 +25,9 @@ export default function DocsLayout({
       {/* Mobile Menu Bar */}
       <div className="sticky top-[104px] z-40 flex items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-2 lg:hidden">
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle menu</span>
-            </Button>
+          <SheetTrigger render={<Button variant="ghost" size="sm" className="h-8 w-8 p-0" />}>
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle menu</span>
           </SheetTrigger>
           <SheetContent side="left" className="w-[280px] p-0">
             <div className="h-full overflow-y-auto">

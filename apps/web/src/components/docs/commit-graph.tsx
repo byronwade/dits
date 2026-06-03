@@ -62,8 +62,8 @@ export function CommitGraph({ commits, className }: CommitGraphProps) {
                     {/* Gradient definitions for lines */}
                     <defs>
                         <linearGradient id="mainBranchGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.4" />
-                            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.6" />
+                            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.4" />
+                            <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.6" />
                         </linearGradient>
                         <linearGradient id="mergeBranchGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" stopColor="rgb(168, 85, 247)" stopOpacity="0.4" />

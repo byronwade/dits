@@ -162,14 +162,14 @@ export function DocsSidebar({ onNavigate }: DocsSidebarProps) {
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto no-scrollbar overflow-x-hidden px-2">
+    <div className="scrollbar-thin flex min-h-0 flex-1 flex-col gap-2 overflow-auto overflow-x-hidden px-2">
       {/* Gradient blur overlay - top */}
       <div className="from-background via-background/80 to-background/50 sticky -top-1 z-10 h-8 shrink-0 bg-gradient-to-b" />
 
       {/* Detailed Navigation - Flat sections */}
       {docsNavigation.map((section) => (
         <div key={section.title} className="relative flex w-full min-w-0 flex-col p-2">
-          <div className="flex h-8 shrink-0 items-center rounded-md px-2 text-xs text-muted-foreground font-medium">
+          <div className="flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {section.title}
           </div>
           <ul className="flex w-full min-w-0 flex-col gap-0.5">
@@ -181,10 +181,10 @@ export function DocsSidebar({ onNavigate }: DocsSidebarProps) {
                   data-active={pathname === item.href}
                   className={cn(
                     "flex items-center gap-2 rounded-md p-2 text-left",
-                    "transition-[width,height,padding] focus-visible:ring-2",
-                    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                    "data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground",
-                    "relative h-[30px] w-fit overflow-visible border border-transparent text-[0.8rem] font-medium"
+                    "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "text-muted-foreground hover:bg-accent hover:text-foreground",
+                    "data-[active=true]:bg-brand/10 data-[active=true]:font-medium data-[active=true]:text-brand",
+                    "relative h-[30px] w-full overflow-visible border border-transparent text-[0.8rem] font-medium"
                   )}
                 >
                   {item.title}

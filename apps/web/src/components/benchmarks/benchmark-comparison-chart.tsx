@@ -40,9 +40,7 @@ function ComparisonBar({
             <div className="flex items-center justify-between text-sm">
                 <TooltipProvider>
                     <Tooltip>
-                        <TooltipTrigger asChild>
-                            <span className="font-medium cursor-help">{label}</span>
-                        </TooltipTrigger>
+                        <TooltipTrigger render={<span className="font-medium cursor-help" />}>{label}</TooltipTrigger>
                         {tooltip && (
                             <TooltipContent side="top" className="max-w-xs">
                                 <p>{tooltip}</p>

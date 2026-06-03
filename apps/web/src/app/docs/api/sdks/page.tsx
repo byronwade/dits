@@ -23,12 +23,12 @@ import {
   Code,
   Download,
   Book,
-  Github,
   CheckCircle,
   Star,
   Package,
   Terminal
 } from "lucide-react";
+import { GithubIcon } from "@/components/icons/github-icon";
 
 export const metadata: Metadata = {
   title: "SDKs",
@@ -217,17 +217,13 @@ const buffer = await client.files.download('abc123...', {
           </ul>
 
           <div className="flex gap-4 mt-6">
-            <Button asChild>
-              <Link href="https://npmjs.com/package/@dits/sdk">
-                <Download className="mr-2 h-4 w-4" />
-                NPM Package
-              </Link>
+            <Button render={<Link href="https://npmjs.com/package/@dits/sdk" />}>
+              <Download className="mr-2 h-4 w-4" />
+              NPM Package
             </Button>
-            <Button variant="outline" asChild>
-              <Link href="https://github.com/dits-io/js-sdk">
-                <Book className="mr-2 h-4 w-4" />
-                Documentation
-              </Link>
+            <Button variant="outline" render={<Link href="https://github.com/dits-io/js-sdk" />}>
+              <Book className="mr-2 h-4 w-4" />
+              Documentation
             </Button>
           </div>
         </TabsContent>
@@ -282,17 +278,13 @@ asyncio.run(main())`}
           </ul>
 
           <div className="flex gap-4 mt-6">
-            <Button asChild>
-              <Link href="https://pypi.org/project/dits-sdk/">
-                <Download className="mr-2 h-4 w-4" />
-                PyPI Package
-              </Link>
+            <Button render={<Link href="https://pypi.org/project/dits-sdk/" />}>
+              <Download className="mr-2 h-4 w-4" />
+              PyPI Package
             </Button>
-            <Button variant="outline" asChild>
-              <Link href="https://dits-sdk.readthedocs.io/">
-                <Book className="mr-2 h-4 w-4" />
-                Documentation
-              </Link>
+            <Button variant="outline" render={<Link href="https://dits-sdk.readthedocs.io/" />}>
+              <Book className="mr-2 h-4 w-4" />
+              Documentation
             </Button>
           </div>
         </TabsContent>
@@ -365,17 +357,13 @@ func main() {
           </ul>
 
           <div className="flex gap-4 mt-6">
-            <Button asChild>
-              <Link href="https://pkg.go.dev/github.com/dits-io/go-sdk">
-                <Download className="mr-2 h-4 w-4" />
-                Go Reference
-              </Link>
+            <Button render={<Link href="https://pkg.go.dev/github.com/dits-io/go-sdk" />}>
+              <Download className="mr-2 h-4 w-4" />
+              Go Reference
             </Button>
-            <Button variant="outline" asChild>
-              <Link href="https://github.com/dits-io/go-sdk">
-                <Book className="mr-2 h-4 w-4" />
-                Documentation
-              </Link>
+            <Button variant="outline" render={<Link href="https://github.com/dits-io/go-sdk" />}>
+              <Book className="mr-2 h-4 w-4" />
+              Documentation
             </Button>
           </div>
         </TabsContent>
@@ -439,17 +427,13 @@ fn process_chunk(chunk: &[u8]) {
           </ul>
 
           <div className="flex gap-4 mt-6">
-            <Button asChild>
-              <Link href="https://crates.io/crates/dits-sdk">
-                <Download className="mr-2 h-4 w-4" />
-                Crates.io
-              </Link>
+            <Button render={<Link href="https://crates.io/crates/dits-sdk" />}>
+              <Download className="mr-2 h-4 w-4" />
+              Crates.io
             </Button>
-            <Button variant="outline" asChild>
-              <Link href="https://docs.rs/dits-sdk">
-                <Book className="mr-2 h-4 w-4" />
-                API Docs
-              </Link>
+            <Button variant="outline" render={<Link href="https://docs.rs/dits-sdk" />}>
+              <Book className="mr-2 h-4 w-4" />
+              API Docs
             </Button>
           </div>
         </TabsContent>
@@ -574,11 +558,9 @@ fn process_chunk(chunk: &[u8]) {
       </div>
 
       <div className="text-center my-8">
-        <Button size="lg" asChild>
-          <Link href="https://github.com/dits-io">
-            <Github className="mr-2 h-5 w-5" />
-            View All SDKs on GitHub
-          </Link>
+        <Button size="lg" render={<Link href="https://github.com/dits-io" />}>
+          <GithubIcon className="mr-2 h-5 w-5" />
+          View All SDKs on GitHub
         </Button>
       </div>
     </div>

@@ -54,11 +54,9 @@ export function BenchmarkMetricCard({
                     </div>
                     <TooltipProvider>
                         <Tooltip>
-                            <TooltipTrigger asChild>
-                                <button className="text-muted-foreground/60 hover:text-muted-foreground transition-colors">
-                                    <Info className="h-4 w-4" />
-                                    <span className="sr-only">More info</span>
-                                </button>
+                            <TooltipTrigger render={<button className="text-muted-foreground/60 hover:text-muted-foreground transition-colors" />}>
+                                <Info className="h-4 w-4" />
+                                <span className="sr-only">More info</span>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="max-w-xs">
                                 <p className="text-sm">{description}</p>

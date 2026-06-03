@@ -1004,15 +1004,11 @@ export default function TestingPage() {
       </div>
 
       <div className="flex gap-4 mt-8">
-        <Button asChild>
-          <Link href="/docs/getting-started">
-            Get Started
-          </Link>
+        <Button render={<Link href="/docs/getting-started" />}>
+          Get Started
         </Button>
-        <Button asChild variant="outline">
-          <Link href="/docs/architecture">
-            View Architecture
-          </Link>
+        <Button variant="outline" render={<Link href="/docs/architecture" />}>
+          View Architecture
         </Button>
       </div>
     </div>
