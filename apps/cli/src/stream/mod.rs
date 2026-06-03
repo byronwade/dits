@@ -9,4 +9,5 @@ pub mod ladder;
 pub mod layout;
 pub mod origin;
 pub mod playlist;
+pub mod quic_origin;
 pub mod serve;

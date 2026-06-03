@@ -16,6 +16,7 @@ mod core;
 mod facr;
 mod hooks;
 mod mp4;
+mod p2p;
 mod segment;
 mod security {
     pub use dits::security::*;
@@ -27,6 +28,10 @@ mod util {
     pub use dits::util::*;
 }
 mod vfs;
+
+// p2p::host refers to `crate::Repository` (a root re-export in the library crate); mirror it
+// here so the p2p module compiles in the binary crate too.
+pub(crate) use crate::store::Repository;
 
 use clap::{Parser, Subcommand};
 use std::sync::Arc;
@@ -412,6 +417,9 @@ enum Commands {
         /// Store canonical frames as true-lossless JPEG-XL (default: visually-lossless)
         #[arg(long)]
         lossless: bool,
+        /// Delta-push the segments to an in-process remote QUIC origin (only changed cross the wire)
+        #[arg(long)]
+        push: bool,
         /// HTTP port for the player
         #[arg(long, default_value = "8088")]
         port: u16,
@@ -1218,8 +1226,8 @@ async fn main() {
         Commands::Unmount { mount_point } => commands::unmount(&mount_point),
         Commands::CacheStats => commands::cache_stats(),
         Commands::FacrDemo { frames, regrade } => commands::facr_demo(frames, regrade),
-        Commands::StreamDemo { input, grade_start, grade_end, segment_seconds, lossless, port } => {
-            commands::stream_demo(input, grade_start, grade_end, segment_seconds, lossless, port).await
+        Commands::StreamDemo { input, grade_start, grade_end, segment_seconds, lossless, push, port } => {
+            commands::stream_demo(input, grade_start, grade_end, segment_seconds, lossless, push, port).await
         }
         Commands::FacrAdd { input, store, manifest } => {
             commands::facr_add(&input, store.as_deref(), manifest.as_deref())

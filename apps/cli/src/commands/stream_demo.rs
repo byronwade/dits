@@ -10,10 +10,12 @@ use crate::stream::incremental::{build_full, build_incremental, plan};
 use crate::stream::ladder::default_ladder;
 use crate::stream::layout::SegmentLayout;
 use crate::stream::origin::{LocalDiskOrigin, SegmentOrigin};
-use crate::stream::serve::{serve, ServeState};
+use crate::stream::quic_origin::{push_delta, serve_quic_origin, QuicOriginClient};
+use crate::stream::serve::{serve, ServeState, Ladder};
 use anyhow::{Context, Result};
 use std::path::PathBuf;
 use std::process::Command;
+use std::sync::Arc;
 
 /// Async because the binary runs under `#[tokio::main]`; nesting a runtime would panic.
 /// The ingest/encode work is blocking (shells out to ffmpeg) but runs once at startup.
@@ -23,6 +25,7 @@ pub async fn stream_demo(
     grade_end: f64,
     segment_seconds: f64,
     lossless: bool,
+    push: bool,
     port: u16,
 ) -> Result<()> {
     check_ffmpeg().context("FFmpeg is required for stream-demo")?;
@@ -121,6 +124,33 @@ pub async fn stream_demo(
         bytes_total as f64 / 1024.0
     );
 
+    // 5b. Optional: delta-push to a remote QUIC origin — only changed segments cross the network.
+    if push {
+        let remote_backing = Arc::new(LocalDiskOrigin::new(&work.join("remote"))?);
+        let (addr, fp, _task) =
+            serve_quic_origin("127.0.0.1:0".parse().unwrap(), remote_backing).await?;
+        let client = QuicOriginClient::connect(addr, fp).await?;
+        println!("\n  -- QUIC delta-push to remote origin ({addr}) --");
+
+        let v1_hashes = ladder_hashes(&v1_ladder);
+        let s1 = push_delta(&origin, &client, &v1_hashes).await?;
+        println!(
+            "  v1 push: {} segments, {:.1} KB  (remote was empty)",
+            s1.pushed,
+            s1.bytes as f64 / 1024.0
+        );
+
+        let v2_hashes = ladder_hashes(&v2_ladder);
+        let s2 = push_delta(&origin, &client, &v2_hashes).await?;
+        println!(
+            "  v2 push: {} segments, {:.1} KB  ({} already on remote, 0 KB)",
+            s2.pushed,
+            s2.bytes as f64 / 1024.0,
+            s2.skipped
+        );
+        println!("  => only the changed segments crossed the network.");
+    }
+
     // 6. Serve the browser proof (hls.js loads the master playlist and adapts between rungs).
     let state = ServeState {
         v1: v1_ladder,
@@ -131,6 +161,16 @@ pub async fn stream_demo(
     };
     serve(state, port).await?;
     Ok(())
+}
+
+/// All content hashes in a version's ladder: every rung's init segment plus all media segments.
+fn ladder_hashes(ladder: &Ladder) -> Vec<crate::core::Hash> {
+    let mut out = Vec::new();
+    for (_, sv) in ladder {
+        out.push(sv.init_hash);
+        out.extend(sv.segments.iter().map(|s| s.hash));
+    }
+    out
 }
 
 /// Total bytes of all files under `dir` (the content-addressed frame store size).
