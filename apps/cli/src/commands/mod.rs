@@ -21,6 +21,7 @@ pub mod inspect;
 pub mod inspect_file;
 pub mod roundtrip;
 pub mod shortlog;
+pub mod stream_demo;
 
 // Re-export all command functions
 pub use core::*;
@@ -39,3 +40,4 @@ pub use fetch_objects::fetch_objects;
 pub use inspect::inspect;
 pub use inspect_file::inspect_file;
 pub use roundtrip::roundtrip;
+pub use stream_demo::stream_demo;

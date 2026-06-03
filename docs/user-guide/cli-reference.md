@@ -136,6 +136,7 @@
 | `facr-import-otio` | ✅ | Import an OTIO timeline JSON into a manifest referencing a source clip (zero new frames) |
 | `fetch-objects` | ✅ | Pull missing objects from another dits repo — local path OR a `dits serve` http:// URL (content-addressed, incremental) |
 | `facr-demo` | ✅ | Demonstrate frame-level dedup on a synthetic clip |
+| `stream-demo` | ✅ | End-to-end incremental-streaming proof: ingest, re-grade a window, re-encode only changed HLS segments, serve a player |
 | `photo-add` | ✅ | Store a photo once, start a non-destructive edit history |
 | `photo-edit` | ✅ | Append non-destructive edits (stores zero new image bytes) |
 | `photo-render` | ✅ | Render a photo manifest by applying its edit log |

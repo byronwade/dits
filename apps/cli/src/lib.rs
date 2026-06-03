@@ -32,6 +32,7 @@ pub mod proxy;
 pub mod security;
 pub mod segment;
 pub mod store;
+pub mod stream;
 pub mod util;
 pub mod vfs;
 

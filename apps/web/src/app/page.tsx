@@ -249,11 +249,13 @@ export default function Home() {
         <section className="border-t bg-muted/30 py-24 md:py-32">
           <div className="container">
             <div className="mx-auto max-w-5xl">
-              <SectionHeading title="Why does this exist?" className="mb-14" />
-              <p className="mx-auto -mt-10 mb-14 max-w-2xl text-center text-lg text-muted-foreground">
-                Because version control never got solved for the big stuff. Here&apos;s the whole
-                story in three steps.
-              </p>
+              <div className="mb-14">
+                <SectionHeading title="Why does this exist?" />
+                <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-muted-foreground">
+                  Because version control never got solved for the big stuff. Here&apos;s the whole
+                  story in three steps.
+                </p>
+              </div>
 
               <div className="grid gap-6 md:grid-cols-3">
                 {/* The problem */}
