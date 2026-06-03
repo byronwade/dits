@@ -40,7 +40,7 @@ export const PRODUCTS: Product[] = [
   {
     id: "media",
     name: "Dits",
-    label: "Dits",
+    label: "Media",
     tagline: "Video & Large Files",
     home: "/",
     nav: [
@@ -48,6 +48,7 @@ export const PRODUCTS: Product[] = [
       { title: "How it works", href: "/how-it-works" },
       { title: "Benchmarks", href: "/benchmarks" },
       { title: "Playground", href: "/playground" },
+      { title: "FAQ", href: "/faq" },
       { title: "About", href: "/about" },
       { title: "Community", href: "/community" },
     ],
@@ -118,6 +119,7 @@ const MEDIA_TOP_ROUTES = [
   "/how-it-works",
   "/benchmarks",
   "/playground",
+  "/faq",
   "/about",
   "/community",
   "/download",
