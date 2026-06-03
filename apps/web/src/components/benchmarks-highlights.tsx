@@ -64,8 +64,8 @@ export function BenchmarksHighlights() {
   }, []);
 
   const highlights = useMemo(() => {
-    const fastcdc = pick(run, "FastCDCChunker::chunk(32MiB)");
-    const hasher = pick(run, "Hasher::hash(1MiB)");
+    const fastcdc = pick(run, "FastCDC chunk (32 MiB)");
+    const hasher = pick(run, "BLAKE3 hash (1 MiB)");
     const resolver = pick(run, "getBinaryPath");
     return [fastcdc, hasher, resolver].filter(Boolean) as NonNullable<typeof fastcdc>[];
   }, [run]);

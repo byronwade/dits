@@ -255,7 +255,13 @@ jobs:
         working-directory: apps/web
         run: pnpm test:ci
 
-  # Performance benchmarks
+  # Performance benchmarks — regression guard for the real benchmark suite.
+  # (The old cargo-criterion job was stale: criterion benches were quarantined
+  # to legacy/ on 2026-06-02. This runs the canonical engine benches + the
+  # comparative harness unit tests + a CI-profile smoke that asserts the dits
+  # dedup wins still hold. External CDC tools (restic/borg/xdelta3) aren't
+  # installed here, so the harness skips them gracefully — the dits-only
+  # FACR asserts still run.)
   benchmark:
     name: Performance Benchmark
     runs-on: ubuntu-latest
@@ -264,6 +270,11 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
       - name: Cache Cargo registry
         uses: actions/cache@v4
@@ -275,17 +286,29 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      - name: Install cargo-criterion
-        run: cargo install cargo-criterion
+      - name: Install FFmpeg + git-lfs
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg git-lfs
 
-      - name: Run benchmarks
-        run: cargo criterion --message-format=json > benchmark_results.json
+      - name: Build dits (release)
+        run: cargo build --release -p dits
+
+      - name: Comparative harness unit tests
+        run: npm run bench:comparative:test
+
+      - name: Engine micro-benchmarks (FastCDC / BLAKE3 / SHA-256)
+        run: cargo test -p dits --release --test benchmarks -- --ignored --nocapture --test-threads=1
+
+      - name: Generate test media
+        run: benchmarks/comparative/media/gen-media.sh small
+
+      - name: Comparative regression smoke (asserts dits dedup wins)
+        run: npm run bench:comparative
 
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-results
-          path: benchmark_results.json
+          path: benchmarks/comparative/latest.json
 
   # Dependency vulnerability scanning
   dependency-scan:

@@ -127,3 +127,23 @@ push_delta(v2 hashes): remote already has the unchanged segments -> PUT only the
 New: `apps/cli/src/stream/quic_origin.rs`. Edits: `apps/cli/src/stream/origin.rs` (note `Send+Sync`),
 `apps/cli/src/stream/mod.rs`, `apps/cli/src/commands/stream_demo.rs`, `apps/cli/src/main.rs`
 (`--push` flag). No new dependencies (quinn, rustls, bincode already present).
+
+## Implementation status & verification (2026-06-02)
+
+**Built and committed.** This is the **first actual byte transfer over the project's QUIC stack** —
+the existing `p2p::net` code had no runtime users, so it never installed a rustls crypto provider; we
+install `ring` once (idempotent) on both the server and client paths. Also mirrored the lib's
+`crate::Repository` root re-export into the binary so `p2p` (used by `host.rs`) compiles in the bin.
+
+**Tests (objective, no browser):** 23 stream tests green, including two `#[tokio::test]`s that stand
+up a real QUIC server+client: `put`/`get`/`has` round-trip returns identical bytes; delta-push of
+`[a,b]` then `[a,b,c]` reports `pushed=1, skipped=2, bytes=len(c)` and the remote then has all three.
+
+**End to end** (`dits stream-demo --push`, 720p source, 3-rung ladder):
+- **v1 push: 18 segments / 3338 KB** (15 media + 3 inits; remote was empty).
+- **v2 push: 3 segments / 786 KB** — the changed segment in each of the 3 rungs; **15 already on the
+  remote → 0 KB**. Only the changed segments crossed the wire — the thesis made literal over real QUIC.
+
+**Open / deferred:** multi-host NAT traversal + the rendezvous signal server; serving playback *from*
+the edge origin; auth on the origin (P5). All segments are content-verified on the receiving origin
+(`LocalDiskOrigin::get` re-hashes).

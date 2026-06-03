@@ -13,6 +13,9 @@
     "build:cli": "cargo build --release",
     "test:cli": "cargo test",
     "bench": "node scripts/bench/run.mjs",
+    "bench:comparative": "node benchmarks/comparative/run.mjs --profile ci",
+    "bench:comparative:showcase": "node benchmarks/comparative/run.mjs --profile showcase",
+    "bench:comparative:test": "node --test benchmarks/comparative/test/*.test.mjs",
     "release": "turbo build && echo 'Ready for release'"
   },
   "devDependencies": {

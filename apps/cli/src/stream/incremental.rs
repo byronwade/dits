@@ -54,6 +54,7 @@ pub fn build_full(
     layout: &SegmentLayout,
     origin: &dyn SegmentOrigin,
     profile: &EncodeProfile,
+    vmaf_target: Option<f64>,
 ) -> Result<StreamVersion> {
     let n = manifest.frames.len();
     let seg_count = layout.segment_count(n);
@@ -61,7 +62,7 @@ pub fn build_full(
     let mut init_hash = Hash::default();
     for s in 0..seg_count {
         let range = layout.frame_range(s, n);
-        let (media_hash, seg_init, dur) = encode_and_store(manifest, store, &range, origin, profile)?;
+        let (media_hash, seg_init, dur) = encode_and_store(manifest, store, &range, origin, profile, vmaf_target)?;
         init_hash = seg_init; // shared, constant across same-resolution encodes
         segments.push(SegmentRef { index: s, hash: media_hash, duration_ms: dur });
     }
@@ -93,6 +94,7 @@ pub fn build_incremental(
     origin: &dyn SegmentOrigin,
     plan: &IncrementalPlan,
     profile: &EncodeProfile,
+    vmaf_target: Option<f64>,
 ) -> Result<StreamVersion> {
     let n = v2_manifest.frames.len();
     let seg_count = layout.segment_count(n);
@@ -108,7 +110,7 @@ pub fn build_incremental(
             segments.push(reused.clone());
         } else {
             let range = layout.frame_range(s, n);
-            let (media_hash, _init, dur) = encode_and_store(v2_manifest, store, &range, origin, profile)?;
+            let (media_hash, _init, dur) = encode_and_store(v2_manifest, store, &range, origin, profile, vmaf_target)?;
             segments.push(SegmentRef { index: s, hash: media_hash, duration_ms: dur });
         }
     }
@@ -130,6 +132,7 @@ fn encode_and_store(
     range: &std::ops::Range<usize>,
     origin: &dyn SegmentOrigin,
     profile: &EncodeProfile,
+    vmaf_target: Option<f64>,
 ) -> Result<(Hash, Hash, u64)> {
     let mut pngs = Vec::with_capacity(range.len());
     for i in range.clone() {
@@ -141,7 +144,16 @@ fn encode_and_store(
     }
     let fps = parse_fps(&manifest.frame_rate);
     let ext = crate::facr::video::frame_ext(&manifest.codec);
-    let mut seg = encode_cmaf_segment(&pngs, &manifest.frame_rate, ext, profile)?;
+    // VMAF mode: pick this segment's CRF to hit the quality target (deterministic -> hash-stable).
+    let used_profile = match vmaf_target {
+        Some(t) => {
+            let (crf, _vmaf) =
+                crate::stream::vmaf::optimize_crf(&pngs, &manifest.frame_rate, ext, t)?;
+            EncodeProfile { crf: Some(crf), ..*profile }
+        }
+        None => *profile,
+    };
+    let mut seg = encode_cmaf_segment(&pngs, &manifest.frame_rate, ext, &used_profile)?;
     // Place this fragment at its true position on a continuous timeline by patching
     // tfdt.baseMediaDecodeTime = (frames before this segment) * per-frame ticks. The position
     // is the segment INDEX (range.start), which is identical for an unchanged segment across

@@ -49,6 +49,36 @@ impl StreamVersion {
     }
 }
 
+/// Render an encrypted (HLS AES-128) media playlist: each segment is preceded by an
+/// `#EXT-X-KEY:METHOD=AES-128,URI=...,IV=0x...` with its per-segment IV. `segs` is
+/// `(hash, duration_ms, iv_hex)`.
+pub fn to_hls_encrypted(
+    init_hash: &Hash,
+    segs: &[(Hash, u64, String)],
+    seg_url_base: &str,
+    key_uri: &str,
+) -> String {
+    let target = segs
+        .iter()
+        .map(|(_, d, _)| (*d as f64 / 1000.0).ceil() as u64)
+        .max()
+        .unwrap_or(0);
+    let mut out = String::new();
+    out.push_str("#EXTM3U\n#EXT-X-VERSION:7\n");
+    out.push_str(&format!("#EXT-X-TARGETDURATION:{target}\n"));
+    out.push_str("#EXT-X-MEDIA-SEQUENCE:0\n#EXT-X-PLAYLIST-TYPE:VOD\n");
+    if !segs.is_empty() {
+        out.push_str(&format!("#EXT-X-MAP:URI=\"{seg_url_base}{}.mp4\"\n", init_hash.to_hex()));
+    }
+    for (hash, dur, iv) in segs {
+        out.push_str(&format!("#EXT-X-KEY:METHOD=AES-128,URI=\"{key_uri}\",IV={iv}\n"));
+        out.push_str(&format!("#EXTINF:{:.3},\n", *dur as f64 / 1000.0));
+        out.push_str(&format!("{seg_url_base}{}.m4s\n", hash.to_hex()));
+    }
+    out.push_str("#EXT-X-ENDLIST\n");
+    out
+}
+
 /// Render an HLS master playlist: one `#EXT-X-STREAM-INF` per rung pointing at that rung's
 /// media playlist. Each entry is `(bandwidth_bps, width, height, media_playlist_uri)`.
 pub fn master_playlist(rungs: &[(u64, u32, u32, String)]) -> String {
@@ -68,6 +98,19 @@ mod tests {
 
     fn h(b: &[u8]) -> Hash {
         Hash::from_slice(blake3::hash(b).as_bytes())
+    }
+
+    #[test]
+    fn encrypted_playlist_has_ext_x_key_per_segment() {
+        let m = to_hls_encrypted(
+            &h(b"init"),
+            &[(h(b"a"), 2000, "0x00112233445566778899aabbccddeeff".into())],
+            "/seg/",
+            "/key",
+        );
+        assert!(m.contains("#EXT-X-MAP:URI=\"/seg/"));
+        assert!(m.contains("#EXT-X-KEY:METHOD=AES-128,URI=\"/key\",IV=0x00112233445566778899aabbccddeeff"));
+        assert!(m.contains(&format!("/seg/{}.m4s", h(b"a").to_hex())));
     }
 
     #[test]

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated_at": "2025-12-14T23:22:48.784Z",
+    "generated_at": "2026-06-03T14:07:12.371Z",
     "max_per_benchmark": 25
   },
   "benchmarks": {
@@ -145,6 +145,17 @@
         "iterations": 250000,
         "bytes_per_iter": null,
         "elapsed_ms_total": 71.33333300000001
+      },
+      {
+        "timestamp": "2026-06-03T14:07:10.620Z",
+        "git_sha": "9b79be227be8dd2cf1e9ead2a42e812ebf70565b",
+        "suite": "node.packages/npm",
+        "name": "getPlatformKey",
+        "unit": "ops_per_s",
+        "value": 9683229.417434068,
+        "iterations": 250000,
+        "bytes_per_iter": null,
+        "elapsed_ms_total": 25.817832999999997
       }
     ],
     "node.packages/npm|getBinaryPath|ops_per_s": [
@@ -158,6 +169,56 @@
         "iterations": 150000,
         "bytes_per_iter": null,
         "elapsed_ms_total": 1576.4564579999999
+      },
+      {
+        "timestamp": "2026-06-03T14:07:10.620Z",
+        "git_sha": "9b79be227be8dd2cf1e9ead2a42e812ebf70565b",
+        "suite": "node.packages/npm",
+        "name": "getBinaryPath",
+        "unit": "ops_per_s",
+        "value": 750584.987174379,
+        "iterations": 150000,
+        "bytes_per_iter": null,
+        "elapsed_ms_total": 199.844125
+      }
+    ],
+    "rust.dits-engine|BLAKE3 hash (1 MiB)|mb_per_s": [
+      {
+        "timestamp": "2026-06-03T14:07:10.620Z",
+        "git_sha": "9b79be227be8dd2cf1e9ead2a42e812ebf70565b",
+        "suite": "rust.dits-engine",
+        "name": "BLAKE3 hash (1 MiB)",
+        "unit": "mb_per_s",
+        "value": 1809.9574865420836,
+        "iterations": 200,
+        "bytes_per_iter": 1048576,
+        "elapsed_ms_total": 110.49983300000001
+      }
+    ],
+    "rust.dits-engine|FastCDC chunk (32 MiB)|mb_per_s": [
+      {
+        "timestamp": "2026-06-03T14:07:10.620Z",
+        "git_sha": "9b79be227be8dd2cf1e9ead2a42e812ebf70565b",
+        "suite": "rust.dits-engine",
+        "name": "FastCDC chunk (32 MiB)",
+        "unit": "mb_per_s",
+        "value": 991.7642225358497,
+        "iterations": 5,
+        "bytes_per_iter": 33554432,
+        "elapsed_ms_total": 161.328667
+      }
+    ],
+    "rust.dits-engine|SHA-256 hash (1 MiB)|mb_per_s": [
+      {
+        "timestamp": "2026-06-03T14:07:10.620Z",
+        "git_sha": "9b79be227be8dd2cf1e9ead2a42e812ebf70565b",
+        "suite": "rust.dits-engine",
+        "name": "SHA-256 hash (1 MiB)",
+        "unit": "mb_per_s",
+        "value": 348.3674196338136,
+        "iterations": 100,
+        "bytes_per_iter": 1048576,
+        "elapsed_ms_total": 287.05325
       }
     ]
   }
