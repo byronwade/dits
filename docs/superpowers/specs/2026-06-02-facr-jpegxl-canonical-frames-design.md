@@ -120,3 +120,23 @@ JPEG-XL plugs in there the same way. We are **not** routing JXL through the `Raw
 ## Module layout
 Edits only: `apps/cli/src/facr/video.rs` and `apps/cli/src/stream/{encode,edit,incremental}.rs`
 + `apps/cli/src/commands/stream_demo.rs`. No new files, no new dependencies.
+
+## Implementation status & verification (2026-06-02)
+
+**Built and committed.** 20 stream/facr-video tests green, including a test that re-ingests a clip
+as JPEG-XL and asserts (a) perfect dedup on re-ingest → **determinism holds, content-addressing
+intact**, and (b) the JXL frame store is smaller than the PNG store. Existing `facr-add`/
+`facr-checkout` behavior is unchanged (PNG wrapper).
+
+**End to end** (`dits stream-demo`): canonical frames now `jxl`; 80% reuse preserved; full v2
+CMAF playlist still decodes to 100 frames. `--lossless` selects distance 0.
+
+**Size win is content-dependent (honest):**
+- Synthetic SD testsrc (320×240): **1.3× smaller** (PNG 1600 KB → JXL 1200 KB) — testsrc's flat
+  regions/sharp edges compress well in PNG, so this understates the codec.
+- Detailed 1280×720 frame: **5.7× smaller** (PNG 475 KB → JXL 83 KB at distance 1).
+- The win scales with resolution and photographic detail; real HD footage lands near the latter.
+
+**Codec rejections confirmed by measurement:** AV1-intra (libaom & libsvtav1) is
+non-deterministic (would break frame hashing); ProRes 422 HQ is deterministic but only ~0.85× PNG.
+JPEG-XL is the only candidate that is both deterministic and a meaningful win.
