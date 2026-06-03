@@ -89,7 +89,7 @@ const phases: { name: string; status: "complete" | "active" | "planned" }[] = [
 
 const phaseTone: Record<(typeof phases)[number]["status"], StatusTone> = {
   complete: "success",
-  active: "info",
+  active: "warning",
   planned: "neutral",
 };
 
