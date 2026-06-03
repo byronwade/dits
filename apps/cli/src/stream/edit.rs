@@ -35,6 +35,37 @@ pub fn regrade_range(
     Ok(out)
 }
 
+/// Delete frames `[range)` from the clip, shifting the tail left. PTS are renumbered 0..n so the
+/// result is a contiguous timeline.
+pub fn trim_range(base: &ClipManifest, range: Range<usize>) -> Result<ClipManifest> {
+    if range.start > range.end || range.end > base.frames.len() {
+        bail!("trim range {:?} out of bounds (clip has {} frames)", range, base.frames.len());
+    }
+    let mut out = base.clone();
+    out.frames.drain(range);
+    renumber(&mut out);
+    Ok(out)
+}
+
+/// Insert `frames` (already content-addressed in the store) at index `at`, shifting the tail right.
+pub fn insert_frames(base: &ClipManifest, at: usize, frames: &[FrameRef]) -> Result<ClipManifest> {
+    if at > base.frames.len() {
+        bail!("insert index {at} out of bounds (clip has {} frames)", base.frames.len());
+    }
+    let mut out = base.clone();
+    out.frames.splice(at..at, frames.iter().copied());
+    renumber(&mut out);
+    Ok(out)
+}
+
+/// Renumber PTS to a contiguous 0..n (each frame duration 1, matching ingest).
+fn renumber(m: &mut ClipManifest) {
+    for (i, f) in m.frames.iter_mut().enumerate() {
+        f.pts = i as i64;
+        f.duration = 1;
+    }
+}
+
 /// Brighten a single frame via ffmpeg's `eq` filter, re-encoding in the same still format
 /// (`fmt`). Deterministic, so the graded frame has a stable content hash.
 fn brighten_frame(frame: &[u8], brightness: f32, fmt: FrameFormat) -> Result<Vec<u8>> {
@@ -115,5 +146,39 @@ mod tests {
         let store = FrameStore::new(store_dir.path()).unwrap();
         let m = ClipManifest::new(8, 8, "png", 1);
         assert!(regrade_range(&m, &store, 0..5, 0.2).is_err());
+    }
+
+    fn fr(label: &str, pts: i64) -> FrameRef {
+        FrameRef { hash: Hash::from_slice(blake3::hash(label.as_bytes()).as_bytes()), pts, duration: 1 }
+    }
+
+    fn manifest_of(labels: &[&str]) -> ClipManifest {
+        let mut m = ClipManifest::new(64, 48, "png", 1);
+        for (i, l) in labels.iter().enumerate() {
+            m.push_frame(fr(l, i as i64));
+        }
+        m
+    }
+
+    #[test]
+    fn trim_removes_frames_and_renumbers() {
+        let m = manifest_of(&["a", "b", "c", "d", "e"]);
+        let t = trim_range(&m, 1..3).unwrap(); // drop b, c
+        assert_eq!(t.frames.len(), 3);
+        assert_eq!(t.frames[0], fr("a", 0));
+        assert_eq!(t.frames[1], fr("d", 1)); // renumbered
+        assert_eq!(t.frames[2], fr("e", 2));
+        assert!(trim_range(&m, 0..9).is_err());
+    }
+
+    #[test]
+    fn insert_splices_frames_and_renumbers() {
+        let m = manifest_of(&["a", "b", "c"]);
+        let ins = [fr("X", 0), fr("Y", 0)];
+        let r = insert_frames(&m, 1, &ins).unwrap();
+        let hashes: Vec<_> = r.frames.iter().map(|f| f.hash).collect();
+        assert_eq!(hashes, vec![fr("a", 0).hash, fr("X", 0).hash, fr("Y", 0).hash, fr("b", 0).hash, fr("c", 0).hash]);
+        assert_eq!(r.frames[3].pts, 3); // renumbered after the splice
+        assert!(insert_frames(&m, 9, &ins).is_err());
     }
 }

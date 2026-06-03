@@ -2,6 +2,7 @@
 //! re-delivers only the segments covering changed frames. See
 //! `docs/superpowers/specs/2026-06-02-facr-incremental-streaming-slice-design.md`.
 
+pub mod cdc;
 pub mod edit;
 pub mod encode;
 pub mod incremental;
