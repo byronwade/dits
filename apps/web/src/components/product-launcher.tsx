@@ -17,7 +17,7 @@ import { PRODUCTS, getProduct, counterpartPath } from "@/lib/products";
  * - Visible focus rings; respects prefers-reduced-motion (indicator only animates
  *   transform, which is disabled under motion-reduce)
  */
-export function ProductLauncher() {
+export function ProductLauncher({ className }: { className?: string }) {
   const pathname = usePathname();
   const active = getProduct(pathname);
   const activeIndex = PRODUCTS.findIndex((p) => p.id === active.id);
@@ -26,7 +26,10 @@ export function ProductLauncher() {
     <div
       role="group"
       aria-label="Switch product"
-      className="relative flex items-center rounded-full border border-border bg-card/80 p-1 shadow-card backdrop-blur supports-[backdrop-filter]:bg-card/60"
+      className={cn(
+        "relative flex items-center rounded-full border border-border bg-card/80 p-1 shadow-card backdrop-blur supports-[backdrop-filter]:bg-card/60",
+        className,
+      )}
     >
       {/* Gliding indicator: width is exactly one inner half, translated by its
           own width to land behind the second segment. */}
@@ -44,7 +47,7 @@ export function ProductLauncher() {
             aria-current={isActive ? "page" : undefined}
             title={`${product.name} — ${product.tagline}`}
             className={cn(
-              "relative z-10 min-w-[3.25rem] rounded-full px-3 py-1.5 text-center text-sm font-semibold transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-card",
+              "relative z-10 min-w-[3.25rem] flex-1 rounded-full px-3 py-1.5 text-center text-sm font-semibold transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-card",
               isActive
                 ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground",

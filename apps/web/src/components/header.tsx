@@ -20,7 +20,7 @@ import {
 import { AlphaBanner } from "@/components/alpha-banner";
 import { SkipLink } from "@/components/skip-link";
 import { ProductLauncher } from "@/components/product-launcher";
-import { getProduct, type NavItem } from "@/lib/products";
+import { getProduct, PRODUCTS, type NavItem } from "@/lib/products";
 
 function activeIndex(navItems: NavItem[], pathname: string | null): number {
   if (!pathname) return -1;
@@ -152,6 +152,11 @@ export function Header() {
   const product = getProduct(pathname);
   const navItems = product.nav;
   const active = activeIndex(navItems, pathname);
+  const [menuOpen, setMenuOpen] = React.useState(false);
+
+  // Active state for the mobile menu, where both products' items are listed.
+  const isItemActive = (href: string) =>
+    pathname === href || (pathname?.startsWith(href + "/") ?? false);
 
   return (
     <>
@@ -160,12 +165,14 @@ export function Header() {
 
       <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-border/60 bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/55">
         <div className="container grid h-16 grid-cols-[1fr_auto] items-center gap-4 md:grid-cols-[1fr_auto_1fr]">
-          {/* Logo + product launcher */}
+          {/* Logo + product launcher. The launcher lives in the bar on desktop
+              and moves into the slide-out menu on mobile; the wordmark fills in
+              for product context on small screens. */}
           <div className="flex items-center gap-2.5">
             <Link
               href={product.home}
               aria-label={`${product.name} — Go to homepage`}
-              className="group hidden w-fit items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:flex"
+              className="group flex w-fit items-center gap-2.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <Image
                 src="/dits.png"
@@ -175,8 +182,13 @@ export function Header() {
                 className="h-8 w-8 object-contain transition-transform duration-300 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-105"
                 priority
               />
+              <span className="text-base font-bold tracking-tight text-foreground md:hidden">
+                {product.name}
+              </span>
             </Link>
-            <ProductLauncher />
+            <div className="hidden md:flex">
+              <ProductLauncher />
+            </div>
           </div>
 
           {/* Centered morphing dock (desktop) */}
@@ -218,8 +230,10 @@ export function Header() {
               Star on GitHub
             </Button>
 
-            {/* Mobile menu */}
-            <Sheet>
+            {/* Mobile menu — holds the product switcher and BOTH products'
+                navigation, so you can switch product and navigate from one
+                place. Controlled so it closes on navigation. */}
+            <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger
                 render={
                   <Button
@@ -232,34 +246,63 @@ export function Header() {
               >
                 <Menu className="h-5 w-5" aria-hidden="true" />
               </SheetTrigger>
-              <SheetContent side="right" className="overscroll-contain">
-                <SheetHeader>
-                  <SheetTitle>{product.name}</SheetTitle>
+              <SheetContent
+                side="right"
+                className="flex w-[86vw] max-w-sm flex-col gap-0 overflow-y-auto overscroll-contain px-4 pb-4"
+              >
+                <SheetHeader className="px-1">
+                  <SheetTitle>Menu</SheetTitle>
                 </SheetHeader>
+
+                {/* Product switcher (full width) */}
+                <div className="mt-2" onClick={() => setMenuOpen(false)}>
+                  <ProductLauncher className="w-full" />
+                </div>
+
                 <nav
-                  className="mt-6 flex flex-col gap-1"
+                  className="mt-5 flex flex-1 flex-col"
                   aria-label="Mobile navigation"
                 >
-                  {navItems.map((item, i) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      aria-current={i === active ? "page" : undefined}
+                  {PRODUCTS.map((p, idx) => (
+                    <div
+                      key={p.id}
                       className={cn(
-                        "flex min-h-[44px] items-center rounded-lg border border-transparent px-4 py-3 text-base font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        i === active
-                          ? "border-border bg-accent text-foreground"
-                          : "text-muted-foreground hover:text-foreground",
+                        idx > 0 && "mt-4 border-t border-border pt-4",
                       )}
                     >
-                      {item.title}
-                    </Link>
+                      <div className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {p.name}
+                      </div>
+                      <div className="flex flex-col">
+                        {p.nav.map((item) => {
+                          const itemActive = isItemActive(item.href);
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              onClick={() => setMenuOpen(false)}
+                              aria-current={itemActive ? "page" : undefined}
+                              className={cn(
+                                "flex min-h-[40px] items-center rounded-lg px-3 py-2 text-[15px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                itemActive
+                                  ? "bg-accent text-foreground"
+                                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
+                              )}
+                            >
+                              {item.title}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
                   ))}
+
                   <Link
                     href="https://github.com/byronwade/dits"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-4 flex min-h-[44px] items-center gap-2 rounded-lg border border-border bg-primary px-4 py-3 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    onClick={() => setMenuOpen(false)}
+                    className="mt-6 flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <GithubIcon className="size-4" />
                     Star on GitHub
