@@ -131,8 +131,8 @@ const commandCategories = [
     icon: Lock,
     href: "/docs/cli/locks",
     commands: ["lock", "unlock", "locks"],
-    color: "text-destructive",
-    bgColor: "bg-destructive/10",
+    color: "text-brand",
+    bgColor: "bg-brand/10",
   },
   {
     title: "Virtual Filesystem",
@@ -176,8 +176,8 @@ const commandCategories = [
     icon: Activity,
     href: "/docs/cli/dependencies",
     commands: ["dep-check", "dep-graph", "dep-list"],
-    color: "text-lime-500",
-    bgColor: "bg-lime-500/10",
+    color: "text-info",
+    bgColor: "bg-info/10",
   },
   {
     title: "Storage Tiers",

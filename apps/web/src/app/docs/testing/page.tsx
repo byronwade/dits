@@ -434,7 +434,7 @@ export default function TestingPage() {
           <div className="space-y-6">
             <div>
               <h3 className="flex items-center gap-2 mb-4">
-                <Shield className="h-5 w-5 text-destructive" />
+                <Shield className="h-5 w-5 text-brand" />
                 Quality Assurance Tests
               </h3>
               <p className="text-muted-foreground mb-4">
