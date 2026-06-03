@@ -409,6 +409,9 @@ enum Commands {
         /// Segment duration, seconds
         #[arg(long, default_value = "2.0")]
         segment_seconds: f64,
+        /// Store canonical frames as true-lossless JPEG-XL (default: visually-lossless)
+        #[arg(long)]
+        lossless: bool,
         /// HTTP port for the player
         #[arg(long, default_value = "8088")]
         port: u16,
@@ -1215,8 +1218,8 @@ async fn main() {
         Commands::Unmount { mount_point } => commands::unmount(&mount_point),
         Commands::CacheStats => commands::cache_stats(),
         Commands::FacrDemo { frames, regrade } => commands::facr_demo(frames, regrade),
-        Commands::StreamDemo { input, grade_start, grade_end, segment_seconds, port } => {
-            commands::stream_demo(input, grade_start, grade_end, segment_seconds, port).await
+        Commands::StreamDemo { input, grade_start, grade_end, segment_seconds, lossless, port } => {
+            commands::stream_demo(input, grade_start, grade_end, segment_seconds, lossless, port).await
         }
         Commands::FacrAdd { input, store, manifest } => {
             commands::facr_add(&input, store.as_deref(), manifest.as_deref())

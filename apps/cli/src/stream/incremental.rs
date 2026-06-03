@@ -122,7 +122,8 @@ fn encode_and_store(
         );
     }
     let fps = parse_fps(&manifest.frame_rate);
-    let mut seg = encode_cmaf_segment(&pngs, &manifest.frame_rate)?;
+    let ext = crate::facr::video::frame_ext(&manifest.codec);
+    let mut seg = encode_cmaf_segment(&pngs, &manifest.frame_rate, ext)?;
     // Place this fragment at its true position on a continuous timeline by patching
     // tfdt.baseMediaDecodeTime = (frames before this segment) * per-frame ticks. The position
     // is the segment INDEX (range.start), which is identical for an unchanged segment across

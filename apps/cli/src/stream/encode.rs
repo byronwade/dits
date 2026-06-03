@@ -20,22 +20,23 @@ pub struct CmafSegment {
     pub media: Vec<u8>,
 }
 
-/// Encode the given ordered PNG frame blobs into one CMAF segment.
-/// `frame_rate` is the ffmpeg fraction string from the manifest (e.g. "10/1").
-pub fn encode_cmaf_segment(frame_pngs: &[Vec<u8>], frame_rate: &str) -> Result<CmafSegment> {
-    if frame_pngs.is_empty() {
+/// Encode the given ordered frame blobs into one CMAF segment. `frame_rate` is the ffmpeg
+/// fraction string from the manifest (e.g. "10/1"); `frame_ext` is the frames' image format
+/// extension ("png" or "jxl") so ffmpeg decodes them correctly.
+pub fn encode_cmaf_segment(frame_blobs: &[Vec<u8>], frame_rate: &str, frame_ext: &str) -> Result<CmafSegment> {
+    if frame_blobs.is_empty() {
         bail!("cannot encode an empty segment");
     }
     let work = std::env::temp_dir().join(format!("dits-stream-cmaf-{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&work).context("create segment temp dir")?;
 
-    for (i, png) in frame_pngs.iter().enumerate() {
-        let mut f = std::fs::File::create(work.join(format!("f_{:08}.png", i)))
-            .context("write frame png")?;
-        f.write_all(png).context("write frame bytes")?;
+    for (i, blob) in frame_blobs.iter().enumerate() {
+        let mut f = std::fs::File::create(work.join(format!("f_{:08}.{frame_ext}", i)))
+            .context("write frame image")?;
+        f.write_all(blob).context("write frame bytes")?;
     }
 
-    let pattern = work.join("f_%08d.png");
+    let pattern = work.join(format!("f_%08d.{frame_ext}"));
     let out_path = work.join("seg.mp4");
     let status = Command::new("ffmpeg")
         .args(["-v", "error", "-y", "-framerate", frame_rate, "-start_number", "0", "-i"])
@@ -207,7 +208,7 @@ mod tests {
             return;
         }
         let frames = make_png_frames(20);
-        let seg = encode_cmaf_segment(&frames, "10/1").unwrap();
+        let seg = encode_cmaf_segment(&frames, "10/1", "png").unwrap();
         assert!(!seg.init.is_empty() && !seg.media.is_empty());
         // Init starts with an ftyp box; media starts with a moof box.
         assert_eq!(&seg.init[4..8], b"ftyp");
@@ -224,8 +225,8 @@ mod tests {
         }
         // The shared-init + reuse model depends on this: same frames -> identical init AND media.
         let frames = make_png_frames(20);
-        let a = encode_cmaf_segment(&frames, "10/1").unwrap();
-        let b = encode_cmaf_segment(&frames, "10/1").unwrap();
+        let a = encode_cmaf_segment(&frames, "10/1", "png").unwrap();
+        let b = encode_cmaf_segment(&frames, "10/1", "png").unwrap();
         assert_eq!(a.init, b.init, "init must be byte-identical across independent encodes");
         assert_eq!(a.media, b.media, "media must be hash-stable across independent encodes");
     }
@@ -281,8 +282,8 @@ mod tests {
         // segment 0 -> the concatenation decodes to the full 20 frames.
         let f0 = make_png_frames(10);
         let f1 = make_png_frames(10);
-        let s0 = encode_cmaf_segment(&f0, "10/1").unwrap();
-        let mut s1 = encode_cmaf_segment(&f1, "10/1").unwrap();
+        let s0 = encode_cmaf_segment(&f0, "10/1", "png").unwrap();
+        let mut s1 = encode_cmaf_segment(&f1, "10/1", "png").unwrap();
         let per_frame = frame_duration_ticks(&s0.media).expect("per-frame ticks");
         assert!(per_frame > 0);
         set_base_media_decode_time(&mut s1.media, 10 * per_frame as u64).unwrap();
@@ -307,8 +308,8 @@ mod tests {
         }
         // The reuse guarantee: same frames + same position -> identical patched bytes.
         let frames = make_png_frames(10);
-        let mut a = encode_cmaf_segment(&frames, "10/1").unwrap();
-        let mut b = encode_cmaf_segment(&frames, "10/1").unwrap();
+        let mut a = encode_cmaf_segment(&frames, "10/1", "png").unwrap();
+        let mut b = encode_cmaf_segment(&frames, "10/1", "png").unwrap();
         let pf = frame_duration_ticks(&a.media).unwrap();
         set_base_media_decode_time(&mut a.media, 40 * pf as u64).unwrap();
         set_base_media_decode_time(&mut b.media, 40 * pf as u64).unwrap();
@@ -317,6 +318,6 @@ mod tests {
 
     #[test]
     fn empty_segment_errors() {
-        assert!(encode_cmaf_segment(&[], "10/1").is_err());
+        assert!(encode_cmaf_segment(&[], "10/1", "png").is_err());
     }
 }
