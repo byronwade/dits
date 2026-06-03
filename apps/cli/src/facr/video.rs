@@ -101,6 +101,11 @@ pub enum FrameImageCodec {
     Png,
     Webp,
     WebpVl,
+    /// JPEG-XL canonical frames (visually-lossless at distance 1). `-threads 1` keeps
+    /// libjxl byte-deterministic so frames still content-address and dedup.
+    Jxl,
+    /// JPEG-XL, mathematically lossless (distance 0).
+    JxlLossless,
 }
 
 impl FrameImageCodec {
@@ -109,6 +114,8 @@ impl FrameImageCodec {
             "png" => Some(Self::Png),
             "webp" => Some(Self::Webp),
             "webp-vl" | "webp_vl" => Some(Self::WebpVl),
+            "jxl" | "jpeg-xl" | "jpegxl" => Some(Self::Jxl),
+            "jxl-lossless" | "jxl_lossless" => Some(Self::JxlLossless),
             _ => None,
         }
     }
@@ -118,6 +125,8 @@ impl FrameImageCodec {
             Self::Png => "png",
             Self::Webp => "webp",
             Self::WebpVl => "webp-vl",
+            Self::Jxl => "jxl",
+            Self::JxlLossless => "jxl",
         }
     }
     /// On-disk frame file extension (WebpVl frames are still `.webp` files).
@@ -125,16 +134,19 @@ impl FrameImageCodec {
         match self {
             Self::Png => "png",
             Self::Webp | Self::WebpVl => "webp",
+            Self::Jxl | Self::JxlLossless => "jxl",
         }
     }
     /// ffmpeg encode args (codec selection + bit-exact). Empty for PNG (image2 default).
-    fn encode_args(self) -> &'static [&'static str] {
+    pub(crate) fn encode_args(self) -> &'static [&'static str] {
         match self {
             Self::Png => &[],
             Self::Webp => &["-c:v", "libwebp", "-lossless", "1", "-fflags", "+bitexact"],
             Self::WebpVl => &[
                 "-c:v", "libwebp", "-lossless", "0", "-quality", "90", "-fflags", "+bitexact",
             ],
+            Self::Jxl => &["-c:v", "libjxl", "-distance", "1", "-threads", "1"],
+            Self::JxlLossless => &["-c:v", "libjxl", "-distance", "0", "-threads", "1"],
         }
     }
 }
@@ -169,7 +181,7 @@ impl OutputCodec {
 }
 
 /// Map a manifest's recorded codec name to the on-disk frame extension.
-fn frame_ext(codec: &str) -> &str {
+pub(crate) fn frame_ext(codec: &str) -> &str {
     match codec {
         "" | "png" => "png",
         "webp" | "webp-vl" => "webp",

@@ -21,12 +21,14 @@ pub async fn stream_demo(
     grade_start: f64,
     grade_end: f64,
     segment_seconds: f64,
+    lossless: bool,
     port: u16,
 ) -> Result<()> {
     check_ffmpeg().context("FFmpeg is required for stream-demo")?;
     let work = std::env::temp_dir().join(format!("dits-stream-demo-{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&work)?;
-    let store = FrameStore::new(&work.join("frames"))?;
+    let frames_dir = work.join("frames");
+    let store = FrameStore::new(&frames_dir)?;
     let origin = LocalDiskOrigin::new(&work.join("origin"))?;
 
     // 1. Source clip (generate a 10s testsrc if none given).
@@ -48,14 +50,19 @@ pub async fn stream_demo(
         }
     };
 
-    // 2. Ingest -> v1 manifest -> v1 HLS.
-    let v1m = ingest_video(&video, &store, FrameImageCodec::Webp).context("ingest video")?;
+    // 2. Ingest -> v1 manifest -> v1 HLS. Canonical frames are JPEG-XL (deterministic, so
+    //    content-addressing/reuse hold) at visually-lossless distance 1 (or lossless distance 0).
+    let codec = if lossless { FrameImageCodec::JxlLossless } else { FrameImageCodec::Jxl };
+    let v1m = ingest_video(&video, &store, codec).context("ingest video")?;
     let layout = SegmentLayout::new(&v1m.frame_rate, segment_seconds);
+    let frame_bytes = dir_size(&frames_dir);
     println!(
-        "ingested {} frames @ {:.3} fps -> {} segments",
+        "ingested {} frames @ {:.3} fps -> {} segments  [{} frame store: {:.1} KB]",
         v1m.frames.len(),
         layout.fps,
-        layout.segment_count(v1m.frames.len())
+        layout.segment_count(v1m.frames.len()),
+        v1m.codec,
+        frame_bytes as f64 / 1024.0
     );
     let v1 = build_full(&v1m, &store, &layout, &origin)?;
 
@@ -106,4 +113,25 @@ pub async fn stream_demo(
     };
     serve(state, port).await?;
     Ok(())
+}
+
+/// Total bytes of all files under `dir` (the content-addressed frame store size).
+fn dir_size(dir: &std::path::Path) -> u64 {
+    let mut total = 0u64;
+    let mut stack = vec![dir.to_path_buf()];
+    while let Some(p) = stack.pop() {
+        if let Ok(rd) = std::fs::read_dir(&p) {
+            for e in rd.flatten() {
+                let path = e.path();
+                match e.file_type() {
+                    Ok(ft) if ft.is_dir() => stack.push(path),
+                    Ok(ft) if ft.is_file() => {
+                        total += e.metadata().map(|m| m.len()).unwrap_or(0);
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+    total
 }
