@@ -61,7 +61,7 @@ export default function PlaygroundPage() {
 
         {/* Interactive playground */}
         <section className="container pb-16 md:pb-24" aria-label="Interactive chunking playground">
-          <div className="mx-auto max-w-4xl">
+          <div className="mx-auto max-w-5xl">
             <PlaygroundClient />
           </div>
         </section>
