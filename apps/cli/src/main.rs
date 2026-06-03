@@ -395,6 +395,20 @@ enum Commands {
         out: Option<String>,
     },
 
+    /// Import a CMX3600 EDL into a FACR manifest referencing a source clip (0 new storage)
+    #[command(name = "facr-import-edl")]
+    FacrImportEdl {
+        /// Path to the EDL file
+        edl: String,
+        /// Source clip manifest (.facr.json) the EDL cuts reference
+        source: String,
+        /// Output manifest path
+        out: String,
+        /// Frame rate override (defaults to the source manifest's rate)
+        #[arg(long)]
+        fps: Option<u32>,
+    },
+
     /// Store a photo once and start a non-destructive edit history (requires FFmpeg)
     #[command(name = "photo-add")]
     PhotoAdd {
@@ -1080,6 +1094,7 @@ async fn main() {
         Commands::FacrAdd { .. } => "facr-add",
         Commands::FacrCheckout { .. } => "facr-checkout",
         Commands::FacrTrim { .. } => "facr-trim",
+        Commands::FacrImportEdl { .. } => "facr-import-edl",
         Commands::PhotoAdd { .. } => "photo-add",
         Commands::PhotoEdit { .. } => "photo-edit",
         Commands::PhotoRender { .. } => "photo-render",
@@ -1200,6 +1215,9 @@ async fn main() {
         }
         Commands::FacrCheckout { manifest, output, store } => {
             commands::facr_checkout(&manifest, &output, store.as_deref())
+        }
+        Commands::FacrImportEdl { edl, source, out, fps } => {
+            commands::facr_import_edl(&edl, &source, &out, fps)
         }
         Commands::FacrTrim { manifest, start, end, out } => {
             commands::facr_trim(&manifest, start, end, out.as_deref())
