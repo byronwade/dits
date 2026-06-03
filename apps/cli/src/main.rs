@@ -420,6 +420,9 @@ enum Commands {
         /// Delta-push the segments to an in-process remote QUIC origin (only changed cross the wire)
         #[arg(long)]
         push: bool,
+        /// Per-segment VMAF-targeted encoding to this quality target (e.g. 93); single source rendition
+        #[arg(long)]
+        vmaf: Option<f64>,
         /// HTTP port for the player
         #[arg(long, default_value = "8088")]
         port: u16,
@@ -1226,8 +1229,8 @@ async fn main() {
         Commands::Unmount { mount_point } => commands::unmount(&mount_point),
         Commands::CacheStats => commands::cache_stats(),
         Commands::FacrDemo { frames, regrade } => commands::facr_demo(frames, regrade),
-        Commands::StreamDemo { input, grade_start, grade_end, segment_seconds, lossless, push, port } => {
-            commands::stream_demo(input, grade_start, grade_end, segment_seconds, lossless, push, port).await
+        Commands::StreamDemo { input, grade_start, grade_end, segment_seconds, lossless, push, vmaf, port } => {
+            commands::stream_demo(input, grade_start, grade_end, segment_seconds, lossless, push, vmaf, port).await
         }
         Commands::FacrAdd { input, store, manifest } => {
             commands::facr_add(&input, store.as_deref(), manifest.as_deref())

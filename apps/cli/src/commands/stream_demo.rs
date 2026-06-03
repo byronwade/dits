@@ -7,7 +7,7 @@
 use crate::facr::store::FrameStore;
 use crate::facr::video::{check_ffmpeg, ingest_video_with_format, FrameFormat};
 use crate::stream::incremental::{build_full, build_incremental, plan};
-use crate::stream::ladder::default_ladder;
+use crate::stream::ladder::{default_ladder, Rendition};
 use crate::stream::layout::SegmentLayout;
 use crate::stream::origin::{LocalDiskOrigin, SegmentOrigin};
 use crate::stream::quic_origin::{push_delta, serve_quic_origin, QuicOriginClient};
@@ -26,6 +26,7 @@ pub async fn stream_demo(
     segment_seconds: f64,
     lossless: bool,
     push: bool,
+    vmaf: Option<f64>,
     port: u16,
 ) -> Result<()> {
     check_ffmpeg().context("FFmpeg is required for stream-demo")?;
@@ -76,18 +77,27 @@ pub async fn stream_demo(
     println!("re-grading frames {:?} ({}s-{}s)", r, grade_start, grade_end);
     let v2m = crate::stream::edit::regrade_range(&v1m, &store, r, 0.3)?;
 
-    // 4. Plan once (rendition-independent), then build every ABR rung for v1 and v2.
+    // 4. Plan once (rendition-independent), then build for v1 and v2.
     let p = plan(&v1m, &v2m, &layout);
-    let ladder = default_ladder(v1m.height);
+    // VMAF mode: a single source-resolution rendition whose per-segment CRF is chosen to hit the
+    // quality target (Netflix-style). Otherwise the fixed-bitrate ABR ladder.
+    let ladder = if vmaf.is_some() {
+        vec![Rendition { name: "source".into(), height: v1m.height, bitrate_kbps: 0 }]
+    } else {
+        default_ladder(v1m.height)
+    };
     let rung_names: Vec<&str> = ladder.iter().map(|r| r.name.as_str()).collect();
-    println!("ABR ladder: {} renditions [{}]", ladder.len(), rung_names.join(", "));
+    match vmaf {
+        Some(t) => println!("VMAF-targeted (target {t}), source-res single rendition"),
+        None => println!("ABR ladder: {} renditions [{}]", ladder.len(), rung_names.join(", ")),
+    }
 
     let mut v1_ladder = Vec::new();
     let mut v2_ladder = Vec::new();
     for rend in &ladder {
-        let prof = rend.profile();
-        let sv1 = build_full(&v1m, &store, &layout, &origin, &prof)?;
-        let sv2 = build_incremental(&sv1, &v2m, &store, &layout, &origin, &p, &prof)?;
+        let prof = if vmaf.is_some() { crate::stream::encode::EncodeProfile::source() } else { rend.profile() };
+        let sv1 = build_full(&v1m, &store, &layout, &origin, &prof, vmaf)?;
+        let sv2 = build_incremental(&sv1, &v2m, &store, &layout, &origin, &p, &prof, vmaf)?;
         v1_ladder.push((rend.clone(), sv1));
         v2_ladder.push((rend.clone(), sv2));
     }
@@ -123,6 +133,12 @@ pub async fn stream_demo(
         bytes_reencoded as f64 / 1024.0,
         bytes_total as f64 / 1024.0
     );
+    if let Some(t) = vmaf {
+        println!(
+            "  VMAF           : every segment's CRF chosen to hit >= {t}; total {:.1} KB at target quality",
+            bytes_total as f64 / 1024.0
+        );
+    }
 
     // 5b. Optional: delta-push to a remote QUIC origin — only changed segments cross the network.
     if push {

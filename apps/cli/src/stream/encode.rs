@@ -20,17 +20,23 @@ pub struct CmafSegment {
     pub media: Vec<u8>,
 }
 
-/// How to encode a delivery rendition: optional downscale height and target bitrate.
-/// `source()` reproduces the pre-ABR encode exactly (no scale, no bitrate cap).
+/// How to encode a delivery rendition: optional downscale height, and either a target bitrate or a
+/// fixed CRF (quality). `crf` wins when set; otherwise `bitrate_kbps` applies; otherwise libx264's
+/// default. `source()` reproduces the pre-ABR encode exactly.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct EncodeProfile {
     pub height: Option<u32>,
     pub bitrate_kbps: Option<u32>,
+    pub crf: Option<u32>,
 }
 
 impl EncodeProfile {
     pub fn source() -> Self {
-        EncodeProfile { height: None, bitrate_kbps: None }
+        EncodeProfile { height: None, bitrate_kbps: None, crf: None }
+    }
+    /// A CRF (quality) profile at the given height (None = source resolution).
+    pub fn with_crf(height: Option<u32>, crf: u32) -> Self {
+        EncodeProfile { height, bitrate_kbps: None, crf: Some(crf) }
     }
 }
 
@@ -65,8 +71,10 @@ pub fn encode_cmaf_segment(
         cmd.args(["-vf", &format!("scale=-2:{h}")]);
     }
     cmd.args(["-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p", "-sc_threshold", "0", "-an"]);
-    // Optional target bitrate for the rung.
-    if let Some(kbps) = profile.bitrate_kbps {
+    // CRF (quality) wins when set; otherwise an optional target bitrate.
+    if let Some(crf) = profile.crf {
+        cmd.args(["-crf", &crf.to_string()]);
+    } else if let Some(kbps) = profile.bitrate_kbps {
         cmd.args([
             "-b:v", &format!("{kbps}k"),
             "-maxrate", &format!("{kbps}k"),
@@ -272,7 +280,7 @@ mod tests {
         }
         // 64x48 source frames; a rung at height 24 should produce a 24-high segment.
         let frames = make_png_frames(10);
-        let profile = EncodeProfile { height: Some(24), bitrate_kbps: Some(100) };
+        let profile = EncodeProfile { height: Some(24), bitrate_kbps: Some(100), crf: None };
         let seg = encode_cmaf_segment(&frames, "10/1", "png", &profile).unwrap();
         assert_eq!(probe_height(&seg.init, &seg.media), 24);
     }

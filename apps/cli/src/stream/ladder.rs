@@ -14,7 +14,7 @@ pub struct Rendition {
 
 impl Rendition {
     pub fn profile(&self) -> EncodeProfile {
-        EncodeProfile { height: Some(self.height), bitrate_kbps: Some(self.bitrate_kbps) }
+        EncodeProfile { height: Some(self.height), bitrate_kbps: Some(self.bitrate_kbps), crf: None }
     }
 }
 

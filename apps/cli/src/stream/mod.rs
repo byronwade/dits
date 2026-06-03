@@ -11,3 +11,4 @@ pub mod origin;
 pub mod playlist;
 pub mod quic_origin;
 pub mod serve;
+pub mod vmaf;
