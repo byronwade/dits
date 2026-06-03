@@ -47,13 +47,14 @@ async fn playlist(State(s): State<Arc<ServeState>>, AxPath(name): AxPath<String>
 }
 
 async fn segment(State(s): State<Arc<ServeState>>, AxPath(name): AxPath<String>) -> impl IntoResponse {
-    let hex = name.trim_end_matches(".ts");
+    // Content-addressed: hash is the part before the extension (.mp4 init or .m4s media).
+    let hex = name.split('.').next().unwrap_or("");
     let hash = match crate::core::Hash::from_hex(hex) {
         Ok(h) => h,
         Err(_) => return (StatusCode::BAD_REQUEST, "bad hash").into_response(),
     };
     match s.origin.get(&hash) {
-        Ok(bytes) => ([(header::CONTENT_TYPE, "video/mp2t")], bytes).into_response(),
+        Ok(bytes) => ([(header::CONTENT_TYPE, "video/mp4")], bytes).into_response(),
         Err(_) => (StatusCode::NOT_FOUND, "no such segment").into_response(),
     }
 }

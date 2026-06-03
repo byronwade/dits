@@ -4,7 +4,7 @@
 use crate::core::Hash;
 use crate::facr::manifest::ClipManifest;
 use crate::facr::store::FrameStore;
-use crate::stream::encode::encode_segment;
+use crate::stream::encode::encode_cmaf_segment;
 use crate::stream::layout::{parse_fps, SegmentLayout};
 use crate::stream::origin::SegmentOrigin;
 use crate::stream::playlist::{SegmentRef, StreamVersion};
@@ -57,12 +57,14 @@ pub fn build_full(
     let n = manifest.frames.len();
     let seg_count = layout.segment_count(n);
     let mut segments = Vec::with_capacity(seg_count);
+    let mut init_hash = Hash::default();
     for s in 0..seg_count {
         let range = layout.frame_range(s, n);
-        let (hash, dur) = encode_and_store(manifest, store, &range, origin)?;
-        segments.push(SegmentRef { index: s, hash, duration_ms: dur });
+        let (media_hash, seg_init, dur) = encode_and_store(manifest, store, &range, origin)?;
+        init_hash = seg_init; // shared, constant across same-resolution encodes
+        segments.push(SegmentRef { index: s, hash: media_hash, duration_ms: dur });
     }
-    Ok(StreamVersion { width: manifest.width, height: manifest.height, segments })
+    Ok(StreamVersion { width: manifest.width, height: manifest.height, init_hash, segments })
 }
 
 /// Build v2 incrementally: reuse v1's SegmentRefs for unchanged segments (bytes already
@@ -89,19 +91,28 @@ pub fn build_incremental(
             segments.push(reused.clone());
         } else {
             let range = layout.frame_range(s, n);
-            let (hash, dur) = encode_and_store(v2_manifest, store, &range, origin)?;
-            segments.push(SegmentRef { index: s, hash, duration_ms: dur });
+            let (media_hash, _init, dur) = encode_and_store(v2_manifest, store, &range, origin)?;
+            segments.push(SegmentRef { index: s, hash: media_hash, duration_ms: dur });
         }
     }
-    Ok(StreamVersion { width: v2_manifest.width, height: v2_manifest.height, segments })
+    // The init is shared and constant across same-resolution encodes, so v2 reuses v1's
+    // (already in the origin from the v1 build).
+    Ok(StreamVersion {
+        width: v2_manifest.width,
+        height: v2_manifest.height,
+        init_hash: v1_version.init_hash,
+        segments,
+    })
 }
 
+/// Encode a frame range into a CMAF segment, store both the media fragment and the shared
+/// init in `origin` (init put is idempotent), and return `(media_hash, init_hash, duration_ms)`.
 fn encode_and_store(
     manifest: &ClipManifest,
     store: &FrameStore,
     range: &std::ops::Range<usize>,
     origin: &dyn SegmentOrigin,
-) -> Result<(Hash, u64)> {
+) -> Result<(Hash, Hash, u64)> {
     let mut pngs = Vec::with_capacity(range.len());
     for i in range.clone() {
         pngs.push(
@@ -111,14 +122,21 @@ fn encode_and_store(
         );
     }
     let fps = parse_fps(&manifest.frame_rate);
-    // Each segment is its own PTS-0 timeline; the playlist marks seams with
-    // EXT-X-DISCONTINUITY so the player re-bases. Offset 0 also makes a segment's bytes
-    // depend only on its frames (not its position) -> stronger, position-independent dedup.
-    let ts = encode_segment(&pngs, &manifest.frame_rate, 0.0)?;
-    let hash = Hash::from_slice(blake3::hash(&ts).as_bytes());
-    origin.put(&hash, &ts).context("put segment to origin")?;
+    let mut seg = encode_cmaf_segment(&pngs, &manifest.frame_rate)?;
+    // Place this fragment at its true position on a continuous timeline by patching
+    // tfdt.baseMediaDecodeTime = (frames before this segment) * per-frame ticks. The position
+    // is the segment INDEX (range.start), which is identical for an unchanged segment across
+    // versions, so the patched bytes stay hash-stable and reuse is preserved.
+    let per_frame = crate::stream::encode::frame_duration_ticks(&seg.media)
+        .context("media fragment has no default_sample_duration")?;
+    let bmdt = range.start as u64 * per_frame as u64;
+    crate::stream::encode::set_base_media_decode_time(&mut seg.media, bmdt)?;
+    let media_hash = Hash::from_slice(blake3::hash(&seg.media).as_bytes());
+    let init_hash = Hash::from_slice(blake3::hash(&seg.init).as_bytes());
+    origin.put(&media_hash, &seg.media).context("put media fragment to origin")?;
+    origin.put(&init_hash, &seg.init).context("put init segment to origin")?;
     let dur_ms = ((range.len() as f64 / fps) * 1000.0).round() as u64;
-    Ok((hash, dur_ms))
+    Ok((media_hash, init_hash, dur_ms))
 }
 
 #[cfg(test)]

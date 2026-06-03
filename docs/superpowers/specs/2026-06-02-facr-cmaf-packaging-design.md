@@ -23,11 +23,19 @@ CMAF media fragments carry a `baseMediaDecodeTime` (timeline position). Patching
 for a continuous timeline would make a segment's **bytes depend on its position**, so reused
 segments would no longer hash-match — breaking the reuse model that is the whole point.
 
-**Resolution:** every media fragment keeps `baseMediaDecodeTime = 0` (the natural output of an
-independent per-segment encode) → bytes depend only on the frames → hash-stable → reuse
-preserved. Seams are marked with `#EXT-X-DISCONTINUITY` so the player re-bases each fragment,
-exactly as in the TS version. CMAF still wins: no TS continuity counters means no seam
-corruption at any layer, and it is the modern container CDNs/players expect.
+**Resolution (refined during implementation):** an independent per-segment encode emits
+`baseMediaDecodeTime = 0`, so all fragments overlap at t=0 and only the first decodes
+(verified: raw concatenation yields 20 frames, not 100). The `#EXT-X-DISCONTINUITY` route was
+tried but only hls.js re-bases all-zero fragments; FFmpeg's strict demuxer does not, so it
+isn't a player-agnostic proof. **The chosen fix patches `tfdt.baseMediaDecodeTime =
+start_frame × per-frame-ticks` per segment**, giving a continuous timeline that decodes fully
+in *any* player (no discontinuity markers). Hash-stability is preserved because the patch value
+is a function of the segment **index** (`range.start`), which is identical for an unchanged
+segment across versions in the re-grade case — same frames + same index → identical patched
+bytes → identical hash → reuse intact. (Index-shifting edits — trim/insert, P4 — would shift
+the patch position for moved segments; reuse for shifted segments is a P4 concern.) CMAF wins
+regardless: no TS continuity counters → no seam corruption at any layer, and it is the modern
+container CDNs/players expect.
 
 ## Approach (chosen of three)
 
@@ -127,3 +135,24 @@ reuse: unchanged media hashes copied across versions (0 re-transfer)
 ## Module layout
 Edits only: `apps/cli/src/stream/{encode,playlist,incremental,serve}.rs`. No new files, no new
 dependencies.
+
+## Implementation status & verification (2026-06-02)
+
+**Built and committed.** 17 stream unit tests green, including: CMAF segment probes as h264;
+**init byte-identical across independent encodes** (spiked + asserted — one shared init works);
+`split_fmp4` finds the first `moof`; `frame_duration_ticks` + `set_base_media_decode_time`
+patch the timeline; **patched fragments decode as a continuous 20-frame timeline** (objective,
+player-agnostic); patching at the same position is byte-stable (reuse guarantee).
+
+**Verified end to end** (`dits stream-demo`, 100-frame clip, 2s segments):
+- 80% reuse, **9.1 KB re-delivered vs 47.5 KB** naive (smaller than the TS slice's 19/99 KB).
+- v1∩v2 share 4 identical media hashes; **identical init hash** across versions.
+- **FFmpeg decodes the full v2 playlist to 100 frames / 10.0s with 0 `Packet corrupt` and 0
+  discontinuity warnings** — the seam corruption is gone, and the continuous timeline is proven
+  at the container level (not reliant on player-specific behavior).
+
+**Open verification:** pixel-level hls.js playback of the CMAF stream was not observed in-session
+(automation tab is `visibility:hidden` → MediaSource stays closed). Continuous-timeline fMP4 is
+standard VOD that hls.js plays natively, and the timeline is now objectively correct at the
+container level, but a foregrounded browser playthrough is the final confirmation — same as the
+TS slice, which the user confirmed.
