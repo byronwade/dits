@@ -11,6 +11,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/status-pill";
+import { EventTimeline, type TimelineEvent } from "@/components/event-timeline";
 import {
   Users,
   Scale,
@@ -27,7 +29,6 @@ import {
   Target,
   CheckCircle2,
   XCircle,
-  Clock,
   MessageSquare,
   BookOpen,
   Code2,
@@ -207,7 +208,13 @@ const targetAudiences = [
   },
 ];
 
-const roadmapItems = [
+const roadmapItems: {
+  phase: string;
+  status: "current" | "upcoming" | "planned";
+  title: string;
+  description: string;
+  features: string[];
+}[] = [
   {
     phase: "Alpha",
     status: "current",
@@ -238,6 +245,15 @@ const roadmapItems = [
   },
 ];
 
+const roadmapMeta: Record<
+  (typeof roadmapItems)[number]["status"],
+  { tone: TimelineEvent["tone"]; pillTone: "success" | "warning" | "neutral"; label: string }
+> = {
+  current: { tone: "info", pillTone: "warning", label: "Active Development" },
+  upcoming: { tone: "warning", pillTone: "warning", label: "Coming Soon" },
+  planned: { tone: "neutral", pillTone: "neutral", label: "Planned" },
+};
+
 const contributionAreas = [
   {
     icon: Code2,
@@ -265,42 +281,71 @@ const contributionAreas = [
   },
 ];
 
+function ComparisonCell({
+  supported,
+  note,
+  highlight = false,
+}: {
+  supported: boolean;
+  note: string;
+  highlight?: boolean;
+}) {
+  return (
+    <td className={`p-4 text-center align-top ${highlight ? "bg-brand/5" : ""}`}>
+      <div className="flex flex-col items-center gap-1">
+        {supported ? (
+          <CheckCircle2 className="h-5 w-5 text-success" aria-label="Supported" />
+        ) : (
+          <XCircle className="h-5 w-5 text-muted-foreground" aria-label="Not supported" />
+        )}
+        <span className="text-xs text-muted-foreground">{note}</span>
+      </div>
+    </td>
+  );
+}
+
 export default function AboutPage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background">
       <Header />
       {/* AGENTS.md: main with id for skip-link */}
       <main id="main-content" className="flex-1 pt-[104px]" tabIndex={-1}>
         {/* Hero */}
-        <section className="container py-16 md:py-24" aria-labelledby="about-heading">
-          <div className="mx-auto max-w-4xl text-center">
-            <Badge variant="outline" className="mb-4">
-              Open Source • Apache 2.0 + MIT
-            </Badge>
-            <h1 id="about-heading" className="text-4xl font-bold tracking-tight md:text-6xl">
-              Version Control,{" "}
-              <span className="text-primary">Reimagined for Media</span>
-            </h1>
-            <p className="mt-6 text-xl text-muted-foreground max-w-3xl mx-auto">
-              Dits is a distributed version control system built from the ground up
-              for video production, game development, and large binary files.
-              Finally, version control that understands your workflow.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Button size="lg" render={<Link href="/download" />}>Get Started</Button>
-              <Button size="lg" variant="outline" render={<Link href="/docs/getting-started" />}>Read the Docs</Button>
+        <section className="relative overflow-hidden py-20 md:py-28" aria-labelledby="about-heading">
+          <div className="pointer-events-none absolute inset-0 -z-10">
+            <div className="absolute inset-0 bg-grid opacity-60 [mask-image:radial-gradient(70%_60%_at_50%_0%,black,transparent)]" />
+            <div className="absolute inset-x-0 top-0 h-[480px] glow-brand" />
+          </div>
+          <div className="container">
+            <div className="mx-auto max-w-4xl text-center">
+              <Badge variant="outline" className="mb-6">
+                Open Source • Apache 2.0 + MIT
+              </Badge>
+              <h1 id="about-heading" className="text-4xl font-bold tracking-tight md:text-6xl">
+                Version Control,{" "}
+                <span className="text-gradient-brand">Reimagined for Media</span>
+              </h1>
+              <p className="mx-auto mt-6 max-w-3xl text-xl text-muted-foreground">
+                Dits is a distributed version control system built from the ground up
+                for video production, game development, and large binary files.
+                Finally, version control that understands your workflow.
+              </p>
+              <div className="mt-8 flex flex-wrap justify-center gap-4">
+                <Button size="lg" render={<Link href="/download" />}>Get Started</Button>
+                <Button size="lg" variant="outline" render={<Link href="/docs/getting-started" />}>Read the Docs</Button>
+              </div>
             </div>
           </div>
         </section>
 
         {/* Mission Statement */}
-        <section className="border-y bg-muted/50" aria-labelledby="mission-heading">
-          <div className="container py-16 md:py-24">
+        <section className="border-t bg-muted/30 py-20 md:py-28" aria-labelledby="mission-heading">
+          <div className="container">
             <div className="mx-auto max-w-4xl">
-              <h2 id="mission-heading" className="text-3xl font-bold tracking-tight text-center mb-8">
+              <h2 id="mission-heading" className="mb-8 text-center text-3xl font-bold tracking-tight sm:text-4xl">
                 Our Mission
               </h2>
-              <div className="text-center space-y-6">
+              <div className="space-y-6 text-center">
                 <p className="text-lg text-muted-foreground">
                   We believe every creative professional deserves version control that works
                   for them — not against them. Git revolutionized how developers collaborate,
@@ -317,39 +362,53 @@ export default function AboutPage() {
         </section>
 
         {/* Origin Story */}
-        <section className="container py-16 md:py-24" aria-labelledby="story-heading">
-          <div className="mx-auto max-w-4xl">
-            <h2 id="story-heading" className="text-3xl font-bold tracking-tight text-center mb-12">
-              Why We Built Dits
-            </h2>
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div className="space-y-6">
-                <p className="text-muted-foreground">
-                  The story of Dits began with frustration. Working on video projects with distributed
-                  teams, we constantly hit the limits of existing tools. Git LFS felt like a band-aid,
-                  Perforce required expensive infrastructure, and nothing understood the unique patterns
-                  of video files.
-                </p>
-                <p className="text-muted-foreground">
-                  We asked ourselves: what if we could build version control specifically for media?
-                  What if we could leverage content-defined chunking to find the actual changes in video
-                  files? What if we could make terabyte repositories feel as fast as kilobyte ones?
-                </p>
-                <p className="text-muted-foreground">
-                  Dits is the answer to those questions. Built in Rust for performance, designed with
-                  media workflows in mind, and open source so everyone can benefit.
-                </p>
-              </div>
-              <div className="relative">
-                <div className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl p-8 border">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+        <section className="border-t py-20 md:py-28" aria-labelledby="story-heading">
+          <div className="container">
+            <div className="mx-auto max-w-5xl">
+              <h2 id="story-heading" className="mb-12 text-center text-3xl font-bold tracking-tight sm:text-4xl">
+                Why We Built Dits
+              </h2>
+              <div className="grid items-center gap-12 md:grid-cols-2">
+                <div className="space-y-6">
+                  <p className="text-muted-foreground">
+                    The story of Dits began with frustration. Working on video projects with distributed
+                    teams, we constantly hit the limits of existing tools. Git LFS felt like a band-aid,
+                    Perforce required expensive infrastructure, and nothing understood the unique patterns
+                    of video files.
+                  </p>
+                  <p className="text-muted-foreground">
+                    We asked ourselves: what if we could build version control specifically for media?
+                    What if we could leverage content-defined chunking to find the actual changes in video
+                    files? What if we could make terabyte repositories feel as fast as kilobyte ones?
+                  </p>
+                  <p className="text-muted-foreground">
+                    Dits is the answer to those questions. Built in Rust for performance, designed with
+                    media workflows in mind, and open source so everyone can benefit.
+                  </p>
+                </div>
+                <div
+                  className="overflow-hidden rounded-2xl shadow-float"
+                  style={{
+                    backgroundColor: "var(--code-background)",
+                    border: "1px solid var(--code-border)",
+                  }}
+                >
+                  <div
+                    className="flex items-center gap-2 px-4 py-3"
+                    style={{ borderBottom: "1px solid var(--code-border)" }}
+                  >
+                    <div className="flex gap-1.5">
+                      <div className="h-3 w-3 rounded-full bg-destructive" />
+                      <div className="h-3 w-3 rounded-full bg-warning" />
+                      <div className="h-3 w-3 rounded-full bg-success" />
                     </div>
-                    <pre className="text-sm font-mono text-muted-foreground">
-                      {`$ dits add project.prproj
+                    <span className="ml-2 font-mono text-xs text-muted-foreground">terminal</span>
+                  </div>
+                  <pre
+                    className="p-5 font-mono text-sm"
+                    style={{ color: "var(--code-foreground)" }}
+                  >
+{`$ dits add project.prproj
 $ dits add media/
 
 Adding 847 files (1.2 TB)
@@ -359,8 +418,7 @@ Deduplication: 67% (412 GB saved)
 $ dits commit -m "Final cut v3"
 [main abc1234] Final cut v3
   847 files, 788 GB (net)`}
-                    </pre>
-                  </div>
+                  </pre>
                 </div>
               </div>
             </div>
@@ -368,35 +426,35 @@ $ dits commit -m "Final cut v3"
         </section>
 
         {/* The Problem */}
-        <section className="border-y bg-muted/50" aria-labelledby="problem-heading">
-          <div className="container py-16 md:py-24">
+        <section className="border-t bg-muted/30 py-20 md:py-28" aria-labelledby="problem-heading">
+          <div className="container">
             <div className="mx-auto max-w-3xl">
-              <h2 id="problem-heading" className="text-3xl font-bold tracking-tight text-center mb-12">
+              <h2 id="problem-heading" className="mb-12 text-center text-3xl font-bold tracking-tight sm:text-4xl">
                 The Problem with Existing Tools
               </h2>
               {/* AGENTS.md: Redundant status cues - not color only, using icons and text */}
-              <div className="space-y-6" role="list" aria-label="Problems solved by Dits">
+              <div className="space-y-4" role="list" aria-label="Problems solved by Dits">
                 {problemsSolved.map((item, i) => (
-                  <div key={i} className="flex gap-4 items-center" role="listitem">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center" aria-hidden="true">
-                      <XCircle className="w-5 h-5 text-destructive" />
+                  <Card key={i} className="flex items-center gap-4 rounded-2xl border bg-card p-4 shadow-card" role="listitem">
+                    <div className="flex size-8 flex-shrink-0 items-center justify-center rounded-full bg-destructive/10" aria-hidden="true">
+                      <XCircle className="size-5 text-destructive" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium line-through text-muted-foreground">
+                      <p className="font-medium text-muted-foreground line-through">
                         <span className="sr-only">Problem: </span>
                         {item.problem}
                       </p>
                     </div>
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center" aria-hidden="true">
-                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    <div className="flex size-8 flex-shrink-0 items-center justify-center rounded-full bg-success/10" aria-hidden="true">
+                      <CheckCircle2 className="size-5 text-success" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-green-600">
+                      <p className="font-medium text-success">
                         <span className="sr-only">Solution: </span>
                         {item.solution}
                       </p>
                     </div>
-                  </div>
+                  </Card>
                 ))}
               </div>
             </div>
@@ -404,209 +462,149 @@ $ dits commit -m "Final cut v3"
         </section>
 
         {/* How It Works */}
-        <section className="container py-16 md:py-24" aria-labelledby="how-it-works-heading">
-          <div className="mx-auto max-w-4xl">
-            <h2 id="how-it-works-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
-              How Dits Works
-            </h2>
-            <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-              Instead of storing files as single objects, Dits breaks them into
-              content-defined chunks that can be shared across files and versions.
-            </p>
-
-            <div className="grid md:grid-cols-3 gap-6" role="list" aria-label="How Dits works in 3 steps">
-              <Card role="listitem">
-                <CardHeader className="text-center">
-                  <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <span className="text-2xl font-bold text-primary" aria-hidden="true">1</span>
-                  </div>
-                  <CardTitle>Chunk</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-center">
-                    Files are split into variable-size chunks using content-defined
-                    boundaries. Changes only affect nearby chunks, so small edits
-                    don&apos;t invalidate the entire file.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-
-              <Card role="listitem">
-                <CardHeader className="text-center">
-                  <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <span className="text-2xl font-bold text-primary" aria-hidden="true">2</span>
-                  </div>
-                  <CardTitle>Hash</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-center">
-                    Each chunk is identified by its BLAKE3 hash. Identical chunks
-                    share the same hash and are stored only once, regardless of
-                    which files contain them.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-
-              <Card role="listitem">
-                <CardHeader className="text-center">
-                  <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <span className="text-2xl font-bold text-primary" aria-hidden="true">3</span>
-                  </div>
-                  <CardTitle>Deduplicate</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-center">
-                    Similar footage, multiple versions, and shared content
-                    automatically deduplicate. A 4K timeline with 100 cuts from
-                    the same source? Minimal overhead.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
-
-        {/* Tool Comparison */}
-        <section className="border-y bg-muted/50" aria-labelledby="comparison-heading">
-          <div className="container py-16 md:py-24">
-            <div className="mx-auto max-w-6xl">
-              <h2 id="comparison-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
-                How Dits Compares
+        <section className="border-t py-20 md:py-28" aria-labelledby="how-it-works-heading">
+          <div className="container">
+            <div className="mx-auto max-w-5xl">
+              <h2 id="how-it-works-heading" className="mb-4 text-center text-3xl font-bold tracking-tight sm:text-4xl">
+                How Dits Works
               </h2>
-              <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-                See how Dits stacks up against existing version control solutions
-                for media and large file workflows.
+              <p className="mx-auto mb-12 max-w-2xl text-center text-muted-foreground">
+                Instead of storing files as single objects, Dits breaks them into
+                content-defined chunks that can be shared across files and versions.
               </p>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse" role="table">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left p-4 font-semibold">Feature</th>
-                      <th className="text-center p-4 font-semibold bg-primary/5">Dits</th>
-                      <th className="text-center p-4 font-semibold">Git</th>
-                      <th className="text-center p-4 font-semibold">Git LFS</th>
-                      <th className="text-center p-4 font-semibold">Perforce</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {toolComparison.map((row, i) => (
-                      <tr key={i} className="border-b hover:bg-muted/30 transition-colors">
-                        <td className="p-4 font-medium">{row.feature}</td>
-                        <td className="p-4 text-center bg-primary/5">
-                          {row.dits.supported ? (
-                            <div className="flex flex-col items-center gap-1">
-                              <CheckCircle2 className="w-5 h-5 text-green-600" aria-label="Supported" />
-                              <span className="text-xs text-muted-foreground">{row.dits.note}</span>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-center gap-1">
-                              <XCircle className="w-5 h-5 text-destructive" aria-label="Not supported" />
-                              <span className="text-xs text-muted-foreground">{row.dits.note}</span>
-                            </div>
-                          )}
-                        </td>
-                        <td className="p-4 text-center">
-                          {row.git.supported ? (
-                            <div className="flex flex-col items-center gap-1">
-                              <CheckCircle2 className="w-5 h-5 text-green-600" aria-label="Supported" />
-                              <span className="text-xs text-muted-foreground">{row.git.note}</span>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-center gap-1">
-                              <XCircle className="w-5 h-5 text-muted-foreground" aria-label="Not supported" />
-                              <span className="text-xs text-muted-foreground">{row.git.note}</span>
-                            </div>
-                          )}
-                        </td>
-                        <td className="p-4 text-center">
-                          {row.gitlfs.supported ? (
-                            <div className="flex flex-col items-center gap-1">
-                              <CheckCircle2 className="w-5 h-5 text-green-600" aria-label="Supported" />
-                              <span className="text-xs text-muted-foreground">{row.gitlfs.note}</span>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-center gap-1">
-                              <XCircle className="w-5 h-5 text-muted-foreground" aria-label="Not supported" />
-                              <span className="text-xs text-muted-foreground">{row.gitlfs.note}</span>
-                            </div>
-                          )}
-                        </td>
-                        <td className="p-4 text-center">
-                          {row.perforce.supported ? (
-                            <div className="flex flex-col items-center gap-1">
-                              <CheckCircle2 className="w-5 h-5 text-green-600" aria-label="Supported" />
-                              <span className="text-xs text-muted-foreground">{row.perforce.note}</span>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-center gap-1">
-                              <XCircle className="w-5 h-5 text-muted-foreground" aria-label="Not supported" />
-                              <span className="text-xs text-muted-foreground">{row.perforce.note}</span>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+
+              <div className="grid gap-6 md:grid-cols-3" role="list" aria-label="How Dits works in 3 steps">
+                {[
+                  {
+                    n: "1",
+                    title: "Chunk",
+                    body: "Files are split into variable-size chunks using content-defined boundaries. Changes only affect nearby chunks, so small edits don't invalidate the entire file.",
+                  },
+                  {
+                    n: "2",
+                    title: "Hash",
+                    body: "Each chunk is identified by its BLAKE3 hash. Identical chunks share the same hash and are stored only once, regardless of which files contain them.",
+                  },
+                  {
+                    n: "3",
+                    title: "Deduplicate",
+                    body: "Similar footage, multiple versions, and shared content automatically deduplicate. A 4K timeline with 100 cuts from the same source? Minimal overhead.",
+                  },
+                ].map((step) => (
+                  <Card key={step.n} role="listitem" className="rounded-2xl border bg-card shadow-card">
+                    <CardHeader className="text-center">
+                      <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-brand/10">
+                        <span className="text-2xl font-bold text-brand" aria-hidden="true">{step.n}</span>
+                      </div>
+                      <CardTitle>{step.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-center">{step.body}</CardDescription>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             </div>
           </div>
         </section>
 
-        {/* Target Audiences */}
-        <section className="container py-16 md:py-24" aria-labelledby="audience-heading">
-          <div className="mx-auto max-w-6xl">
-            <h2 id="audience-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
-              Built for Creative Professionals
-            </h2>
-            <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-              Whether you&apos;re a solo creator or part of a large studio, Dits adapts
-              to your workflow.
-            </p>
-            <div className="grid md:grid-cols-2 gap-6">
-              {targetAudiences.map((audience) => (
-                <Card key={audience.title} className="h-full">
-                  <CardHeader>
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                        <audience.icon className="w-6 h-6 text-primary" aria-hidden="true" />
-                      </div>
-                      <CardTitle>{audience.title}</CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <CardDescription>{audience.description}</CardDescription>
-                    <div className="flex flex-wrap gap-2">
-                      {audience.useCases.map((useCase) => (
-                        <Badge key={useCase} variant="secondary" className="text-xs">
-                          {useCase}
-                        </Badge>
+        {/* Tool Comparison */}
+        <section className="border-t bg-muted/30 py-20 md:py-28" aria-labelledby="comparison-heading">
+          <div className="container">
+            <div className="mx-auto max-w-6xl">
+              <h2 id="comparison-heading" className="mb-4 text-center text-3xl font-bold tracking-tight sm:text-4xl">
+                How Dits Compares
+              </h2>
+              <p className="mx-auto mb-12 max-w-2xl text-center text-muted-foreground">
+                See how Dits stacks up against existing version control solutions
+                for media and large file workflows.
+              </p>
+              <Card className="overflow-hidden rounded-2xl border bg-card shadow-card">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse" role="table">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="p-4 text-left font-semibold">Feature</th>
+                        <th className="bg-brand/5 p-4 text-center font-semibold">Dits</th>
+                        <th className="p-4 text-center font-semibold">Git</th>
+                        <th className="p-4 text-center font-semibold">Git LFS</th>
+                        <th className="p-4 text-center font-semibold">Perforce</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {toolComparison.map((row, i) => (
+                        <tr key={i} className="border-b border-border transition-colors hover:bg-muted/30">
+                          <td className="p-4 align-top font-medium">{row.feature}</td>
+                          <ComparisonCell supported={row.dits.supported} note={row.dits.note} highlight />
+                          <ComparisonCell supported={row.git.supported} note={row.git.note} />
+                          <ComparisonCell supported={row.gitlfs.supported} note={row.gitlfs.note} />
+                          <ComparisonCell supported={row.perforce.supported} note={row.perforce.note} />
+                        </tr>
                       ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* Target Audiences */}
+        <section className="border-t py-20 md:py-28" aria-labelledby="audience-heading">
+          <div className="container">
+            <div className="mx-auto max-w-6xl">
+              <h2 id="audience-heading" className="mb-4 text-center text-3xl font-bold tracking-tight sm:text-4xl">
+                Built for Creative Professionals
+              </h2>
+              <p className="mx-auto mb-12 max-w-2xl text-center text-muted-foreground">
+                Whether you&apos;re a solo creator or part of a large studio, Dits adapts
+                to your workflow.
+              </p>
+              <div className="grid gap-6 md:grid-cols-2">
+                {targetAudiences.map((audience) => (
+                  <Card key={audience.title} className="h-full rounded-2xl border bg-card shadow-card">
+                    <CardHeader>
+                      <div className="flex items-center gap-4">
+                        <div className="flex size-12 items-center justify-center rounded-full bg-brand/10">
+                          <audience.icon className="size-6 text-brand" aria-hidden="true" />
+                        </div>
+                        <CardTitle>{audience.title}</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <CardDescription>{audience.description}</CardDescription>
+                      <div className="flex flex-wrap gap-2">
+                        {audience.useCases.map((useCase) => (
+                          <Badge key={useCase} variant="secondary" className="text-xs">
+                            {useCase}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
         {/* Tech Stack */}
-        <section className="border-y bg-muted/50" aria-labelledby="tech-heading">
-          <div className="container py-16 md:py-24">
+        <section className="border-t bg-muted/30 py-20 md:py-28" aria-labelledby="tech-heading">
+          <div className="container">
             <div className="mx-auto max-w-5xl">
-              <h2 id="tech-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
+              <h2 id="tech-heading" className="mb-4 text-center text-3xl font-bold tracking-tight sm:text-4xl">
                 Built with Modern Technology
               </h2>
-              <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+              <p className="mx-auto mb-12 max-w-2xl text-center text-muted-foreground">
                 We&apos;ve chosen the best tools for performance, reliability, and security.
               </p>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" role="list">
                 {techStack.map((tech) => (
-                  <Card key={tech.name} role="listitem" className="h-full">
+                  <Card key={tech.name} role="listitem" className="h-full rounded-2xl border bg-card shadow-card">
                     <CardHeader>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <tech.icon className="w-5 h-5 text-primary" aria-hidden="true" />
+                        <div className="flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                          <tech.icon className="size-5 text-brand" aria-hidden="true" />
                         </div>
                         <Badge variant="secondary" className="font-mono">
                           {tech.name}
@@ -614,7 +612,7 @@ $ dits commit -m "Final cut v3"
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <p className="font-medium mb-2">{tech.description}</p>
+                      <p className="mb-2 font-medium">{tech.description}</p>
                       <p className="text-sm text-muted-foreground">{tech.details}</p>
                     </CardContent>
                   </Card>
@@ -625,166 +623,144 @@ $ dits commit -m "Final cut v3"
         </section>
 
         {/* Roadmap */}
-        <section className="container py-16 md:py-24" aria-labelledby="roadmap-heading">
-          <div className="mx-auto max-w-5xl">
-            <h2 id="roadmap-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
-              Roadmap
-            </h2>
-            <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-              We&apos;re actively developing Dits and committed to transparency about our progress.
-            </p>
-            <div className="relative">
-              {/* Timeline connector */}
-              <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-border md:-translate-x-0.5" aria-hidden="true" />
+        <section className="border-t py-20 md:py-28" aria-labelledby="roadmap-heading">
+          <div className="container">
+            <div className="mx-auto max-w-4xl">
+              <h2 id="roadmap-heading" className="mb-4 text-center text-3xl font-bold tracking-tight sm:text-4xl">
+                Roadmap
+              </h2>
+              <p className="mx-auto mb-12 max-w-2xl text-center text-muted-foreground">
+                We&apos;re actively developing Dits and committed to transparency about our progress.
+              </p>
+              <EventTimeline
+                events={roadmapItems.map((item) => {
+                  const meta = roadmapMeta[item.status];
+                  return {
+                    tone: meta.tone,
+                    title: (
+                      <div className="space-y-3">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <Badge
+                            variant={item.status === "current" ? "default" : "secondary"}
+                            className="font-mono"
+                          >
+                            {item.phase}
+                          </Badge>
+                          <span className="text-base font-semibold">{item.title}</span>
+                          <StatusPill tone={meta.pillTone} pulse={item.status === "current"}>
+                            {meta.label}
+                          </StatusPill>
+                        </div>
+                        <p className="font-normal text-muted-foreground">{item.description}</p>
+                        <ul className="grid gap-2 sm:grid-cols-2">
+                          {item.features.map((feature) => (
+                            <li key={feature} className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <CheckCircle2 className="size-4 flex-shrink-0 text-brand" aria-hidden="true" />
+                              {feature}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ),
+                  } satisfies TimelineEvent;
+                })}
+              />
+            </div>
+          </div>
+        </section>
 
-              <div className="space-y-8">
-                {roadmapItems.map((item, index) => (
-                  <div key={item.phase} className={`relative flex ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} gap-8`}>
-                    {/* Timeline dot */}
-                    <div className="absolute left-4 md:left-1/2 w-8 h-8 rounded-full border-4 border-background bg-background md:-translate-x-1/2 flex items-center justify-center z-10">
-                      {item.status === 'current' ? (
-                        <div className="w-4 h-4 rounded-full bg-primary animate-pulse" />
-                      ) : item.status === 'upcoming' ? (
-                        <Clock className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-                      ) : (
-                        <div className="w-4 h-4 rounded-full bg-muted" />
-                      )}
+        {/* Values */}
+        <section className="border-t bg-muted/30 py-20 md:py-28" aria-labelledby="values-heading">
+          <div className="container">
+            <div className="mx-auto max-w-4xl">
+              <h2 id="values-heading" className="mb-12 text-center text-3xl font-bold tracking-tight sm:text-4xl">
+                Our Values
+              </h2>
+              <div className="grid gap-6 md:grid-cols-3" role="list">
+                {[
+                  {
+                    icon: Scale,
+                    title: "Open Source",
+                    body: "Dual-licensed under Apache 2.0 and MIT. Free to use, modify, and distribute. Your data belongs to you.",
+                  },
+                  {
+                    icon: Users,
+                    title: "Community Driven",
+                    body: "Built for and with the media community. Your feedback shapes the roadmap. Join our Discord to participate.",
+                  },
+                  {
+                    icon: Heart,
+                    title: "User First",
+                    body: "Designed for real workflows. Git-like commands make adoption easy. We listen to creators, not marketers.",
+                  },
+                ].map((value) => (
+                  <Card key={value.title} className="rounded-2xl border bg-card p-6 text-center shadow-card" role="listitem">
+                    <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-brand/10">
+                      {/* AGENTS.md: Decorative icons are aria-hidden */}
+                      <value.icon className="size-8 text-brand" aria-hidden="true" />
                     </div>
-
-                    <div className={`flex-1 ml-16 md:ml-0 ${index % 2 === 0 ? 'md:pr-12' : 'md:pl-12'}`}>
-                      <Card className={item.status === 'current' ? 'border-primary' : ''}>
-                        <CardHeader>
-                          <div className="flex items-center gap-3 flex-wrap">
-                            <Badge
-                              variant={item.status === 'current' ? 'default' : 'secondary'}
-                              className="font-mono"
-                            >
-                              {item.phase}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                              {item.status === 'current' ? '● Active Development' :
-                                item.status === 'upcoming' ? '○ Coming Soon' : '○ Planned'}
-                            </span>
-                          </div>
-                          <CardTitle className="text-xl">{item.title}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <CardDescription>{item.description}</CardDescription>
-                          <ul className="grid grid-cols-2 gap-2">
-                            {item.features.map((feature) => (
-                              <li key={feature} className="flex items-center gap-2 text-sm">
-                                <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" aria-hidden="true" />
-                                {feature}
-                              </li>
-                            ))}
-                          </ul>
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    {/* Spacer for alternating layout */}
-                    <div className="hidden md:block flex-1" />
-                  </div>
+                    <h3 className="mb-2 font-semibold">{value.title}</h3>
+                    <p className="text-sm text-muted-foreground">{value.body}</p>
+                  </Card>
                 ))}
               </div>
             </div>
           </div>
         </section>
 
-        {/* Values */}
-        <section className="border-y bg-muted/50" aria-labelledby="values-heading">
-          <div className="container py-16 md:py-24">
-            <div className="mx-auto max-w-4xl">
-              <h2 id="values-heading" className="text-3xl font-bold tracking-tight text-center mb-12">
-                Our Values
-              </h2>
-              <div className="grid md:grid-cols-3 gap-8" role="list">
-                <div className="text-center" role="listitem">
-                  <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    {/* AGENTS.md: Decorative icons are aria-hidden */}
-                    <Scale className="w-8 h-8 text-primary" aria-hidden="true" />
-                  </div>
-                  <h3 className="font-semibold mb-2">Open Source</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Dual-licensed under Apache&nbsp;2.0 and MIT. Free to use, modify,
-                    and distribute. Your data belongs to you.
-                  </p>
-                </div>
-                <div className="text-center" role="listitem">
-                  <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <Users className="w-8 h-8 text-primary" aria-hidden="true" />
-                  </div>
-                  <h3 className="font-semibold mb-2">Community Driven</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Built for and with the media community. Your feedback shapes
-                    the roadmap. Join our Discord to participate.
-                  </p>
-                </div>
-                <div className="text-center" role="listitem">
-                  <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <Heart className="w-8 h-8 text-primary" aria-hidden="true" />
-                  </div>
-                  <h3 className="font-semibold mb-2">User First</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Designed for real workflows. Git-like commands make adoption
-                    easy. We listen to creators, not marketers.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Contributing */}
-        <section className="container py-16 md:py-24" aria-labelledby="contributing-heading">
-          <div className="mx-auto max-w-5xl">
-            <h2 id="contributing-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
-              Join the Community
-            </h2>
-            <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-              Dits is open source and community-driven. There are many ways to get involved.
-            </p>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {contributionAreas.map((area) => (
-                <Card key={area.title} className="text-center h-full hover:border-primary transition-colors">
-                  <CardHeader>
-                    <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                      <area.icon className="w-6 h-6 text-primary" aria-hidden="true" />
-                    </div>
-                    <CardTitle className="text-lg">{area.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="mb-4">{area.description}</CardDescription>
-                    <Button variant="outline" size="sm" render={<Link href={area.link} />}>Get Started</Button>
-                  </CardContent>
+        <section className="border-t py-20 md:py-28" aria-labelledby="contributing-heading">
+          <div className="container">
+            <div className="mx-auto max-w-5xl">
+              <h2 id="contributing-heading" className="mb-4 text-center text-3xl font-bold tracking-tight sm:text-4xl">
+                Join the Community
+              </h2>
+              <p className="mx-auto mb-12 max-w-2xl text-center text-muted-foreground">
+                Dits is open source and community-driven. There are many ways to get involved.
+              </p>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                {contributionAreas.map((area) => (
+                  <Card key={area.title} className="h-full rounded-2xl border bg-card text-center shadow-card transition-colors hover:border-brand/40">
+                    <CardHeader>
+                      <div className="mx-auto mb-2 flex size-12 items-center justify-center rounded-full bg-brand/10">
+                        <area.icon className="size-6 text-brand" aria-hidden="true" />
+                      </div>
+                      <CardTitle className="text-lg">{area.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="mb-4">{area.description}</CardDescription>
+                      <Button variant="outline" size="sm" render={<Link href={area.link} />}>Get Started</Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <div className="mt-12 text-center">
+                <Card className="inline-flex items-center gap-4 rounded-2xl border bg-card p-4 shadow-card">
+                  <GithubIcon className="size-6" />
+                  <div className="text-left">
+                    <p className="font-medium">Star us on GitHub</p>
+                    <p className="text-sm text-muted-foreground">
+                      Help spread the word by starring our repository
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" render={<Link href="https://github.com/dits-dev/dits" target="_blank" rel="noopener noreferrer" />}>
+                    Star on GitHub
+                  </Button>
                 </Card>
-              ))}
-            </div>
-            <div className="mt-12 text-center">
-              <div className="inline-flex items-center gap-4 p-4 rounded-lg border bg-muted/50">
-                <GithubIcon className="w-6 h-6" />
-                <div className="text-left">
-                  <p className="font-medium">Star us on GitHub</p>
-                  <p className="text-sm text-muted-foreground">
-                    Help spread the word by starring our repository
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" render={<Link href="https://github.com/dits-dev/dits" target="_blank" rel="noopener noreferrer" />}>
-                  Star on GitHub
-                </Button>
               </div>
             </div>
           </div>
         </section>
 
         {/* CTA */}
-        <section className="border-t bg-primary text-primary-foreground" aria-labelledby="cta-heading">
-          <div className="container py-16 md:py-24">
+        <section className="relative overflow-hidden border-t bg-primary py-20 text-primary-foreground md:py-28" aria-labelledby="cta-heading">
+          <div className="pointer-events-none absolute inset-0 bg-grid opacity-10" />
+          <div className="container relative">
             <div className="mx-auto max-w-3xl text-center">
-              <h2 id="cta-heading" className="text-3xl md:text-4xl font-bold mb-4">
+              <h2 id="cta-heading" className="mb-4 text-3xl font-bold md:text-4xl">
                 Ready to Take Control of Your Media?
               </h2>
-              <p className="text-primary-foreground/80 mb-8 text-lg">
+              <p className="mb-8 text-lg text-primary-foreground/80">
                 Download Dits and experience version control built for how you actually work.
                 It&apos;s free, open source, and ready to handle your biggest projects.
               </p>
@@ -793,7 +769,7 @@ $ dits commit -m "Final cut v3"
                 <Button
                   size="lg"
                   variant="outline"
-                  className="bg-transparent border-primary-foreground/20 hover:bg-primary-foreground/10"
+                  className="border-primary-foreground/20 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
                   render={<Link href="/docs/getting-started" />}
                 >
                   Read the Docs
