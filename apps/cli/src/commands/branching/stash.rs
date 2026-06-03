@@ -255,15 +255,13 @@ fn stash_push(repo: &Repository, stash_path: &Path, message: Option<&str>) -> Re
 
         fs::write(&index_path, new_index.to_json())?;
 
-        // Reset working tree files that had changes
+        // Reset working tree files that had changes. Use the strategy-aware
+        // reconstruction so GitText files are read from the git engine rather than
+        // (incorrectly) reassembled from empty chunk lists, which blanked them.
         for path in &worktree_changes {
             if let Some(entry) = manifest.entries.get(path) {
                 let full_path = repo.root().join(path);
-                let mut data = Vec::with_capacity(entry.size as usize);
-                for chunk_ref in &entry.chunks {
-                    let chunk = repo.objects().load_chunk(&chunk_ref.hash)?;
-                    data.extend_from_slice(&chunk.data);
-                }
+                let data = repo.reconstruct_entry_bytes(entry)?;
                 fs::write(&full_path, &data)?;
             }
         }

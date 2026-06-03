@@ -1790,6 +1790,25 @@ impl Repository {
         Ok(())
     }
 
+    /// Reconstruct a manifest entry's full byte content, honoring its storage strategy
+    /// (GitText files read from the git engine; others reassemble from Dits chunks).
+    /// Use this anywhere you need a tracked file's committed bytes (e.g. stash reset).
+    pub fn reconstruct_entry_bytes(&self, entry: &ManifestEntry) -> Result<Vec<u8>, RepoError> {
+        if entry.is_git_text() {
+            if let (Some(ref git_oid), Some(ref engine)) = (&entry.git_oid, &self.git_engine) {
+                let oid = GitTextEngine::parse_oid(git_oid)?;
+                return Ok(engine.read_blob(oid)?);
+            }
+            // Fall through to chunk reassembly if the git engine is unavailable.
+        }
+        let mut data = Vec::with_capacity(entry.size as usize);
+        for chunk_ref in &entry.chunks {
+            let chunk = self.objects.load_chunk(&chunk_ref.hash)?;
+            data.extend_from_slice(&chunk.data);
+        }
+        Ok(data)
+    }
+
     // ========== Branch Operations ==========
 
     /// Get current branch name (None if detached HEAD).

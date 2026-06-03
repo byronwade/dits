@@ -24,4 +24,4 @@ pub use manifest::{ClipManifest, FrameRef};
 pub use photo::{ingest_photo, render_photo, PhotoEdit, PhotoVersion};
 pub use pipeline::commit_clip;
 pub use store::FrameStore;
-pub use video::{ingest_video, reconstruct_video, VideoInfo};
+pub use video::{ingest_video, reconstruct_video, source_has_audio, VideoInfo};

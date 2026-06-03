@@ -53,6 +53,12 @@ pub fn facr_add(input: &str, store: Option<&str>, manifest_out: Option<&str>) ->
     let before_bytes = dir_size(&store_path);
 
     println!("Ingesting {} ...", style(input).cyan());
+    if crate::facr::source_has_audio(input_path) {
+        println!(
+            "  {} this video has an audio track — FACR v1 stores video frames only, so audio is NOT preserved.",
+            style("⚠").yellow().bold()
+        );
+    }
     let manifest = ingest_video(input_path, &frame_store)?;
 
     let after = frame_store.count()?;

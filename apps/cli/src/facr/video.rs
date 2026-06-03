@@ -72,6 +72,22 @@ pub fn probe_video(path: &Path) -> Result<VideoInfo> {
     Ok(VideoInfo { width, height, frame_rate })
 }
 
+/// Whether the source has at least one audio stream. FACR v1 stores video frames only,
+/// so callers should warn the user that audio is dropped.
+pub fn source_has_audio(path: &Path) -> bool {
+    Command::new("ffprobe")
+        .args([
+            "-v", "error",
+            "-select_streams", "a",
+            "-show_entries", "stream=index",
+            "-of", "csv=p=0",
+        ])
+        .arg(path)
+        .output()
+        .map(|o| !o.stdout.is_empty())
+        .unwrap_or(false)
+}
+
 /// Decode `path` into content-addressed frames stored in `store`, returning a manifest.
 pub fn ingest_video(path: &Path, store: &FrameStore) -> Result<ClipManifest> {
     check_ffmpeg()?;

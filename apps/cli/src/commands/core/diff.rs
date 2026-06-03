@@ -342,14 +342,10 @@ fn get_original_content(repo: &Repository, path: &str) -> Option<String> {
 
     let entry = manifest.entries.get(path)?;
 
-    // Reconstruct content from chunks
-    let mut content = Vec::new();
-    for chunk_ref in &entry.chunks {
-        if let Ok(chunk) = repo.objects().load_chunk(&chunk_ref.hash) {
-            content.extend_from_slice(&chunk.data);
-        }
-    }
-
+    // Reconstruct content honoring the storage strategy (GitText reads from the git
+    // engine; otherwise reassemble from chunks). Reconstructing from chunks alone
+    // blanked git-text files, making diff show every line as newly added.
+    let content = repo.reconstruct_entry_bytes(entry).ok()?;
     String::from_utf8(content).ok()
 }
 
