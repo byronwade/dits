@@ -132,6 +132,7 @@
 | `facr-add` | ✅ | Ingest a video into the frame-addressable store |
 | `facr-checkout` | ✅ | Reconstruct a playable video from a FACR manifest |
 | `facr-trim` | ✅ | Non-destructively trim a manifest (stores zero new frames) |
+| `facr-import-edl` | ✅ | Import a CMX3600 EDL into a manifest referencing a source clip (zero new frames) |
 | `facr-demo` | ✅ | Demonstrate frame-level dedup on a synthetic clip |
 | `photo-add` | ✅ | Store a photo once, start a non-destructive edit history |
 | `photo-edit` | ✅ | Append non-destructive edits (stores zero new image bytes) |
