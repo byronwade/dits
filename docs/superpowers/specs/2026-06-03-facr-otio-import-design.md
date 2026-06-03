@@ -96,4 +96,23 @@ cdc_segments(edited) vs cdc_segments(source) -> reuse
 
 ## Module layout
 New: `apps/cli/src/stream/otio.rs`. Edits: `apps/cli/src/commands/stream_demo.rs`,
-`apps/cli/src/main.rs` (`--import` flag). No new dependencies.
+`apps/cli/src/main.rs` (`--otio` / `--import` flags). No new dependencies.
+
+## Implementation status & verification (2026-06-03)
+
+**Built and committed.** 33 stream tests green (incl. 3 new OTIO tests: in-order parse skipping
+gaps; reconstruct a reorder+trim with **every output hash present in the source** (0 new content);
+out-of-range / unknown-source errors).
+
+**End to end** (`dits stream-demo --otio`, 80-frame source): generates a real OTIO document (2 clips
+— second-half-trimmed reordered before the front half), writes it to disk, parses it back, and
+reconstructs:
+- **2 clips imported; 75 frames reconstructed; NEW frames stored = 0** (the whole edit is a
+  re-arrangement of already-stored frames).
+- **CDC segments reused: 7/10 (70%)** — interior segments survive even a reorder by content.
+
+`--import <file.otio>` reconstructs from a real OTIO file (all referenced sources map onto the single
+ingested source in the demo).
+
+**Completes P4.** Deferred as designed: multi-track compositing, transitions, effects, retiming;
+FCPXML/Premiere XML import; export to OTIO.
