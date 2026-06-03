@@ -37,7 +37,7 @@ export function BenchmarkMetricCard({
     variant = "default",
 }: BenchmarkMetricCardProps) {
     const TrendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
-    const trendColor = trend === "up" ? "text-emerald-500" : trend === "down" ? "text-red-500" : "text-muted-foreground";
+    const trendColor = trend === "up" ? "text-success" : trend === "down" ? "text-destructive" : "text-muted-foreground";
 
     return (
         <Card
@@ -77,10 +77,10 @@ export function BenchmarkMetricCard({
                 {(comparison || (trend && trendValue)) && (
                     <div className="flex flex-wrap items-center gap-3 text-sm">
                         {comparison && (
-                            <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-emerald-600 dark:text-emerald-400">
+                            <div className="flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-success">
                                 <TrendingUp className="h-3.5 w-3.5" />
                                 <span className="font-medium">{comparison.improvement}</span>
-                                <span className="text-emerald-600/70 dark:text-emerald-400/70">
+                                <span className="text-success/70">
                                     vs {comparison.label}
                                 </span>
                             </div>

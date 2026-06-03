@@ -31,24 +31,24 @@ function FlowStep({
 }: FlowStepProps) {
   const colors = {
     primary: "border-primary/30 bg-primary/10 text-primary",
-    green: "border-green-500/30 bg-green-500/10 text-green-600 dark:text-green-400",
-    amber: "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    green: "border-chart-2/30 bg-chart-2/10 text-chart-2",
+    amber: "border-chart-3/30 bg-chart-3/10 text-chart-3",
     purple:
-      "border-purple-500/30 bg-purple-500/10 text-purple-600 dark:text-purple-400",
+      "border-chart-4/30 bg-chart-4/10 text-chart-4",
   };
 
   const numberColors = {
     primary: "bg-primary text-primary-foreground",
-    green: "bg-green-500 text-white",
-    amber: "bg-amber-500 text-white",
-    purple: "bg-purple-500 text-white",
+    green: "bg-chart-2 text-background",
+    amber: "bg-chart-3 text-background",
+    purple: "bg-chart-4 text-background",
   };
 
   const iconColors = {
     primary: "text-primary",
-    green: "text-green-500",
-    amber: "text-amber-500",
-    purple: "text-purple-500",
+    green: "text-chart-2",
+    amber: "text-chart-3",
+    purple: "text-chart-4",
   };
 
   return (

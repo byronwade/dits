@@ -111,18 +111,18 @@ function PipelineStage({
     primary:
       "border-primary/30 bg-gradient-to-b from-primary/15 to-primary/5 text-primary",
     purple:
-      "border-purple-500/30 bg-gradient-to-b from-purple-500/15 to-purple-500/5 text-purple-600 dark:text-purple-400",
+      "border-chart-2/30 bg-gradient-to-b from-chart-2/15 to-chart-2/5 text-chart-2",
     amber:
-      "border-amber-500/30 bg-gradient-to-b from-amber-500/15 to-amber-500/5 text-amber-600 dark:text-amber-400",
+      "border-chart-3/30 bg-gradient-to-b from-chart-3/15 to-chart-3/5 text-chart-3",
     green:
-      "border-green-500/30 bg-gradient-to-b from-green-500/15 to-green-500/5 text-green-600 dark:text-green-400",
+      "border-chart-4/30 bg-gradient-to-b from-chart-4/15 to-chart-4/5 text-chart-4",
   };
 
   const iconColors = {
     primary: "text-primary",
-    purple: "text-purple-500",
-    amber: "text-amber-500",
-    green: "text-green-500",
+    purple: "text-chart-2",
+    amber: "text-chart-3",
+    green: "text-chart-4",
   };
 
   return (
@@ -190,10 +190,10 @@ function ResultRow({
           className={cn(
             "rounded px-2 py-0.5 text-xs font-medium",
             savings === "100%"
-              ? "bg-green-500/10 text-green-600 dark:text-green-400"
+              ? "bg-success/10 text-success"
               : savings === "95%"
-              ? "bg-green-500/10 text-green-600 dark:text-green-400"
-              : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+              ? "bg-success/10 text-success"
+              : "bg-warning/10 text-warning"
           )}
         >
           {savings} saved
