@@ -142,7 +142,7 @@ pub fn facr_import_edl(
     out: &str,
     fps: Option<u32>,
 ) -> Result<()> {
-    use crate::facr::{build_manifest_from_edl, parse_cmx3600};
+    use crate::facr::parse_cmx3600;
     use std::collections::HashMap;
 
     let edl_text = std::fs::read_to_string(edl)
@@ -172,14 +172,42 @@ pub fn facr_import_edl(
     for ev in &events {
         sources.entry(ev.reel.clone()).or_insert_with(|| source.clone());
     }
-    let manifest = build_manifest_from_edl(&events, &sources)?;
+    finish_import(&events, &sources, out)
+}
 
+/// Import an OTIO timeline JSON into a FACR manifest referencing a source clip (zero
+/// new storage). All clips map to the single provided source manifest.
+pub fn facr_import_otio(otio: &str, source_manifest: &str, out: &str) -> Result<()> {
+    use crate::facr::parse_otio;
+    use std::collections::HashMap;
+
+    let otio_text = std::fs::read_to_string(otio).with_context(|| format!("read OTIO {otio}"))?;
+    let source = ClipManifest::from_json(
+        &std::fs::read_to_string(source_manifest)
+            .with_context(|| format!("read source manifest {source_manifest}"))?,
+    )
+    .context("parse source manifest")?;
+
+    let events = parse_otio(&otio_text)?;
+    let mut sources = HashMap::new();
+    for ev in &events {
+        sources.entry(ev.reel.clone()).or_insert_with(|| source.clone());
+    }
+    finish_import(&events, &sources, out)
+}
+
+/// Shared tail for timeline imports: build the manifest, write it, report.
+fn finish_import(
+    events: &[crate::facr::EdlEvent],
+    sources: &std::collections::HashMap<String, ClipManifest>,
+    out: &str,
+) -> Result<()> {
+    let manifest = crate::facr::build_manifest_from_edl(events, sources)?;
     std::fs::write(out, manifest.to_json()?).with_context(|| format!("write {out}"))?;
 
     println!(
-        "Imported {} cut(s) at {} fps -> {} frames {}",
+        "Imported {} cut(s) -> {} frames {}",
         events.len(),
-        fps,
         manifest.frames.len(),
         style("(0 new frames stored — references the source clip's frames)").green()
     );

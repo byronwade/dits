@@ -11,6 +11,7 @@
 pub mod codec;
 pub mod diff;
 pub mod edl;
+pub mod otio;
 pub mod edit;
 pub mod manifest;
 pub mod photo;
@@ -25,6 +26,7 @@ pub use codec::{DeflateRawCodec, FrameCodec, RawFrame};
 #[allow(unused_imports)]
 pub use diff::{diff_manifests, ClipDiff};
 pub use edl::{build_manifest_from_edl, parse_cmx3600, EdlEvent};
+pub use otio::parse_otio;
 #[allow(unused_imports)]
 pub use edit::trim;
 #[allow(unused_imports)]
