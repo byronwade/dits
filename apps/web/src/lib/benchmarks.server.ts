@@ -3,6 +3,17 @@ import "server-only";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { BenchmarkHistory, BenchmarkRun } from "@/lib/benchmarks-types";
+import type { ComparativeDoc } from "@/lib/comparative-types";
+
+export async function loadComparative(): Promise<ComparativeDoc | null> {
+  try {
+    const filePath = path.join(process.cwd(), "public", "benchmarks", "comparative", "latest.json");
+    const raw = await readFile(filePath, "utf8");
+    return JSON.parse(raw) as ComparativeDoc;
+  } catch {
+    return null;
+  }
+}
 
 export async function loadLatestBenchmarks(): Promise<BenchmarkRun | null> {
   try {
