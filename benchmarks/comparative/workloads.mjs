@@ -10,4 +10,13 @@ export const WORKLOADS = [
     facr: true, tools: ["dits-facr"], minDedup: 95 },
   { id: "stream", label: "Edit 2s of a stream",
     facr: true, tools: ["dits-facr"], minDedup: 75 },
+  // Module E — more edit types, including the zero-byte wins.
+  { id: "trim", label: "Trim / cut a clip",
+    facr: true, input: "v1.mp4", tools: ["dits-facr"], minDedup: 99 },
+  { id: "photo", label: "Non-destructive photo edit",
+    facr: true, input: "photo.png", tools: ["dits-facr"], minDedup: 99 },
+  { id: "append", label: "Append footage",
+    v1: "v1.mp4", v2: "v2_append.mp4", tools: ["restic", "borg", "dits-generic"] },
+  { id: "grade-all", label: "Color-grade the whole clip",
+    v1: "v1.mp4", v2: "v2_grade.mp4", tools: ["restic", "dits-generic"], honestLoss: true },
 ];

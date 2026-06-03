@@ -1,6 +1,9 @@
 import { spawnSync } from "node:child_process";
+import { mkdtempSync, copyFileSync, statSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { has, sh, DITS } from "./contract.mjs";
-import { timed } from "../metrics.mjs";
+import { dirSizeBytes, timed, pct } from "../metrics.mjs";
 
 export const tool = "dits-facr", tier = "dits";
 export const available = () => has(DITS);
@@ -12,7 +15,37 @@ function captureWithTimeout(cmd, args, ms) {
   return (r.stdout || "") + (r.stderr || "");
 }
 
-export async function run({ workload }) {
+export async function run({ workload, v1 }) {
+  // Non-destructive trim: ingest a real clip, trim a frame range — stores ZERO new frames.
+  if (workload === "trim") {
+    const work = mkdtempSync(path.join(tmpdir(), "facrtrim-"));
+    const clip = path.join(work, "clip.mp4");
+    const store = path.join(work, "store");
+    copyFileSync(v1, clip);
+    sh(DITS, ["facr-add", clip, "--store", store, "--manifest", path.join(work, "c.facr.json")], { allowFail: true });
+    const s1 = dirSizeBytes(store);
+    const { ms } = await timed(async () =>
+      sh(DITS, ["facr-trim", path.join(work, "c.facr.json"), "--start", "30", "--end", "120",
+        "--out", path.join(work, "c.trim.json")], { allowFail: true }));
+    const stored = Math.max(0, dirSizeBytes(store) - s1);
+    return { stored_bytes: stored, wire_bytes: stored, wall_ms: ms,
+      peak_rss_bytes: null, restore_ms: null, dedup_pct: pct(statSync(v1).size, stored) };
+  }
+  // Non-destructive photo edit: store the original once, append edits — ZERO new image bytes.
+  if (workload === "photo") {
+    const work = mkdtempSync(path.join(tmpdir(), "facrphoto-"));
+    const img = path.join(work, "photo.png");
+    const store = path.join(work, "store");
+    copyFileSync(v1, img);
+    sh(DITS, ["photo-add", img, "--store", store, "--manifest", path.join(work, "p.photo.json")], { allowFail: true });
+    const s1 = dirSizeBytes(store);
+    const { ms } = await timed(async () =>
+      sh(DITS, ["photo-edit", path.join(work, "p.photo.json"), "--exposure", "0.5",
+        "--contrast", "1.2", "--saturation", "1.1"], { allowFail: true }));
+    const stored = Math.max(0, dirSizeBytes(store) - s1);
+    return { stored_bytes: stored, wire_bytes: stored, wall_ms: ms,
+      peak_rss_bytes: null, restore_ms: null, dedup_pct: pct(statSync(v1).size, stored) };
+  }
   if (workload === "stream") {
     let out = "";
     const { ms } = await timed(async () => {

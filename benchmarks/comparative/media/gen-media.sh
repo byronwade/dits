@@ -23,8 +23,21 @@ gen v1.mp4        -c:v libx264 -preset medium -g 60 -pix_fmt yuv420p
 # v2: metadata-only change (mdat identical)
 [ -f "$DIR/v2_meta.mp4" ] || ffmpeg -y -v error -i "$DIR/v1.mp4" -c copy \
   -metadata title="Color Pass 2" -movflags +faststart "$DIR/v2_meta.mp4"
+# v2: append footage — same prefix, extra tail (the CDC-friendly case)
+[ -f "$DIR/v2_append.mp4" ] || {
+  ffmpeg -y -v error -f lavfi -i "testsrc2=size=1280x720:rate=30:duration=3" \
+    -c:v libx264 -preset medium -g 60 -pix_fmt yuv420p "$DIR/_tail.mp4"
+  printf "file '%s'\nfile '%s'\n" "$DIR/v1.mp4" "$DIR/_tail.mp4" > "$DIR/_concat.txt"
+  ffmpeg -y -v error -f concat -safe 0 -i "$DIR/_concat.txt" -c copy "$DIR/v2_append.mp4"
+  rm -f "$DIR/_tail.mp4" "$DIR/_concat.txt"
+}
+# v2: whole-clip color grade — every frame rewritten (the honest loss for everyone)
+[ -f "$DIR/v2_grade.mp4" ] || ffmpeg -y -v error -i "$DIR/v1.mp4" \
+  -vf "eq=contrast=1.3:saturation=1.4:brightness=0.1" -c:v libx264 -preset medium -g 60 -pix_fmt yuv420p "$DIR/v2_grade.mp4"
+# photo fixture for the non-destructive photo-edit workload
+gen photo.png -frames:v 1
 # pin hashes
-( cd "$DIR" && for f in v1.mov v1.mp4 v2_reexport.mov v2_meta.mp4; do
+( cd "$DIR" && for f in v1.mov v1.mp4 v2_reexport.mov v2_meta.mp4 v2_append.mp4 v2_grade.mp4 photo.png; do
     printf '%s  %s\n' "$(shasum -a 256 "$f" | cut -d' ' -f1)" "$f"; done > checksums.txt )
 node "$DIR/../mk-manifest.mjs" "$DIR"
 echo "media ready in $DIR"

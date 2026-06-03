@@ -34,12 +34,15 @@ for (const w of WORKLOADS) {
     const available = r.available();
     let metrics = { stored_bytes: null, wire_bytes: null, wall_ms: null, peak_rss_bytes: null, restore_ms: null, dedup_pct: null };
     if (available) {
-      const args = w.facr ? { workload: w.id }
+      const args = w.facr
+        ? { workload: w.id, ...(w.input ? { v1: path.join(MEDIA, w.input) } : {}) }
         : { v1: path.join(MEDIA, w.v1), v2: path.join(MEDIA, w.v2) };
       try { metrics = await r.run(args); } catch (e) { console.error(`${toolName}/${w.id}:`, e.message); }
     }
-    const ds = w.facr ? { bytes: 0, codec: "synthetic", label: "FACR demo clip" }
-      : { bytes: statSync(path.join(MEDIA, w.v2)).size, codec: w.v2.endsWith(".mov") ? "prores" : "h264", label: w.label };
+    const dsFile = w.input ?? w.v2;
+    const ds = w.facr && !w.input
+      ? { bytes: 0, codec: "synthetic", label: "FACR demo clip" }
+      : { bytes: statSync(path.join(MEDIA, dsFile)).size, codec: dsFile.endsWith(".mov") ? "prores" : dsFile.endsWith(".png") ? "png" : "h264", label: w.label };
     const rec = {
       workload: w.id, workload_label: w.label, tier: r.tier, tool: r.tool,
       dataset: ds, metrics, derived: derive(metrics),

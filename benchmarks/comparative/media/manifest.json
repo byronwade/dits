@@ -19,6 +19,21 @@
       "name": "v2_meta.mp4",
       "sha256": "634afcd18dc3e496b47f4ea398b52f70f552df746ff938e1314a5fe3c885ba0a",
       "bytes": 3179035
+    },
+    {
+      "name": "v2_append.mp4",
+      "sha256": "238d552704a02331f9e2fbe1659a17732e0b1df3e88e7967cc57f89e35fa4c61",
+      "bytes": 4367744
+    },
+    {
+      "name": "v2_grade.mp4",
+      "sha256": "65d6afb287bacc5f758f3ccda0533753b31d74c839da83ada95d2f330ee0b26b",
+      "bytes": 3441601
+    },
+    {
+      "name": "photo.png",
+      "sha256": "2cfc36b5b6be83c0fd13f810b51ea35f129d9beebf7fd93d0a697c2e807076bf",
+      "bytes": 96648
     }
   ]
 }

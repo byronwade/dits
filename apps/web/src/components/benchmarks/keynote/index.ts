@@ -6,3 +6,4 @@ export { MoneyTimeCards } from "./money-time-cards";
 export { CumulativeChart } from "./cumulative-chart";
 export { ScalingChart } from "./scaling-chart";
 export { MetricMatrix } from "./metric-matrix";
+export { MoreEditTypes } from "./more-edit-types";

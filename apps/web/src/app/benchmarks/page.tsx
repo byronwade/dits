@@ -12,6 +12,7 @@ import {
   CumulativeChart,
   ScalingChart,
   MetricMatrix,
+  MoreEditTypes,
 } from "@/components/benchmarks/keynote";
 
 export const metadata: Metadata = {
@@ -313,8 +314,23 @@ export default async function BenchmarksPage() {
         </KeynoteSection>
       )}
 
-      {/* 11 — METHODOLOGY */}
-      <KeynoteSection chapter="11" tag="Can you trust these?" id="methodology">
+      {/* 11 — MORE EDIT TYPES (Module E) */}
+      {doc && (
+        <KeynoteSection chapter="11" tag="More edit types · incl. the magic ones">
+          <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
+            Some edits cost dits literally zero bytes.
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
+            Trim a clip or tweak a photo, and dits stores the <em>instructions</em> — not a new
+            copy. The original is reused untouched. And where dits genuinely can&apos;t help (a
+            whole-clip re-grade), we say so.
+          </p>
+          <MoreEditTypes records={doc.records} />
+        </KeynoteSection>
+      )}
+
+      {/* 12 — METHODOLOGY */}
+      <KeynoteSection chapter="12" tag="Can you trust these?" id="methodology">
         <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
           One command re-runs every number on your own machine.
         </h2>
