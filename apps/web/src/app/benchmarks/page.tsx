@@ -155,27 +155,79 @@ export default async function BenchmarksPage() {
     <div className="flex min-h-screen flex-col">
       <Header />
       <main id="main-content" className="mx-auto w-full max-w-5xl flex-1 px-7 pt-[104px]" tabIndex={-1}>
-      {/* HERO */}
-      <section className="flex min-h-[88vh] flex-col justify-center">
+      {/* HERO — lead with the two things people actually care about: data + money */}
+      <section className="flex min-h-[90vh] flex-col justify-center">
         <span className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 font-mono text-xs font-semibold text-muted-foreground">
           <span className="h-2 w-2 rounded-full bg-brand" /> dits · Benchmarks · plain English, real numbers
         </span>
         <h1 className="mt-6 text-5xl font-bold leading-[1.03] tracking-tight md:text-7xl">
-          You changed a few<br />frames of a video.
+          Less data moved.<br />
+          <span className="text-gradient-brand">A smaller cloud bill.</span>
         </h1>
-        <div className="mt-8 flex flex-wrap items-end gap-7">
-          <CountUpStat value={heroPct} suffix="%" className="text-7xl md:text-[150px]" />
-          <div className="pb-3">
-            <div className="text-2xl font-semibold">less to store &amp; upload</div>
-            <div className="mt-1 font-mono text-sm text-muted-foreground">
-              with dits, vs the best tools people use today
+        <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
+          You changed a few frames of a video. Here&apos;s how much less dits had to{" "}
+          <strong className="text-foreground">store and move</strong> — and what that saves in{" "}
+          <strong className="text-foreground">real dollars</strong> — measured against the tools
+          people actually use, on one computer.
+        </p>
+
+        {/* The two headline numbers, side by side */}
+        <div className="mt-10 grid max-w-3xl gap-4 sm:grid-cols-2">
+          <div className="rounded-3xl border border-brand/30 bg-brand/5 p-6">
+            <div className="font-mono text-[11px] font-semibold uppercase tracking-wider text-brand">
+              Data saved
+            </div>
+            <CountUpStat value={heroPct} suffix="%" className="mt-2 block text-6xl md:text-8xl" />
+            <div className="mt-1 text-lg font-semibold">less to store &amp; upload, per edit</div>
+            <div className="font-mono text-sm text-muted-foreground">
+              vs the best tools people use today
+            </div>
+          </div>
+          <div className="rounded-3xl border border-brand/30 bg-brand/5 p-6">
+            <div className="font-mono text-[11px] font-semibold uppercase tracking-wider text-brand">
+              Cost saved
+            </div>
+            <div className="mt-2 text-6xl font-bold tracking-tight text-brand tabular-nums md:text-8xl">
+              ${Math.round(annualSaved).toLocaleString("en-US")}
+            </div>
+            <div className="mt-1 text-lg font-semibold">/year less in bandwidth</div>
+            <div className="font-mono text-sm text-muted-foreground">
+              a {teamSize}-person team, one asset (ch. 08)
             </div>
           </div>
         </div>
-        <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
-          We ran the same edits through the tools everyone uses — and through dits — on one
-          computer. Here&apos;s what each one had to re-save. Every <em>comparison</em> here is
-          measured; the project-over-time and scaling projections are clearly labeled.
+      </section>
+
+      {/* AT A GLANCE — the payoff in four numbers before the narrative */}
+      <section aria-label="Savings at a glance" className="mb-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <StatCard
+            label="Per-edit data saved"
+            value={`${heroPct}%`}
+            hint="re-color a few frames"
+            className="border-brand/30 bg-brand/5"
+          />
+          <StatCard
+            label="Team bill avoided"
+            value={`$${Math.round(annualSaved).toLocaleString("en-US")}/yr`}
+            hint={`${teamSize} people, 1 asset`}
+            className="border-brand/30 bg-brand/5"
+          />
+          <StatCard
+            label="Bytes that never move"
+            value={`${monthlySavedPct}%`}
+            hint="of distribution egress"
+          />
+          <StatCard
+            label="One big edit"
+            value={`${singleSavedPct}%`}
+            hint="10 GB asset, ~200 KB delta"
+          />
+        </div>
+        <p className="mt-4 max-w-2xl text-sm text-muted-foreground">
+          Every <em>comparison</em> below is measured on one machine; project-over-time and scaling
+          projections are clearly labeled. The honest losses are shown too — starting with the next
+          section.
         </p>
       </section>
 
