@@ -103,9 +103,16 @@ fn probe_image(path: &Path) -> Result<(u32, u32)> {
 /// Store a source image once (content-addressed) and return a base `PhotoVersion`.
 pub fn ingest_photo(path: &Path, store: &FrameStore) -> Result<PhotoVersion> {
     anyhow::ensure!(path.exists(), "image not found: {}", path.display());
+    // Validate it's actually a readable image BEFORE storing anything.
+    let (width, height) = probe_image(path)
+        .with_context(|| format!("not a readable image: {}", path.display()))?;
+    anyhow::ensure!(
+        width > 0 && height > 0,
+        "{} is not a valid image (no decodable video/image stream)",
+        path.display()
+    );
     let bytes = std::fs::read(path).context("read source image")?;
     let hash = store.store_frame(&bytes)?;
-    let (width, height) = probe_image(path).unwrap_or((0, 0));
     let fmt = path
         .extension()
         .and_then(|e| e.to_str())

@@ -36,6 +36,29 @@ pub fn checkout(target: &str, mode: CheckoutMode) -> Result<()> {
         CheckoutMode::Proxy => " (proxy mode)",
     };
 
+    // Resolve the symbolic HEAD ref to the current commit (git's `checkout HEAD`).
+    if target == "HEAD" || target == "@" {
+        if let Some(hash) = repo.head()? {
+            let result = repo.checkout(&hash)?;
+            if mode == CheckoutMode::Proxy {
+                apply_proxy_checkout(&repo)?;
+            }
+            println!(
+                "{} HEAD is now at {}{}",
+                style("✓").green().bold(),
+                style(&hash.to_hex()[..8]).yellow(),
+                mode_str
+            );
+            println!(
+                "  Restored {} file(s), {}",
+                result.files_restored,
+                format_bytes(result.bytes_restored)
+            );
+            return Ok(());
+        }
+        anyhow::bail!("HEAD does not point to a commit yet (no commits in this repository)");
+    }
+
     // Try as branch first
     if let Ok(result) = repo.checkout_branch(target) {
         let proxy_result = if mode == CheckoutMode::Proxy {
