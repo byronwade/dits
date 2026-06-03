@@ -1,0 +1,17 @@
+{
+  "name": "dits-wasm",
+  "type": "module",
+  "description": "WebAssembly bindings for the dits-core chunking + hashing engine.",
+  "version": "0.1.0",
+  "license": "Apache-2.0 OR MIT",
+  "files": [
+    "dits_wasm_bg.wasm",
+    "dits_wasm.js",
+    "dits_wasm.d.ts"
+  ],
+  "main": "dits_wasm.js",
+  "types": "dits_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

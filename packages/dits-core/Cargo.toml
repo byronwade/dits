@@ -1,0 +1,26 @@
+# dits-core — the pure-compute heart of Dits (content-defined chunking + BLAKE3
+# content addressing). Extracted from apps/cli so the exact same engine compiles
+# to both the native CLI and a wasm32 target for the web Playground.
+#
+# Keep this crate dependency-light and free of I/O, async, or platform code so
+# it stays wasm-portable. The optional `parallel` feature pulls in rayon for the
+# native CLI; it is OFF by default and must never be enabled for wasm builds.
+[package]
+name = "dits-core"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/byronwade/dits"
+description = "Content-defined chunking (FastCDC) and BLAKE3 content addressing for Dits."
+
+[dependencies]
+fastcdc = "3.1"
+blake3 = "1.5"
+serde = { version = "1.0", features = ["derive"] }
+hex = "0.4"
+rayon = { version = "1.10", optional = true }
+
+[features]
+default = []
+# Native-only: parallel chunk hashing via rayon. NOT wasm-compatible.
+parallel = ["dep:rayon"]

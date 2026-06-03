@@ -1,0 +1,28 @@
+# dits-wasm — thin wasm-bindgen wrapper over the real dits-core engine.
+#
+# This crate is intentionally a STANDALONE workspace (note the empty
+# `[workspace]` table) so a normal `cargo build` / CI run for the main workspace
+# never tries to build it for wasm. Build it explicitly with:
+#   wasm-pack build --release --target web --out-dir ../../apps/web/src/wasm/dits
+#
+# It depends on dits-core with DEFAULT features only — never `parallel` — so
+# rayon never reaches the wasm target.
+[workspace]
+
+[package]
+name = "dits-wasm"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0 OR MIT"
+description = "WebAssembly bindings for the dits-core chunking + hashing engine."
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+dits-core = { path = "../dits-core" }
+wasm-bindgen = "0.2"
+
+[profile.release]
+opt-level = "s"
+lto = true

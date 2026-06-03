@@ -14,8 +14,12 @@
 //! ## Layer 2: Smart Layer
 //! - File-type awareness in the `filetype` module
 
-mod hash;
-mod chunk;
+// The Universal Layer (chunking + hashing) lives in the shared `dits-core`
+// crate so the exact same engine compiles to the CLI and to wasm for the web
+// Playground. Re-exported as `core::hash` / `core::chunk` so the rest of the
+// CLI keeps its existing import paths unchanged.
+pub use dits_core::{chunk, hash};
+
 mod filetype;
 mod manifest;
 mod commit;

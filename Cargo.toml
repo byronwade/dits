@@ -1,6 +1,7 @@
 [workspace]
 members = [
   "apps/cli",
+  "packages/dits-core",
 ]
 # The former apps/cli/crates/* backend workspace was quarantined to legacy/backend-crates
 # on 2026-06-02 (see legacy/README.md). apps/cli is the single canonical `dits` binary.

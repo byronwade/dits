@@ -8,7 +8,8 @@
 //! - Fixed: Insert at start → ALL chunks shift → 0% dedup
 //! - CDC:   Insert at start → Only first chunk changes → 95%+ dedup
 
-use crate::core::hash::{Hash, Hasher};
+use crate::hash::{Hash, Hasher};
+#[cfg(feature = "parallel")]
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -224,6 +225,7 @@ pub fn chunk_data_with_refs(data: &[u8], config: &ChunkerConfig) -> (Vec<Chunk>,
 /// speeds up processing of large files on multi-core systems. The chunking
 /// boundaries are still determined sequentially (FastCDC requirement), but
 /// the expensive hashing operations run in parallel.
+#[cfg(feature = "parallel")]
 pub fn chunk_data_parallel(data: &[u8], config: &ChunkerConfig) -> Vec<Chunk> {
     if data.is_empty() {
         return Vec::new();
@@ -259,6 +261,7 @@ pub fn chunk_data_parallel(data: &[u8], config: &ChunkerConfig) -> Vec<Chunk> {
 /// Parallel chunk data with refs using rayon for faster processing.
 ///
 /// Returns both chunks and references, with hashing done in parallel.
+#[cfg(feature = "parallel")]
 pub fn chunk_data_with_refs_parallel(data: &[u8], config: &ChunkerConfig) -> (Vec<Chunk>, Vec<ChunkRef>) {
     if data.is_empty() {
         return (Vec::new(), Vec::new());
@@ -379,6 +382,7 @@ mod tests {
         assert_eq!(chunks[0].data, data);
     }
 
+    #[cfg(feature = "parallel")]
     #[test]
     fn test_parallel_chunk_determinism() {
         let data = vec![0u8; 1024 * 1024]; // 1 MB of zeros
@@ -393,6 +397,7 @@ mod tests {
         }
     }
 
+    #[cfg(feature = "parallel")]
     #[test]
     fn test_parallel_matches_sequential() {
         // Ensure parallel chunking produces identical results to sequential
@@ -409,6 +414,7 @@ mod tests {
         }
     }
 
+    #[cfg(feature = "parallel")]
     #[test]
     fn test_parallel_with_refs_matches_sequential() {
         let data: Vec<u8> = (0..500_000).map(|i| (i % 256) as u8).collect();
@@ -431,6 +437,7 @@ mod tests {
         }
     }
 
+    #[cfg(feature = "parallel")]
     #[test]
     fn test_parallel_reconstruction() {
         let data: Vec<u8> = (0..100_000).map(|i| (i % 256) as u8).collect();

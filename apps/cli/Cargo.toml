@@ -18,7 +18,10 @@ path = "src/main.rs"
 clap = { version = "4.5", features = ["derive"] }
 clap_complete = "4.5"
 
-# Chunking and hashing
+# Chunking and hashing — the engine now lives in the shared dits-core crate
+# (same code compiles to wasm for the web Playground). `parallel` keeps rayon
+# for the native CLI's parallel hashing paths.
+dits-core = { path = "../../packages/dits-core", features = ["parallel"] }
 fastcdc = "3.1"
 blake3 = "1.5"
 
