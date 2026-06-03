@@ -33,7 +33,7 @@ export default function SelfHostingPage() {
                 description="Run Dits on your own infrastructure with complete control over your data, security, and customization."
             />
 
-            <Callout type="warning" title="Full Data Sovereignty" className="not-prose my-6">
+            <Callout type="note" title="Full Data Sovereignty" className="not-prose my-6">
                 Self-hosting gives you complete control over your data and compliance
                 with any regulatory requirements.
             </Callout>

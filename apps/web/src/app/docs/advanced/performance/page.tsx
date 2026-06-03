@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import {
     Card,
     CardContent,
+    CardDescription,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
@@ -38,6 +39,7 @@ export default function PerformancePage() {
                             <Cpu className="size-5 text-brand" />
                         </div>
                         <CardTitle className="text-base">Chunk Size Optimization</CardTitle>
+                        <CardDescription>Balance between deduplication and overhead</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground mb-4">
@@ -67,6 +69,7 @@ export default function PerformancePage() {
                             <Settings className="size-5 text-brand" />
                         </div>
                         <CardTitle className="text-base">Algorithm Selection</CardTitle>
+                        <CardDescription>Choose the right chunking algorithm</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
