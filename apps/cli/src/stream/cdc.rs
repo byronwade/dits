@@ -75,6 +75,28 @@ pub fn cdc_segments(manifest: &ClipManifest, p: &CdcParams) -> Vec<CdcSegment> {
     segs
 }
 
+/// Classify v2's content-defined segments into those reusable from v1 (matching `content_id`) and
+/// those that must be re-encoded.
+pub struct CdcPlan {
+    pub reused: Vec<CdcSegment>,
+    pub reencoded: Vec<CdcSegment>,
+}
+
+pub fn plan_cdc(v1: &ClipManifest, v2: &ClipManifest, p: &CdcParams) -> CdcPlan {
+    let s1: std::collections::HashSet<Hash> =
+        cdc_segments(v1, p).into_iter().map(|s| s.content_id).collect();
+    let mut reused = Vec::new();
+    let mut reencoded = Vec::new();
+    for s in cdc_segments(v2, p) {
+        if s1.contains(&s.content_id) {
+            reused.push(s);
+        } else {
+            reencoded.push(s);
+        }
+    }
+    CdcPlan { reused, reencoded }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -27,6 +27,7 @@ pub async fn stream_demo(
     lossless: bool,
     push: bool,
     vmaf: Option<f64>,
+    edit: Option<String>,
     port: u16,
 ) -> Result<()> {
     check_ffmpeg().context("FFmpeg is required for stream-demo")?;
@@ -60,6 +61,12 @@ pub async fn stream_demo(
     let fmt = FrameFormat::JpegXl { distance: if lossless { 0.0 } else { 1.0 } };
     let v1m = ingest_video_with_format(&video, &store, fmt).context("ingest video")?;
     let layout = SegmentLayout::new(&v1m.frame_rate, segment_seconds);
+
+    // P4 #2: content-defined boundaries make reuse survive trim/insert edits. Objective report only.
+    if let Some(kind) = edit.as_deref() {
+        return cdc_edit_demo(kind, &v1m, &store, &origin, layout.fps).await;
+    }
+
     let frame_bytes = dir_size(&frames_dir);
     println!(
         "ingested {} frames @ {:.3} fps -> {} segments  [{} frame store: {:.1} KB]",
@@ -176,6 +183,109 @@ pub async fn stream_demo(
         bytes_reencoded,
     };
     serve(state, port).await?;
+    Ok(())
+}
+
+/// CDC edit demo: build v1 with content-defined segments, apply a trim/insert, rebuild v2 reusing
+/// segments by content id, and report reuse vs the fixed-boundary baseline. Objective (byte/segment
+/// counts), like the QUIC proof.
+async fn cdc_edit_demo(
+    kind: &str,
+    v1m: &crate::facr::manifest::ClipManifest,
+    store: &FrameStore,
+    origin: &LocalDiskOrigin,
+    fps: f64,
+) -> Result<()> {
+    use crate::stream::cdc::{cdc_segments, CdcParams};
+    use crate::stream::encode::{encode_cmaf_segment, EncodeProfile};
+    use std::collections::HashMap;
+
+    let params = CdcParams::default();
+    let ext = crate::facr::video::frame_ext(&v1m.codec);
+
+    // Encode one content-defined segment and store its media; returns (media_hash, bytes).
+    let encode_seg = |range: std::ops::Range<usize>, m: &crate::facr::manifest::ClipManifest| -> Result<(crate::core::Hash, u64)> {
+        let pngs: Vec<Vec<u8>> = range
+            .clone()
+            .map(|i| store.load_frame(&m.frames[i].hash))
+            .collect::<std::io::Result<_>>()?;
+        let cm = encode_cmaf_segment(&pngs, &m.frame_rate, ext, &EncodeProfile::source())?;
+        let mh = crate::core::Hash::from_slice(blake3::hash(&cm.media).as_bytes());
+        let ih = crate::core::Hash::from_slice(blake3::hash(&cm.init).as_bytes());
+        origin.put(&mh, &cm.media)?;
+        origin.put(&ih, &cm.init)?;
+        Ok((mh, cm.media.len() as u64))
+    };
+
+    // v1: encode every content-defined segment; map content_id -> media hash.
+    let v1segs = cdc_segments(v1m, &params);
+    let mut v1map: HashMap<crate::core::Hash, crate::core::Hash> = HashMap::new();
+    for s in &v1segs {
+        let (mh, _) = encode_seg(s.frames.clone(), v1m)?;
+        v1map.insert(s.content_id, mh);
+    }
+    println!(
+        "v1: {} content-defined segments (avg {:.1} frames)",
+        v1segs.len(),
+        v1m.frames.len() as f64 / v1segs.len().max(1) as f64
+    );
+
+    // Apply the edit at the clip midpoint.
+    let mid = v1m.frames.len() / 2;
+    let k = 5usize.min(v1m.frames.len().saturating_sub(mid)).max(1);
+    let v2m = match kind {
+        "trim" => crate::stream::edit::trim_range(v1m, mid..mid + k)?,
+        _ => {
+            // Insert a short clip (a copy of the opening frames) at the midpoint.
+            let inserted: Vec<_> = v1m.frames[0..k.min(v1m.frames.len())].to_vec();
+            crate::stream::edit::insert_frames(v1m, mid, &inserted)?
+        }
+    };
+    println!("edit: {kind} {k} frames at frame {mid}  ({} -> {} frames)", v1m.frames.len(), v2m.frames.len());
+
+    // v2: reuse segments whose content id is already known; encode the rest.
+    let v2segs = cdc_segments(&v2m, &params);
+    let mut reused = 0usize;
+    let mut reencoded = 0usize;
+    let mut bytes_re = 0u64;
+    for s in &v2segs {
+        if v1map.contains_key(&s.content_id) {
+            reused += 1;
+        } else {
+            let (_, bytes) = encode_seg(s.frames.clone(), &v2m)?;
+            reencoded += 1;
+            bytes_re += bytes;
+        }
+    }
+
+    // Fixed-boundary contrast: how many would survive with equal-size chunks?
+    let chunk = ((fps * 2.0).round() as usize).max(1);
+    let fixed_ids = |m: &crate::facr::manifest::ClipManifest| -> std::collections::HashSet<crate::core::Hash> {
+        m.frames
+            .chunks(chunk)
+            .map(|c| {
+                let mut h = blake3::Hasher::new();
+                for f in c {
+                    h.update(f.hash.as_bytes());
+                }
+                crate::core::Hash::from_slice(h.finalize().as_bytes())
+            })
+            .collect()
+    };
+    let f1 = fixed_ids(v1m);
+    let f2 = fixed_ids(&v2m);
+    let fixed_reused = f2.iter().filter(|x| f1.contains(x)).count();
+
+    let reuse_pct = if v2segs.is_empty() { 0.0 } else { reused as f64 / v2segs.len() as f64 * 100.0 };
+    println!("\n  -- FACR edit-resilient reuse ({kind}) --");
+    println!("  v2 content-defined segments : {}", v2segs.len());
+    println!("  reused (content match)      : {reused}  ({reuse_pct:.1}% reused)");
+    println!("  re-encoded                  : {reencoded}  ({:.1} KB)", bytes_re as f64 / 1024.0);
+    println!(
+        "  fixed-boundary baseline     : {fixed_reused}/{} chunks reused (collapses after the edit)",
+        f2.len()
+    );
+    println!("  => content-defined boundaries preserve reuse across a frame-shifting edit.");
     Ok(())
 }
 

@@ -423,6 +423,9 @@ enum Commands {
         /// Per-segment VMAF-targeted encoding to this quality target (e.g. 93); single source rendition
         #[arg(long)]
         vmaf: Option<f64>,
+        /// Demonstrate edit-resilient reuse with content-defined boundaries: "insert" or "trim"
+        #[arg(long)]
+        edit: Option<String>,
         /// HTTP port for the player
         #[arg(long, default_value = "8088")]
         port: u16,
@@ -1229,8 +1232,8 @@ async fn main() {
         Commands::Unmount { mount_point } => commands::unmount(&mount_point),
         Commands::CacheStats => commands::cache_stats(),
         Commands::FacrDemo { frames, regrade } => commands::facr_demo(frames, regrade),
-        Commands::StreamDemo { input, grade_start, grade_end, segment_seconds, lossless, push, vmaf, port } => {
-            commands::stream_demo(input, grade_start, grade_end, segment_seconds, lossless, push, vmaf, port).await
+        Commands::StreamDemo { input, grade_start, grade_end, segment_seconds, lossless, push, vmaf, edit, port } => {
+            commands::stream_demo(input, grade_start, grade_end, segment_seconds, lossless, push, vmaf, edit, port).await
         }
         Commands::FacrAdd { input, store, manifest } => {
             commands::facr_add(&input, store.as_deref(), manifest.as_deref())
