@@ -36,6 +36,6 @@ The "edits cost only their diff" guarantee holds when **Dits owns the edit** (re
 
 ## Roadmap to production
 
-1. **Video:** carry audio; swap PNG frames → ProRes/intra-AV1 via the `FrameCodec` seam; OTIO/EDL import.
+1. **Video:** audio is now preserved (stream-copied, content-addressed, deduped). Remaining: swap PNG frames → ProRes/intra-AV1 via the `FrameCodec` seam; OTIO/EDL import.
 2. **Photo:** RAW decode (libraw) so the *base* is the sensor data and renders are true derivations; tile-level dedup for bursts/brackets/panoramas (the Case-B frontier).
 3. **Transfer:** turn the content-addressed have/want sync from theory into the real network layer.

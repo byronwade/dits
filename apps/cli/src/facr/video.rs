@@ -5,7 +5,8 @@
 //! and returns a [`ClipManifest`]. `reconstruct_video` does the reverse: it materializes
 //! the manifest's frames and re-muxes them into a playable video.
 //!
-//! v1 scope: video track only (audio is not yet carried — see the design spec). Frames
+//! Audio is preserved: the track is extracted stream-copied (lossless), stored
+//! content-addressed (deduped like frames), and muxed back on reconstruction. Frames
 //! are stored as PNG, which is lossless and deterministic, so re-ingesting identical
 //! content dedups perfectly.
 
@@ -72,8 +73,8 @@ pub fn probe_video(path: &Path) -> Result<VideoInfo> {
     Ok(VideoInfo { width, height, frame_rate })
 }
 
-/// Whether the source has at least one audio stream. FACR v1 stores video frames only,
-/// so callers should warn the user that audio is dropped.
+/// Whether the source has at least one audio stream. Used to decide whether to extract
+/// and store an audio track (which `ingest_video` then preserves) and to inform the user.
 pub fn source_has_audio(path: &Path) -> bool {
     Command::new("ffprobe")
         .args([
