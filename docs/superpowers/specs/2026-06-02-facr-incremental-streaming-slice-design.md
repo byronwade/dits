@@ -153,3 +153,33 @@ apps/cli/src/stream/web/player.html
 apps/cli/src/commands/stream_demo.rs   (registered in commands/mod.rs + clap enum)
 ```
 New dependencies: none.
+
+## Implementation status & verification (2026-06-02)
+
+**Built and committed** on `feat/facr-incremental-streaming`: the `stream/` module
+(`layout`, `origin`, `playlist`, `encode`, `edit`, `incremental`, `serve` + `web/player.html`)
+and the `dits stream-demo` command. 13 unit tests green (incl. FFmpeg-backed encode/edit).
+
+**Execution refinements vs the design sketch:**
+- Frames are PNG (from `ingest_video`), so the encoder takes PNG blobs and emits **independent
+  MPEG-TS** segments (each auto-IDR, spliceable) rather than splitting one encode. Simpler, equally correct.
+- `encode_segment` takes `ts_offset_seconds` (`-output_ts_offset`) so the HLS timeline stays
+  continuous; the offset is a pure function of the segment's start frame, so hash stability (the
+  reuse guarantee) is preserved.
+- `stream_demo` is `async` (the binary is `#[tokio::main]`); it `.await`s `serve` rather than
+  nesting a runtime.
+
+**Verified end to end** (`dits stream-demo`, 10s/100-frame testsrc, 2s segments):
+- 5 segments; re-grade of 4–6s → **1 re-encoded (segment 2), 4 reused, 80% reuse**.
+- Reuse is byte-exact: v1∩v2 share 4 identical segment hashes; exactly 1 differs.
+- Re-delivered 19.1 KB vs 99.1 KB naive full re-encode.
+- Served segments probe as h264 320×240; **FFmpeg decodes the full v2 playlist to 100 continuous
+  frames (PTS 0.2s→9.9s)** across all 5 independently-encoded segments — the splice is sound.
+- hls.js parsed the playlist as a 10s stream; pixel playback could not be confirmed in-session
+  because the automation tab is `visibility:hidden` (Chrome suspends MediaSource in hidden tabs),
+  not a pipeline defect.
+
+**Known rough edge (next hardening):** FFmpeg reports `Packet corrupt` at segment boundaries
+because each independent TS resets its continuity counters. The decoder recovers (all frames
+render), but the clean production fix is **CMAF/fMP4 segments with a shared init segment** (or
+`#EXT-X-DISCONTINUITY` markers), which also aligns with the P2 codec/packaging phase.
