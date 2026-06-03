@@ -86,8 +86,8 @@ export function CodeBlock({
                 className
             )}
             style={{
-                backgroundColor: "hsl(var(--code-background))",
-                border: "1px solid hsl(var(--code-border))",
+                backgroundColor: "var(--code-background)",
+                border: "1px solid var(--code-border)",
                 margin: 0,
             }}
         >
@@ -100,7 +100,7 @@ export function CodeBlock({
                     "transition-opacity duration-200",
                     copied
                         ? "bg-primary/20 text-primary opacity-100"
-                        : "bg-black/30 text-white/70 hover:text-white opacity-0 group-hover:opacity-100"
+                        : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground opacity-0 group-hover:opacity-100"
                 )}
                 aria-label={copied ? "Copied!" : "Copy code"}
             >
