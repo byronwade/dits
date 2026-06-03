@@ -32,7 +32,7 @@ pub use special::*;
 pub use bisect::bisect;
 pub use blame::blame;
 pub use cache_stats::cache_stats;
-pub use facr::{facr_add, facr_checkout, facr_trim, photo_add, photo_edit, photo_render, PhotoEditArgs};
+pub use facr::{facr_add, facr_checkout, facr_import_edl, facr_trim, photo_add, photo_edit, photo_render, PhotoEditArgs};
 pub use facr_demo::facr_demo;
 pub use inspect::inspect;
 pub use inspect_file::inspect_file;

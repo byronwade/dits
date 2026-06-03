@@ -134,6 +134,63 @@ pub fn facr_trim(manifest: &str, start: usize, end: Option<usize>, out: Option<&
     Ok(())
 }
 
+/// Import a CMX3600 EDL into a FACR manifest that references an existing source clip's
+/// frames (zero new storage). All EDL reels map to the single provided source manifest.
+pub fn facr_import_edl(
+    edl: &str,
+    source_manifest: &str,
+    out: &str,
+    fps: Option<u32>,
+) -> Result<()> {
+    use crate::facr::{build_manifest_from_edl, parse_cmx3600};
+    use std::collections::HashMap;
+
+    let edl_text = std::fs::read_to_string(edl)
+        .with_context(|| format!("read EDL {edl}"))?;
+    let source = ClipManifest::from_json(
+        &std::fs::read_to_string(source_manifest)
+            .with_context(|| format!("read source manifest {source_manifest}"))?,
+    )
+    .context("parse source manifest")?;
+
+    // Frame rate: explicit flag, else round the source's recorded rate.
+    let fps = fps.unwrap_or_else(|| {
+        let r = &source.frame_rate;
+        if let Some((n, d)) = r.split_once('/') {
+            let n: f64 = n.parse().unwrap_or(30.0);
+            let d: f64 = d.parse().unwrap_or(1.0);
+            if d != 0.0 { (n / d).round() as u32 } else { 30 }
+        } else {
+            r.parse::<f64>().unwrap_or(30.0).round() as u32
+        }
+    });
+
+    let events = parse_cmx3600(&edl_text, fps)?;
+
+    // Map every reel referenced by the EDL to the single source manifest.
+    let mut sources = HashMap::new();
+    for ev in &events {
+        sources.entry(ev.reel.clone()).or_insert_with(|| source.clone());
+    }
+    let manifest = build_manifest_from_edl(&events, &sources)?;
+
+    std::fs::write(out, manifest.to_json()?).with_context(|| format!("write {out}"))?;
+
+    println!(
+        "Imported {} cut(s) at {} fps -> {} frames {}",
+        events.len(),
+        fps,
+        manifest.frames.len(),
+        style("(0 new frames stored — references the source clip's frames)").green()
+    );
+    println!("  Manifest: {}", style(out).cyan());
+    println!(
+        "  {}",
+        style(format!("Reconstruct it: dits facr-checkout {out} cut.mp4")).dim()
+    );
+    Ok(())
+}
+
 // ---- Photo path -----------------------------------------------------------------
 
 /// Selected photo edits to append, parsed from CLI flags.
