@@ -249,7 +249,7 @@ const roadmapMeta: Record<
   (typeof roadmapItems)[number]["status"],
   { tone: TimelineEvent["tone"]; pillTone: "success" | "warning" | "neutral"; label: string }
 > = {
-  current: { tone: "info", pillTone: "warning", label: "Active Development" },
+  current: { tone: "warning", pillTone: "warning", label: "Active Development" },
   upcoming: { tone: "warning", pillTone: "warning", label: "Coming Soon" },
   planned: { tone: "neutral", pillTone: "neutral", label: "Planned" },
 };
