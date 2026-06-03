@@ -178,22 +178,20 @@ and the `dits stream-demo` command. 13 unit tests green (incl. FFmpeg-backed enc
 - Served segments probe as h264 320×240. Reuse-by-copying-`SegmentRef` (never re-deriving)
   makes this independent of encoder non-determinism. This half ships.
 
-**NOT YET PROVEN — clean browser playback:**
+**PROVEN — clean browser playback:**
 - The playlist uses `#EXT-X-DISCONTINUITY` between segments (each is an independent PTS-0
   timeline; the correct HLS representation of independently-encoded chunks). FFmpeg's HLS
-  demuxer **re-bases the timeline correctly** at every seam (offsets 2/4/6/8s) and reconstructs
-  a continuous 10s / 100-frame stream with no frame loss.
-- However, FFmpeg is a maximally error-tolerant decoder; a clean FFmpeg decode is **not** proof
-  of clean playback in **hls.js** (the actual target). Below the HLS layer, each independent TS
-  resets MPEG-TS continuity counters, which FFmpeg's strict CLI demuxer flags as `Packet
-  corrupt` at seams. hls.js remuxes TS→fMP4 and is designed to tolerate exactly this, so it is
-  *expected* to play cleanly — but **this was not observed**: the automation browser tab is
-  `visibility:hidden`, so Chrome keeps MediaSource `closed` and hls.js never reaches
-  `MEDIA_ATTACHED`. Pixel-level playback in a real (visible) browser remains the one open
-  verification.
+  demuxer re-bases the timeline correctly at every seam (offsets 2/4/6/8s) and reconstructs a
+  continuous 10s / 100-frame stream with no frame loss.
+- **User-confirmed visual playback in a real (visible) browser** (2026-06-02): both v1 and v2
+  play cleanly via hls.js with no visible problems at the segment seams. This confirms hls.js
+  remuxes TS→fMP4 and tolerates the MPEG-TS continuity-counter resets that FFmpeg's strict CLI
+  demuxer pedantically flags as `Packet corrupt` — i.e. the FFmpeg seam warnings are a
+  decoder-strictness artifact, not a playback defect. (In-session automation playback was
+  blocked only because the MCP browser tab is `visibility:hidden`, which keeps MediaSource
+  `closed`; verification was done by the user in a foregrounded browser.)
 
-**Next hardening (coupled to a visible-browser pass):** move to **CMAF/fMP4 segments with a
-shared init segment** — eliminates TS continuity counters entirely (no seam corruption at any
-layer) and is the standard modern packaging. Do this together with a foregrounded hls.js
-playthrough so the format change is verified, not swapped blind. Aligns with the P2
-codec/packaging phase.
+**Optional hardening (not a correctness fix):** **CMAF/fMP4 segments with a shared init
+segment** would eliminate TS continuity counters entirely (silencing even FFmpeg's seam
+warnings) and is the standard modern packaging — worth doing as part of the P2 codec/packaging
+phase, but no longer required for clean playback.
