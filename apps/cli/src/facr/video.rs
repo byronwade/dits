@@ -139,6 +139,35 @@ impl FrameImageCodec {
     }
 }
 
+/// Output video codec used when reconstructing/exporting a clip. ProRes and DNxHR are
+/// the visually-lossless intra-only mezzanines editors drop straight into an NLE (use a
+/// `.mov` output). H.264 is the small, universally-playable default.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum OutputCodec {
+    H264,
+    ProRes,
+    DnxHr,
+}
+
+impl OutputCodec {
+    pub fn from_name(s: &str) -> Option<Self> {
+        match s.to_ascii_lowercase().as_str() {
+            "h264" | "x264" | "avc" => Some(Self::H264),
+            "prores" => Some(Self::ProRes),
+            "dnxhr" | "dnxhd" => Some(Self::DnxHr),
+            _ => None,
+        }
+    }
+    fn video_args(self) -> &'static [&'static str] {
+        match self {
+            Self::H264 => &["-c:v", "libx264", "-pix_fmt", "yuv420p"],
+            // ProRes 422 HQ.
+            Self::ProRes => &["-c:v", "prores_ks", "-profile:v", "3", "-pix_fmt", "yuv422p10le"],
+            Self::DnxHr => &["-c:v", "dnxhd", "-profile:v", "dnxhr_hq", "-pix_fmt", "yuv422p"],
+        }
+    }
+}
+
 /// Map a manifest's recorded codec name to the on-disk frame extension.
 fn frame_ext(codec: &str) -> &str {
     match codec {
@@ -223,7 +252,12 @@ pub fn ingest_video(path: &Path, store: &FrameStore, codec: FrameImageCodec) -> 
 }
 
 /// Reconstruct a playable video at `output` from a manifest's stored frames.
-pub fn reconstruct_video(manifest: &ClipManifest, store: &FrameStore, output: &Path) -> Result<()> {
+pub fn reconstruct_video(
+    manifest: &ClipManifest,
+    store: &FrameStore,
+    output: &Path,
+    out_codec: OutputCodec,
+) -> Result<()> {
     check_ffmpeg()?;
 
     let work = std::env::temp_dir().join(format!("dits-facr-out-{}", uuid::Uuid::new_v4()));
@@ -257,7 +291,7 @@ pub fn reconstruct_video(manifest: &ClipManifest, store: &FrameStore, output: &P
     if let Some(ap) = &audio_file {
         cmd.arg("-i").arg(ap);
     }
-    cmd.args(["-c:v", "libx264", "-pix_fmt", "yuv420p"]);
+    cmd.args(out_codec.video_args());
     if audio_file.is_some() {
         // Stream-copy the audio (lossless) and map both streams; -shortest guards against
         // tiny duration mismatches between the re-encoded video and the copied audio.
@@ -334,7 +368,7 @@ mod tests {
         let manifest = ingest_video(&video, &store, FrameImageCodec::Png).unwrap();
 
         let out = dir.path().join("rebuilt.mp4");
-        reconstruct_video(&manifest, &store, &out).unwrap();
+        reconstruct_video(&manifest, &store, &out, OutputCodec::H264).unwrap();
 
         // The reconstructed file exists and probes as a video with the same resolution.
         let info = probe_video(&out).unwrap();
@@ -386,7 +420,7 @@ mod tests {
 
         // And it reconstructs a playable video.
         let out = dir.path().join("out.mp4");
-        reconstruct_video(&m, &store, &out).unwrap();
+        reconstruct_video(&m, &store, &out, OutputCodec::H264).unwrap();
         let info = probe_video(&out).unwrap();
         assert_eq!(info.width, 160);
     }
@@ -410,7 +444,7 @@ mod tests {
         assert_eq!(store.count().unwrap(), after, "webp-vl frames must dedup on re-ingest");
         // Reconstructs (frames are .webp despite the 'webp-vl' codec name).
         let out = dir.path().join("out.mp4");
-        reconstruct_video(&m, &store, &out).unwrap();
+        reconstruct_video(&m, &store, &out, OutputCodec::H264).unwrap();
         assert_eq!(probe_video(&out).unwrap().width, 160);
     }
 
@@ -429,7 +463,7 @@ mod tests {
         let manifest = ingest_video(&video, &store, FrameImageCodec::Png).unwrap();
 
         let out = dir.path().join("rebuilt.mp4");
-        reconstruct_video(&manifest, &store, &out).unwrap();
+        reconstruct_video(&manifest, &store, &out, OutputCodec::H264).unwrap();
 
         assert!(
             has_audio_stream(&out),

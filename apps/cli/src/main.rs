@@ -377,6 +377,9 @@ enum Commands {
         /// Frame store directory (default: .dits-facr)
         #[arg(long)]
         store: Option<String>,
+        /// Output codec: h264 (default), prores, or dnxhr (use a .mov output for the latter)
+        #[arg(long)]
+        codec: Option<String>,
     },
 
     /// Non-destructively trim a FACR manifest to a frame range (stores ZERO new frames)
@@ -1233,8 +1236,8 @@ async fn main() {
         Commands::FacrAdd { input, store, manifest, frame_codec } => {
             commands::facr_add(&input, store.as_deref(), manifest.as_deref(), frame_codec.as_deref())
         }
-        Commands::FacrCheckout { manifest, output, store } => {
-            commands::facr_checkout(&manifest, &output, store.as_deref())
+        Commands::FacrCheckout { manifest, output, store, codec } => {
+            commands::facr_checkout(&manifest, &output, store.as_deref(), codec.as_deref())
         }
         Commands::FacrImportEdl { edl, source, out, fps } => {
             commands::facr_import_edl(&edl, &source, &out, fps)
