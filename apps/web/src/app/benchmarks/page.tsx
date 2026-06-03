@@ -98,8 +98,6 @@ export default async function BenchmarksPage() {
   const fastcdc = engine?.results.find((r) => /FastCDCChunker::chunk/.test(r.name));
   const hashSpeedup = blake3 && sha256 ? Math.round(blake3.value / sha256.value) : null;
 
-  const moneyRec = facr ?? rec(doc, "metadata", "dits-generic");
-
   return (
     <main id="main-content" className="mx-auto max-w-5xl px-7">
       {/* HERO */}
@@ -121,8 +119,8 @@ export default async function BenchmarksPage() {
         </div>
         <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
           We ran the same edits through the tools everyone uses — and through dits — on one
-          computer. Here&apos;s what each one had to re-save. Every number is real, and you can
-          re-run it yourself.
+          computer. Here&apos;s what each one had to re-save. Every <em>comparison</em> here is
+          measured; the project-over-time and scaling projections are clearly labeled.
         </p>
       </section>
 
@@ -176,7 +174,7 @@ export default async function BenchmarksPage() {
         </div>
         <TwoTierBar
           rows={[
-            { label: "Everyone else", sub: "re-saves it all", pct: 100, tone: "gray", value: "100%" },
+            { label: "Tools without frame-awareness", sub: "re-save the whole file", pct: 100, tone: "gray", value: "100%" },
             {
               label: "dits",
               sub: "saves only what changed",
@@ -258,37 +256,46 @@ export default async function BenchmarksPage() {
           Bytes are abstract. So we convert the result into the things people feel: your cloud
           bill and your upload time.
         </p>
-        {moneyRec && <MoneyTimeCards record={moneyRec} />}
+        <MoneyTimeCards dedupPct={Math.round(dedup(facr) ?? dedup(stream) ?? 98)} />
+        <p className="mt-3 text-sm text-muted-foreground">
+          (Translation of our measured frame-dedup to a 1 GB reference clip. On a full re-export,
+          where dits&apos; basic mode doesn&apos;t win, there&apos;s no saving — see chapter 02.)
+        </p>
       </KeynoteSection>
 
       {/* 08 — CUMULATIVE */}
-      <KeynoteSection chapter="08" tag="A whole project over time">
+      <KeynoteSection chapter="08" tag="A whole project over time · illustration">
         <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
-          50 edits to a 1 GB video. Watch the storage pile up — or not.
+          50 localized edits to a 1 GB video. Watch the storage pile up — or not.
         </h2>
         <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
-          One edit is nice. The real story is a project&apos;s life. Others re-store the file
-          every save; dits keeps only the changes, so it stays almost flat.
+          One edit is nice. The real story is a project&apos;s life. For <em>localized</em> edits,
+          others re-store the file every save; dits&apos; frame-addressing keeps only the changes,
+          so it stays almost flat. (Projected from measured per-edit deltas — run the showcase
+          profile for a measured sweep.)
         </p>
         <CumulativeChart
-          series={doc?.cumulative ?? []}
+          // Only treat the sweep as measured once it includes a dits series; otherwise
+          // a git-lfs/restic-only sweep would imply dits is absent. Stay projected until then.
+          series={(doc?.cumulative ?? []).some((s) => s.tool.startsWith("dits")) ? doc!.cumulative : []}
           projected={[
             { tool: "git-lfs", label: "git-lfs (re-stores everything)", color: "#9aa0a6", endGb: 50 },
-            { tool: "restic", label: "restic (best general tool)", color: "#3b82f6", endGb: 36 },
-            { tool: "dits", label: "dits", color: "var(--brand)", endGb: 1.3 },
+            { tool: "restic", label: "restic (re-export defeats dedup)", color: "#3b82f6", endGb: 36 },
+            { tool: "dits", label: "dits (frame-addressing)", color: "var(--brand)", endGb: 1.3 },
           ]}
         />
       </KeynoteSection>
 
       {/* 09 — SCALING */}
-      <KeynoteSection chapter="09" tag="Does it hold at scale?">
+      <KeynoteSection chapter="09" tag="Does it hold at scale? · illustration">
         <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
-          Same test at 100 MB, 1 GB, and 4 GB. The savings don&apos;t shrink.
+          We expect the savings to hold as files grow.
         </h2>
         <ScalingChart series={doc?.scaling ?? []} projectedPct={Math.round(dedup(facr) ?? 98)} />
         <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-          Proves the numbers aren&apos;t a small-file toy — they hold as files get huge, where it
-          matters most.
+          Frame-addressing cost tracks the <em>edit</em>, not the file, so the percentage
+          shouldn&apos;t shrink as files grow — but we&apos;ve measured one size so far. The
+          multi-size sweep is the showcase profile.
         </p>
       </KeynoteSection>
 

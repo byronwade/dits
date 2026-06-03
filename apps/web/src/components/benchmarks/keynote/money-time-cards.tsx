@@ -1,27 +1,49 @@
-import type { CompRecord } from "@/lib/comparative-types";
-import { COST_ASSUMPTIONS_LABEL } from "@/lib/bench-cost";
+import { COST_ASSUMPTIONS, COST_ASSUMPTIONS_LABEL } from "@/lib/bench-cost";
 
-function fmtUsd(n: number) {
-  return n < 0.01 ? "<$0.01" : `$${n.toFixed(2)}`;
+const GB = 1_073_741_824;
+
+function usd(n: number) {
+  if (n >= 1) return `$${n.toFixed(2)}`;
+  if (n >= 0.01) return `$${n.toFixed(2)}`;
+  return "<$0.01";
 }
-function fmtSecs(s: number) {
-  if (s < 60) return `${s.toFixed(s < 10 ? 1 : 0)} s`;
+function secs(s: number) {
+  if (s < 60) return `${s < 10 ? s.toFixed(1) : s.toFixed(0)} s`;
   return `${(s / 60).toFixed(1)} min`;
 }
 
-/** Module A — translate a record's bytes into money & time. */
-export function MoneyTimeCards({ record }: { record: CompRecord }) {
-  const d = record.derived;
+/**
+ * Module A — translate a *measured* dedup % into money & time for a labeled
+ * reference clip size. The % is real; the reference size and rates are stated.
+ */
+export function MoneyTimeCards({
+  dedupPct,
+  refBytes = GB,
+  refLabel = "a 1 GB clip",
+}: {
+  dedupPct: number;
+  refBytes?: number;
+  refLabel?: string;
+}) {
+  const a = COST_ASSUMPTIONS;
+  const fullGb = refBytes / GB;
+  const ditsGb = fullGb * (1 - dedupPct / 100);
+  const fullStoreYr = fullGb * a.storage_usd_per_gb_mo * 12;
+  const ditsStoreYr = ditsGb * a.storage_usd_per_gb_mo * 12;
+  const fullUpload = (fullGb * 8 * 1024) / a.line_mbps;
+  const ditsUpload = (ditsGb * 8 * 1024) / a.line_mbps;
+
   const cards = [
-    { k: "Cloud storage / yr", v: d ? fmtUsd(d.cost_storage_usd_yr) : "—", d: "to keep this version" },
-    { k: "Upload time", v: d ? fmtSecs(d.upload_seconds_at_line) : "—", d: "on a 50 Mbps line" },
-    { k: "Egress / 1k viewers", v: d ? fmtUsd(d.cost_egress_usd_per_1k) : "—", d: "to deliver it" },
+    { k: "Storage / version / yr", full: usd(fullStoreYr), v: usd(ditsStoreYr) },
+    { k: "Upload time", full: secs(fullUpload), v: secs(ditsUpload) },
     {
-      k: "Data saved",
-      v: record.metrics.dedup_pct != null ? `${record.metrics.dedup_pct}%` : "—",
-      d: "vs re-storing the file",
+      k: "Egress / 1k viewers",
+      full: usd(fullGb * a.egress_usd_per_gb * 1000),
+      v: usd(ditsGb * a.egress_usd_per_gb * 1000),
     },
+    { k: "Data saved", full: null, v: `${dedupPct}%` },
   ];
+
   return (
     <div>
       <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -31,12 +53,17 @@ export function MoneyTimeCards({ record }: { record: CompRecord }) {
               {c.k}
             </div>
             <div className="mt-1.5 text-3xl font-bold tracking-tight text-brand">{c.v}</div>
-            <div className="text-xs text-muted-foreground">{c.d}</div>
+            {c.full && (
+              <div className="text-xs text-muted-foreground">
+                vs <span className="line-through">{c.full}</span> re-storing the file
+              </div>
+            )}
+            {!c.full && <div className="text-xs text-muted-foreground">of the file reused</div>}
           </div>
         ))}
       </div>
       <p className="mt-4 font-mono text-xs text-muted-foreground">
-        Assumptions: {COST_ASSUMPTIONS_LABEL}. No hidden math.
+        Measured dedup applied to {refLabel}. Assumptions: {COST_ASSUMPTIONS_LABEL}. No hidden math.
       </p>
     </div>
   );

@@ -53,9 +53,14 @@ for (const w of WORKLOADS) {
 }
 
 // Showcase: cumulative-over-N-edits sweep (slow; manual).
+// Only the generic byte-store tools are accumulated here — for them, "store v2 over v1"
+// is the honest per-edit cost on a re-export. dits' FACR per-edit cost is frame-level and
+// NOT byte-measurable yet (facr runners return stored_bytes:null), so dits is intentionally
+// left out of the measured sweep rather than fabricated; the page shows it as a labeled
+// projection until Phase 3 adds frame-level stored-byte accounting.
 if (profile === "showcase") {
   const N = 50;
-  for (const toolName of ["git-lfs", "restic", "dits-generic"]) {
+  for (const toolName of ["git-lfs", "restic"]) {
     const r = byTool[toolName];
     if (!r?.available()) continue;
     const points = [];
@@ -67,6 +72,7 @@ if (profile === "showcase") {
     }
     doc.cumulative.push({ tool: r.tool, points });
   }
+  console.log("note: dits FACR cumulative is a labeled projection until Phase 3 (frame-level stored bytes).");
 }
 
 // CI asserts: known wins must hold.
