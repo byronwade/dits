@@ -15,6 +15,7 @@ pub mod locks;
 pub mod remote;
 pub mod remote_server;
 pub mod repository;
+pub mod sync;
 
 #[allow(unused_imports)]
 pub use {
