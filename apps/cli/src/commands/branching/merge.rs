@@ -1,7 +1,7 @@
 //! Merge command implementation.
 
 use crate::core::{Author, Commit, Hash, Manifest, ManifestEntry};
-use crate::store::Repository;
+use crate::store::{GitTextEngine, Repository};
 use anyhow::{Context, Result};
 use console::style;
 use std::collections::HashSet;
@@ -93,11 +93,20 @@ pub fn merge(branch: &str, message: Option<&str>) -> Result<()> {
     let conflicts = detect_conflicts(&repo, merge_base.as_ref(), &our_hash, &their_hash)?;
 
     if !conflicts.is_empty() {
-        // Report conflicts
-        println!(
-            "{} Merge conflict detected!",
-            style("!").red().bold()
-        );
+        // Write git-style conflict markers into the working tree for text files so the
+        // user can actually resolve them, then report.
+        let marked = write_conflict_markers(
+            &repo,
+            merge_base.as_ref(),
+            &our_hash,
+            &their_hash,
+            &conflicts,
+            &current_branch,
+            branch,
+        )
+        .unwrap_or(0);
+
+        println!("{} Merge conflict detected!", style("!").red().bold());
         println!();
         println!("Conflicting files:");
         for conflict in &conflicts {
@@ -107,18 +116,23 @@ pub fn merge(branch: &str, message: Option<&str>) -> Result<()> {
                 ConflictType::BothAdded => "both added",
             };
             println!(
-                "  {} ({}: {})",
+                "  {} ({})",
                 style(&conflict.path).cyan(),
                 style(conflict_desc).yellow(),
-                "binary files cannot be auto-merged"
             );
         }
         println!();
+        if marked > 0 {
+            println!(
+                "{} Wrote conflict markers into {} text file(s). Edit them, then `dits add` + `dits commit`.",
+                style("→").cyan(),
+                marked
+            );
+        }
         println!(
             "{}",
-            style("Automatic merge failed. Resolve conflicts manually.").red()
+            style("Automatic merge failed. Resolve conflicts, or use `dits checkout --ours/--theirs <file>` for binary files.").red()
         );
-        println!("Use 'dits checkout --ours <file>' or 'dits checkout --theirs <file>' to resolve.");
         return Ok(());
     }
 
@@ -292,6 +306,75 @@ fn count_commits_between(repo: &Repository, from: &Hash, to: &Hash) -> Result<us
 }
 
 /// Detect merge conflicts between two branches.
+/// For each text conflict, run a 3-way line merge and write the result (with
+/// `<<<<<<< / ======= / >>>>>>>` markers) into the working tree. Returns how many files
+/// were marked. Binary conflicts are skipped (resolve with `--ours`/`--theirs`).
+fn write_conflict_markers(
+    repo: &Repository,
+    base: Option<&Hash>,
+    ours: &Hash,
+    theirs: &Hash,
+    conflicts: &[MergeConflict],
+    ours_label: &str,
+    theirs_label: &str,
+) -> Result<usize> {
+    let engine = match repo.git_engine() {
+        Some(e) => e,
+        None => return Ok(0),
+    };
+    let our_manifest = repo.objects().load_manifest(&repo.objects().load_commit(ours)?.manifest)?;
+    let their_manifest =
+        repo.objects().load_manifest(&repo.objects().load_commit(theirs)?.manifest)?;
+    let base_manifest = match base {
+        Some(b) => Some(repo.objects().load_manifest(&repo.objects().load_commit(b)?.manifest)?),
+        None => None,
+    };
+
+    let mut written = 0;
+    for conflict in conflicts {
+        if !matches!(conflict.conflict_type, ConflictType::BothModified) {
+            continue;
+        }
+        let our_entry = match our_manifest.entries.get(&conflict.path) {
+            Some(e) => e,
+            None => continue,
+        };
+        let their_entry = match their_manifest.entries.get(&conflict.path) {
+            Some(e) => e,
+            None => continue,
+        };
+        // Only text (GitText) files can be line-merged with markers.
+        let (our_oid, their_oid) = match (&our_entry.git_oid, &their_entry.git_oid) {
+            (Some(o), Some(t)) => (o, t),
+            _ => continue,
+        };
+        let our_oid = match GitTextEngine::parse_oid(our_oid) {
+            Ok(o) => o,
+            Err(_) => continue,
+        };
+        let their_oid = match GitTextEngine::parse_oid(their_oid) {
+            Ok(o) => o,
+            Err(_) => continue,
+        };
+        let base_oid = base_manifest
+            .as_ref()
+            .and_then(|m| m.entries.get(&conflict.path))
+            .and_then(|e| e.git_oid.as_ref())
+            .and_then(|s| GitTextEngine::parse_oid(s).ok());
+
+        if let Ok(result) = engine.merge_blobs(base_oid, our_oid, their_oid, ours_label, theirs_label) {
+            let full_path = repo.work_dir().join(&conflict.path);
+            if let Some(parent) = full_path.parent() {
+                let _ = std::fs::create_dir_all(parent);
+            }
+            if std::fs::write(&full_path, result.content()).is_ok() {
+                written += 1;
+            }
+        }
+    }
+    Ok(written)
+}
+
 fn detect_conflicts(
     repo: &Repository,
     base: Option<&Hash>,
