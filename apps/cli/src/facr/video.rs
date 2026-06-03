@@ -89,13 +89,18 @@ pub fn source_has_audio(path: &Path) -> bool {
         .unwrap_or(false)
 }
 
-/// Per-frame image codec used to store decoded frames. All options are lossless and
-/// MUST be deterministic (identical pixels -> identical bytes) so frames content-address
-/// and dedup. WebP-lossless is ~30% smaller than PNG; PNG maximizes tool compatibility.
+/// Per-frame image codec used to store decoded frames. All options must be DETERMINISTIC
+/// (identical input -> identical bytes) so frames content-address and dedup.
+///
+/// - `Png`: lossless, max tool compatibility, largest.
+/// - `Webp`: lossless, ~30% smaller than PNG.
+/// - `WebpVl`: **visually-lossless** (lossy q90) — the mezzanine tier, ~85% smaller than
+///   PNG on real footage. Not bit-exact to the source, but visually indistinguishable.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FrameImageCodec {
     Png,
     Webp,
+    WebpVl,
 }
 
 impl FrameImageCodec {
@@ -103,13 +108,23 @@ impl FrameImageCodec {
         match s.to_ascii_lowercase().as_str() {
             "png" => Some(Self::Png),
             "webp" => Some(Self::Webp),
+            "webp-vl" | "webp_vl" => Some(Self::WebpVl),
             _ => None,
         }
     }
+    /// Codec name recorded in the manifest.
     pub fn name(self) -> &'static str {
         match self {
             Self::Png => "png",
             Self::Webp => "webp",
+            Self::WebpVl => "webp-vl",
+        }
+    }
+    /// On-disk frame file extension (WebpVl frames are still `.webp` files).
+    pub fn ext(self) -> &'static str {
+        match self {
+            Self::Png => "png",
+            Self::Webp | Self::WebpVl => "webp",
         }
     }
     /// ffmpeg encode args (codec selection + bit-exact). Empty for PNG (image2 default).
@@ -117,16 +132,19 @@ impl FrameImageCodec {
         match self {
             Self::Png => &[],
             Self::Webp => &["-c:v", "libwebp", "-lossless", "1", "-fflags", "+bitexact"],
+            Self::WebpVl => &[
+                "-c:v", "libwebp", "-lossless", "0", "-quality", "90", "-fflags", "+bitexact",
+            ],
         }
     }
 }
 
 /// Map a manifest's recorded codec name to the on-disk frame extension.
 fn frame_ext(codec: &str) -> &str {
-    if codec.is_empty() {
-        "png"
-    } else {
-        codec
+    match codec {
+        "" | "png" => "png",
+        "webp" | "webp-vl" => "webp",
+        other => other,
     }
 }
 
@@ -137,7 +155,7 @@ pub fn ingest_video(path: &Path, store: &FrameStore, codec: FrameImageCodec) -> 
 
     let work = std::env::temp_dir().join(format!("dits-facr-ingest-{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&work).context("create ingest temp dir")?;
-    let ext = codec.name();
+    let ext = codec.ext();
     let pattern = work.join(format!("f_%08d.{ext}"));
 
     // Decode every frame to a lossless image in the chosen codec.
@@ -371,6 +389,29 @@ mod tests {
         reconstruct_video(&m, &store, &out).unwrap();
         let info = probe_video(&out).unwrap();
         assert_eq!(info.width, 160);
+    }
+
+    #[test]
+    fn visually_lossless_webp_dedups_and_round_trips() {
+        if !ffmpeg_available() {
+            eprintln!("skipping: ffmpeg not installed");
+            return;
+        }
+        let dir = tempfile::tempdir().unwrap();
+        let video = dir.path().join("clip.mp4");
+        assert!(make_test_video(&video, 1));
+        let store = FrameStore::new(&dir.path().join("store")).unwrap();
+
+        let m = ingest_video(&video, &store, FrameImageCodec::WebpVl).unwrap();
+        assert_eq!(m.codec, "webp-vl");
+        let after = store.count().unwrap();
+        // Deterministic lossy encoding -> re-ingest dedups completely.
+        let _ = ingest_video(&video, &store, FrameImageCodec::WebpVl).unwrap();
+        assert_eq!(store.count().unwrap(), after, "webp-vl frames must dedup on re-ingest");
+        // Reconstructs (frames are .webp despite the 'webp-vl' codec name).
+        let out = dir.path().join("out.mp4");
+        reconstruct_video(&m, &store, &out).unwrap();
+        assert_eq!(probe_video(&out).unwrap().width, 160);
     }
 
     #[test]

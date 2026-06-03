@@ -362,7 +362,7 @@ enum Commands {
         /// Where to write the clip manifest (default: <input>.facr.json)
         #[arg(long)]
         manifest: Option<String>,
-        /// Per-frame codec: png or webp (default: webp — smaller, lossless)
+        /// Per-frame codec: png, webp (lossless), or webp-vl (visually-lossless, ~85% smaller). Default: webp
         #[arg(long = "frame-codec")]
         frame_codec: Option<String>,
     },
