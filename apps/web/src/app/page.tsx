@@ -587,6 +587,12 @@ export default function Home() {
                   </AccordionItem>
                 ))}
               </Accordion>
+              <div className="mt-10 text-center">
+                <Button variant="outline" render={<Link href="/faq" />}>
+                  See all FAQs
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </section>
