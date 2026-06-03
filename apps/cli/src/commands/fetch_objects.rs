@@ -1,6 +1,6 @@
 //! `dits fetch-objects` — content-addressed incremental object pull from a local repo.
 
-use crate::store::sync::transfer_objects;
+use crate::store::sync::{transfer_objects, transfer_objects_http};
 use crate::store::Repository;
 use anyhow::{Context, Result};
 use console::style;
@@ -21,20 +21,25 @@ fn human(bytes: u64) -> String {
 /// objects the destination lacks are transferred (content-addressed), so re-fetching is
 /// free and an interrupted fetch resumes with only the remainder. Purely additive — never
 /// deletes or overwrites local objects.
-pub fn fetch_objects(source: &str) -> Result<()> {
+pub async fn fetch_objects(source: &str) -> Result<()> {
     // Ensure we are inside a dits repository.
     let _repo = Repository::open(Path::new("."))
         .context("Not a dits repository (or any parent directory)")?;
 
-    let src_dits = Path::new(source).join(".dits");
-    anyhow::ensure!(
-        src_dits.is_dir(),
-        "source is not a dits repository: {} (no .dits/)",
-        source
-    );
-
     println!("Fetching objects from {} ...", style(source).cyan());
-    let stats = transfer_objects(&src_dits, Path::new(".dits"))?;
+    let stats = if source.starts_with("http://") || source.starts_with("https://") {
+        // Remote: pull missing objects from a `dits serve` HTTP endpoint.
+        transfer_objects_http(source, Path::new(".dits")).await?
+    } else {
+        // Local: copy missing objects from another repo on the filesystem.
+        let src_dits = Path::new(source).join(".dits");
+        anyhow::ensure!(
+            src_dits.is_dir(),
+            "source is not a dits repository: {} (no .dits/)",
+            source
+        );
+        transfer_objects(&src_dits, Path::new(".dits"))?
+    };
 
     println!(
         "  {} {} object(s), {}",
