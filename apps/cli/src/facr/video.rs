@@ -9,7 +9,7 @@
 //! are stored as PNG, which is lossless and deterministic, so re-ingesting identical
 //! content dedups perfectly.
 
-use super::manifest::{ClipManifest, FrameRef};
+use super::manifest::{AudioTrack, ClipManifest, FrameRef};
 use super::store::FrameStore;
 use anyhow::{bail, Context, Result};
 use std::path::Path;
@@ -125,6 +125,33 @@ pub fn ingest_video(path: &Path, store: &FrameStore) -> Result<ClipManifest> {
         manifest.push_frame(FrameRef { hash, pts: i as i64, duration: 1 });
     }
 
+    // Extract the audio track (stream-copied, lossless) and store it content-addressed
+    // so it dedups across versions and can be muxed back on reconstruction.
+    if source_has_audio(path) {
+        let audio_path = work.join("audio.mka");
+        // `-fflags +bitexact` / `-map_metadata -1` make the muxed output deterministic
+        // (no encoder strings, timestamps, or random muxing IDs) so identical audio
+        // content-addresses to the same hash and dedups across versions.
+        let a = Command::new("ffmpeg")
+            .args(["-v", "error", "-y", "-i"])
+            .arg(path)
+            .args([
+                "-vn", "-c:a", "copy", "-map_metadata", "-1",
+                "-fflags", "+bitexact", "-flags:a", "+bitexact",
+            ])
+            .arg(&audio_path)
+            .output()
+            .context("running ffmpeg audio extract")?;
+        if a.status.success() {
+            if let Ok(bytes) = std::fs::read(&audio_path) {
+                if !bytes.is_empty() {
+                    let hash = store.store_frame(&bytes)?;
+                    manifest.audio = Some(AudioTrack { hash, format: "mka".to_string() });
+                }
+            }
+        }
+    }
+
     let _ = std::fs::remove_dir_all(&work);
 
     if manifest.frames.is_empty() {
@@ -148,11 +175,32 @@ pub fn reconstruct_video(manifest: &ClipManifest, store: &FrameStore, output: &P
             .context("write frame for reconstruction")?;
     }
 
+    // Materialize the stored audio track, if any, to mux back alongside the frames.
+    let audio_file = if let Some(audio) = &manifest.audio {
+        let bytes = store
+            .load_frame(&audio.hash)
+            .with_context(|| format!("missing audio track ({})", audio.hash.short()))?;
+        let p = work.join(format!("audio.{}", audio.format));
+        std::fs::write(&p, bytes).context("write audio for reconstruction")?;
+        Some(p)
+    } else {
+        None
+    };
+
     let pattern = work.join("f_%08d.png");
-    let out = Command::new("ffmpeg")
-        .args(["-v", "error", "-y", "-framerate", &manifest.frame_rate, "-i"])
-        .arg(&pattern)
-        .args(["-c:v", "libx264", "-pix_fmt", "yuv420p"])
+    let mut cmd = Command::new("ffmpeg");
+    cmd.args(["-v", "error", "-y", "-framerate", &manifest.frame_rate, "-i"])
+        .arg(&pattern);
+    if let Some(ap) = &audio_file {
+        cmd.arg("-i").arg(ap);
+    }
+    cmd.args(["-c:v", "libx264", "-pix_fmt", "yuv420p"]);
+    if audio_file.is_some() {
+        // Stream-copy the audio (lossless) and map both streams; -shortest guards against
+        // tiny duration mismatches between the re-encoded video and the copied audio.
+        cmd.args(["-c:a", "copy", "-map", "0:v:0", "-map", "1:a:0", "-shortest"]);
+    }
+    let out = cmd
         .arg(output)
         .output()
         .context("running ffmpeg encode")?;
@@ -229,5 +277,51 @@ mod tests {
         let info = probe_video(&out).unwrap();
         assert_eq!(info.width, 160);
         assert_eq!(info.height, 120);
+    }
+
+    /// Generate a test video that also has an audio track.
+    fn make_test_video_with_audio(path: &Path, seconds: u32) -> bool {
+        Command::new("ffmpeg")
+            .args(["-v", "error", "-y", "-f", "lavfi", "-i"])
+            .arg(format!("testsrc=duration={}:size=160x120:rate=10", seconds))
+            .args(["-f", "lavfi", "-i"])
+            .arg(format!("sine=frequency=440:duration={}", seconds))
+            .args(["-pix_fmt", "yuv420p", "-shortest"])
+            .arg(path)
+            .status()
+            .map(|s| s.success())
+            .unwrap_or(false)
+    }
+
+    fn has_audio_stream(path: &Path) -> bool {
+        Command::new("ffprobe")
+            .args(["-v", "error", "-select_streams", "a", "-show_entries", "stream=index", "-of", "csv=p=0"])
+            .arg(path)
+            .output()
+            .map(|o| !o.stdout.is_empty())
+            .unwrap_or(false)
+    }
+
+    #[test]
+    fn reconstruction_preserves_audio() {
+        if !ffmpeg_available() {
+            eprintln!("skipping: ffmpeg not installed");
+            return;
+        }
+        let dir = tempfile::tempdir().unwrap();
+        let video = dir.path().join("clip.mp4");
+        assert!(make_test_video_with_audio(&video, 1));
+        assert!(has_audio_stream(&video), "test video should have audio");
+
+        let store = FrameStore::new(&dir.path().join("store")).unwrap();
+        let manifest = ingest_video(&video, &store).unwrap();
+
+        let out = dir.path().join("rebuilt.mp4");
+        reconstruct_video(&manifest, &store, &out).unwrap();
+
+        assert!(
+            has_audio_stream(&out),
+            "FACR reconstruction must preserve the audio track"
+        );
     }
 }

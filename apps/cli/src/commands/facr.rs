@@ -55,8 +55,8 @@ pub fn facr_add(input: &str, store: Option<&str>, manifest_out: Option<&str>) ->
     println!("Ingesting {} ...", style(input).cyan());
     if crate::facr::source_has_audio(input_path) {
         println!(
-            "  {} this video has an audio track — FACR v1 stores video frames only, so audio is NOT preserved.",
-            style("⚠").yellow().bold()
+            "  {} audio track detected — it is stored (stream-copied) and preserved on checkout.",
+            style("\u{266a}").cyan()
         );
     }
     let manifest = ingest_video(input_path, &frame_store)?;
