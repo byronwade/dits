@@ -1,5 +1,9 @@
 # Hybrid Architecture: Universal Deduplication + File-Type Awareness
 
+> ⚠️ ROADMAP / not implemented. The "Have/Want Sync Protocol" (push/pull chunks between client and server) is scaffolding only — networked sync and P2P transfer no data today. See docs/STATUS.md.
+>
+> Media versioning is implemented via FACR (frame-addressable content representation): `facr-add`/`facr-checkout`/`facr-trim` for video and `photo-add`/`photo-edit`/`photo-render` for photos. See docs/superpowers/specs/2026-06-02-unified-media-model.md.
+
 This document describes the "Gold Standard" architecture for Dits - a media version control system designed for 100+ editor teams without exploding bandwidth.
 
 ---

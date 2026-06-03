@@ -445,6 +445,6 @@ pub fn validate_tag_name(name: &str) -> Result<()> {
 - Use lightweight tags for personal bookmarks
 - Use annotated tags for releases and deliverables
 - Signed tags provide authenticity verification
-- Tags don't auto-push (explicit `dits push --tags` required)
+- Tags are local; pushing tags to a remote is roadmap (networked `push` is not implemented yet)
 - Deleting a tag doesn't delete the commit it points to
 - Tags can point to the same commit as branches

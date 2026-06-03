@@ -188,6 +188,8 @@ low_speed_time = 60     # seconds
 
 [quic]
 # QUIC transport settings
+# NOTE: QUIC transport is NOT implemented yet (roadmap). These keys are reserved
+# for a future networked sync engine and have no effect today.
 port = 4433
 
 # Maximum streams per connection

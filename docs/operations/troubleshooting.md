@@ -1,5 +1,7 @@
 # Troubleshooting Guide
 
+> ⚠️ Describes the quarantined backend service (see legacy/backend-crates), NOT the current product. Dits today is a local-first CLI — no server or database required. This doc is retained as design reference for a future hosted offering.
+
 Common issues, diagnostics, and solutions for Dits.
 
 ---

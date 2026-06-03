@@ -1,5 +1,7 @@
 # DITS P2P - Peer-to-Peer File Sharing
 
+> ⚠️ Roadmap — P2P is scaffolding today (the `dits p2p` commands print placeholders and transfer no data). This describes the intended design.
+
 DITS includes Wormhole-style P2P file sharing capabilities, allowing direct peer-to-peer transfers without uploading to a central server.
 
 ## Features
@@ -330,7 +332,7 @@ The signal server facilitates peer discovery for NAT traversal:
 
 Default signal server: `wss://dits-signal.fly.dev`
 
-Run your own signal server:
+Run your own signal server (note: the `dits-signal` crate is quarantined under `legacy/backend-crates` and is not part of the current architecture):
 
 ```bash
 # Build and run

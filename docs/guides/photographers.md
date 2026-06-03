@@ -2,6 +2,13 @@
 
 A complete workflow guide for professional photographers, photo studios, and teams managing large image libraries.
 
+> 🚧 **Roadmap notice.** Dits today is **local-first**. Commands in this guide that sync
+> over a network — `push`, `pull`, `fetch`, network `clone`, `remote`, and all `p2p`
+> sharing — are **not implemented yet**; they print placeholders and transfer no data.
+> Everything **local** works, including the non-destructive **photo commands**
+> (`photo-add`, `photo-edit`, `photo-render`) covered below. Treat networked/P2P examples
+> as the intended future workflow.
+
 ---
 
 ## Table of Contents
@@ -334,6 +341,28 @@ dits push --all
 ---
 
 ## Working with RAW Files
+
+### Non-Destructive Photo Editing (requires FFmpeg)
+
+Beyond tracking files, Dits can store a photo **once** and keep a non-destructive edit log
+so adjustments add **zero new image bytes**. This is ideal for RAW workflows where you want
+versioned edits without duplicating large originals:
+
+```bash
+# Store the photo once and start an edit history
+dits photo-add 02_RAW/IMG_0001.cr2
+# Writes the manifest to 02_RAW/IMG_0001.cr2.photo.json
+
+# Append edits (each call only updates the edit log)
+dits photo-edit 02_RAW/IMG_0001.cr2.photo.json --exposure 0.5 --white-balance 5600
+dits photo-edit 02_RAW/IMG_0001.cr2.photo.json --contrast 1.1 --saturation 1.05
+
+# Render the final image by replaying the edit log
+dits photo-render 02_RAW/IMG_0001.cr2.photo.json 04_EXPORT/IMG_0001.jpg
+```
+
+Available adjustments: `--exposure`, `--contrast`, `--saturation`, `--white-balance`
+(Kelvin), `--rotate` (90/180/270), and `--crop` (x,y,w,h).
 
 ### RAW File Deduplication
 

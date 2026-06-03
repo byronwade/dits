@@ -218,7 +218,7 @@ impl StorageMetrics {
 
 ### Transfer Optimization
 
-Dits minimizes transfer costs through:
+Once the hosted network layer ships, Dits is designed to minimize transfer costs through (all roadmap — networked sync, delta transport, and P2P are not implemented today):
 
 1. **Delta sync** - Only transfer changed chunks
 2. **Compression** - Zstd compression (typically 10-30% reduction)

@@ -160,6 +160,11 @@ Creativity Understanding     High │ Dits (Unique)
 
 ## 🏆 Competitive Advantages to Highlight
 
+### 0. **Frame-Addressable Versioning (real, shipping)**
+- No other VCS versions video at frame granularity — re-grade 150 of 1,000 frames and store only 150
+- Photos get a non-destructive, content-addressed edit log over the original RAW
+- "See which frames changed. Store only those." (`facr-*`/`photo-*` commands; `dits facr-demo`)
+
 ### 1. **AI Understanding**
 - No one else has AI that understands creative content
 - "Dits knows this is a color correction, not a file replacement"

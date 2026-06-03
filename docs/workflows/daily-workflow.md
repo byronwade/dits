@@ -2,6 +2,12 @@
 
 A typical day using Dits for video editing, from sync to commit.
 
+> 🚧 **Roadmap notice.** This workflow shows team-sync steps (`dits pull` / `dits push`)
+> and a `dits mount` / `dits unmount` virtual drive. **None of these are implemented yet:**
+> networked sync prints placeholders and transfers no data, and there is **no `dits mount`
+> / `dits unmount`** command (the VFS is internal). Today, work locally with `add`,
+> `commit`, `checkout`, and the FACR/photo commands.
+
 ---
 
 ## Morning: Start Your Day

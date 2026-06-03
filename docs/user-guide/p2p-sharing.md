@@ -1,6 +1,10 @@
 # P2P Sharing Guide
 
-Dits includes integrated peer-to-peer (P2P) sharing capabilities, allowing you to share repositories directly between computers without uploading to cloud services.
+> ⚠️ **Roadmap, not shipped.** P2P sharing is currently **scaffolding**: the `dits p2p`
+> commands print placeholders and do not transfer data yet. This guide describes the
+> intended design. Networked sync is in active development; local workflows work today.
+
+Dits is designed to include integrated peer-to-peer (P2P) sharing, allowing you to share repositories directly between computers without uploading to cloud services.
 
 ## Overview
 

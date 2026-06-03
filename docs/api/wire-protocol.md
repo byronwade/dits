@@ -1,5 +1,7 @@
 # Wire Protocol Specification
 
+> ⚠️ Design spec for a transport that is NOT yet implemented.
+
 Binary protocol for efficient chunk transfer over QUIC.
 
 ---

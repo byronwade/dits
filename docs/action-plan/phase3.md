@@ -837,7 +837,7 @@ From there, ditshub is "just" a fancier multi-tenant version of the same remote 
 
 ## Next Steps After Phase 3
 
-Once Phase 3 is complete, you have a fully functional networked VCS. Future phases can add:
+Once Phase 3 is complete, you have a fully functional local-first VCS. (Networked sync — Phase 4b — and P2P are roadmap, not implemented.) Future phases can add:
 - **Phase 4**: Media-specific POC flows (video-aware chunking, metadata extraction).
 - **Phase 5**: Virtual File System (FUSE/WinFSP) for on-demand file access.
 - **Phase 6**: Advanced features (branches, merges, conflict resolution).

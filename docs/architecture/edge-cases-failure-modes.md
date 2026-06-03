@@ -1,5 +1,7 @@
 # Edge Cases and Failure Modes
 
+> ⚠️ Some of this describes a quarantined/legacy backend design (now in legacy/backend-crates), not the current local-first architecture. The live architecture is the modules under apps/cli/src/ (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands).
+
 > Comprehensive catalog of edge cases, failure scenarios, and their handling strategies for the Dits video version control system.
 
 ## Overview

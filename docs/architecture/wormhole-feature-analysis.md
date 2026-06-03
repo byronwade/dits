@@ -1,5 +1,7 @@
 # Wormhole Feature Analysis for Dits
 
+> ⚠️ ROADMAP / not implemented. Networked sync (push/pull/fetch/sync), P2P/Wormhole, and QUIC delta transport are scaffolding only — they print placeholders and transfer no data today. See docs/STATUS.md.
+
 This document analyzes the feature ideas from the "Wormhole" (P2P folder mounting) project and evaluates their applicability to Dits, a Git-like version control system for large media files. We assess which features would provide the highest value for Dits users and prioritize them for implementation.
 
 ---

@@ -404,14 +404,30 @@ Dits follows an open-core model inspired by Git/GitHub:
 ## Project Status
 - Active development with comprehensive testing infrastructure in place.
 - 120+ automated tests covering all major file formats and use cases.
-- Core workflows stable with extensive real-world scenario validation.
 - APIs and formats stabilizing; breaking changes require migration planning.
 - Roadmap-driven: see [Roadmap (9 Phases)](#roadmap-9-phases).
+
+### Implementation status (what is wired today vs. roadmap)
+
+To set expectations honestly:
+
+**Working today (local-first engine):**
+- Content-addressed object store with BLAKE3 verification and convergent AES-256-GCM encryption
+- FastCDC chunking, dedup, and byte-exact reconstruction
+- Structure-aware MP4/ISOBMFF parse → deconstruct (`moov`/`mdat`) → reconstruct (`stco`/`co64` patching)
+- Hybrid Git (libgit2) storage for text + Dits chunking for binary
+- Local commit / add / status / diff / log / branch / merge / checkout, proxy checkout, FFmpeg GOP segmentation
+- Local-filesystem clone/push
+- **FACR (experimental):** frame-addressable, content-addressed video representation with frame-level diff/dedup — try `dits facr-demo` (see [FACR design](docs/superpowers/specs/2026-06-02-facr-frame-addressable-video-design.md))
+
+**Roadmap — not yet implemented (do not rely on these):**
+- QUIC delta sync, P2P (rendezvous / NAT traversal), and network push/pull/fetch are **scaffolding** that currently print placeholders. The "Sync & Transport", "QUIC", and "P2P" sections below describe the intended design, not shipped behavior.
+- Bi-directional `sync` over a network remote; network-divergent merges. (Local `sync` now refuses to overwrite divergent local commits without `--force`.)
 
 ## Quick Facts
 - Chunking: FastCDC (content-defined, video-tuned, keyframe-aware).
 - Hashing: BLAKE3 (32-byte content addresses, parallel SIMD).
-- Transport: QUIC (quinn) with delta sync, resumable uploads, and adaptive chunking.
+- Transport (planned): QUIC (quinn) with delta sync, resumable uploads, and adaptive chunking. *Currently scaffolding — see Implementation status above.*
 - Storage: Hybrid Git+Dits storage for optimal text/binary handling.
 - VFS: FUSE/WinFSP mounts for on-demand hydration with Redis caching.
 - Locking: Distributed Redlock for multi-user binary conflict prevention.

@@ -80,24 +80,33 @@ cargo run --bin dits-server
 
 ### Repository Structure
 
+> ⚠️ The `dits-*` backend crates described in older docs are quarantined in `legacy/backend-crates`; the current architecture is the modules under `apps/cli/src/`.
+
+The canonical product is the local-first CLI at `apps/cli` (binary `dits`). Its
+architecture is a set of modules under `apps/cli/src/`:
+
 ```
 dits/
-├── crates/
-│   ├── dits-core/        # Core library (chunking, hashing, manifests)
-│   ├── dits-client/      # CLI client
-│   ├── dits-server/      # API server
-│   ├── dits-storage/     # Storage backends (S3, local)
-│   ├── dits-parsers/     # File format parsers (ISOBMFF, NLE)
-│   ├── dits-protocol/    # Wire protocol
-│   └── dits-sdk/         # Rust SDK
-├── web/                  # Web UI (React/TypeScript)
-├── plugins/
-│   ├── premiere/         # Premiere Pro plugin
-│   ├── resolve/          # DaVinci Resolve plugin
-│   └── vscode/           # VS Code extension
-├── docs/                 # Documentation
-├── tests/                # Integration tests
-└── benches/              # Benchmarks
+├── apps/
+│   └── cli/
+│       └── src/
+│           ├── core/         # VCS object model, index, refs, commits
+│           ├── store/        # Local object/chunk storage
+│           ├── mp4/          # ISOBMFF/MP4 parsing & roundtrip
+│           ├── facr/         # FACR frame engine (facr-add/checkout/trim, photo)
+│           ├── segment/      # Segmentation / assembly
+│           ├── proxy/        # Proxy generation & management
+│           ├── vfs/          # Virtual filesystem mount
+│           ├── security/     # Locking, encryption, auth, audit
+│           ├── metadata/     # Metadata scan/show
+│           ├── dependency/   # Dependency graph
+│           ├── lifecycle/    # Freeze/thaw tiered storage
+│           ├── p2p/          # P2P scaffolding (roadmap, not implemented)
+│           └── commands/     # CLI command handlers
+├── legacy/
+│   └── backend-crates/       # QUARANTINED former backend workspace (not current)
+├── docs/                     # Documentation
+└── tests/                    # Integration tests
 ```
 
 ---

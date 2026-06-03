@@ -2,6 +2,11 @@
 
 How to recover from common problems: deleted files, corrupted projects, accidental overwrites.
 
+> 🚧 **Roadmap notice.** Recovery steps that pull from a remote — `dits fetch`, `dits
+> push`, network `dits clone <url>` — are **not implemented yet** and transfer no data.
+> Local recovery (`reflog`, `restore`, `checkout`, `fsck`, `stash`) works today and is the
+> reliable path. Treat the remote-restore examples as the intended future workflow.
+
 ---
 
 ## Prevention: Before Disaster Strikes

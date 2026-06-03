@@ -2,6 +2,12 @@
 
 Step-by-step guides for migrating to Dits from any existing workflow or version control system.
 
+> 🚧 **Roadmap notice.** Dits today is **local-first**. The "push to a remote" steps in
+> these guides — `push`, `pull`, `fetch`, network `clone`, `remote`, and `p2p` sharing —
+> are **not implemented yet**; they print placeholders and transfer no data. You can still
+> migrate your history and assets into a **local** Dits repository now (`init`, `add`,
+> `commit`, branches, tags). Publishing that repository to a remote is a future step.
+
 ---
 
 ## Table of Contents

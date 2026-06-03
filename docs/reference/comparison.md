@@ -2,6 +2,11 @@
 
 A comprehensive comparison of Dits with other version control and file management solutions for large binary files.
 
+> 🚧 **Roadmap notice.** Some comparisons assume networked collaboration (`push`, `pull`,
+> network `clone`, `remote`) and P2P sharing. Those features are **not implemented yet** —
+> they print placeholders and transfer no data. Dits is **local-first** today; treat
+> remote/P2P comparisons as the intended future capability.
+
 ---
 
 ## Table of Contents

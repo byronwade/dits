@@ -69,9 +69,14 @@ const installCommands = {
 
 const faqs = [
   {
+    question: "Why is this needed? Why not just use Git, Dropbox, or a NAS?",
+    answer:
+      "Those tools store a whole new copy every time a file changes. Change five seconds of a 4GB video and you've got another 4GB sitting on disk and going over the wire—with no real history and no way to see what changed. Git solved this for code 20 years ago by only storing the difference; it just never worked for big binary media. Dits brings that same idea to video and photos: edit a file and it stores only what changed, with a full version history.",
+  },
+  {
     question: "How does Dits compare to Git LFS?",
     answer:
-      "Git LFS stores each file version as a complete copy. If you have 5 versions of a 10GB video, that's 50GB stored. Dits uses content-defined chunking—it only stores the changed pieces. Those same 5 versions might only need 12GB. Plus, Dits can do incremental syncs, while LFS re-uploads the entire file every time.",
+      "Git LFS stores each file version as a complete copy. If you have 5 versions of a 10GB video, that's 50GB. Dits uses content-defined chunking and frame-level addressing—it only stores the changed pieces, so those same 5 versions need far less. (LFS also re-uploads the whole file on every change; Dits's content-addressed store is built so sync only moves the changed pieces—that networked sync engine is still in development.)",
   },
   {
     question: "What file types does Dits support?",
@@ -100,12 +105,12 @@ const phases = [
   { name: "Atom Exploder", status: "complete" },
   { name: "VFS", status: "complete" },
   { name: "Git Parity", status: "complete" },
-  { name: "P2P Sharing", status: "complete" },
-  { name: "Network Sync", status: "complete" },
+  { name: "Frame Engine (FACR)", status: "active" },
   { name: "Locking", status: "active" },
+  { name: "Network Sync", status: "planned" },
+  { name: "P2P Sharing", status: "planned" },
   { name: "Hologram", status: "planned" },
   { name: "Deep Freeze", status: "planned" },
-  { name: "Black Box", status: "planned" },
 ];
 
 // ============================================================================
@@ -170,13 +175,15 @@ export default function Home() {
 
               {/* Main headline - clean, bold */}
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-6">
-                Version control for{" "}
-                <span className="text-primary">large files</span>
+                Git for{" "}
+                <span className="text-primary">video and photos</span>
               </h1>
 
               {/* Subheadline */}
               <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto mb-10">
-                Track video, 3D assets, and creative projects with intelligent deduplication. Faster syncs, less storage.
+                Git changed how the world ships code. Dits does the same for the files Git
+                can&apos;t handle&mdash;video, RAW photos, and huge creative projects. Edit a 4&nbsp;GB
+                file and store only what changed, not another copy.
               </p>
 
               {/* CTAs */}
@@ -211,6 +218,79 @@ export default function Home() {
               </div>
 
               <BenchmarksHighlights />
+            </div>
+          </div>
+        </section>
+
+        {/* ================================================================ */}
+        {/* WHY DOES THIS EXIST - the one-screen answer */}
+        {/* ================================================================ */}
+        <section className="py-24 md:py-32 border-t bg-muted/30">
+          <div className="container">
+            <div className="mx-auto max-w-5xl">
+              <div className="text-center mb-14">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4">
+                  Why does this exist?
+                </h2>
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                  Because version control never got solved for the big stuff. Here&apos;s the whole
+                  story in three steps.
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-6">
+                {/* The problem */}
+                <div className="rounded-2xl bg-card border p-6">
+                  <div className="text-sm font-semibold text-red-500 mb-3">The problem</div>
+                  <div className="font-mono text-sm text-muted-foreground space-y-1 mb-4">
+                    <div>final.mp4</div>
+                    <div>final_v2.mp4</div>
+                    <div>final_FINAL.mp4</div>
+                    <div className="text-foreground">final_FINAL_real.mp4</div>
+                  </div>
+                  <p className="text-muted-foreground">
+                    Every change is a new multi-gigabyte copy. You re-upload the whole file to
+                    change five seconds. No history, no diff, no idea what shipped.
+                  </p>
+                </div>
+
+                {/* Why Git can't help */}
+                <div className="rounded-2xl bg-card border p-6">
+                  <div className="text-sm font-semibold text-amber-500 mb-3">Why Git can&apos;t help</div>
+                  <p className="text-muted-foreground mb-4">
+                    Git was built for text. A one-line code edit is tiny&mdash;but a one-second
+                    video trim rewrites the entire file.
+                  </p>
+                  <p className="text-muted-foreground">
+                    Git and Git&nbsp;LFS just store another full copy every time. They were never
+                    designed for gigabytes of binary media.
+                  </p>
+                </div>
+
+                {/* What Dits does */}
+                <div className="rounded-2xl bg-emerald-500/5 border border-emerald-500/20 p-6">
+                  <div className="text-sm font-semibold text-emerald-500 mb-3">What Dits does</div>
+                  <p className="text-muted-foreground mb-4">
+                    Real version control for big binary media. Edit a video or photo and Dits
+                    stores only the difference&mdash;kilobytes, not gigabytes.
+                  </p>
+                  <p className="text-muted-foreground">
+                    See exactly which frames changed. Keep a full, honest history. No more
+                    <span className="font-mono"> _FINAL_v27</span>.
+                  </p>
+                </div>
+              </div>
+
+              {/* The one-liner */}
+              <div className="mt-10 rounded-2xl border bg-card p-8 text-center">
+                <p className="text-xl md:text-2xl font-medium">
+                  &ldquo;Git lets developers version their code and only save what changed.{" "}
+                  <span className="text-primary">Dits does that for video and photos.</span>&rdquo;
+                </p>
+                <p className="text-sm text-muted-foreground mt-3">
+                  That&apos;s the whole pitch. Everything below is how.
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -335,12 +415,16 @@ export default function Home() {
                 </div>
 
                 <div className="order-1 lg:order-2">
+                  <Badge variant="outline" className="mb-4">Sync engine on the roadmap</Badge>
                   <h3 className="text-2xl font-bold mb-4">
                     Delta sync, not full re-upload
                   </h3>
                   <p className="text-lg text-muted-foreground mb-6">
-                    Traditional tools re-upload entire files on every change. Dits only transfers
-                    what's different—typically 5-10% of the file size.
+                    Traditional tools re-upload entire files on every change. Because Dits content-
+                    addresses every chunk and frame, sync only needs to transfer what&apos;s
+                    different&mdash;and a dropped transfer resumes where it left off instead of
+                    restarting. (The networked sync engine is in active development; the
+                    content-addressed store it builds on works today.)
                   </p>
 
                   {/* Before/after comparison */}
@@ -377,13 +461,15 @@ export default function Home() {
 
               <div className="grid lg:grid-cols-2 gap-8 items-center">
                 <div>
+                  <Badge variant="outline" className="mb-4">On the roadmap</Badge>
                   <h3 className="text-2xl font-bold mb-4">
                     Peer-to-peer collaboration
                   </h3>
                   <p className="text-lg text-muted-foreground mb-6">
-                    Share repositories directly between computers. Generate a join code,
-                    send it to your collaborator, and they connect instantly. End-to-end
-                    encrypted, no file size limits.
+                    The plan: share repositories directly between computers with a join code&mdash;
+                    end-to-end encrypted, no file-size limits. Because frames are content-addressed,
+                    transfers will resume where they drop and never re-send footage you both already
+                    have. (Networking is in active development&mdash;local workflows work today.)
                   </p>
                   <ul className="space-y-3">
                     {[
@@ -404,14 +490,14 @@ export default function Home() {
                 {/* Join code visual */}
                 <div className="rounded-2xl bg-card border p-8 text-center">
                   <div className="inline-flex items-center gap-2 mb-4">
-                    <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-sm text-emerald-500 font-medium">P2P Active</span>
+                    <div className="w-3 h-3 rounded-full bg-muted-foreground/40" />
+                    <span className="text-sm text-muted-foreground font-medium">Coming soon</span>
                   </div>
-                  <div className="text-4xl font-mono font-bold tracking-widest mb-4 text-primary">
+                  <div className="text-4xl font-mono font-bold tracking-widest mb-4 text-muted-foreground/50">
                     7KJM-XBCD
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Share this code with your collaborator
+                    The planned flow: send a join code, your collaborator connects directly
                   </p>
                 </div>
               </div>
@@ -505,12 +591,13 @@ export default function Home() {
                 Actively developed
               </h2>
               <p className="text-lg text-muted-foreground mb-10">
-                <span className="text-primary font-semibold">6 of 10</span> phases complete
+                <span className="text-primary font-semibold">4 of 10</span> phases complete &mdash; the
+                local engine works today; networked sync is on the roadmap.
               </p>
 
               {/* Progress bar */}
               <div className="h-2 bg-muted rounded-full overflow-hidden mb-10 max-w-xl mx-auto">
-                <div className="h-full w-[60%] bg-gradient-to-r from-primary to-emerald-500 rounded-full" />
+                <div className="h-full w-[40%] bg-gradient-to-r from-primary to-emerald-500 rounded-full" />
               </div>
 
               {/* Phase pills */}

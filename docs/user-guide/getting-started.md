@@ -1027,3 +1027,29 @@ dits config --list             # View configuration
 dits gc                        # Run garbage collection
 dits fsck                      # Check repository integrity
 ```
+
+> **Note:** `dits p2p …` and networked `push`/`pull`/`fetch` are scaffolding today and
+> print placeholders. Only local-filesystem `clone` transfers data. Networked sync is on
+> the roadmap.
+
+## Versioning video & photos with FACR (requires FFmpeg)
+
+FACR (Frame-Addressable Canonical Representation) stores media as content-addressed
+frames plus a non-destructive edit log, so **edits cost only their diff** — kilobytes,
+not gigabytes.
+
+```bash
+# --- Video ---
+dits facr-add clip.mp4               # decode to content-addressed frames, write clip.mp4.facr.json
+dits facr-trim clip.mp4.facr.json --start 30   # drop first 30 frames — stores ZERO new frames
+dits facr-checkout clip.mp4.facr.json.trimmed.json cut.mp4   # rebuild a playable video
+dits facr-demo --frames 1000 --regrade 150     # see the dedup math without a real file
+
+# --- Photos (non-destructive, like a versioned Lightroom sidecar) ---
+dits photo-add shot.jpg                          # store the source once -> shot.jpg.photo.json
+dits photo-edit shot.jpg.photo.json --exposure 0.5 --crop 0,0,1280,720 --rotate 90
+dits photo-render shot.jpg.photo.json edited.jpg # apply the edit log to the stored source
+```
+
+Each edit appends a few bytes to a manifest and stores **no new image/frame bytes** when
+the content is unchanged. See the design: `docs/superpowers/specs/2026-06-02-unified-media-model.md`.

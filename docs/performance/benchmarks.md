@@ -215,6 +215,8 @@ Default FastCDC parameters: min=128KB, avg=1MB, max=4MB
 
 ## Download Performance Optimizations
 
+> ⚠️ The network-dependent items below (High-Throughput QUIC Transport, Multi-Peer Parallel Downloads, and adaptive-transfer tuning) describe **roadmap** behavior. QUIC delta transport and P2P swarm downloads are **not implemented** — their figures are design targets, not measurements. The local items (streaming FastCDC, parallel hashing, zero-copy I/O) are real.
+
 ### Streaming FastCDC Chunking
 
 **Before:** Memory-bound chunking loaded entire files into RAM
@@ -400,14 +402,16 @@ rm -rf .dits v1.bin v2.bin
 | Commit time (1000 files) | <1s | 500ms |
 | Memory usage (10GB file) | <500 MB | 200 MB |
 
-### Phase 4-5 (Network - Achieved)
+### Phase 4-5 (Network - Roadmap / NOT implemented)
 
-| Metric | Target | Actual |
+> ⚠️ Networked sync (push/pull/fetch/sync) and QUIC delta transport are **not implemented** — these are design targets, not measured results. The `push`/`pull`/`fetch`/`sync` commands print placeholders and transfer no data today.
+
+| Metric | Target | Status |
 |--------|--------|--------|
-| Push throughput | >50 MB/s | 200+ MB/s |
-| Pull throughput | >100 MB/s | 500+ MB/s |
-| Delta sync ratio | >90% chunk reuse | 99.9% |
-| First-byte latency | <100ms | <10ms |
+| Push throughput | >50 MB/s | Projected (not implemented) |
+| Pull throughput | >100 MB/s | Projected (not implemented) |
+| Delta sync ratio | >90% chunk reuse | Projected (not implemented) |
+| First-byte latency | <100ms | Projected (not implemented) |
 
 ---
 

@@ -2,6 +2,14 @@
 
 This comprehensive guide covers everything video editors need to know about using Dits for version control in their editing workflows. Whether you're using Adobe Premiere Pro, DaVinci Resolve, Final Cut Pro, or Avid Media Composer, this guide will help you integrate Dits into your professional workflow.
 
+> 🚧 **Roadmap notice.** Dits today is **local-first**. Commands in this guide that sync
+> over a network — `push`, `pull`, `fetch`, `sync`, network `clone`, `remote`, and all
+> `p2p` sharing — are **not implemented yet**; they print placeholders and transfer no
+> data. There is also **no `dits mount` / `dits unmount`** command (the VFS is internal).
+> Everything **local** works: commits, branches, locks, MP4 tooling, and the FACR
+> frame-engine / photo commands. Treat networked and P2P examples below as the intended
+> future workflow, and use a **local-path** `clone` for local mirroring.
+
 ---
 
 ## Table of Contents
@@ -1208,22 +1216,27 @@ dits proxy-generate 01_RAW/ --resolution 1080p
 # 3. Edit with proxies
 # In your NLE, link to proxy versions
 
-# 4. For final export, switch to full-res
-# dits handles this automatically with VFS mounting
+# 4. For final export, relink to the full-res originals in your NLE
 ```
 
-### VFS-Based Proxy Workflow
+### FACR Frame-Level Editing (requires FFmpeg)
 
-Mount with automatic proxy preference:
+For frame-accurate, non-destructive editing, the FACR engine stores a clip once at the
+frame level. Trims and re-grades then store **only the frames that changed**:
 
 ```bash
-# Mount with proxy preference (streams proxies, fetches full-res on export)
-dits mount /Volumes/Project --proxy --resolution 1080p
+# Ingest a clip into the frame-addressable store
+dits facr-add 01_RAW/scene01.mov
 
-# In NLE:
-# - Proxies stream instantly
-# - Full-res fetched on-demand for export
+# Non-destructively trim to a frame range (stores ZERO new frames)
+dits facr-trim 01_RAW/scene01.mov.facr.json --start 240 --end 1200
+
+# Reconstruct a playable file for your NLE
+dits facr-checkout 01_RAW/scene01.mov.facr.trimmed.json scene01_trim.mov
 ```
+
+> ℹ️ There is no `dits mount` command. The virtual filesystem is internal to checkout and
+> proxies; you work with reconstructed files via `facr-checkout` / `checkout`.
 
 ---
 
@@ -1542,8 +1555,8 @@ dits merge edit/new-version          # Merge branch
 dits lock footage/scene01.mov        # Lock file
 dits unlock footage/scene01.mov      # Unlock file
 dits locks                           # List locks
-dits p2p share                       # Share project
-dits p2p connect ABC-123 ./project   # Join shared project
+dits p2p share                       # 🚧 Roadmap: P2P share (not implemented)
+dits p2p connect ABC-123 ./project   # 🚧 Roadmap: P2P join (not implemented)
 
 # Versioning
 dits tag review-v1                   # Tag version
@@ -1554,11 +1567,13 @@ dits diff review-v1 HEAD             # Compare versions
 dits proxy-generate 01_RAW/          # Generate proxies
 dits inspect video.mp4               # View video info
 dits repo-stats                      # Check storage
+dits facr-add scene01.mov            # Frame-level ingest (FFmpeg)
+dits facr-trim scene01.mov.facr.json --start 0 --end 500  # Non-destructive trim
 
 # Utilities
 dits gc                              # Clean up
-dits mount /Volumes/Project          # Mount as drive
-dits unmount /Volumes/Project        # Unmount
+dits fsck                            # Verify integrity
+# (No `dits mount` / `dits unmount` — the VFS is internal)
 ```
 
 ---

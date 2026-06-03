@@ -1,5 +1,7 @@
 # Phase 2: Structure Awareness (Atom Exploder)
 
+> ⚠️ **Historical plan.** References to `dits-*` crates describe the original (now quarantined) backend layout in `legacy/backend-crates`. The current architecture is the modules under `apps/cli/src/`. See [docs/STATUS.md](../STATUS.md).
+
 > **Status: ✅ COMPLETE** - All Phase 2 deliverables have been implemented including MP4/ISOBMFF parsing.
 
 Execution manual for building the `dits` CLI binary on top of `dits-core`. This is where dits stops being a storage engine and starts feeling like an actual tool.

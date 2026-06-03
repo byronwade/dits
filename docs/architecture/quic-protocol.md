@@ -1,5 +1,7 @@
 # QUIC Chunk Transfer Protocol Specification
 
+> ⚠️ Design spec for a transport that is NOT yet implemented.
+
 This document specifies the QUIC-based protocol used for efficient chunk transfer in Dits. The protocol is optimized for large file transfers with support for parallel streams, resumable transfers, and end-to-end encryption.
 
 ## Protocol Overview

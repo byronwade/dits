@@ -2,6 +2,15 @@
 
 This guide covers the most common issues users encounter with Dits and provides step-by-step solutions.
 
+> 🚧 **Roadmap notice.** Troubleshooting sections about **remotes, authentication, P2P, and
+> mounting** describe **roadmap** features that are **not implemented yet**. `push`, `pull`,
+> `fetch`, network `clone`, and `remote` print placeholders and transfer no data; **`dits
+> auth`** does not exist (auth is local encryption only — `login`/`logout`/
+> `change-password`); **`dits mount` / `dits unmount`** do not exist (the VFS is internal);
+> and all `p2p` subcommands are scaffolding. If a command in those sections "doesn't work,"
+> that is expected — the feature is not built yet. Local commands (`status`, `add`,
+> `commit`, `checkout`, `restore`, `fsck`, locks) work today.
+
 ---
 
 ## Table of Contents
@@ -295,6 +304,10 @@ dits add path/to/file
 
 ## Networking & Sync
 
+> 🚧 **Roadmap — not implemented yet.** Networked sync does not work in any build today, so
+> the symptoms and fixes below are placeholders for the future networked feature. `push`,
+> `pull`, and `fetch` currently just print a placeholder and transfer no data.
+
 ### "Push failed: connection refused"
 
 **Cause**: Remote server is down or unreachable.
@@ -404,6 +417,9 @@ dits config --global http.sslCAInfo /path/to/ca-bundle.crt
 
 ## P2P Sharing Issues
 
+> 🚧 **Roadmap — not implemented yet.** P2P is scaffolding: no data transfer, no NAT
+> traversal, no QUIC. The fixes below apply to the future feature, not the current build.
+
 ### "Cannot connect: peer not found"
 
 **Cause**: Peer is offline, code expired, or network issue.
@@ -492,6 +508,11 @@ dits p2p share --expires 24h
 ---
 
 ## Virtual Filesystem (VFS)
+
+> ℹ️ **There is no `dits mount` / `dits unmount` command.** The VFS is internal (used by
+> checkout and proxies). If you ran `dits mount` and got "unrecognized subcommand," that is
+> expected — the command does not exist. The mount-related troubleshooting below is retained
+> for the future, user-facing VFS feature only.
 
 ### "Mount failed: FUSE not available"
 
@@ -753,6 +774,13 @@ dits config core.videoAware true
 ---
 
 ## Authentication Issues
+
+> ℹ️ **There is no `dits auth` command.** Authentication in Dits is for **local encryption
+> keys** only, via `login` / `logout` / `change-password` (+ `encrypt-init` /
+> `encrypt-status`). Remote-server auth (`dits auth login --token/--sso/--server`,
+> `dits auth status`, `dits auth token`) is **roadmap and not implemented** — those commands
+> return "unrecognized subcommand." The guidance below applies to the future remote-auth
+> feature.
 
 ### "Authentication failed"
 

@@ -13,6 +13,7 @@ mod config {
     pub use dits::config::*;
 }
 mod core;
+mod facr;
 mod hooks;
 mod mp4;
 mod segment;
@@ -337,6 +338,112 @@ enum Commands {
 
     /// Show cache statistics
     CacheStats,
+
+    /// Demonstrate FACR frame-level dedup: commit a synthetic clip, re-grade some
+    /// frames, and show that only the changed frames are stored (Phase: FACR)
+    #[command(name = "facr-demo")]
+    FacrDemo {
+        /// Number of frames in the synthetic clip
+        #[arg(long, default_value = "300")]
+        frames: usize,
+        /// Number of frames to re-grade in the second version
+        #[arg(long, default_value = "5")]
+        regrade: usize,
+    },
+
+    /// Ingest a real video into the frame-addressable store (requires FFmpeg)
+    #[command(name = "facr-add")]
+    FacrAdd {
+        /// Path to the input video
+        input: String,
+        /// Frame store directory (default: .dits-facr)
+        #[arg(long)]
+        store: Option<String>,
+        /// Where to write the clip manifest (default: <input>.facr.json)
+        #[arg(long)]
+        manifest: Option<String>,
+    },
+
+    /// Reconstruct a playable video from a FACR manifest (requires FFmpeg)
+    #[command(name = "facr-checkout")]
+    FacrCheckout {
+        /// Path to the clip manifest (.facr.json)
+        manifest: String,
+        /// Output video path
+        output: String,
+        /// Frame store directory (default: .dits-facr)
+        #[arg(long)]
+        store: Option<String>,
+    },
+
+    /// Non-destructively trim a FACR manifest to a frame range (stores ZERO new frames)
+    #[command(name = "facr-trim")]
+    FacrTrim {
+        /// Path to the clip manifest (.facr.json)
+        manifest: String,
+        /// First frame to keep (0-based, inclusive)
+        #[arg(long, default_value = "0")]
+        start: usize,
+        /// Last frame to keep (exclusive); defaults to end of clip
+        #[arg(long)]
+        end: Option<usize>,
+        /// Output manifest path (default: <manifest>.trimmed.json)
+        #[arg(long)]
+        out: Option<String>,
+    },
+
+    /// Store a photo once and start a non-destructive edit history (requires FFmpeg)
+    #[command(name = "photo-add")]
+    PhotoAdd {
+        /// Path to the source image (jpg/png/tiff/etc.)
+        input: String,
+        /// Object store directory (default: .dits-facr)
+        #[arg(long)]
+        store: Option<String>,
+        /// Where to write the photo manifest (default: <input>.photo.json)
+        #[arg(long)]
+        manifest: Option<String>,
+    },
+
+    /// Append non-destructive edits to a photo manifest (stores ZERO new image bytes)
+    #[command(name = "photo-edit")]
+    PhotoEdit {
+        /// Path to the photo manifest (.photo.json)
+        manifest: String,
+        /// Exposure adjustment in stops (e.g. 0.5)
+        #[arg(long)]
+        exposure: Option<f32>,
+        /// Contrast multiplier (1.0 = unchanged)
+        #[arg(long)]
+        contrast: Option<f32>,
+        /// Saturation multiplier (1.0 = unchanged)
+        #[arg(long)]
+        saturation: Option<f32>,
+        /// White balance in Kelvin
+        #[arg(long = "white-balance")]
+        white_balance: Option<f32>,
+        /// Clockwise rotation in degrees (90/180/270)
+        #[arg(long)]
+        rotate: Option<u16>,
+        /// Crop rectangle as x,y,w,h
+        #[arg(long)]
+        crop: Option<String>,
+        /// Output manifest (default: overwrite input)
+        #[arg(long)]
+        out: Option<String>,
+    },
+
+    /// Render a photo manifest into an image by applying its edit log (requires FFmpeg)
+    #[command(name = "photo-render")]
+    PhotoRender {
+        /// Path to the photo manifest (.photo.json)
+        manifest: String,
+        /// Output image path
+        output: String,
+        /// Object store directory (default: .dits-facr)
+        #[arg(long)]
+        store: Option<String>,
+    },
 
     /// Inspect a tracked file's deduplication statistics (Phase 4)
     InspectFile {
@@ -966,6 +1073,13 @@ async fn main() {
         Commands::Segment { .. } => "segment",
         Commands::Assemble { .. } => "assemble",
         Commands::CacheStats => "cache-stats",
+        Commands::FacrDemo { .. } => "facr-demo",
+        Commands::FacrAdd { .. } => "facr-add",
+        Commands::FacrCheckout { .. } => "facr-checkout",
+        Commands::FacrTrim { .. } => "facr-trim",
+        Commands::PhotoAdd { .. } => "photo-add",
+        Commands::PhotoEdit { .. } => "photo-edit",
+        Commands::PhotoRender { .. } => "photo-render",
         Commands::InspectFile { .. } => "inspect-file",
         Commands::RepoStats { .. } => "repo-stats",
         Commands::MetaScan { .. } => "meta-scan",
@@ -1077,6 +1191,28 @@ async fn main() {
         #[cfg(feature = "fuser")]
         Commands::Unmount { mount_point } => commands::unmount(&mount_point),
         Commands::CacheStats => commands::cache_stats(),
+        Commands::FacrDemo { frames, regrade } => commands::facr_demo(frames, regrade),
+        Commands::FacrAdd { input, store, manifest } => {
+            commands::facr_add(&input, store.as_deref(), manifest.as_deref())
+        }
+        Commands::FacrCheckout { manifest, output, store } => {
+            commands::facr_checkout(&manifest, &output, store.as_deref())
+        }
+        Commands::FacrTrim { manifest, start, end, out } => {
+            commands::facr_trim(&manifest, start, end, out.as_deref())
+        }
+        Commands::PhotoAdd { input, store, manifest } => {
+            commands::photo_add(&input, store.as_deref(), manifest.as_deref())
+        }
+        Commands::PhotoEdit { manifest, exposure, contrast, saturation, white_balance, rotate, crop, out } => {
+            let args = commands::PhotoEditArgs {
+                exposure, contrast, saturation, white_balance, rotate, crop,
+            };
+            commands::photo_edit(&manifest, args, out.as_deref())
+        }
+        Commands::PhotoRender { manifest, output, store } => {
+            commands::photo_render(&manifest, &output, store.as_deref())
+        }
         Commands::InspectFile { path, chunks } => commands::inspect_file(&path, chunks),
         Commands::RepoStats { verbose } => commands::repo_stats(verbose),
         Commands::Fsck { verbose } => commands::fsck(verbose),

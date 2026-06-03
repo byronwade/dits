@@ -6,6 +6,11 @@ DITS includes the most extensive testing framework ever built for a version cont
 
 **120+ Automated Tests** across 80+ file formats with Git-based recovery validation.
 
+> Note: The canonical suite is the ~123 tests of the local-first CLI engine at `apps/cli`
+> (shell-script TAP tests plus in-crate unit tests). Rust examples below that use
+> `TestServer`/remote/`clone`-over-network illustrate the **quarantined** backend
+> (`legacy/backend-crates`) and are retained as design reference, not the canonical suite.
+
 ---
 
 ## Testing Philosophy

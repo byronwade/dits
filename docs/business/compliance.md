@@ -512,11 +512,13 @@ pub enum AuditAction {
 
 ### In Transit
 
+> Note: in-transit controls apply to the hosted network layer, which is **roadmap**. Networked sync and the QUIC chunk transport are not implemented today; the shipping CLI is local-first with at-rest encryption.
+
 | Connection | Protocol | Minimum Version |
 |------------|----------|-----------------|
 | API | TLS | 1.2 (1.3 preferred) |
 | Web UI | TLS | 1.2 (1.3 preferred) |
-| Chunk transfer | QUIC | 1 |
+| Chunk transfer (roadmap) | QUIC | 1 |
 | Internal services | mTLS | 1.3 |
 
 ### Key Management

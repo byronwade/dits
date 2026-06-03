@@ -1,17 +1,11 @@
 [workspace]
 members = [
   "apps/cli",
-  "apps/cli/crates/dits-api",
-  "apps/cli/crates/dits-cache",
-  "apps/cli/crates/dits-chunker",
-  "apps/cli/crates/dits-cli",
-  "apps/cli/crates/dits-core",
-  "apps/cli/crates/dits-db",
-  "apps/cli/crates/dits-protocol",
-  "apps/cli/crates/dits-sdk",
-  "apps/cli/crates/dits-signal",
-  "apps/cli/crates/dits-storage",
-  "apps/cli/crates/dits-worker",
+]
+# The former apps/cli/crates/* backend workspace was quarantined to legacy/backend-crates
+# on 2026-06-02 (see legacy/README.md). apps/cli is the single canonical `dits` binary.
+exclude = [
+  "legacy",
 ]
 resolver = "2"
 

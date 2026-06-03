@@ -1,5 +1,7 @@
 # Bloom Filter Design
 
+> ⚠️ ROADMAP / not implemented. The sync use case described here (reducing network round-trips against a server) depends on networked sync, which is scaffolding only — no data transfer today. See docs/STATUS.md.
+
 Space-efficient probabilistic data structure for chunk existence checking.
 
 ---

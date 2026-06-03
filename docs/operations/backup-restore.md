@@ -1,5 +1,7 @@
 # Backup and Disaster Recovery Guide
 
+> ⚠️ Describes the quarantined backend service (see legacy/backend-crates), NOT the current product. Dits today is a local-first CLI — no server or database required. This doc is retained as design reference for a future hosted offering.
+
 Complete guide to backup strategies and disaster recovery procedures for Dits.
 
 ---

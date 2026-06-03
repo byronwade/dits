@@ -1,5 +1,10 @@
 # Workflow Verification: "Quick Fix"
 
+> 🚧 **Roadmap scenario — not implemented yet.** This describes the **intended** end-to-end
+> behavior once networked sync ships. It relies on `dits push` / `dits pull` (which print
+> placeholders and transfer no data today) and on-demand virtual-file streaming (the VFS is
+> internal; there is no `dits mount`). It does not work end-to-end yet.
+
 Scenario validating end-to-end system behavior.
 
 1. Editor A imports 1TB footage and runs `dits push` (bulk upload).

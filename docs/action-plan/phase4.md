@@ -1,6 +1,9 @@
 # Phase 4: Collaboration & Sync (Network)
 
-> **Status: ✅ COMPLETE** - POC/introspection features implemented. Network features (push/pull/remote) planned for Phase 4b.
+> **Status: POC/introspection features COMPLETE. Network sync is NOT implemented (roadmap).**
+> The introspection/POC tooling (`inspect`, `repo-stats`, dedup metrics) is done. Networked sync
+> (Phase 4b: `push`/`pull`/`fetch`/`sync`, network `clone`) and P2P are **not implemented** — they
+> print placeholders / scaffolding only. QUIC delta transport is designed, not built.
 
 Execution manual for building proof-of-concept flows and introspection tooling that demonstrate dits handles huge files, dedups across versions, and works for video, game builds, and photos.
 

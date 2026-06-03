@@ -1,5 +1,7 @@
 # Plugin SDK Documentation
 
+> ⚠️ This Plugin SDK targets a quarantined/legacy backend service (legacy/backend-crates), not the current local-first CLI. The push/pull/fetch/remote/QUIC operations shown here are roadmap (not implemented). Retained as design reference.
+
 Build integrations and extensions for Dits using the Plugin SDK.
 
 ---

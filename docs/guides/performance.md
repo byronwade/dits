@@ -2,6 +2,13 @@
 
 Maximize Dits performance for large repositories, slow networks, and resource-constrained systems.
 
+> 🚧 **Roadmap notice.** Sections of this guide about **network transfer** — `push`,
+> `pull`, `fetch`, network `clone` (and its `--filter` / `--depth` / `-j` flags), the
+> `transfer.protocol` / QUIC settings, and `dits remote test` — describe a **roadmap**.
+> Networked sync and QUIC are **not implemented yet**; those commands and flags do not
+> transfer data or have any effect today. Local performance guidance (storage, cache, GC)
+> is accurate.
+
 ---
 
 ## Table of Contents
@@ -110,6 +117,10 @@ NVMe SSD (3000 MB/s):
 ---
 
 ## Network Optimization
+
+> 🚧 **Roadmap — not implemented yet.** This entire section (bandwidth/`transfer.*`
+> settings, QUIC protocol selection, `dits remote test`, parallel transfer `-j`) describes
+> the planned networked transport. None of it transfers data or takes effect today.
 
 ### Bandwidth Settings
 
@@ -278,6 +289,10 @@ dits fetch --deepen 100
 
 ### Monorepo Strategies
 
+> 🚧 **Roadmap — not implemented yet.** The `dits vfs mount` / `dits vfs hydrate` commands
+> below do not exist; the VFS is internal, not a user-facing CLI. Use `dits checkout` and
+> `sparse-checkout` for large repositories today.
+
 For very large repositories:
 
 ```bash
@@ -362,6 +377,10 @@ dits inspect-file video.mp4
 
 ## Clone & Sync Optimization
 
+> 🚧 **Roadmap — not implemented yet.** Network `clone`, `push`, `pull`, `fetch`, and their
+> `-j`/`--filter`/`--depth`/`--resume`/`--background` flags do not transfer data or take
+> effect today. Only **local-path** `clone` works.
+
 ### Faster Clones
 
 ```bash
@@ -421,6 +440,10 @@ dits commit -m "Changes" && dits push
 ---
 
 ## VFS Performance
+
+> 🚧 **Roadmap — not implemented yet.** There is no user-facing `dits vfs` command set
+> (`vfs mount`, `vfs hydrate`, `vfs status`). The VFS is internal to checkout/proxies. This
+> section describes the intended future feature.
 
 ### VFS Cache Settings
 

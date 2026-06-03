@@ -4,7 +4,32 @@
 //! handling conflicts and ensuring both repositories end up with the same state.
 
 use anyhow::Result;
+use crate::core::Hash;
 use crate::store::{Repository, remote::{RemoteStore, RemoteType}};
+
+/// Returns true if `ancestor` is reachable from `descendant` by following parent
+/// links. A commit is considered its own ancestor. Used to decide whether a sync can
+/// fast-forward safely or whether the branches have diverged.
+fn is_ancestor(repo: &Repository, ancestor: &Hash, descendant: &Hash) -> Result<bool> {
+    let mut stack = vec![*descendant];
+    let mut seen = std::collections::HashSet::new();
+    while let Some(h) = stack.pop() {
+        if h == *ancestor {
+            return Ok(true);
+        }
+        if !seen.insert(h) {
+            continue;
+        }
+        let commit = repo.load_commit(&h)?;
+        if let Some(p) = commit.parent {
+            stack.push(p);
+        }
+        for p in &commit.parents {
+            stack.push(*p);
+        }
+    }
+    Ok(false)
+}
 
 /// Synchronize with remote repository (bi-directional).
 pub async fn sync(
@@ -75,10 +100,29 @@ async fn sync_local(
         let local_ref = format!("refs/heads/{}", branch_name);
         if let Some(local_commit) = repo.resolve_ref_or_prefix(&local_ref).ok().flatten() {
             if local_commit != remote_commit {
-                println!("Merging changes...");
-                // This is a simplified merge - in reality we'd need conflict detection
-                repo.refs().set_branch(branch_name, &remote_commit)?;
-                println!("✓ Updated local branch to {}", &remote_commit.to_hex()[..8]);
+                if is_ancestor(repo, &local_commit, &remote_commit)? {
+                    // Remote is strictly ahead: fast-forward is safe (no local commits lost).
+                    repo.refs().set_branch(branch_name, &remote_commit)?;
+                    println!("✓ Fast-forwarded local branch to {}", &remote_commit.to_hex()[..8]);
+                } else if is_ancestor(repo, &remote_commit, &local_commit)? {
+                    // Local is strictly ahead: nothing to pull, local already has remote's history.
+                    println!("✓ Local branch is ahead of remote; nothing to merge locally");
+                } else if force {
+                    // Diverged, but the caller explicitly accepted discarding local commits.
+                    repo.refs().set_branch(branch_name, &remote_commit)?;
+                    println!(
+                        "⚠ Local and remote diverged; --force discarded local commits, now at {}",
+                        &remote_commit.to_hex()[..8]
+                    );
+                } else {
+                    // Diverged without --force: refuse rather than silently lose local work.
+                    anyhow::bail!(
+                        "Local and remote branch '{}' have diverged.\n  \
+                         Refusing to overwrite local commits (this would lose local work).\n  \
+                         Re-run with --force to discard local changes, or merge manually first.",
+                        branch_name
+                    );
+                }
             } else {
                 println!("Already in sync");
             }
@@ -95,6 +139,33 @@ async fn sync_local(
 
     println!("✓ Bi-directional sync complete");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use tempfile::tempdir;
+
+    #[test]
+    fn is_ancestor_follows_parent_chain() {
+        let temp = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+
+        fs::write(temp.path().join("a.txt"), b"a").unwrap();
+        repo.add("a.txt").unwrap();
+        let c1 = repo.commit("c1").unwrap();
+
+        fs::write(temp.path().join("b.txt"), b"b").unwrap();
+        repo.add("b.txt").unwrap();
+        let c2 = repo.commit("c2").unwrap();
+
+        // c1 is an ancestor of c2, but not vice versa.
+        assert!(is_ancestor(&repo, &c1.hash, &c2.hash).unwrap());
+        assert!(!is_ancestor(&repo, &c2.hash, &c1.hash).unwrap());
+        // A commit is its own ancestor.
+        assert!(is_ancestor(&repo, &c1.hash, &c1.hash).unwrap());
+    }
 }
 
 /// Sync with a network remote repository.
