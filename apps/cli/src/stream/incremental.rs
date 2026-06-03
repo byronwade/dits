@@ -111,9 +111,10 @@ fn encode_and_store(
         );
     }
     let fps = parse_fps(&manifest.frame_rate);
-    // TS offset = the segment's start time on the global timeline (pure fn of range.start).
-    let ts_offset = range.start as f64 / fps;
-    let ts = encode_segment(&pngs, &manifest.frame_rate, ts_offset)?;
+    // Each segment is its own PTS-0 timeline; the playlist marks seams with
+    // EXT-X-DISCONTINUITY so the player re-bases. Offset 0 also makes a segment's bytes
+    // depend only on its frames (not its position) -> stronger, position-independent dedup.
+    let ts = encode_segment(&pngs, &manifest.frame_rate, 0.0)?;
     let hash = Hash::from_slice(blake3::hash(&ts).as_bytes());
     origin.put(&hash, &ts).context("put segment to origin")?;
     let dur_ms = ((range.len() as f64 / fps) * 1000.0).round() as u64;

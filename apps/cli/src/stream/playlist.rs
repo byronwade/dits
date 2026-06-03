@@ -33,7 +33,13 @@ impl StreamVersion {
         out.push_str(&format!("#EXT-X-TARGETDURATION:{}\n", target));
         out.push_str("#EXT-X-MEDIA-SEQUENCE:0\n");
         out.push_str("#EXT-X-PLAYLIST-TYPE:VOD\n");
-        for s in &self.segments {
+        for (i, s) in self.segments.iter().enumerate() {
+            // Each segment is independently encoded with its own PTS-0 timeline, so every
+            // seam after the first is a genuine discontinuity. Marking it lets the player
+            // re-base cleanly instead of seeing a corrupt continuity-counter jump.
+            if i > 0 {
+                out.push_str("#EXT-X-DISCONTINUITY\n");
+            }
             out.push_str(&format!("#EXTINF:{:.3},\n", s.duration_ms as f64 / 1000.0));
             out.push_str(&format!("{}{}.ts\n", seg_url_base, s.hash.to_hex()));
         }
@@ -65,6 +71,8 @@ mod tests {
         assert!(m3u8.contains("#EXT-X-TARGETDURATION:2"));
         assert!(m3u8.contains(&format!("/seg/{}.ts", h(b"a").to_hex())));
         assert!(m3u8.contains("#EXTINF:1.500,"));
+        // A discontinuity marks the seam between independently-encoded segments (one for 2 segments).
+        assert_eq!(m3u8.matches("#EXT-X-DISCONTINUITY").count(), 1);
         assert!(m3u8.trim_end().ends_with("#EXT-X-ENDLIST"));
     }
 

@@ -169,17 +169,31 @@ and the `dits stream-demo` command. 13 unit tests green (incl. FFmpeg-backed enc
 - `stream_demo` is `async` (the binary is `#[tokio::main]`); it `.await`s `serve` rather than
   nesting a runtime.
 
-**Verified end to end** (`dits stream-demo`, 10s/100-frame testsrc, 2s segments):
+### What is proven vs. not (honest status)
+
+**PROVEN — incremental-encode + reuse economics (the hard part):**
 - 5 segments; re-grade of 4–6s → **1 re-encoded (segment 2), 4 reused, 80% reuse**.
 - Reuse is byte-exact: v1∩v2 share 4 identical segment hashes; exactly 1 differs.
 - Re-delivered 19.1 KB vs 99.1 KB naive full re-encode.
-- Served segments probe as h264 320×240; **FFmpeg decodes the full v2 playlist to 100 continuous
-  frames (PTS 0.2s→9.9s)** across all 5 independently-encoded segments — the splice is sound.
-- hls.js parsed the playlist as a 10s stream; pixel playback could not be confirmed in-session
-  because the automation tab is `visibility:hidden` (Chrome suspends MediaSource in hidden tabs),
-  not a pipeline defect.
+- Served segments probe as h264 320×240. Reuse-by-copying-`SegmentRef` (never re-deriving)
+  makes this independent of encoder non-determinism. This half ships.
 
-**Known rough edge (next hardening):** FFmpeg reports `Packet corrupt` at segment boundaries
-because each independent TS resets its continuity counters. The decoder recovers (all frames
-render), but the clean production fix is **CMAF/fMP4 segments with a shared init segment** (or
-`#EXT-X-DISCONTINUITY` markers), which also aligns with the P2 codec/packaging phase.
+**NOT YET PROVEN — clean browser playback:**
+- The playlist uses `#EXT-X-DISCONTINUITY` between segments (each is an independent PTS-0
+  timeline; the correct HLS representation of independently-encoded chunks). FFmpeg's HLS
+  demuxer **re-bases the timeline correctly** at every seam (offsets 2/4/6/8s) and reconstructs
+  a continuous 10s / 100-frame stream with no frame loss.
+- However, FFmpeg is a maximally error-tolerant decoder; a clean FFmpeg decode is **not** proof
+  of clean playback in **hls.js** (the actual target). Below the HLS layer, each independent TS
+  resets MPEG-TS continuity counters, which FFmpeg's strict CLI demuxer flags as `Packet
+  corrupt` at seams. hls.js remuxes TS→fMP4 and is designed to tolerate exactly this, so it is
+  *expected* to play cleanly — but **this was not observed**: the automation browser tab is
+  `visibility:hidden`, so Chrome keeps MediaSource `closed` and hls.js never reaches
+  `MEDIA_ATTACHED`. Pixel-level playback in a real (visible) browser remains the one open
+  verification.
+
+**Next hardening (coupled to a visible-browser pass):** move to **CMAF/fMP4 segments with a
+shared init segment** — eliminates TS continuity counters entirely (no seam corruption at any
+layer) and is the standard modern packaging. Do this together with a foregrounded hls.js
+playthrough so the format change is verified, not swapped blind. Aligns with the P2
+codec/packaging phase.
