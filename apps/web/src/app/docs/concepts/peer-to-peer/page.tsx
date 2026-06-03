@@ -37,8 +37,8 @@ export default function PeerToPeerPage() {
       <div className="not-prose grid gap-4 md:grid-cols-3 my-8">
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center mb-2">
-              <Zap className="h-6 w-6 text-green-500" />
+            <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mb-2">
+              <Zap className="h-6 w-6 text-success" />
             </div>
             <CardTitle>Fast</CardTitle>
           </CardHeader>
@@ -52,8 +52,8 @@ export default function PeerToPeerPage() {
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center mb-2">
-              <Shield className="h-6 w-6 text-blue-500" />
+            <div className="w-12 h-12 rounded-full bg-info/10 flex items-center justify-center mb-2">
+              <Shield className="h-6 w-6 text-info" />
             </div>
             <CardTitle>Private</CardTitle>
           </CardHeader>
@@ -67,8 +67,8 @@ export default function PeerToPeerPage() {
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center mb-2">
-              <Wifi className="h-6 w-6 text-purple-500" />
+            <div className="w-12 h-12 rounded-full bg-brand/10 flex items-center justify-center mb-2">
+              <Wifi className="h-6 w-6 text-brand" />
             </div>
             <CardTitle>Works Anywhere</CardTitle>
           </CardHeader>
@@ -158,10 +158,10 @@ export default function PeerToPeerPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-green-500/50 bg-green-500/5">
+        <Card className="border-success/50 bg-success/5">
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center mb-2">
-              <Share2 className="h-6 w-6 text-green-500" />
+            <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mb-2">
+              <Share2 className="h-6 w-6 text-success" />
             </div>
             <CardTitle>Relay (Priority 40) - No Port Forwarding!</CardTitle>
           </CardHeader>
@@ -175,8 +175,8 @@ export default function PeerToPeerPage() {
         </Card>
       </div>
 
-      <Alert className="not-prose my-6 border-green-500/50">
-        <Share2 className="h-4 w-4 text-green-500" />
+      <Alert className="not-prose my-6 border-success/50">
+        <Share2 className="h-4 w-4 text-success" />
         <AlertTitle>Zero Port Forwarding with Relay Mode</AlertTitle>
         <AlertDescription>
           With relay mode (<code>--relay</code>), you never need to configure port forwarding
@@ -262,9 +262,9 @@ $ dits p2p connect XYZ-789`}
       <h2>When to Use P2P</h2>
 
       <div className="not-prose grid gap-4 md:grid-cols-2 my-8">
-        <Card className="border-green-500/20">
+        <Card className="border-success/20">
           <CardHeader>
-            <CardTitle className="text-green-600">Good For</CardTitle>
+            <CardTitle className="text-success">Good For</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="text-sm space-y-2">
@@ -277,9 +277,9 @@ $ dits p2p connect XYZ-789`}
           </CardContent>
         </Card>
 
-        <Card className="border-orange-500/20">
+        <Card className="border-warning/20">
           <CardHeader>
-            <CardTitle className="text-orange-600">Consider Alternatives</CardTitle>
+            <CardTitle className="text-warning">Consider Alternatives</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="text-sm space-y-2">

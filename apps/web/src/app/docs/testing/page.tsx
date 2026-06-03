@@ -74,8 +74,8 @@ export default function TestingPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 my-8">
         <Card>
           <CardHeader className="pb-3">
-            <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mb-2">
-              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center mb-2">
+              <CheckCircle className="h-5 w-5 text-success" />
             </div>
             <CardTitle className="text-base">Correctness</CardTitle>
           </CardHeader>
@@ -88,8 +88,8 @@ export default function TestingPage() {
 
         <Card>
           <CardHeader className="pb-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mb-2">
-              <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <div className="w-10 h-10 rounded-full bg-info/10 flex items-center justify-center mb-2">
+              <Shield className="h-5 w-5 text-info" />
             </div>
             <CardTitle className="text-base">Security</CardTitle>
           </CardHeader>
@@ -102,8 +102,8 @@ export default function TestingPage() {
 
         <Card>
           <CardHeader className="pb-3">
-            <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center mb-2">
-              <Zap className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+            <div className="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center mb-2">
+              <Zap className="h-5 w-5 text-warning" />
             </div>
             <CardTitle className="text-base">Performance</CardTitle>
           </CardHeader>
@@ -116,8 +116,8 @@ export default function TestingPage() {
 
         <Card>
           <CardHeader className="pb-3">
-            <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center mb-2">
-              <Database className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            <div className="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center mb-2">
+              <Database className="h-5 w-5 text-brand" />
             </div>
             <CardTitle className="text-base">Reliability</CardTitle>
           </CardHeader>
@@ -149,7 +149,7 @@ export default function TestingPage() {
           <div className="space-y-6">
             <div>
               <h3 className="flex items-center gap-2 mb-4">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+                <CheckCircle className="h-5 w-5 text-success" />
                 Basic Tests (Foundation)
               </h3>
               <p className="text-muted-foreground mb-4">
@@ -169,19 +169,19 @@ export default function TestingPage() {
                     </CardDescription>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                         <span>Binary execution and version reporting</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                         <span>Repository initialization and structure</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                         <span>Configuration file creation</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                         <span>Directory structure validation</span>
                       </div>
                     </div>
@@ -199,19 +199,19 @@ export default function TestingPage() {
                     </CardDescription>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                         <span>Basic chunking functionality</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                         <span>Deterministic results verification</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                         <span>Deduplication accuracy</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                         <span>Data reconstruction integrity</span>
                       </div>
                     </div>
@@ -229,19 +229,19 @@ export default function TestingPage() {
                     </CardDescription>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                         <span>Add, commit, status operations</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                         <span>Branch creation and switching</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                         <span>History and log operations</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                         <span>Merge conflict resolution</span>
                       </div>
                     </div>
@@ -259,19 +259,19 @@ export default function TestingPage() {
                     </CardDescription>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                         <span>Command help and usage validation</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                         <span>Option parsing and validation</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                         <span>Error message formatting</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                         <span>Exit code correctness</span>
                       </div>
                     </div>
@@ -286,7 +286,7 @@ export default function TestingPage() {
           <div className="space-y-6">
             <div>
               <h3 className="flex items-center gap-2 mb-4">
-                <Layers className="h-5 w-5 text-blue-600" />
+                <Layers className="h-5 w-5 text-info" />
                 Core Algorithm Tests
               </h3>
               <p className="text-muted-foreground mb-4">
@@ -306,24 +306,24 @@ export default function TestingPage() {
                     <div className="grid gap-2 text-sm">
                       <div className="font-medium text-primary">Data Patterns:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Repetitive sequences (AAAA, ABAB)</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Alternating patterns (010101)</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Incremental data (123456)</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> All-zero and all-FF data</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Random entropy patterns</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Repetitive sequences (AAAA, ABAB)</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Alternating patterns (010101)</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Incremental data (123456)</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> All-zero and all-FF data</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Random entropy patterns</div>
                       </div>
                       <div className="font-medium text-primary mt-2">File Sizes:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> 1-byte to 10GB files</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Boundary conditions</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Prime-sized files</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Sparse file handling</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> 1-byte to 10GB files</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Boundary conditions</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Prime-sized files</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Sparse file handling</div>
                       </div>
                       <div className="font-medium text-primary mt-2">Determinism:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Identical inputs = identical chunks</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Hash collision resistance</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Boundary stability under edits</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Identical inputs = identical chunks</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Hash collision resistance</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Boundary stability under edits</div>
                       </div>
                     </div>
                   </CardContent>
@@ -341,23 +341,23 @@ export default function TestingPage() {
                     <div className="grid gap-2 text-sm">
                       <div className="font-medium text-primary">Formats:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> MP4, MOV, MXF, fragmented MP4</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> H.264, H.265/HEVC, ProRes, DNxHD</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> AAC, FLAC, multichannel audio</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> 4K, 8K, high frame rates (120fps+)</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> MP4, MOV, MXF, fragmented MP4</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> H.264, H.265/HEVC, ProRes, DNxHD</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> AAC, FLAC, multichannel audio</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> 4K, 8K, high frame rates (120fps+)</div>
                       </div>
                       <div className="font-medium text-primary mt-2">Keyframes:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> GOP alignment and detection</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Scene change detection</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Multi-track synchronization</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> GOP alignment and detection</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Scene change detection</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Multi-track synchronization</div>
                       </div>
                       <div className="font-medium text-primary mt-2">NLE Integration:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Premiere Pro workflows</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> DaVinci Resolve integration</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> After Effects pipelines</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Proxy generation and management</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Premiere Pro workflows</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> DaVinci Resolve integration</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> After Effects pipelines</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Proxy generation and management</div>
                       </div>
                     </div>
                   </CardContent>
@@ -375,20 +375,20 @@ export default function TestingPage() {
                     <div className="grid gap-2 text-sm">
                       <div className="font-medium text-primary">Chunking Algorithms:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> FastCDC (primary)</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Rabin fingerprinting</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Asymmetric extremum</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Chonkers (provable guarantees)</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Parallel FastCDC</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Keyed FastCDC (privacy)</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> FastCDC (primary)</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Rabin fingerprinting</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Asymmetric extremum</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Chonkers (provable guarantees)</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Parallel FastCDC</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Keyed FastCDC (privacy)</div>
                       </div>
                       <div className="font-medium text-primary mt-2">Hash Algorithms:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> BLAKE3 (default)</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> SHA-256 (compliance)</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> SHA-3-256 (future-proof)</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Algorithm switching</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Performance benchmarking</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> BLAKE3 (default)</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> SHA-256 (compliance)</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> SHA-3-256 (future-proof)</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Algorithm switching</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Performance benchmarking</div>
                       </div>
                     </div>
                   </CardContent>
@@ -406,21 +406,21 @@ export default function TestingPage() {
                     <div className="grid gap-2 text-sm">
                       <div className="font-medium text-primary">Images:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> JPEG, PNG, TIFF, BMP, GIF, WebP</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> RAW (CR2, NEF), PSD, AI</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> EXIF metadata preservation</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> JPEG, PNG, TIFF, BMP, GIF, WebP</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> RAW (CR2, NEF), PSD, AI</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> EXIF metadata preservation</div>
                       </div>
                       <div className="font-medium text-primary mt-2">Audio:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> WAV, MP3, AAC, FLAC, OGG, AIFF</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Multichannel formats</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Metadata extraction</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> WAV, MP3, AAC, FLAC, OGG, AIFF</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Multichannel formats</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Metadata extraction</div>
                       </div>
                       <div className="font-medium text-primary mt-2">Documents:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> PDF, DOC/DOCX, XLS/XLSX</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> PPT/PPTX, ODT, RTF</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Archive formats (ZIP, TAR, 7Z)</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> PDF, DOC/DOCX, XLS/XLSX</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> PPT/PPTX, ODT, RTF</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Archive formats (ZIP, TAR, 7Z)</div>
                       </div>
                     </div>
                   </CardContent>
@@ -434,7 +434,7 @@ export default function TestingPage() {
           <div className="space-y-6">
             <div>
               <h3 className="flex items-center gap-2 mb-4">
-                <Shield className="h-5 w-5 text-red-600" />
+                <Shield className="h-5 w-5 text-destructive" />
                 Quality Assurance Tests
               </h3>
               <p className="text-muted-foreground mb-4">
@@ -455,25 +455,25 @@ export default function TestingPage() {
                     <div className="grid gap-2 text-sm">
                       <div className="font-medium text-primary">System Resources:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Disk full (quota exceeded)</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Out of memory (address space)</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> File descriptor limits</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Permission denied scenarios</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Sparse file handling</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Disk full (quota exceeded)</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Out of memory (address space)</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> File descriptor limits</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Permission denied scenarios</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Sparse file handling</div>
                       </div>
                       <div className="font-medium text-primary mt-2">Process Interruption:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> SIGTERM/SIGKILL handling</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Power loss simulation</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Network disconnection</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Partial I/O operations</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> SIGTERM/SIGKILL handling</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Power loss simulation</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Network disconnection</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Partial I/O operations</div>
                       </div>
                       <div className="font-medium text-primary mt-2">Data Corruption:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Silent corruption detection</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Bit flip scenarios</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Burst error patterns</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Partial write recovery</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Silent corruption detection</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Bit flip scenarios</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Burst error patterns</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Partial write recovery</div>
                       </div>
                     </div>
                   </CardContent>
@@ -491,23 +491,23 @@ export default function TestingPage() {
                     <div className="grid gap-2 text-sm">
                       <div className="font-medium text-primary">Race Conditions:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> 100+ simultaneous operations</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> File access conflicts</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Chunking synchronization</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Repository state consistency</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> 100+ simultaneous operations</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> File access conflicts</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Chunking synchronization</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Repository state consistency</div>
                       </div>
                       <div className="font-medium text-primary mt-2">Locking:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Deadlock prevention</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Starvation avoidance</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Lock escalation handling</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Timeout management</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Deadlock prevention</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Starvation avoidance</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Lock escalation handling</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Timeout management</div>
                       </div>
                       <div className="font-medium text-primary mt-2">Memory:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Cache consistency</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Shared data structures</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Memory barrier validation</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Cache consistency</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Shared data structures</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Memory barrier validation</div>
                       </div>
                     </div>
                   </CardContent>
@@ -525,23 +525,23 @@ export default function TestingPage() {
                     <div className="grid gap-2 text-sm">
                       <div className="font-medium text-primary">Checksums:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> BLAKE3 validation</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> CRC verification</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Multi-hash validation</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> BLAKE3 validation</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> CRC verification</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Multi-hash validation</div>
                       </div>
                       <div className="font-medium text-primary mt-2">Corruption:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Single/multiple bit flips</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Burst error patterns</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Partial write scenarios</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Silent corruption detection</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Single/multiple bit flips</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Burst error patterns</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Partial write scenarios</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Silent corruption detection</div>
                       </div>
                       <div className="font-medium text-primary mt-2">Recovery:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Automatic repair</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Backup restoration</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Long-term storage validation</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Cross-replica verification</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Automatic repair</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Backup restoration</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Long-term storage validation</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Cross-replica verification</div>
                       </div>
                     </div>
                   </CardContent>
@@ -559,21 +559,21 @@ export default function TestingPage() {
                     <div className="grid gap-2 text-sm">
                       <div className="font-medium text-primary">File Sizes:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> 1GB, 10GB, 100GB+ files</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Individual file limits</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Memory pressure testing</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> 1GB, 10GB, 100GB+ files</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Individual file limits</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Memory pressure testing</div>
                       </div>
                       <div className="font-medium text-primary mt-2">Scale:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> 10k, 100k, 1M+ files</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Repository size limits</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Index performance</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> 10k, 100k, 1M+ files</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Repository size limits</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Index performance</div>
                       </div>
                       <div className="font-medium text-primary mt-2">Concurrency:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> 1000+ simultaneous ops</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Queue depth saturation</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Resource contention</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> 1000+ simultaneous ops</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Queue depth saturation</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Resource contention</div>
                       </div>
                     </div>
                   </CardContent>
@@ -587,7 +587,7 @@ export default function TestingPage() {
           <div className="space-y-6">
             <div>
               <h3 className="flex items-center gap-2 mb-4">
-                <Cloud className="h-5 w-5 text-purple-600" />
+                <Cloud className="h-5 w-5 text-brand" />
                 Advanced Feature Tests
               </h3>
               <p className="text-muted-foreground mb-4">
@@ -607,24 +607,24 @@ export default function TestingPage() {
                     <div className="grid gap-2 text-sm">
                       <div className="font-medium text-primary">NLE Workflows:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Premiere Pro pipelines</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> DaVinci Resolve integration</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> After Effects workflows</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Multi-user collaboration</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Premiere Pro pipelines</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> DaVinci Resolve integration</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> After Effects workflows</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Multi-user collaboration</div>
                       </div>
                       <div className="font-medium text-primary mt-2">CI/CD:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Automated builds</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Testing pipelines</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Deployment validation</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Rollback scenarios</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Automated builds</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Testing pipelines</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Deployment validation</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Rollback scenarios</div>
                       </div>
                       <div className="font-medium text-primary mt-2">Disaster Recovery:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Backup restoration</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Business continuity</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Data migration</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Cross-system compatibility</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Backup restoration</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Business continuity</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Data migration</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Cross-system compatibility</div>
                       </div>
                     </div>
                   </CardContent>
@@ -642,24 +642,24 @@ export default function TestingPage() {
                     <div className="grid gap-2 text-sm">
                       <div className="font-medium text-primary">Network Topology:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> NAT traversal</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Firewall penetration</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Connection stability</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Peer discovery</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> NAT traversal</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Firewall penetration</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Connection stability</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Peer discovery</div>
                       </div>
                       <div className="font-medium text-primary mt-2">Distributed Sync:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Conflict resolution</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Eventual consistency</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Delta synchronization</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Bandwidth management</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Conflict resolution</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Eventual consistency</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Delta synchronization</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Bandwidth management</div>
                       </div>
                       <div className="font-medium text-primary mt-2">Security:</div>
                       <div className="ml-4 space-y-1">
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> End-to-end encryption</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Certificate validation</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Protocol versioning</div>
-                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Secure key exchange</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> End-to-end encryption</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Certificate validation</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Protocol versioning</div>
+                        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Secure key exchange</div>
                       </div>
                     </div>
                   </CardContent>
@@ -673,7 +673,7 @@ export default function TestingPage() {
           <div className="space-y-6">
             <div>
               <h3 className="flex items-center gap-2 mb-4">
-                <Zap className="h-5 w-5 text-yellow-600" />
+                <Zap className="h-5 w-5 text-warning" />
                 Performance Tests
               </h3>
               <p className="text-muted-foreground mb-4">
@@ -692,19 +692,19 @@ export default function TestingPage() {
                     </CardDescription>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-blue-600" />
+                        <Clock className="h-4 w-4 text-info" />
                         <span>1MB/s, 100MB/s, 1GB/s+ throughput targets</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Database className="h-4 w-4 text-green-600" />
+                        <Database className="h-4 w-4 text-success" />
                         <span>Deduplication ratio validation</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <HardDrive className="h-4 w-4 text-purple-600" />
+                        <HardDrive className="h-4 w-4 text-brand" />
                         <span>Memory usage patterns</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Monitor className="h-4 w-4 text-orange-600" />
+                        <Monitor className="h-4 w-4 text-warning" />
                         <span>I/O pattern analysis</span>
                       </div>
                     </div>
@@ -722,19 +722,19 @@ export default function TestingPage() {
                     </CardDescription>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center gap-2">
-                        <Database className="h-4 w-4 text-blue-600" />
+                        <Database className="h-4 w-4 text-info" />
                         <span>90% memory reduction (64KB window vs O(file_size))</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                         <span>Unlimited file size processing capability</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Network className="h-4 w-4 text-purple-600" />
+                        <Network className="h-4 w-4 text-brand" />
                         <span>10MB file chunked in 47ms (212MB/s throughput)</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Target className="h-4 w-4 text-orange-600" />
+                        <Target className="h-4 w-4 text-warning" />
                         <span>Data integrity and reconstruction validation</span>
                       </div>
                     </div>
@@ -752,19 +752,19 @@ export default function TestingPage() {
                     </CardDescription>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center gap-2">
-                        <Database className="h-4 w-4 text-green-600" />
+                        <Database className="h-4 w-4 text-success" />
                         <span>Status operation 10-50x performance improvement</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-blue-600" />
+                        <CheckCircle className="h-4 w-4 text-info" />
                         <span>Covering indexes for file listings and commits</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Network className="h-4 w-4 text-purple-600" />
+                        <Network className="h-4 w-4 text-brand" />
                         <span>Chunk reference count optimization</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Target className="h-4 w-4 text-orange-600" />
+                        <Target className="h-4 w-4 text-warning" />
                         <span>Query performance regression detection</span>
                       </div>
                     </div>
@@ -779,7 +779,7 @@ export default function TestingPage() {
           <div className="space-y-6">
             <div>
               <h3 className="flex items-center gap-2 mb-4">
-                <Server className="h-5 w-5 text-gray-600" />
+                <Server className="h-5 w-5 text-muted-foreground" />
                 Infrastructure Tests
               </h3>
               <p className="text-muted-foreground mb-4">
@@ -798,19 +798,19 @@ export default function TestingPage() {
                     </CardDescription>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center gap-2">
-                        <Server className="h-4 w-4 text-blue-600" />
+                        <Server className="h-4 w-4 text-info" />
                         <span>Container startup and configuration</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Network className="h-4 w-4 text-green-600" />
+                        <Network className="h-4 w-4 text-success" />
                         <span>Network connectivity and security</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Database className="h-4 w-4 text-purple-600" />
+                        <Database className="h-4 w-4 text-brand" />
                         <span>Database migrations and schemas</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Monitor className="h-4 w-4 text-orange-600" />
+                        <Monitor className="h-4 w-4 text-warning" />
                         <span>Monitoring and logging validation</span>
                       </div>
                     </div>
@@ -873,21 +873,21 @@ export default function TestingPage() {
           <CardContent>
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <Badge className="mt-0.5 bg-green-100 text-green-800">Fast Feedback</Badge>
+                <Badge className="mt-0.5 bg-success/10 text-success">Fast Feedback</Badge>
                 <div>
                   <div className="font-medium">Basic Tests</div>
                   <div className="text-sm text-muted-foreground">2-5 minutes, every commit</div>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <Badge className="mt-0.5 bg-blue-100 text-blue-800">Comprehensive</Badge>
+                <Badge className="mt-0.5 bg-info/10 text-info">Comprehensive</Badge>
                 <div>
                   <div className="font-medium">Core + QA Tests</div>
                   <div className="text-sm text-muted-foreground">15-30 minutes, PR/merge</div>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <Badge className="mt-0.5 bg-purple-100 text-purple-800">Release</Badge>
+                <Badge className="mt-0.5 bg-brand/10 text-brand">Release</Badge>
                 <div>
                   <div className="font-medium">Full Test Suite</div>
                   <div className="text-sm text-muted-foreground">1-2 hours, releases</div>
@@ -911,10 +911,10 @@ export default function TestingPage() {
           </CardHeader>
           <CardContent>
             <ul className="text-sm space-y-1">
-              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> <code>lib-repo.sh</code> - Repository ops</li>
-              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> <code>lib-chunking.sh</code> - FastCDC helpers</li>
-              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> <code>lib-video.sh</code> - Video workflows</li>
-              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> <code>test-lib.sh</code> - Core framework</li>
+              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> <code>lib-repo.sh</code> - Repository ops</li>
+              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> <code>lib-chunking.sh</code> - FastCDC helpers</li>
+              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> <code>lib-video.sh</code> - Video workflows</li>
+              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> <code>test-lib.sh</code> - Core framework</li>
             </ul>
           </CardContent>
         </Card>
@@ -925,10 +925,10 @@ export default function TestingPage() {
           </CardHeader>
           <CardContent>
             <ul className="text-sm space-y-1">
-              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> <code>chainlint.pl</code> - Script validation</li>
-              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> TAP output format</li>
-              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Parallel execution</li>
-              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Performance timing</li>
+              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> <code>chainlint.pl</code> - Script validation</li>
+              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> TAP output format</li>
+              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Parallel execution</li>
+              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Performance timing</li>
             </ul>
           </CardContent>
         </Card>
@@ -939,10 +939,10 @@ export default function TestingPage() {
           </CardHeader>
           <CardContent>
             <ul className="text-sm space-y-1">
-              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Unique temp directories</li>
-              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Clean environments</li>
-              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> No config interference</li>
-              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Automatic cleanup</li>
+              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Unique temp directories</li>
+              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Clean environments</li>
+              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> No config interference</li>
+              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Automatic cleanup</li>
             </ul>
           </CardContent>
         </Card>
@@ -953,10 +953,10 @@ export default function TestingPage() {
           </CardHeader>
           <CardContent>
             <ul className="text-sm space-y-1">
-              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Verbose output modes</li>
-              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Individual test execution</li>
-              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Environment inspection</li>
-              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> Failure reproduction</li>
+              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Verbose output modes</li>
+              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Individual test execution</li>
+              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Environment inspection</li>
+              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Failure reproduction</li>
             </ul>
           </CardContent>
         </Card>

@@ -54,8 +54,8 @@ function suiteLabel(suite: string) {
 }
 
 function deltaTone(delta: number) {
-  if (delta >= 2) return "text-emerald-600 dark:text-emerald-400";
-  if (delta <= -2) return "text-red-600 dark:text-red-400";
+  if (delta >= 2) return "text-success";
+  if (delta <= -2) return "text-destructive";
   return "text-muted-foreground";
 }
 

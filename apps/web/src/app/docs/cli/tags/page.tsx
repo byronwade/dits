@@ -13,7 +13,7 @@ export default function TagsPage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
             <div className="flex items-center gap-2 mb-2">
-                <Tag className="h-8 w-8 text-purple-500" />
+                <Tag className="h-8 w-8 text-brand" />
                 <h1 className="mb-0">Tag Commands</h1>
             </div>
             <p className="lead text-xl text-muted-foreground">

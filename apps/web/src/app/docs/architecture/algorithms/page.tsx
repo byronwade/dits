@@ -177,7 +177,7 @@ fn find_next_boundary(data: &[u8], remaining: usize) -> usize {
                 <Info className="h-4 w-4" />
                 <AlertTitle>Performance Optimization</AlertTitle>
                 <AlertDescription>
-                    <strong className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" /> IMPLEMENTED:</strong> Dits implements a memory-efficient streaming version of FastCDC that processes
+                    <strong className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> IMPLEMENTED:</strong> Dits implements a memory-efficient streaming version of FastCDC that processes
                     files in bounded memory windows, enabling unlimited file sizes without memory exhaustion.
                     <strong>Performance:</strong> 10MB file chunked in 47ms (212MB/s throughput), 90% memory reduction.
                 </AlertDescription>

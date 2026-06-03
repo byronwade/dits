@@ -29,7 +29,7 @@ export default function StorageCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
       <div className="flex items-center gap-2 mb-2">
-        <HardDrive className="h-8 w-8 text-sky-500" />
+        <HardDrive className="h-8 w-8 text-info" />
         <h1 className="mb-0">Storage Tier Commands</h1>
       </div>
       <p className="lead text-xl text-muted-foreground">

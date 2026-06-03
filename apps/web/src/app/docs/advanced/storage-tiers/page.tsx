@@ -42,8 +42,8 @@ export default function StorageTiersPage() {
       <div className="not-prose grid gap-4 md:grid-cols-3 my-8">
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center mb-2">
-              <HardDrive className="h-6 w-6 text-green-500" />
+            <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mb-2">
+              <HardDrive className="h-6 w-6 text-success" />
             </div>
             <CardTitle>Hot (Local)</CardTitle>
           </CardHeader>
@@ -57,8 +57,8 @@ export default function StorageTiersPage() {
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center mb-2">
-              <Cloud className="h-6 w-6 text-blue-500" />
+            <div className="w-12 h-12 rounded-full bg-info/10 flex items-center justify-center mb-2">
+              <Cloud className="h-6 w-6 text-info" />
             </div>
             <CardTitle>Warm (Cloud)</CardTitle>
           </CardHeader>
@@ -72,8 +72,8 @@ export default function StorageTiersPage() {
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center mb-2">
-              <Archive className="h-6 w-6 text-purple-500" />
+            <div className="w-12 h-12 rounded-full bg-brand/10 flex items-center justify-center mb-2">
+              <Archive className="h-6 w-6 text-brand" />
             </div>
             <CardTitle>Cold (Archive)</CardTitle>
           </CardHeader>

@@ -166,10 +166,10 @@ export default function VideoFeaturesPage() {
         </div>
 
         <h2>Supported Video Formats</h2>
-        <Alert className="not-prose my-4 border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-800">
-          <Info className="h-4 w-4 text-green-600" />
-          <AlertTitle className="text-green-900 dark:text-green-100">Comprehensive Testing</AlertTitle>
-          <AlertDescription className="text-green-800 dark:text-green-200">
+        <Alert className="not-prose my-4 border-success/20 bg-success/10">
+          <Info className="h-4 w-4 text-success" />
+          <AlertTitle className="text-success">Comprehensive Testing</AlertTitle>
+          <AlertDescription className="text-success">
             All listed formats are thoroughly tested with automated test suites covering chunking,
             keyframe alignment, roundtrip integrity, and Git operations on video files.
           </AlertDescription>
@@ -189,78 +189,78 @@ export default function VideoFeaturesPage() {
             <TableRow>
               <TableCell>H.264/AVC</TableCell>
               <TableCell>MP4, MOV, MKV, AVI</TableCell>
-              <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
-              <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
+              <TableCell className="text-success flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
+              <TableCell className="text-success flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
               <TableCell>All profiles, levels, GOP patterns</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>H.265/HEVC</TableCell>
               <TableCell>MP4, MOV, MKV</TableCell>
-              <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
-              <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
+              <TableCell className="text-success flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
+              <TableCell className="text-success flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
               <TableCell>HDR10, HLG, Dolby Vision support</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>ProRes</TableCell>
               <TableCell>MOV</TableCell>
-              <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
-              <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
+              <TableCell className="text-success flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
+              <TableCell className="text-success flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
               <TableCell>All variants: 422, 4444, HQ, LT, XQ</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>DNxHR/DNxHD</TableCell>
               <TableCell>MOV, MXF</TableCell>
-              <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
-              <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
+              <TableCell className="text-success flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
+              <TableCell className="text-success flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
               <TableCell>All resolutions and frame rates</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>CineForm</TableCell>
               <TableCell>MOV, AVI</TableCell>
-              <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
-              <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
+              <TableCell className="text-success flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
+              <TableCell className="text-success flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
               <TableCell>GoPro CineForm RAW support</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>AVID DNx</TableCell>
               <TableCell>MXF, MOV</TableCell>
-              <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
-              <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
+              <TableCell className="text-success flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
+              <TableCell className="text-success flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
               <TableCell>All DNx variants and MXF structures</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>MXF</TableCell>
               <TableCell>MXF</TableCell>
-              <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
-              <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
+              <TableCell className="text-success flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
+              <TableCell className="text-success flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
               <TableCell>OP1a, OP-Atom, AS-02, IMF support</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>RED RAW</TableCell>
               <TableCell>R3D</TableCell>
-              <TableCell className="text-yellow-600 flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> Partial</TableCell>
-              <TableCell className="text-yellow-600 flex items-center gap-2"><Beaker className="h-4 w-4" /> Testing</TableCell>
+              <TableCell className="text-warning flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> Partial</TableCell>
+              <TableCell className="text-warning flex items-center gap-2"><Beaker className="h-4 w-4" /> Testing</TableCell>
               <TableCell>Frame-level chunking, metadata preserved</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>ARRIRAW</TableCell>
               <TableCell>ARI</TableCell>
-              <TableCell className="text-yellow-600 flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> Partial</TableCell>
-              <TableCell className="text-yellow-600 flex items-center gap-2"><Beaker className="h-4 w-4" /> Testing</TableCell>
+              <TableCell className="text-warning flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> Partial</TableCell>
+              <TableCell className="text-warning flex items-center gap-2"><Beaker className="h-4 w-4" /> Testing</TableCell>
               <TableCell>Uncompressed raw support</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>XAVC</TableCell>
               <TableCell>MXF, MP4</TableCell>
-              <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
-              <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
+              <TableCell className="text-success flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
+              <TableCell className="text-success flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
               <TableCell>Sony professional codec support</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>AVC-Intra</TableCell>
               <TableCell>MXF, MOV</TableCell>
-              <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
-              <TableCell className="text-green-600 flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
+              <TableCell className="text-success flex items-center gap-2"><Check className="h-4 w-4" /> Full</TableCell>
+              <TableCell className="text-success flex items-center gap-2"><Check className="h-4 w-4" /> Tested</TableCell>
               <TableCell>All-Intra variants supported</TableCell>
             </TableRow>
           </TableBody>

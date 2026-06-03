@@ -54,7 +54,7 @@ export default function HistoryCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
       <div className="flex items-center gap-2 mb-2">
-        <History className="h-8 w-8 text-purple-500" />
+        <History className="h-8 w-8 text-brand" />
         <h1 className="mb-0">History Commands</h1>
       </div>
       <p className="lead text-xl text-muted-foreground">

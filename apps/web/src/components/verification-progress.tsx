@@ -31,9 +31,9 @@ const toneClasses: Record<VerificationTone, { dot: string; label: string; count:
     count: "bg-destructive/10 text-destructive",
   },
   info: {
-    dot: "bg-blue-500",
-    label: "text-blue-600 dark:text-blue-400",
-    count: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    dot: "bg-info",
+    label: "text-info",
+    count: "bg-info/10 text-info",
   },
   neutral: {
     dot: "bg-muted-foreground",

@@ -38,7 +38,7 @@ export default function P2PCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
       <div className="flex items-center gap-2 mb-2">
-        <Share2 className="h-8 w-8 text-green-500" />
+        <Share2 className="h-8 w-8 text-success" />
         <h1 className="mb-0">P2P Commands</h1>
       </div>
       <p className="lead text-xl text-muted-foreground">

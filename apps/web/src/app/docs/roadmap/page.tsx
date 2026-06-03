@@ -53,10 +53,10 @@ export default function RoadmapPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="border-yellow-500/30">
+                <Card className="border-warning/30">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
-                            <Clock className="h-5 w-5 text-yellow-500" />
+                            <Clock className="h-5 w-5 text-warning" />
                             In Progress
                         </CardTitle>
                     </CardHeader>
@@ -118,7 +118,7 @@ export default function RoadmapPage() {
                 </div>
 
                 <div className="flex items-start gap-4 p-4 border rounded-lg">
-                    <Clock className="h-5 w-5 text-yellow-500 mt-1 flex-shrink-0" />
+                    <Clock className="h-5 w-5 text-warning mt-1 flex-shrink-0" />
                     <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-semibold m-0">Documentation Site</h3>
@@ -135,7 +135,7 @@ export default function RoadmapPage() {
 
             <div className="space-y-4 my-6">
                 <div className="flex items-start gap-4 p-4 border rounded-lg">
-                    <Clock className="h-5 w-5 text-yellow-500 mt-1 flex-shrink-0" />
+                    <Clock className="h-5 w-5 text-warning mt-1 flex-shrink-0" />
                     <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-semibold m-0">Remote Repositories</h3>
@@ -148,7 +148,7 @@ export default function RoadmapPage() {
                 </div>
 
                 <div className="flex items-start gap-4 p-4 border rounded-lg">
-                    <Clock className="h-5 w-5 text-yellow-500 mt-1 flex-shrink-0" />
+                    <Clock className="h-5 w-5 text-warning mt-1 flex-shrink-0" />
                     <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-semibold m-0">P2P Synchronization</h3>
