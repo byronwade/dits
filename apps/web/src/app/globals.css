@@ -62,6 +62,12 @@
   --success: var(--success);
 }
 
+/* Bridge Geist fonts to foundation --font-sans/--font-mono tokens */
+:root {
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+}
+
 :root {
   --background: oklch(0.994 0.002 95);
   --foreground: oklch(0.205 0.006 72);
