@@ -87,6 +87,21 @@ playlist: EXT-X-KEY(method=AES-128, uri=/key, iv) + encrypted segment URIs
   codec config). Auth on the key endpoint is P5 #2.
 
 ## Module layout
-New: `apps/cli/src/stream/crypto.rs`. Edits: `apps/cli/src/stream/{playlist,serve,incremental}.rs`,
+New: `apps/cli/src/stream/crypto.rs`. Edits: `apps/cli/src/stream/{playlist}.rs`,
 `apps/cli/src/commands/stream_demo.rs`, `apps/cli/src/main.rs` (`--encrypt`), `apps/cli/Cargo.toml`
 (`cbc`, `aes` as direct deps).
+
+## Implementation status & verification (2026-06-03)
+
+**Built and committed.** 37 stream tests green (incl. 3 crypto: encrypt→decrypt round-trip,
+determinism, wrong-key; + an `EXT-X-KEY` playlist emit test). New deps: `aes 0.8`, `cbc 0.1`.
+
+**End to end** (`dits stream-demo --encrypt`): 4 segments encrypted (60.3 KB ciphertext);
+**deterministic = yes** (same plaintext → identical ciphertext hash → reuse + delta-push survive);
+**decrypt → valid h264 = yes** (a sample segment round-trips to playable media); a 4-line AES-128
+`EXT-X-KEY` playlist is emitted.
+
+**Scope realised vs sketch:** the `--encrypt` demo reports objectively (encrypt/determinism/
+decrypt-to-valid-media) rather than wiring the full `/key` HTTP serve + browser playback (the
+encrypted `EXT-X-KEY` playlist is emitted and unit-tested; browser playback is blocked by the
+hidden automation tab, as in prior phases). The `/key` endpoint + auth gating is P5 #2.
