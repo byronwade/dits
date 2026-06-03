@@ -21,6 +21,7 @@ mod security {
     pub use dits::security::*;
 }
 mod store;
+mod stream;
 mod telemetry;
 mod util {
     pub use dits::util::*;
@@ -390,6 +391,27 @@ enum Commands {
         /// Output manifest path (default: <manifest>.trimmed.json)
         #[arg(long)]
         out: Option<String>,
+    },
+
+    /// End-to-end FACR incremental-streaming proof: ingest, re-grade a time window,
+    /// re-encode only changed HLS segments, and serve a browser player (requires FFmpeg)
+    #[command(name = "stream-demo")]
+    StreamDemo {
+        /// Input video (default: generate a 10s test clip)
+        #[arg(long)]
+        input: Option<std::path::PathBuf>,
+        /// Re-grade window start, seconds
+        #[arg(long, default_value = "4.0")]
+        grade_start: f64,
+        /// Re-grade window end, seconds
+        #[arg(long, default_value = "6.0")]
+        grade_end: f64,
+        /// Segment duration, seconds
+        #[arg(long, default_value = "2.0")]
+        segment_seconds: f64,
+        /// HTTP port for the player
+        #[arg(long, default_value = "8088")]
+        port: u16,
     },
 
     /// Store a photo once and start a non-destructive edit history (requires FFmpeg)
@@ -1074,6 +1096,7 @@ async fn main() {
         Commands::Assemble { .. } => "assemble",
         Commands::CacheStats => "cache-stats",
         Commands::FacrDemo { .. } => "facr-demo",
+        Commands::StreamDemo { .. } => "stream-demo",
         Commands::FacrAdd { .. } => "facr-add",
         Commands::FacrCheckout { .. } => "facr-checkout",
         Commands::FacrTrim { .. } => "facr-trim",
@@ -1192,6 +1215,9 @@ async fn main() {
         Commands::Unmount { mount_point } => commands::unmount(&mount_point),
         Commands::CacheStats => commands::cache_stats(),
         Commands::FacrDemo { frames, regrade } => commands::facr_demo(frames, regrade),
+        Commands::StreamDemo { input, grade_start, grade_end, segment_seconds, port } => {
+            commands::stream_demo(input, grade_start, grade_end, segment_seconds, port).await
+        }
         Commands::FacrAdd { input, store, manifest } => {
             commands::facr_add(&input, store.as_deref(), manifest.as_deref())
         }
