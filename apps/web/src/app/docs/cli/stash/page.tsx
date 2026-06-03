@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
-import { Package, Info, RotateCcw } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Stash Commands",
@@ -12,23 +12,16 @@ export const metadata: Metadata = {
 export default function StashPage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <div className="flex items-center gap-2 mb-2">
-                <Package className="h-8 w-8 text-warning" />
-                <h1 className="mb-0">Stash Commands</h1>
-            </div>
-            <p className="lead text-xl text-muted-foreground">
-                Temporarily save uncommitted changes so you can work on something else,
-                then restore them later. Perfect for quick context switches.
-            </p>
+            <DocPageHeader
+                eyebrow="CLI Reference"
+                title="Stash Commands"
+                description="Temporarily save uncommitted changes so you can work on something else, then restore them later. Perfect for quick context switches."
+            />
 
-            <Alert className="not-prose my-6">
-                <Info className="h-4 w-4" />
-                <AlertTitle>When to Use Stash</AlertTitle>
-                <AlertDescription>
-                    Use stash when you need to quickly switch branches but aren&apos;t ready to commit.
-                    Your changes are saved on a stack and can be reapplied at any time.
-                </AlertDescription>
-            </Alert>
+            <Callout type="note" title="When to Use Stash" className="not-prose my-6">
+                Use stash when you need to quickly switch branches but aren&apos;t ready to commit.
+                Your changes are saved on a stack and can be reapplied at any time.
+            </Callout>
 
             <h2>Quick Reference</h2>
 
@@ -170,15 +163,11 @@ $ dits stash clear
 $ dits stash expire --older-than 30d`}
             />
 
-            <Alert className="not-prose my-6">
-                <RotateCcw className="h-4 w-4" />
-                <AlertTitle>Recover Dropped Stash</AlertTitle>
-                <AlertDescription>
-                    If you accidentally drop a stash, you can sometimes recover it:
-                    <code className="block mt-2">dits fsck --unreachable | grep stash</code>
-                    Find the hash and use <code>dits stash apply &lt;hash&gt;</code>
-                </AlertDescription>
-            </Alert>
+            <Callout type="note" title="Recover Dropped Stash" className="not-prose my-6">
+                If you accidentally drop a stash, you can sometimes recover it:
+                <code className="block mt-2">dits fsck --unreachable | grep stash</code>
+                Find the hash and use <code>dits stash apply &lt;hash&gt;</code>
+            </Callout>
 
             <h2>Stash with Large Files</h2>
             <p>

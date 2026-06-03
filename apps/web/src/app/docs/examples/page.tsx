@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,11 +23,11 @@ export const metadata: Metadata = {
 export default function ExamplesPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Practical Examples</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Real-world workflows showing how Dits transforms creative collaboration.
-        See how teams use Dits for video production, game development, photography, and more.
-      </p>
+      <DocPageHeader
+        eyebrow="Getting Started"
+        title="Practical Examples"
+        description="Real-world workflows showing how Dits transforms creative collaboration. See how teams use Dits for video production, game development, photography, and more."
+      />
 
       <Tabs defaultValue="video-editing" className="not-prose my-8">
         <TabsList className="grid w-full grid-cols-3">
@@ -37,7 +38,7 @@ export default function ExamplesPage() {
 
         <TabsContent value="video-editing" className="mt-6">
           <div className="flex items-center gap-2 mb-6">
-            <Film className="h-6 w-6 text-primary" />
+            <Film className="h-6 w-6 text-brand" />
             <h2>Video Production Workflow</h2>
           </div>
 
@@ -151,7 +152,7 @@ dits push team main`}
 
         <TabsContent value="game-dev" className="mt-6">
           <div className="flex items-center gap-2 mb-6">
-            <Gamepad2 className="h-6 w-6 text-primary" />
+            <Gamepad2 className="h-6 w-6 text-brand" />
             <h2>Game Development Pipeline</h2>
           </div>
 
@@ -271,7 +272,7 @@ dits push origin main --tags`}
 
         <TabsContent value="photography" className="mt-6">
           <div className="flex items-center gap-2 mb-6">
-            <Camera className="h-6 w-6 text-primary" />
+            <Camera className="h-6 w-6 text-brand" />
             <h2>Photography Workflow</h2>
           </div>
 
@@ -389,7 +390,7 @@ dits merge edit-landscape-001`}
         </TabsContent>
       </Tabs>
 
-      <div className="not-prose bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-lg p-6 my-8">
+      <div className="not-prose bg-brand/5 border border-brand/20 rounded-lg p-6 my-8">
         <h2>Workflow Patterns</h2>
 
         <div className="grid gap-4 md:grid-cols-3 my-4">

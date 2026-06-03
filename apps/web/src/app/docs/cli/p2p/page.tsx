@@ -8,8 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Share2, Wifi, Globe, Zap, Info, Server, Radio } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { Share2, Globe, Zap, Server, Radio } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -37,23 +38,16 @@ const discoveryMethods = [
 export default function P2PCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <div className="flex items-center gap-2 mb-2">
-        <Share2 className="h-8 w-8 text-success" />
-        <h1 className="mb-0">P2P Commands</h1>
-      </div>
-      <p className="lead text-xl text-muted-foreground">
-        Share files directly between peers without uploading to a central server.
-        Uses QUIC transport for fast, secure, multiplexed connections.
-      </p>
+      <DocPageHeader
+        eyebrow="CLI Reference"
+        title="P2P Commands"
+        description="Share files directly between peers without uploading to a central server. Uses QUIC transport for fast, secure, multiplexed connections."
+      />
 
-      <Alert className="not-prose my-6">
-        <Wifi className="h-4 w-4" />
-        <AlertTitle>Zero-Config Local Sharing</AlertTitle>
-        <AlertDescription>
-          Use <code>--local</code> flag for same-network sharing. No internet required -
-          mDNS automatically discovers peers on your WiFi or LAN.
-        </AlertDescription>
-      </Alert>
+      <Callout type="tip" title="Zero-Config Local Sharing" className="not-prose my-6">
+        Use <code>--local</code> flag for same-network sharing. No internet required -
+        mDNS automatically discovers peers on your WiFi or LAN.
+      </Callout>
 
       <Table className="not-prose my-6">
         <TableHeader>
@@ -116,7 +110,7 @@ export default function P2PCommandsPage() {
       <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits p2p share [OPTIONS] &lt;PATH&gt;`}
+        code={`dits p2p share [OPTIONS] <PATH>`}
       />
 
       <h3>Arguments</h3>
@@ -191,7 +185,7 @@ $ dits p2p share ./my-project --signal ws://localhost:8080`}
       <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits p2p connect [OPTIONS] &lt;TARGET&gt;`}
+        code={`dits p2p connect [OPTIONS] <TARGET>`}
       />
 
       <h3>Arguments</h3>
@@ -354,14 +348,10 @@ DITS P2P Status
         </TableBody>
       </Table>
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Run Your Own Signal Server</AlertTitle>
-        <AlertDescription>
-          DITS includes a simple signal server. Run <code>cargo run -p dits-signal</code>
-          to start it locally, then use <code>--signal ws://localhost:8080</code>.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Run Your Own Signal Server" className="not-prose my-6">
+        DITS includes a simple signal server. Run <code>cargo run -p dits-signal</code>
+        to start it locally, then use <code>--signal ws://localhost:8080</code>.
+      </Callout>
 
       <h2>Troubleshooting</h2>
 

@@ -8,7 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -19,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CodeBlock } from "@/components/ui/code-block";
-import { CheckCircle2, Info, Terminal, AlertTriangle } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 import { generateMetadata as genMeta, generateArticleSchema, generateHowToSchema, generateBreadcrumbSchema } from "@/lib/seo";
 import Script from "next/script";
@@ -139,11 +140,11 @@ export default function InstallationPage() {
         }}
       />
       <div className="prose dark:prose-invert max-w-none">
-      <h1>Installation</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Dits can be installed on macOS, Linux, and Windows. Choose the installation
-        method that works best for your workflow.
-      </p>
+      <DocPageHeader
+        eyebrow="Getting Started"
+        title="Installation"
+        description="Dits can be installed on macOS, Linux, and Windows. Choose the installation method that works best for your workflow."
+      />
 
       <h2>Quick Install</h2>
       <p>
@@ -199,14 +200,10 @@ pnpm install -g @byronwade/dits`}
         language="bash"
         code={`curl -fsSL https://raw.githubusercontent.com/byronwade/dits/main/install.sh | sh`}
       />
-              <Alert className="mt-4">
-                <Info className="h-4 w-4" />
-                <AlertTitle>Security Note</AlertTitle>
-                <AlertDescription>
-                  You can inspect the script before running it by opening the URL
-                  in your browser or using <code>curl -fsSL URL</code> without piping to sh.
-                </AlertDescription>
-              </Alert>
+              <Callout type="note" title="Security Note" className="not-prose mt-4">
+                You can inspect the script before running it by opening the URL
+                in your browser or using <code>curl -fsSL URL</code> without piping to sh.
+              </Callout>
             </CardContent>
           </Card>
         </TabsContent>
@@ -332,14 +329,10 @@ Commands:
         language="bash"
         code={`brew install macfuse`}
       />
-              <Alert>
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>System Extension Required</AlertTitle>
-                <AlertDescription>
-                  macFUSE requires enabling a system extension. Follow the
-                  prompts after installation and restart your Mac.
-                </AlertDescription>
-              </Alert>
+              <Callout type="warning" title="System Extension Required" className="not-prose">
+                macFUSE requires enabling a system extension. Follow the
+                prompts after installation and restart your Mac.
+              </Callout>
             </CardContent>
           </Card>
         </TabsContent>
@@ -378,7 +371,7 @@ sudo pacman -S fuse3`}
                 href="https://github.com/dokan-dev/dokany/releases"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:underline"
+                className="text-brand hover:underline"
               >
                 https://github.com/dokan-dev/dokany/releases
               </a>

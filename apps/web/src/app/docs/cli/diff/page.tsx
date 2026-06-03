@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
-import { GitCompare, Info, Eye } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Diff Commands",
@@ -12,14 +12,11 @@ export const metadata: Metadata = {
 export default function DiffPage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <div className="flex items-center gap-2 mb-2">
-                <GitCompare className="h-8 w-8 text-info" />
-                <h1 className="mb-0">Diff &amp; Compare Commands</h1>
-            </div>
-            <p className="lead text-xl text-muted-foreground">
-                View differences between commits, branches, working directory, and staged changes.
-                Understand exactly what changed and when.
-            </p>
+            <DocPageHeader
+                eyebrow="CLI Reference"
+                title="Diff & Compare Commands"
+                description="View differences between commits, branches, working directory, and staged changes. Understand exactly what changed and when."
+            />
 
             <h2>dits diff</h2>
             <p>
@@ -130,7 +127,7 @@ Chunk changes for video.mov:
   New chunks: 45
   Removed chunks: 23
   Unchanged: 1,189 (96.4%)
-  
+
   Affected regions:
     0:00:00 - 0:02:30  (unchanged)
     0:02:30 - 0:05:45  (modified, 22 new chunks)
@@ -138,14 +135,10 @@ Chunk changes for video.mov:
     0:15:00 - 0:18:30  (modified, 23 new chunks)`}
             />
 
-            <Alert className="not-prose my-6">
-                <Eye className="h-4 w-4" />
-                <AlertTitle>Binary File Diffing</AlertTitle>
-                <AlertDescription>
-                    Unlike Git, Dits can show meaningful diffs for binary files by comparing
-                    at the chunk level. Use <code>--chunk-diff</code> for video, images, and other binaries.
-                </AlertDescription>
-            </Alert>
+            <Callout type="note" title="Binary File Diffing" className="not-prose my-6">
+                Unlike Git, Dits can show meaningful diffs for binary files by comparing
+                at the chunk level. Use <code>--chunk-diff</code> for video, images, and other binaries.
+            </Callout>
 
             <h2>dits show</h2>
             <p>Show details of a specific commit, including the diff:</p>
@@ -193,7 +186,7 @@ dits config --global alias.last 'diff HEAD~1 HEAD'
 
 # Usage
 $ dits ds        # Staged changes
-$ dits dstat     # Change summary  
+$ dits dstat     # Change summary
 $ dits last      # What changed in last commit`}
             />
 

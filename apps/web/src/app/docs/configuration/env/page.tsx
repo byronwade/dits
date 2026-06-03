@@ -8,8 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -116,20 +116,16 @@ const debugVars = [
 export default function EnvVarsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Environment Variables</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Environment variables provide a way to configure Dits without modifying
-        configuration files, useful for scripts and CI/CD pipelines.
-      </p>
+      <DocPageHeader
+        eyebrow="Configuration"
+        title="Environment Variables"
+        description="Environment variables provide a way to configure Dits without modifying configuration files, useful for scripts and CI/CD pipelines."
+      />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Priority Order</AlertTitle>
-        <AlertDescription>
-          Environment variables override configuration file settings. The full
-          priority order is: Environment → Repository → Global → System → Defaults
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Priority Order" className="not-prose my-6">
+        Environment variables override configuration file settings. The full
+        priority order is: Environment → Repository → Global → System → Defaults
+      </Callout>
 
       <h2>Core Environment Variables</h2>
       <Table className="not-prose my-6">

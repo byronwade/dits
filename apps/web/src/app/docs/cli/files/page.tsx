@@ -8,8 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { FileText, Info, Plus, Trash2, Move, RotateCcw, GitCommit, Archive } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { Plus, Trash2, Move, RotateCcw, GitCommit, Archive } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -53,13 +54,11 @@ const commands = [
 export default function FileCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <div className="flex items-center gap-2 mb-2">
-        <FileText className="h-8 w-8 text-success" />
-        <h1 className="mb-0">File Commands</h1>
-      </div>
-      <p className="lead text-xl text-muted-foreground">
-        Commands for adding, removing, and managing files in your Dits repository.
-      </p>
+      <DocPageHeader
+        eyebrow="CLI Reference"
+        title="File Commands"
+        description="Commands for adding, removing, and managing files in your Dits repository."
+      />
 
       <Table className="not-prose my-6">
         <TableHeader>
@@ -139,14 +138,10 @@ $ dits add -v project.prproj
 add 'project.prproj' (1,234 chunks, 1.2 MB)`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Chunking Progress</AlertTitle>
-        <AlertDescription>
-          Large files show chunking progress with deduplication stats. If chunks
-          already exist from similar files, they&apos;re reused automatically.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Chunking Progress" className="not-prose my-6">
+        Large files show chunking progress with deduplication stats. If chunks
+        already exist from similar files, they&apos;re reused automatically.
+      </Callout>
 
       <h2 className="flex items-center gap-2">
         <Trash2 className="h-5 w-5" />
@@ -234,14 +229,10 @@ $ dits mv raw-footage/ source-footage/
 Renamed 'raw-footage/' -> 'source-footage/'`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Efficient Renames</AlertTitle>
-        <AlertDescription>
-          Since Dits uses content-addressing, renames are instant regardless of
-          file size - no data is copied, only metadata is updated.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Efficient Renames" className="not-prose my-6">
+        Since Dits uses content-addressing, renames are instant regardless of
+        file size - no data is copied, only metadata is updated.
+      </Callout>
 
       <h2 className="flex items-center gap-2">
         <RotateCcw className="h-5 w-5" />

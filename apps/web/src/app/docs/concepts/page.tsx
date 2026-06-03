@@ -130,9 +130,9 @@ export default function ConceptsPage() {
               </pre>
             </CardContent>
           </Card>
-          <Card className="border-primary">
+          <Card className="border-brand">
             <CardHeader>
-              <CardTitle className="text-primary">Dits Approach</CardTitle>
+              <CardTitle className="text-brand">Dits Approach</CardTitle>
             </CardHeader>
             <CardContent>
               <pre className="bg-muted p-3 rounded text-sm">
@@ -466,9 +466,9 @@ dits config core.hashAlgorithm sha256
               </ul>
             </CardContent>
           </Card>
-          <Card className="border-primary">
+          <Card className="border-brand">
             <CardHeader>
-              <CardTitle className="text-primary">Binary Assets (Dits Storage)</CardTitle>
+              <CardTitle className="text-brand">Binary Assets (Dits Storage)</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="text-sm space-y-2">
@@ -646,9 +646,9 @@ dits config core.hashAlgorithm sha256
               <p>10 GB video, small edit → transfer 10 GB</p>
             </CardContent>
           </Card>
-          <Card className="border-primary">
+          <Card className="border-brand">
             <CardHeader>
-              <CardTitle className="text-primary">Dits delta sync</CardTitle>
+              <CardTitle className="text-brand">Dits delta sync</CardTitle>
             </CardHeader>
             <CardContent>
               <p>File changed → identify changed chunks</p>
@@ -676,9 +676,9 @@ dits config core.hashAlgorithm sha256
               </ul>
             </CardContent>
           </Card>
-          <Card className="border-primary">
+          <Card className="border-brand">
             <CardHeader>
-              <CardTitle className="text-primary">Parallel Processing</CardTitle>
+              <CardTitle className="text-brand">Parallel Processing</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="text-sm space-y-2">
@@ -918,9 +918,9 @@ Total: 20 GB stored`}
               </pre>
             </CardContent>
           </Card>
-          <Card className="border-primary">
+          <Card className="border-brand">
             <CardHeader>
-              <CardTitle className="text-primary">Dits</CardTitle>
+              <CardTitle className="text-brand">Dits</CardTitle>
             </CardHeader>
             <CardContent>
               <pre className="bg-muted p-3 rounded text-sm">

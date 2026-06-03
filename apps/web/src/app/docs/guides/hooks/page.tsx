@@ -7,7 +7,8 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
 import {
     Table,
@@ -17,7 +18,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Webhook, Zap, Shield, Settings, CheckCircle } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Hooks - Automation",
@@ -27,53 +27,49 @@ export const metadata: Metadata = {
 export default function HooksPage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <h1>Automation with Hooks</h1>
-            <p className="lead text-xl text-muted-foreground">
-                Hooks let you run custom scripts at key points in the Dits workflow.
-                Automate validation, testing, notifications, and more.
-            </p>
+            <DocPageHeader
+                eyebrow="Guides"
+                title="Automation with Hooks"
+                description="Hooks let you run custom scripts at key points in the Dits workflow. Automate validation, testing, notifications, and more."
+            />
 
-            <Alert className="not-prose my-6">
-                <Zap className="h-4 w-4" />
-                <AlertTitle>Powerful Automation</AlertTitle>
-                <AlertDescription>
-                    Hooks run locally and can execute any script or program.
-                    Use them to enforce policies, run tests, or integrate with external tools.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="Powerful Automation" className="not-prose my-6">
+                Hooks run locally and can execute any script or program.
+                Use them to enforce policies, run tests, or integrate with external tools.
+            </Callout>
 
             <h2>Available Hooks</h2>
 
-            <div className="grid gap-4 md:grid-cols-2 my-8">
+            <div className="not-prose grid gap-4 md:grid-cols-2 my-8">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Client-Side Hooks</CardTitle>
+                        <CardTitle className="text-base">Client-Side Hooks</CardTitle>
                         <CardDescription>Run on your local machine</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-2">
-                            <li><strong>pre-commit</strong> - Before creating a commit</li>
-                            <li><strong>prepare-commit-msg</strong> - Before commit message editor</li>
-                            <li><strong>commit-msg</strong> - Validate commit message</li>
-                            <li><strong>post-commit</strong> - After commit is created</li>
-                            <li><strong>pre-push</strong> - Before pushing to remote</li>
-                            <li><strong>post-checkout</strong> - After checkout/switch</li>
-                            <li><strong>post-merge</strong> - After merge completes</li>
+                        <ul className="text-sm space-y-2 text-muted-foreground">
+                            <li><strong className="text-foreground">pre-commit</strong> - Before creating a commit</li>
+                            <li><strong className="text-foreground">prepare-commit-msg</strong> - Before commit message editor</li>
+                            <li><strong className="text-foreground">commit-msg</strong> - Validate commit message</li>
+                            <li><strong className="text-foreground">post-commit</strong> - After commit is created</li>
+                            <li><strong className="text-foreground">pre-push</strong> - Before pushing to remote</li>
+                            <li><strong className="text-foreground">post-checkout</strong> - After checkout/switch</li>
+                            <li><strong className="text-foreground">post-merge</strong> - After merge completes</li>
                         </ul>
                     </CardContent>
                 </Card>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Server-Side Hooks</CardTitle>
+                        <CardTitle className="text-base">Server-Side Hooks</CardTitle>
                         <CardDescription>Run on the remote server</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-2">
-                            <li><strong>pre-receive</strong> - Before accepting push</li>
-                            <li><strong>update</strong> - Per-branch before update</li>
-                            <li><strong>post-receive</strong> - After push is accepted</li>
-                            <li><strong>post-update</strong> - After refs are updated</li>
+                        <ul className="text-sm space-y-2 text-muted-foreground">
+                            <li><strong className="text-foreground">pre-receive</strong> - Before accepting push</li>
+                            <li><strong className="text-foreground">update</strong> - Per-branch before update</li>
+                            <li><strong className="text-foreground">post-receive</strong> - After push is accepted</li>
+                            <li><strong className="text-foreground">post-update</strong> - After refs are updated</li>
                         </ul>
                     </CardContent>
                 </Card>
@@ -270,14 +266,10 @@ EOF
 ./scripts/setup-hooks.sh`}
             />
 
-            <Alert className="not-prose my-6">
-                <Shield className="h-4 w-4" />
-                <AlertTitle>Bypass Hooks</AlertTitle>
-                <AlertDescription>
-                    Use <code>--no-verify</code> to skip hooks in emergencies:
-                    <code className="block mt-2">dits commit --no-verify -m &quot;Emergency fix&quot;</code>
-                </AlertDescription>
-            </Alert>
+            <Callout type="warning" title="Bypass Hooks" className="not-prose my-6">
+                Use <code>--no-verify</code> to skip hooks in emergencies:
+                <code className="block mt-2">dits commit --no-verify -m &quot;Emergency fix&quot;</code>
+            </Callout>
 
             <h2>Related Topics</h2>
             <ul>

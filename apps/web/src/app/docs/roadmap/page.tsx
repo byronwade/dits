@@ -6,7 +6,8 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Rocket, Clock, CheckCircle, Circle, Zap, Shield, Globe } from "lucide-react";
 
@@ -18,28 +19,24 @@ export const metadata: Metadata = {
 export default function RoadmapPage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <h1>Roadmap</h1>
-            <p className="lead text-xl text-muted-foreground">
-                Our vision for Dits and the features we&apos;re working on. This roadmap
-                is a living document that evolves based on community feedback.
-            </p>
+            <DocPageHeader
+                eyebrow="Community"
+                title="Roadmap"
+                description="Our vision for Dits and the features we're working on. This roadmap is a living document that evolves based on community feedback."
+            />
 
-            <Alert className="not-prose my-6">
-                <Rocket className="h-4 w-4" />
-                <AlertTitle>Community Driven</AlertTitle>
-                <AlertDescription>
-                    Have a feature request? Open an issue on GitHub or join the discussion
-                    to help shape the future of Dits.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="Community Driven" className="not-prose my-6">
+                Have a feature request? Open an issue on GitHub or join the discussion
+                to help shape the future of Dits.
+            </Callout>
 
             <h2>Current Status</h2>
 
             <div className="grid gap-4 md:grid-cols-3 my-8 not-prose">
-                <Card className="border-primary/30">
+                <Card className="border-success/30">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
-                            <CheckCircle className="h-5 w-5 text-primary" />
+                            <CheckCircle className="h-5 w-5 text-success" />
                             Stable
                         </CardTitle>
                     </CardHeader>
@@ -92,7 +89,7 @@ export default function RoadmapPage() {
 
             <div className="space-y-4 my-6">
                 <div className="flex items-start gap-4 p-4 border rounded-lg">
-                    <CheckCircle className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                    <CheckCircle className="h-5 w-5 text-success mt-1 flex-shrink-0" />
                     <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-semibold m-0">Core Engine Stabilization</h3>
@@ -105,7 +102,7 @@ export default function RoadmapPage() {
                 </div>
 
                 <div className="flex items-start gap-4 p-4 border rounded-lg">
-                    <CheckCircle className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                    <CheckCircle className="h-5 w-5 text-success mt-1 flex-shrink-0" />
                     <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-semibold m-0">CLI v1.0</h3>
@@ -180,7 +177,7 @@ export default function RoadmapPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Zap className="h-5 w-5 text-primary" />
+                            <Zap className="h-5 w-5 text-brand" />
                             Video Optimization
                         </CardTitle>
                         <CardDescription>
@@ -200,7 +197,7 @@ export default function RoadmapPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Shield className="h-5 w-5 text-primary" />
+                            <Shield className="h-5 w-5 text-brand" />
                             Encryption Layer
                         </CardTitle>
                         <CardDescription>
@@ -224,7 +221,7 @@ export default function RoadmapPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Globe className="h-5 w-5 text-primary" />
+                            <Globe className="h-5 w-5 text-brand" />
                             Ditshub Platform
                         </CardTitle>
                         <CardDescription>
@@ -244,7 +241,7 @@ export default function RoadmapPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Rocket className="h-5 w-5 text-primary" />
+                            <Rocket className="h-5 w-5 text-brand" />
                             Integrations
                         </CardTitle>
                         <CardDescription>
@@ -288,14 +285,10 @@ export default function RoadmapPage() {
                 </div>
             </div>
 
-            <Alert className="not-prose my-6">
-                <Rocket className="h-4 w-4" />
-                <AlertTitle>Want to Contribute?</AlertTitle>
-                <AlertDescription>
-                    Check out our <a href="/docs/contributing" className="underline">contributing guide</a> to
-                    help make these features a reality.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="Want to Contribute?" className="not-prose my-6">
+                Check out our <a href="/docs/contributing" className="underline">contributing guide</a> to
+                help make these features a reality.
+            </Callout>
         </div>
     );
 }

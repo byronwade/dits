@@ -3,11 +3,11 @@ import Link from "next/link";
 import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
 import {
     Table,
@@ -27,25 +27,22 @@ export const metadata: Metadata = {
 export default function SubmodulesPage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <h1>Submodules &amp; Monorepos</h1>
-            <p className="lead text-xl text-muted-foreground">
-                Organize complex projects with multiple repositories or unified monorepos.
-                Dits supports both patterns with optimizations for large-scale projects.
-            </p>
+            <DocPageHeader
+                eyebrow="Advanced Topics"
+                title="Submodules &amp; Monorepos"
+                description="Organize complex projects with multiple repositories or unified monorepos. Dits supports both patterns with optimizations for large-scale projects."
+            />
 
-            <div className="grid gap-6 md:grid-cols-2 my-8">
-                <Card className="border-primary/30">
+            <div className="not-prose grid gap-6 md:grid-cols-2 my-8">
+                <Card className="border-brand/40 bg-brand/5">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Link2 className="h-5 w-5 text-primary" />
-                            Submodules
-                        </CardTitle>
-                        <CardDescription>
-                            Embed external repos in your project
-                        </CardDescription>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Link2 className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base text-brand">Submodules</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>Independent versioning</li>
                             <li>Shared across projects</li>
                             <li>Pinned to specific commits</li>
@@ -55,16 +52,13 @@ export default function SubmodulesPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <FolderTree className="h-5 w-5 text-primary" />
-                            Monorepos
-                        </CardTitle>
-                        <CardDescription>
-                            All code in one repository
-                        </CardDescription>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <FolderTree className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Monorepos</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>Atomic changes across packages</li>
                             <li>Simplified dependencies</li>
                             <li>Single source of truth</li>
@@ -139,14 +133,10 @@ $ dits commit -m "Update shared-lib to latest"
 $ dits push origin main`}
             />
 
-            <Alert className="not-prose my-6">
-                <GitFork className="h-4 w-4" />
-                <AlertTitle>Submodule Commits</AlertTitle>
-                <AlertDescription>
-                    Submodules track specific commits, not branches. When you update a submodule,
-                    commit the change to record the new commit reference.
-                </AlertDescription>
-            </Alert>
+            <Callout type="note" title="Submodule Commits" className="not-prose my-6">
+                Submodules track specific commits, not branches. When you update a submodule,
+                commit the change to record the new commit reference.
+            </Callout>
 
             <h3>Removing Submodules</h3>
             <CodeBlock
@@ -240,14 +230,10 @@ $ ls /mnt/project/apps/web/
 $ code /mnt/project/apps/web/`}
             />
 
-            <Alert className="not-prose my-6">
-                <Zap className="h-4 w-4" />
-                <AlertTitle>Best of Both Worlds</AlertTitle>
-                <AlertDescription>
-                    Dits monorepos combine the organizational benefits of a single repo with
-                    the efficiency of only downloading what you need through sparse checkout and VFS.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="Best of Both Worlds" className="not-prose my-6">
+                Dits monorepos combine the organizational benefits of a single repo with
+                the efficiency of only downloading what you need through sparse checkout and VFS.
+            </Callout>
 
             <h2>Path-Based Permissions</h2>
             <p>
@@ -275,7 +261,7 @@ default = "read"
 
             <h2>When to Use Which</h2>
 
-            <div className="overflow-x-auto my-6">
+            <div className="not-prose overflow-x-auto my-6">
                 <Table>
                     <TableHeader>
                         <TableRow>

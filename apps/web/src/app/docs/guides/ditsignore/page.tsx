@@ -3,11 +3,11 @@ import Link from "next/link";
 import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
 import {
     Table,
@@ -17,7 +17,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { FileX, Info, CheckCircle, AlertTriangle } from "lucide-react";
+import { FileX, CheckCircle } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Ditsignore - Ignoring Files",
@@ -27,20 +27,16 @@ export const metadata: Metadata = {
 export default function DitsignorePage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <h1>Ignoring Files with .ditsignore</h1>
-            <p className="lead text-xl text-muted-foreground">
-                Control which files Dits tracks by specifying patterns in a .ditsignore file.
-                Keep your repository clean by excluding build artifacts, temporary files, and sensitive data.
-            </p>
+            <DocPageHeader
+                eyebrow="Guides"
+                title="Ignoring Files with .ditsignore"
+                description="Control which files Dits tracks by specifying patterns in a .ditsignore file. Keep your repository clean by excluding build artifacts, temporary files, and sensitive data."
+            />
 
-            <Alert className="not-prose my-6">
-                <Info className="h-4 w-4" />
-                <AlertTitle>Similar to .gitignore</AlertTitle>
-                <AlertDescription>
-                    If you&apos;re familiar with Git, .ditsignore uses the same pattern syntax as .gitignore.
-                    You can often use your existing .gitignore as a starting point.
-                </AlertDescription>
-            </Alert>
+            <Callout type="note" title="Similar to .gitignore" className="not-prose my-6">
+                If you&apos;re familiar with Git, .ditsignore uses the same pattern syntax as .gitignore.
+                You can often use your existing .gitignore as a starting point.
+            </Callout>
 
             <h2>Creating a .ditsignore File</h2>
             <p>Create a file named <code>.ditsignore</code> in your repository root:</p>
@@ -56,13 +52,13 @@ cp .gitignore .ditsignore`}
 
             <h2>Pattern Syntax</h2>
 
-            <div className="grid gap-6 md:grid-cols-2 my-8">
+            <div className="not-prose grid gap-6 md:grid-cols-2 my-8">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <FileX className="h-5 w-5 text-primary" />
-                            Basic Patterns
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <FileX className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Basic Patterns</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <pre className="bg-background p-4 rounded-lg text-sm overflow-x-auto"><code>{`# Ignore specific file
@@ -85,10 +81,10 @@ dist/
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <CheckCircle className="h-5 w-5 text-primary" />
-                            Negation Patterns
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <CheckCircle className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Negation Patterns</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <pre className="bg-background p-4 rounded-lg text-sm overflow-x-auto"><code>{`# Ignore all .log files
@@ -261,14 +257,10 @@ echo "Thumbs.db" >> ~/.ditsignore_global
 echo "*.swp" >> ~/.ditsignore_global`}
             />
 
-            <Alert className="not-prose my-6">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Already Tracked Files</AlertTitle>
-                <AlertDescription>
-                    Adding a file to .ditsignore won&apos;t remove it if it&apos;s already tracked.
-                    Use <code>dits rm --cached filename</code> to untrack it first.
-                </AlertDescription>
-            </Alert>
+            <Callout type="warning" title="Already Tracked Files" className="not-prose my-6">
+                Adding a file to .ditsignore won&apos;t remove it if it&apos;s already tracked.
+                Use <code>dits rm --cached filename</code> to untrack it first.
+            </Callout>
 
             <h2>Related Topics</h2>
             <ul>

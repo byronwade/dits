@@ -1,6 +1,7 @@
 import { Metadata } from "next";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Heart, Users, Shield, Scale, Check, X } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { Users, Shield, Scale, Check, X } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Code of Conduct",
@@ -10,20 +11,16 @@ export const metadata: Metadata = {
 export default function CodeOfConductPage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <h1>Code of Conduct</h1>
-            <p className="lead text-xl text-muted-foreground">
-                Our community is dedicated to providing a welcoming, inclusive, and
-                harassment-free experience for everyone.
-            </p>
+            <DocPageHeader
+                eyebrow="Community"
+                title="Code of Conduct"
+                description="Our community is dedicated to providing a welcoming, inclusive, and harassment-free experience for everyone."
+            />
 
-            <Alert className="not-prose my-6">
-                <Heart className="h-4 w-4" />
-                <AlertTitle>Our Commitment</AlertTitle>
-                <AlertDescription>
-                    We are committed to making participation in our community a positive
-                    experience for everyone, regardless of background or identity.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="Our Commitment" className="not-prose my-6">
+                We are committed to making participation in our community a positive
+                experience for everyone, regardless of background or identity.
+            </Callout>
 
             <h2>Our Pledge</h2>
 
@@ -43,9 +40,9 @@ export default function CodeOfConductPage() {
             <h2>Our Standards</h2>
 
             <div className="grid gap-6 md:grid-cols-2 my-8">
-                <div className="bg-primary/5 p-6 rounded-lg border border-primary/20">
+                <div className="bg-success/5 p-6 rounded-lg border border-success/20">
                     <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
-                        <Users className="h-5 w-5 text-primary" />
+                        <Users className="h-5 w-5 text-success" />
                         Positive Behavior
                     </h3>
                     <ul className="text-sm space-y-2">
@@ -113,7 +110,7 @@ export default function CodeOfConductPage() {
                     <li>
                         <strong>1. Report:</strong> Instances of abusive, harassing, or otherwise
                         unacceptable behavior may be reported by contacting the project team at{" "}
-                        <a href="mailto:conduct@dits.io" className="text-primary">conduct@dits.io</a>.
+                        <a href="mailto:conduct@dits.io" className="text-brand">conduct@dits.io</a>.
                     </li>
                     <li>
                         <strong>2. Review:</strong> All complaints will be reviewed and investigated
@@ -193,14 +190,10 @@ export default function CodeOfConductPage() {
                 .
             </p>
 
-            <Alert className="not-prose my-6">
-                <Heart className="h-4 w-4" />
-                <AlertTitle>Questions?</AlertTitle>
-                <AlertDescription>
-                    If you have questions about this Code of Conduct, please reach out to{" "}
-                    <a href="mailto:conduct@dits.io" className="underline">conduct@dits.io</a>.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="Questions?" className="not-prose my-6">
+                If you have questions about this Code of Conduct, please reach out to{" "}
+                <a href="mailto:conduct@dits.io" className="underline">conduct@dits.io</a>.
+            </Callout>
         </div>
     );
 }

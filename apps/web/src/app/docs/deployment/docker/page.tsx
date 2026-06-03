@@ -6,7 +6,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
@@ -16,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Server, CheckCircle, Terminal, Settings } from "lucide-react";
+import { Server, CheckCircle, Terminal } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Docker Deployment",
@@ -26,19 +27,15 @@ export const metadata: Metadata = {
 export default function DockerPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Docker Deployment</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Deploy Dits using Docker for quick setup and easy management.
-        Perfect for development, testing, and small production deployments.
-      </p>
+      <DocPageHeader
+        eyebrow="Deployment"
+        title="Docker Deployment"
+        description="Deploy Dits using Docker for quick setup and easy management. Perfect for development, testing, and small production deployments."
+      />
 
-      <Alert className="not-prose my-6">
-        <CheckCircle className="h-4 w-4" />
-        <AlertTitle>Quick Start</AlertTitle>
-        <AlertDescription>
-          Get Dits running in under 5 minutes with Docker Compose.
-        </AlertDescription>
-      </Alert>
+      <Callout type="tip" title="Quick Start" className="not-prose my-6">
+        Get Dits running in under 5 minutes with Docker Compose.
+      </Callout>
 
       <h2>Prerequisites</h2>
 
@@ -226,7 +223,7 @@ volumes:
             <TableRow>
               <TableCell className="font-mono">DATABASE_URL</TableCell>
               <TableCell>PostgreSQL connection string</TableCell>
-              <TableCell><CheckCircle className="h-4 w-4 text-primary" /></TableCell>
+              <TableCell><CheckCircle className="h-4 w-4 text-success" /></TableCell>
             </TableRow>
             <TableRow>
               <TableCell className="font-mono">REDIS_URL</TableCell>
@@ -236,7 +233,7 @@ volumes:
             <TableRow>
               <TableCell className="font-mono">JWT_SECRET</TableCell>
               <TableCell>Secret for token signing</TableCell>
-              <TableCell><CheckCircle className="h-4 w-4 text-primary" /></TableCell>
+              <TableCell><CheckCircle className="h-4 w-4 text-success" /></TableCell>
             </TableRow>
             <TableRow>
               <TableCell className="font-mono">STORAGE_PATH</TableCell>
@@ -254,7 +251,7 @@ volumes:
 
       <h2>Maintenance</h2>
 
-      <div className="grid gap-6 md:grid-cols-2 my-8">
+      <div className="not-prose grid gap-6 md:grid-cols-2 my-8">
         <Card>
           <CardHeader>
             <CardTitle>Backup</CardTitle>
@@ -289,14 +286,10 @@ docker compose ps`}</code></pre>
         </Card>
       </div>
 
-      <Alert className="not-prose my-6">
-        <Settings className="h-4 w-4" />
-        <AlertTitle>Next Steps</AlertTitle>
-        <AlertDescription>
-          For high-availability production deployments, consider using Kubernetes
-          for automatic scaling and failover.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Next Steps" className="not-prose my-6">
+        For high-availability production deployments, consider using Kubernetes
+        for automatic scaling and failover.
+      </Callout>
     </div>
   );
 }

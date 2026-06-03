@@ -8,8 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Shield, Info, Key, Lock, Unlock, KeyRound, AlertTriangle } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { Key, Shield, Lock, Unlock, KeyRound } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -28,25 +29,17 @@ const commands = [
 export default function EncryptionCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <div className="flex items-center gap-2 mb-2">
-        <Shield className="h-8 w-8 text-success" />
-        <h1 className="mb-0">Encryption Commands</h1>
-      </div>
-      <p className="lead text-xl text-muted-foreground">
-        Encrypt repository data at rest using industry-standard AES-256-GCM.
-        Protects sensitive content while maintaining deduplication benefits
-        through convergent encryption.
-      </p>
+      <DocPageHeader
+        eyebrow="CLI Reference"
+        title="Encryption Commands"
+        description="Encrypt repository data at rest using industry-standard AES-256-GCM. Protects sensitive content while maintaining deduplication benefits through convergent encryption."
+      />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>End-to-End Encryption</AlertTitle>
-        <AlertDescription>
-          When encryption is enabled, all file content is encrypted before leaving
-          your machine. Neither Dits servers nor storage backends can read your
-          data without the encryption key.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="End-to-End Encryption" className="not-prose my-6">
+        When encryption is enabled, all file content is encrypted before leaving
+        your machine. Neither Dits servers nor storage backends can read your
+        data without the encryption key.
+      </Callout>
 
       <Table className="not-prose my-6">
         <TableHeader>
@@ -114,7 +107,7 @@ Encrypting existing objects... 100% ██████████████�
 
 Encryption initialized successfully!
 
-<span className="flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> IMPORTANT: If you lose your password, your data cannot be recovered.</span>
+IMPORTANT: If you lose your password, your data cannot be recovered.
    Consider backing up your key file at: .dits/keys/master.key
 
 # Initialize with key file
@@ -133,15 +126,11 @@ Hardware key detected: YubiKey 5 NFC
 Encryption initialized with hardware key protection.`}
       />
 
-      <Alert className="not-prose my-6">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Key Backup Required</AlertTitle>
-        <AlertDescription>
-          After initializing encryption, back up your key file or recovery phrase
-          to a secure location. Without it, encrypted data cannot be recovered
-          if you lose your password or hardware key.
-        </AlertDescription>
-      </Alert>
+      <Callout type="important" title="Key Backup Required" className="not-prose my-6">
+        After initializing encryption, back up your key file or recovery phrase
+        to a secure location. Without it, encrypted data cannot be recovered
+        if you lose your password or hardware key.
+      </Callout>
 
       <h2 className="flex items-center gap-2">
         <Shield className="h-5 w-5" />

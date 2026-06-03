@@ -7,7 +7,8 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
 import {
     Table,
@@ -17,7 +18,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { ArrowRight, CheckCircle, AlertTriangle, Zap } from "lucide-react";
+import { ArrowRight, CheckCircle } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Migration from Git",
@@ -27,37 +28,33 @@ export const metadata: Metadata = {
 export default function MigrationPage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <h1>Migrating from Git to Dits</h1>
-            <p className="lead text-xl text-muted-foreground">
-                A step-by-step guide to migrating your Git repositories to Dits
-                while preserving history and maximizing the benefits of content-addressed storage.
-            </p>
+            <DocPageHeader
+                eyebrow="Guides"
+                title="Migrating from Git to Dits"
+                description="A step-by-step guide to migrating your Git repositories to Dits while preserving history and maximizing the benefits of content-addressed storage."
+            />
 
-            <Alert className="not-prose my-6">
-                <Zap className="h-4 w-4" />
-                <AlertTitle>Familiar Commands</AlertTitle>
-                <AlertDescription>
-                    Dits commands are designed to be familiar to Git users. Most workflows
-                    transfer directly with minimal changes.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="Familiar Commands" className="not-prose my-6">
+                Dits commands are designed to be familiar to Git users. Most workflows
+                transfer directly with minimal changes.
+            </Callout>
 
             <h2>Migration Options</h2>
 
-            <div className="grid gap-6 md:grid-cols-2 my-8">
-                <Card className="border-primary/30">
+            <div className="not-prose grid gap-6 md:grid-cols-2 my-8">
+                <Card className="border-brand/40 bg-brand/5">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <ArrowRight className="h-5 w-5 text-primary" />
-                            Quick Start (New Repo)
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <ArrowRight className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base text-brand">Quick Start (New Repo)</CardTitle>
                         <CardDescription>
                             Start fresh, import history later if needed
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground mb-2">Best for:</p>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>Projects with large binary files</li>
                             <li>When Git history isn&apos;t critical</li>
                             <li>Fastest migration path</li>
@@ -67,17 +64,17 @@ export default function MigrationPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <ArrowRight className="h-5 w-5 text-primary" />
-                            Full History Import
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <ArrowRight className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Full History Import</CardTitle>
                         <CardDescription>
                             Preserve complete Git history in Dits
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground mb-2">Best for:</p>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>When history is valuable</li>
                             <li>Compliance requirements</li>
                             <li>Long-running projects</li>
@@ -207,14 +204,10 @@ dits import git . --full-history --include-lfs
 dits ls-files --large  # List files > 10MB`}
             />
 
-            <Alert className="not-prose my-6">
-                <CheckCircle className="h-4 w-4" />
-                <AlertTitle>No More .gitattributes</AlertTitle>
-                <AlertDescription>
-                    Dits doesn&apos;t need special tracking for large files. All files are
-                    automatically chunked and deduplicated regardless of size.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="No More .gitattributes" className="not-prose my-6">
+                Dits doesn&apos;t need special tracking for large files. All files are
+                automatically chunked and deduplicated regardless of size.
+            </Callout>
 
             <h2>Configuration Migration</h2>
 
@@ -244,72 +237,68 @@ dits config --global core.editor "code --wait"`}
 
             <h2>Team Migration Checklist</h2>
 
-            <div className="bg-muted p-6 rounded-lg my-6">
+            <div className="not-prose bg-muted p-6 rounded-lg my-6">
                 <h3 className="font-semibold mb-4">Before Migration</h3>
-                <ul className="space-y-2 list-disc list-inside">
+                <ul className="space-y-2">
                     <li className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-success mt-1 flex-shrink-0" />
                         <span>Ensure all team members have pushed their work</span>
                     </li>
                     <li className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-success mt-1 flex-shrink-0" />
                         <span>Document current branch structure and release process</span>
                     </li>
                     <li className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-success mt-1 flex-shrink-0" />
                         <span>Set up Dits server or Ditshub account</span>
                     </li>
                     <li className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-success mt-1 flex-shrink-0" />
                         <span>Install Dits CLI on all team machines</span>
                     </li>
                 </ul>
 
                 <h3 className="font-semibold mt-6 mb-4">Migration Steps</h3>
-                <ul className="space-y-2 list-disc list-inside">
+                <ul className="space-y-2">
                     <li className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-success mt-1 flex-shrink-0" />
                         <span>Import repository with full history</span>
                     </li>
                     <li className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-success mt-1 flex-shrink-0" />
                         <span>Push to new Dits remote</span>
                     </li>
                     <li className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-success mt-1 flex-shrink-0" />
                         <span>Update CI/CD pipelines</span>
                     </li>
                     <li className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-success mt-1 flex-shrink-0" />
                         <span>Update documentation and READMEs</span>
                     </li>
                 </ul>
 
                 <h3 className="font-semibold mt-6 mb-4">After Migration</h3>
-                <ul className="space-y-2 list-disc list-inside">
+                <ul className="space-y-2">
                     <li className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-success mt-1 flex-shrink-0" />
                         <span>Have team clone fresh from Dits</span>
                     </li>
                     <li className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-success mt-1 flex-shrink-0" />
                         <span>Archive old Git repository (read-only)</span>
                     </li>
                     <li className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-success mt-1 flex-shrink-0" />
                         <span>Train team on new features (VFS, proxies, P2P)</span>
                     </li>
                 </ul>
             </div>
 
-            <Alert className="not-prose my-6">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Keep Git Repo as Backup</AlertTitle>
-                <AlertDescription>
-                    We recommend keeping your Git repository as a read-only backup for at least
-                    30 days after migration to ensure everything transferred correctly.
-                </AlertDescription>
-            </Alert>
+            <Callout type="warning" title="Keep Git Repo as Backup" className="not-prose my-6">
+                We recommend keeping your Git repository as a read-only backup for at least
+                30 days after migration to ensure everything transferred correctly.
+            </Callout>
 
             <h2>Related Resources</h2>
             <ul>

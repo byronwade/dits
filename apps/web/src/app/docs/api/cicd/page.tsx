@@ -7,7 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CodeBlock } from "@/components/ui/code-block";
@@ -28,13 +29,13 @@ export const metadata: Metadata = {
 export default function CICDPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>CI/CD Integration</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Automate your creative workflows with Dits integration in CI/CD pipelines.
-        Trigger builds, run tests, and deploy assets automatically.
-      </p>
+      <DocPageHeader
+        eyebrow="API & Integration"
+        title="CI/CD Integration"
+        description="Automate your creative workflows with Dits integration in CI/CD pipelines. Trigger builds, run tests, and deploy assets automatically."
+      />
 
-      <div className="grid gap-6 md:grid-cols-2 my-8">
+      <div className="not-prose grid gap-6 md:grid-cols-2 my-8">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -86,7 +87,7 @@ export default function CICDPage() {
       </ul>
 
       <h2>Environment Variables</h2>
-      <Card className="my-6">
+      <Card className="not-prose my-6">
         <CardContent className="pt-6 space-y-3">
           <div className="text-sm">
             <code className="bg-muted px-2 py-1 rounded">DITS_TOKEN</code>
@@ -136,7 +137,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -257,12 +258,12 @@ deploy-production:
             <CardContent>
               <pre className="bg-background p-4 rounded-lg overflow-x-auto text-sm"><code>{`pipeline {
     agent any
-    
+
     environment {
         DITS_TOKEN = credentials('dits-api-token')
         DITS_CACHE_DIR = '/var/cache/dits'
     }
-    
+
     stages {
         stage('Setup') {
             steps {
@@ -273,7 +274,7 @@ deploy-production:
                 '''
             }
         }
-        
+
         stage('Pull') {
             steps {
                 sh '''
@@ -284,7 +285,7 @@ deploy-production:
                 '''
             }
         }
-        
+
         stage('Validate') {
             steps {
                 sh '''
@@ -293,13 +294,13 @@ deploy-production:
                 '''
             }
         }
-        
+
         stage('Build') {
             steps {
                 sh 'npm run build:assets'
             }
         }
-        
+
         stage('Push') {
             when {
                 branch 'main'
@@ -313,7 +314,7 @@ deploy-production:
             }
         }
     }
-    
+
     post {
         always {
             sh 'dits cache-stats'
@@ -417,11 +418,11 @@ dits webhook test <webhook-id>`}
 
       <h2>Best Practices</h2>
 
-      <div className="grid gap-4 md:grid-cols-2 my-6">
+      <div className="not-prose grid gap-4 md:grid-cols-2 my-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-primary" />
+              <CheckCircle className="h-5 w-5 text-success" />
               Performance
             </CardTitle>
           </CardHeader>
@@ -438,7 +439,7 @@ dits webhook test <webhook-id>`}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
+              <Shield className="h-5 w-5 text-success" />
               Security
             </CardTitle>
           </CardHeader>
@@ -453,17 +454,13 @@ dits webhook test <webhook-id>`}
         </Card>
       </div>
 
-      <Alert className="not-prose my-6">
-        <Settings className="h-4 w-4" />
-        <AlertTitle>Need Custom Integration?</AlertTitle>
-        <AlertDescription>
-          For advanced integrations or custom CI/CD platforms, use the{" "}
-          <Link href="/docs/api/rest" className="underline">REST API</Link> directly
-          or configure <Link href="/docs/api/webhooks" className="underline">webhooks</Link> for event-driven workflows.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Need Custom Integration?" className="not-prose my-6">
+        For advanced integrations or custom CI/CD platforms, use the{" "}
+        <Link href="/docs/api/rest" className="underline">REST API</Link> directly
+        or configure <Link href="/docs/api/webhooks" className="underline">webhooks</Link> for event-driven workflows.
+      </Callout>
 
-      <div className="text-center my-8">
+      <div className="not-prose text-center my-8">
         <Button size="lg" render={<Link href="/docs/api/webhooks" />}>
           <Settings className="h-4 w-4" />
           Learn About Webhooks

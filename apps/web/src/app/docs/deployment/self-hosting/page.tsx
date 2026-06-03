@@ -7,7 +7,8 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import {
     Table,
     TableBody,
@@ -16,7 +17,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Server, Shield, Database, Settings, CheckCircle } from "lucide-react";
+import { Server, Shield, Database, Settings } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Self-Hosting Guide",
@@ -26,33 +27,29 @@ export const metadata: Metadata = {
 export default function SelfHostingPage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <h1>Self-Hosting Guide</h1>
-            <p className="lead text-xl text-muted-foreground">
-                Run Dits on your own infrastructure with complete control over your data,
-                security, and customization.
-            </p>
+            <DocPageHeader
+                eyebrow="Deployment"
+                title="Self-Hosting Guide"
+                description="Run Dits on your own infrastructure with complete control over your data, security, and customization."
+            />
 
-            <Alert className="not-prose my-6">
-                <Shield className="h-4 w-4" />
-                <AlertTitle>Full Data Sovereignty</AlertTitle>
-                <AlertDescription>
-                    Self-hosting gives you complete control over your data and compliance
-                    with any regulatory requirements.
-                </AlertDescription>
-            </Alert>
+            <Callout type="warning" title="Full Data Sovereignty" className="not-prose my-6">
+                Self-hosting gives you complete control over your data and compliance
+                with any regulatory requirements.
+            </Callout>
 
             <h2>Why Self-Host?</h2>
 
-            <div className="grid gap-6 md:grid-cols-3 my-8">
+            <div className="not-prose grid gap-6 md:grid-cols-3 my-8">
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Shield className="h-5 w-5 text-primary" />
-                            Security & Privacy
+                            <Shield className="h-5 w-5 text-brand" />
+                            Security &amp; Privacy
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>Complete data ownership</li>
                             <li>Custom security policies</li>
                             <li>Air-gapped networks</li>
@@ -64,12 +61,12 @@ export default function SelfHostingPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Settings className="h-5 w-5 text-primary" />
+                            <Settings className="h-5 w-5 text-brand" />
                             Customization
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>Custom integrations</li>
                             <li>Modified workflows</li>
                             <li>Branding options</li>
@@ -81,12 +78,12 @@ export default function SelfHostingPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Database className="h-5 w-5 text-primary" />
+                            <Database className="h-5 w-5 text-brand" />
                             Infrastructure Control
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>Choose your hardware</li>
                             <li>Storage optimization</li>
                             <li>Network configuration</li>
@@ -138,7 +135,7 @@ export default function SelfHostingPage() {
 
             <h2>Installation Methods</h2>
 
-            <div className="grid gap-6 md:grid-cols-2 my-8">
+            <div className="not-prose grid gap-6 md:grid-cols-2 my-8">
                 <Card>
                     <CardHeader>
                         <CardTitle>Docker (Recommended)</CardTitle>
@@ -150,7 +147,7 @@ export default function SelfHostingPage() {
                         <p className="text-sm text-muted-foreground mb-4">
                             Use Docker Compose for quick setup with all dependencies included.
                         </p>
-                        <Link href="/docs/deployment/docker" className="text-primary hover:underline text-sm">
+                        <Link href="/docs/deployment/docker" className="text-brand hover:underline text-sm">
                             View Docker deployment guide →
                         </Link>
                     </CardContent>
@@ -216,12 +213,12 @@ output = "/var/log/dits/server.log"`}</code></pre>
 
             <h2>Security Hardening</h2>
 
-            <div className="bg-muted p-6 rounded-lg my-6">
+            <div className="not-prose bg-muted p-6 rounded-lg my-6">
                 <h3 className="font-semibold mb-4">Recommended Security Measures</h3>
                 <div className="grid md:grid-cols-2 gap-6">
                     <div>
                         <h4 className="font-medium mb-2">Network Security</h4>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>Enable TLS 1.3 for all connections</li>
                             <li>Use firewall to restrict access</li>
                             <li>Set up VPN for admin access</li>
@@ -230,7 +227,7 @@ output = "/var/log/dits/server.log"`}</code></pre>
                     </div>
                     <div>
                         <h4 className="font-medium mb-2">System Security</h4>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>Run as non-root user</li>
                             <li>Enable SELinux/AppArmor</li>
                             <li>Keep system updated</li>
@@ -270,7 +267,7 @@ sudo systemctl status dits`}</code></pre>
 
             <h2>Backup Strategy</h2>
 
-            <div className="grid gap-6 md:grid-cols-2 my-8">
+            <div className="not-prose grid gap-6 md:grid-cols-2 my-8">
                 <Card>
                     <CardHeader>
                         <CardTitle>Database Backup</CardTitle>
@@ -301,14 +298,10 @@ restic backup /var/lib/dits/chunks`}</code></pre>
                 </Card>
             </div>
 
-            <Alert className="not-prose my-6">
-                <CheckCircle className="h-4 w-4" />
-                <AlertTitle>Need Help?</AlertTitle>
-                <AlertDescription>
-                    See our <Link href="/docs/troubleshooting" className="underline">troubleshooting guide</Link> for
-                    common issues, or join the community for support.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="Need Help?" className="not-prose my-6">
+                See our <Link href="/docs/troubleshooting" className="underline">troubleshooting guide</Link> for
+                common issues, or join the community for support.
+            </Callout>
         </div>
     );
 }

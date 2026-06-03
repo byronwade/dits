@@ -6,6 +6,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { HelpCircle, MessageCircle, Zap } from "lucide-react";
 import { generateMetadata as genMeta, generateFAQSchema, generateBreadcrumbSchema } from "@/lib/seo";
 import Script from "next/script";
@@ -120,19 +121,24 @@ export default function FAQPage() {
                 }}
             />
             <div className="prose dark:prose-invert max-w-none">
-            <h1>Frequently Asked Questions</h1>
-            <p className="lead text-xl text-muted-foreground">
-                Quick answers to common questions about Dits. Can&apos;t find what you&apos;re looking for?
+            <DocPageHeader
+                eyebrow="Guides"
+                title="Frequently Asked Questions"
+                description="Quick answers to common questions about Dits. Can't find what you're looking for? Check our troubleshooting guide or ask in the community."
+            />
+
+            <p>
+                Can&apos;t find what you&apos;re looking for?
                 Check our <Link href="/docs/troubleshooting">troubleshooting guide</Link> or ask in the community.
             </p>
 
             <h2>General Questions</h2>
 
-            <div className="space-y-4">
+            <div className="not-prose space-y-4">
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
-                            <HelpCircle className="h-5 w-5 text-primary" />
+                            <HelpCircle className="h-5 w-5 text-brand" />
                             What is Dits?
                         </CardTitle>
                     </CardHeader>
@@ -148,7 +154,7 @@ export default function FAQPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
-                            <HelpCircle className="h-5 w-5 text-primary" />
+                            <HelpCircle className="h-5 w-5 text-brand" />
                             How is Dits different from Git LFS?
                         </CardTitle>
                     </CardHeader>
@@ -157,10 +163,10 @@ export default function FAQPage() {
                             While Git LFS stores large files separately, it still has limitations:
                         </p>
                         <ul className="text-sm text-muted-foreground space-y-1">
-                            <li><strong>Dits chunks files</strong> - Only changed portions are stored, not entire files</li>
-                            <li><strong>Content-addressed</strong> - Identical content is stored once across all files</li>
-                            <li><strong>Streaming access</strong> - Mount repositories and access files on-demand</li>
-                            <li><strong>P2P sync</strong> - Share directly between machines without central server</li>
+                            <li><strong className="text-foreground">Dits chunks files</strong> - Only changed portions are stored, not entire files</li>
+                            <li><strong className="text-foreground">Content-addressed</strong> - Identical content is stored once across all files</li>
+                            <li><strong className="text-foreground">Streaming access</strong> - Mount repositories and access files on-demand</li>
+                            <li><strong className="text-foreground">P2P sync</strong> - Share directly between machines without central server</li>
                         </ul>
                     </CardContent>
                 </Card>
@@ -168,7 +174,7 @@ export default function FAQPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
-                            <HelpCircle className="h-5 w-5 text-primary" />
+                            <HelpCircle className="h-5 w-5 text-brand" />
                             Can I use Dits with my existing Git workflow?
                         </CardTitle>
                     </CardHeader>
@@ -184,11 +190,11 @@ export default function FAQPage() {
 
             <h2>Technical Questions</h2>
 
-            <div className="space-y-4">
+            <div className="not-prose space-y-4">
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
-                            <Zap className="h-5 w-5 text-primary" />
+                            <Zap className="h-5 w-5 text-brand" />
                             How does chunking work?
                         </CardTitle>
                     </CardHeader>
@@ -205,7 +211,7 @@ export default function FAQPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
-                            <Zap className="h-5 w-5 text-primary" />
+                            <Zap className="h-5 w-5 text-brand" />
                             What&apos;s the maximum file size Dits can handle?
                         </CardTitle>
                     </CardHeader>
@@ -222,7 +228,7 @@ export default function FAQPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
-                            <Zap className="h-5 w-5 text-primary" />
+                            <Zap className="h-5 w-5 text-brand" />
                             How much storage space will I save?
                         </CardTitle>
                     </CardHeader>
@@ -231,9 +237,9 @@ export default function FAQPage() {
                             Storage savings depend on your content type and edit patterns. Typical results:
                         </p>
                         <ul className="text-sm text-muted-foreground space-y-1 mt-2">
-                            <li><strong>Video projects:</strong> 60-80% reduction for iterative edits</li>
-                            <li><strong>Game assets:</strong> 40-60% with texture/model reuse</li>
-                            <li><strong>Documents:</strong> 70-90% for revision-heavy docs</li>
+                            <li><strong className="text-foreground">Video projects:</strong> 60-80% reduction for iterative edits</li>
+                            <li><strong className="text-foreground">Game assets:</strong> 40-60% with texture/model reuse</li>
+                            <li><strong className="text-foreground">Documents:</strong> 70-90% for revision-heavy docs</li>
                         </ul>
                     </CardContent>
                 </Card>
@@ -241,7 +247,7 @@ export default function FAQPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
-                            <Zap className="h-5 w-5 text-primary" />
+                            <Zap className="h-5 w-5 text-brand" />
                             Is my data encrypted?
                         </CardTitle>
                     </CardHeader>
@@ -257,11 +263,11 @@ export default function FAQPage() {
 
             <h2>Usage Questions</h2>
 
-            <div className="space-y-4">
+            <div className="not-prose space-y-4">
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
-                            <MessageCircle className="h-5 w-5 text-primary" />
+                            <MessageCircle className="h-5 w-5 text-brand" />
                             How do I clone a large repository quickly?
                         </CardTitle>
                     </CardHeader>
@@ -278,7 +284,7 @@ dits mount /mnt/repo  # Access all files instantly`}</code></pre>
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
-                            <MessageCircle className="h-5 w-5 text-primary" />
+                            <MessageCircle className="h-5 w-5 text-brand" />
                             Can multiple people edit the same file?
                         </CardTitle>
                     </CardHeader>
@@ -295,7 +301,7 @@ dits mount /mnt/repo  # Access all files instantly`}</code></pre>
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
-                            <MessageCircle className="h-5 w-5 text-primary" />
+                            <MessageCircle className="h-5 w-5 text-brand" />
                             How do I work offline?
                         </CardTitle>
                     </CardHeader>
@@ -311,7 +317,7 @@ dits mount /mnt/repo  # Access all files instantly`}</code></pre>
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
-                            <MessageCircle className="h-5 w-5 text-primary" />
+                            <MessageCircle className="h-5 w-5 text-brand" />
                             What editors/software work with Dits?
                         </CardTitle>
                     </CardHeader>
@@ -327,11 +333,11 @@ dits mount /mnt/repo  # Access all files instantly`}</code></pre>
 
             <h2>Troubleshooting</h2>
 
-            <div className="space-y-4">
+            <div className="not-prose space-y-4">
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
-                            <HelpCircle className="h-5 w-5 text-primary" />
+                            <HelpCircle className="h-5 w-5 text-brand" />
                             My push is taking forever
                         </CardTitle>
                     </CardHeader>
@@ -347,7 +353,7 @@ dits mount /mnt/repo  # Access all files instantly`}</code></pre>
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
-                            <HelpCircle className="h-5 w-5 text-primary" />
+                            <HelpCircle className="h-5 w-5 text-brand" />
                             &quot;Too many open files&quot; error
                         </CardTitle>
                     </CardHeader>
@@ -364,7 +370,7 @@ ulimit -n 65536
             </div>
 
             <h2>Still Have Questions?</h2>
-            <div className="grid gap-4 md:grid-cols-2 my-6">
+            <div className="not-prose grid gap-4 md:grid-cols-2 my-6">
                 <Card>
                     <CardContent className="pt-6">
                         <h3 className="font-semibold mb-2">Documentation</h3>

@@ -1,7 +1,13 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, Check } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { CodeBlock } from "@/components/ui/code-block";
 
 import { generateMetadata as genMeta, generateArticleSchema, generateSoftwareSourceCodeSchema, generateBreadcrumbSchema } from "@/lib/seo";
@@ -86,12 +92,11 @@ export default function AlgorithmsPage() {
                 }}
             />
             <div className="prose dark:prose-invert max-w-none">
-            <h1>Algorithms</h1>
-            <p className="lead text-xl text-muted-foreground">
-                Dits uses several specialized algorithms to efficiently handle large
-                binary files. This page explains the key algorithms and their
-                implementations.
-            </p>
+              <DocPageHeader
+                eyebrow="Architecture"
+                title="Algorithms"
+                description="Dits uses several specialized algorithms to efficiently handle large binary files. This page explains the key algorithms and their implementations."
+              />
 
             <h2>Chunking Algorithms</h2>
             <p>
@@ -173,15 +178,11 @@ fn find_next_boundary(data: &[u8], remaining: usize) -> usize {
             />
 
             <h3>Streaming FastCDC Implementation</h3>
-            <Alert>
-                <Info className="h-4 w-4" />
-                <AlertTitle>Performance Optimization</AlertTitle>
-                <AlertDescription>
-                    <strong className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> IMPLEMENTED:</strong> Dits implements a memory-efficient streaming version of FastCDC that processes
-                    files in bounded memory windows, enabling unlimited file sizes without memory exhaustion.
-                    <strong>Performance:</strong> 10MB file chunked in 47ms (212MB/s throughput), 90% memory reduction.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="Performance Optimization" className="not-prose my-4">
+                <strong>IMPLEMENTED:</strong> Dits implements a memory-efficient streaming version of FastCDC that processes
+                files in bounded memory windows, enabling unlimited file sizes without memory exhaustion.
+                <strong> Performance:</strong> 10MB file chunked in 47ms (212MB/s throughput), 90% memory reduction.
+            </Callout>
 
             <p>
                 The original FastCDC algorithm loads entire files into memory, causing memory
@@ -606,35 +607,47 @@ fn chunk_video(data: &[u8], keyframes: &[usize]) -> Vec<Chunk> {
 
             <h3>Supported Hash Algorithms</h3>
             <div className="not-prose grid gap-4 md:grid-cols-3 my-6">
-                <div className="border rounded-lg p-4">
-                    <h4 className="font-semibold mb-2">BLAKE3 (Default)</h4>
-                    <ul className="text-sm space-y-1">
-                        <li><strong>Speed:</strong> 3+ GB/s per core</li>
-                        <li><strong>Parallelism:</strong> Multi-threaded</li>
-                        <li><strong>Security:</strong> BLAKE family</li>
-                        <li><strong>Best for:</strong> Performance</li>
-                    </ul>
-                </div>
+                <Card className="border-brand/40 bg-brand/5">
+                    <CardHeader>
+                        <CardTitle className="text-base text-brand">BLAKE3 (Default)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ul className="space-y-1.5 text-sm text-muted-foreground">
+                            <li><strong>Speed:</strong> 3+ GB/s per core</li>
+                            <li><strong>Parallelism:</strong> Multi-threaded</li>
+                            <li><strong>Security:</strong> BLAKE family</li>
+                            <li><strong>Best for:</strong> Performance</li>
+                        </ul>
+                    </CardContent>
+                </Card>
 
-                <div className="border rounded-lg p-4">
-                    <h4 className="font-semibold mb-2">SHA-256</h4>
-                    <ul className="text-sm space-y-1">
-                        <li><strong>Speed:</strong> ~500 MB/s</li>
-                        <li><strong>Parallelism:</strong> Single-threaded</li>
-                        <li><strong>Security:</strong> SHA-2 family</li>
-                        <li><strong>Best for:</strong> Compliance</li>
-                    </ul>
-                </div>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">SHA-256</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ul className="space-y-1.5 text-sm text-muted-foreground">
+                            <li><strong>Speed:</strong> ~500 MB/s</li>
+                            <li><strong>Parallelism:</strong> Single-threaded</li>
+                            <li><strong>Security:</strong> SHA-2 family</li>
+                            <li><strong>Best for:</strong> Compliance</li>
+                        </ul>
+                    </CardContent>
+                </Card>
 
-                <div className="border rounded-lg p-4">
-                    <h4 className="font-semibold mb-2">SHA-3-256</h4>
-                    <ul className="text-sm space-y-1">
-                        <li><strong>Speed:</strong> ~300 MB/s</li>
-                        <li><strong>Parallelism:</strong> Single-threaded</li>
-                        <li><strong>Security:</strong> SHA-3 family</li>
-                        <li><strong>Best for:</strong> Future-proofing</li>
-                    </ul>
-                </div>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">SHA-3-256</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ul className="space-y-1.5 text-sm text-muted-foreground">
+                            <li><strong>Speed:</strong> ~300 MB/s</li>
+                            <li><strong>Parallelism:</strong> Single-threaded</li>
+                            <li><strong>Security:</strong> SHA-3 family</li>
+                            <li><strong>Best for:</strong> Future-proofing</li>
+                        </ul>
+                    </CardContent>
+                </Card>
             </div>
 
             <h3>BLAKE3 Implementation</h3>
@@ -697,19 +710,15 @@ dits config core.chunkingKey "$(openssl rand -hex 32)"
 dits config --local core.chunkingAlgorithm chonkers`}
             />
 
-            <Alert className="not-prose my-6">
-                <Info className="h-4 w-4" />
-                <AlertTitle>Performance Considerations</AlertTitle>
-                <AlertDescription>
-                    <ul className="mt-2 space-y-1">
-                        <li><strong>FastCDC:</strong> Best overall performance and deduplication</li>
-                        <li><strong>Parallel FastCDC:</strong> Use for large files (&gt;1GB)</li>
-                        <li><strong>Chonkers:</strong> Use when strict guarantees are required</li>
-                        <li><strong>Keyed FastCDC:</strong> Use for privacy-sensitive data</li>
-                        <li><strong>BLAKE3:</strong> Recommended for all use cases</li>
-                    </ul>
-                </AlertDescription>
-            </Alert>
+            <Callout type="note" title="Performance Considerations" className="not-prose my-6">
+                <ul className="mt-2 space-y-1">
+                    <li><strong>FastCDC:</strong> Best overall performance and deduplication</li>
+                    <li><strong>Parallel FastCDC:</strong> Use for large files (&gt;1GB)</li>
+                    <li><strong>Chonkers:</strong> Use when strict guarantees are required</li>
+                    <li><strong>Keyed FastCDC:</strong> Use for privacy-sensitive data</li>
+                    <li><strong>BLAKE3:</strong> Recommended for all use cases</li>
+                </ul>
+            </Callout>
 
             <h2>ISOBMFF Parsing</h2>
             <p>
@@ -779,15 +788,11 @@ fn find_keyframes(atoms: &[Atom], data: &[u8]) -> Vec<u64> {
 }`}
             />
 
-            <Alert className="not-prose my-6">
-                <Info className="h-4 w-4" />
-                <AlertTitle>Protected Atoms</AlertTitle>
-                <AlertDescription>
-                    The <code>moov</code> atom contains critical metadata. Dits never
-                    chunks through it - the entire moov is kept as a single chunk to
-                    ensure file playability.
-                </AlertDescription>
-            </Alert>
+            <Callout type="note" title="Protected Atoms" className="not-prose my-6">
+                The <code>moov</code> atom contains critical metadata. Dits never
+                chunks through it - the entire moov is kept as a single chunk to
+                ensure file playability.
+            </Callout>
 
             <h2>Delta Encoding</h2>
             <p>

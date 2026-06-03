@@ -8,7 +8,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
@@ -22,7 +23,6 @@ import {
   Server,
   Cloud,
   Shield,
-  Zap,
   Database,
   Users,
   Settings,
@@ -37,28 +37,24 @@ export const metadata: Metadata = {
 export default function DeploymentPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Deployment Guide</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Deploy Dits in production environments with high availability, scalability,
-        and security. Choose from Docker, Kubernetes, or cloud-managed solutions.
-      </p>
+      <DocPageHeader
+        eyebrow="Deployment"
+        title="Deployment Guide"
+        description="Deploy Dits in production environments with high availability, scalability, and security. Choose from Docker, Kubernetes, or cloud-managed solutions."
+      />
 
-      <Alert className="not-prose my-6">
-        <CheckCircle className="h-4 w-4" />
-        <AlertTitle>Production Ready</AlertTitle>
-        <AlertDescription>
-          Dits is designed for production deployment with built-in monitoring,
-          backups, and scaling capabilities.
-        </AlertDescription>
-      </Alert>
+      <Callout type="tip" title="Production Ready" className="not-prose my-6">
+        Dits is designed for production deployment with built-in monitoring,
+        backups, and scaling capabilities.
+      </Callout>
 
       <h2>Deployment Options</h2>
 
-      <div className="grid gap-6 md:grid-cols-3 my-8">
-        <Card className="border-primary/30">
+      <div className="not-prose grid gap-6 md:grid-cols-3 my-8">
+        <Card className="border-brand/40 bg-brand/5">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Server className="h-5 w-5 text-primary" />
+            <CardTitle className="flex items-center gap-2 text-brand">
+              <Server className="h-5 w-5 text-brand" />
               Self-Hosted
             </CardTitle>
             <CardDescription>
@@ -66,7 +62,7 @@ export default function DeploymentPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="text-sm space-y-2">
+            <ul className="text-sm space-y-2 text-muted-foreground">
               <li>Complete data sovereignty</li>
               <li>Custom scaling policies</li>
               <li>On-premise deployment</li>
@@ -78,10 +74,10 @@ export default function DeploymentPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-accent">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Cloud className="h-5 w-5 text-accent-foreground" />
+              <Cloud className="h-5 w-5 text-muted-foreground" />
               Cloud Managed
             </CardTitle>
             <CardDescription>
@@ -89,7 +85,7 @@ export default function DeploymentPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="text-sm space-y-2">
+            <ul className="text-sm space-y-2 text-muted-foreground">
               <li>Zero infrastructure management</li>
               <li>Automatic scaling</li>
               <li>Built-in backups</li>
@@ -101,7 +97,7 @@ export default function DeploymentPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-secondary">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-muted-foreground" />
@@ -112,7 +108,7 @@ export default function DeploymentPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="text-sm space-y-2">
+            <ul className="text-sm space-y-2 text-muted-foreground">
               <li>Sensitive data on-premise</li>
               <li>Public assets in cloud</li>
               <li>Geographic compliance</li>
@@ -127,7 +123,7 @@ export default function DeploymentPage() {
 
       <h2>Architecture Overview</h2>
 
-      <div className="bg-muted p-6 rounded-lg my-6">
+      <div className="not-prose bg-muted p-6 rounded-lg my-6">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
             <h3 className="font-semibold mb-4">Core Components</h3>
@@ -339,7 +335,7 @@ export default function DeploymentPage() {
 
       <h2>Quick Start Deployments</h2>
 
-      <div className="grid gap-6 md:grid-cols-2 my-8">
+      <div className="not-prose grid gap-6 md:grid-cols-2 my-8">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -354,7 +350,7 @@ export default function DeploymentPage() {
             <div className="space-y-3">
               <div className="text-sm">
                 <strong>Components:</strong>
-                <ul className="mt-1 space-y-1">
+                <ul className="mt-1 space-y-1 text-muted-foreground">
                   <li>PostgreSQL database</li>
                   <li>Redis cache</li>
                   <li>Dits API server</li>
@@ -364,7 +360,7 @@ export default function DeploymentPage() {
               <div className="text-sm">
                 <strong>Setup time:</strong> 5-10 minutes
               </div>
-              <Link href="/docs/deployment/docker" className="text-primary hover:underline text-sm">
+              <Link href="/docs/deployment/docker" className="text-brand hover:underline text-sm">
                 View Docker deployment guide →
               </Link>
             </div>
@@ -385,7 +381,7 @@ export default function DeploymentPage() {
             <div className="space-y-3">
               <div className="text-sm">
                 <strong>Features:</strong>
-                <ul className="mt-1 space-y-1">
+                <ul className="mt-1 space-y-1 text-muted-foreground">
                   <li>Auto-scaling</li>
                   <li>Rolling updates</li>
                   <li>Persistent storage</li>
@@ -395,7 +391,7 @@ export default function DeploymentPage() {
               <div className="text-sm">
                 <strong>Setup time:</strong> 30-60 minutes
               </div>
-              <Link href="/docs/deployment/kubernetes" className="text-primary hover:underline text-sm">
+              <Link href="/docs/deployment/kubernetes" className="text-brand hover:underline text-sm">
                 View Kubernetes deployment guide →
               </Link>
             </div>
@@ -421,7 +417,7 @@ export default function DeploymentPage() {
               <TableCell className="font-mono">DATABASE_URL</TableCell>
               <TableCell>PostgreSQL connection string</TableCell>
               <TableCell>-</TableCell>
-              <TableCell><CheckCircle className="h-4 w-4 text-primary" /></TableCell>
+              <TableCell><CheckCircle className="h-4 w-4 text-success" /></TableCell>
             </TableRow>
             <TableRow>
               <TableCell className="font-mono">REDIS_URL</TableCell>
@@ -433,7 +429,7 @@ export default function DeploymentPage() {
               <TableCell className="font-mono">JWT_SECRET</TableCell>
               <TableCell>Secret for JWT token signing</TableCell>
               <TableCell>-</TableCell>
-              <TableCell><CheckCircle className="h-4 w-4 text-primary" /></TableCell>
+              <TableCell><CheckCircle className="h-4 w-4 text-success" /></TableCell>
             </TableRow>
             <TableRow>
               <TableCell className="font-mono">STORAGE_TYPE</TableCell>
@@ -453,16 +449,18 @@ export default function DeploymentPage() {
 
       <h2>Security Considerations</h2>
 
-      <div className="grid gap-4 md:grid-cols-2 my-6">
+      <div className="not-prose grid gap-4 md:grid-cols-2 my-6">
         <Card>
           <CardHeader>
             <CardTitle>Network Security</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <li className="text-sm">HTTPS/TLS 1.3 encryption</li>
-            <li className="text-sm">Network segmentation</li>
-            <li className="text-sm">Firewall rules</li>
-            <li className="text-sm">VPN for admin access</li>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>HTTPS/TLS 1.3 encryption</li>
+              <li>Network segmentation</li>
+              <li>Firewall rules</li>
+              <li>VPN for admin access</li>
+            </ul>
           </CardContent>
         </Card>
 
@@ -471,71 +469,75 @@ export default function DeploymentPage() {
             <CardTitle>Data Security</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <li className="text-sm">At-rest encryption</li>
-            <li className="text-sm">Content integrity verification</li>
-            <li className="text-sm">Backup encryption</li>
-            <li className="text-sm">Secure key management</li>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>At-rest encryption</li>
+              <li>Content integrity verification</li>
+              <li>Backup encryption</li>
+              <li>Secure key management</li>
+            </ul>
           </CardContent>
         </Card>
       </div>
 
-      <h2>Monitoring & Maintenance</h2>
+      <h2>Monitoring &amp; Maintenance</h2>
 
-      <Alert className="not-prose my-6">
-        <Settings className="h-4 w-4" />
-        <AlertTitle>Health Checks</AlertTitle>
-        <AlertDescription>
-          All services expose health check endpoints at <code>/health</code> for load balancer monitoring.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Health Checks" className="not-prose my-6">
+        All services expose health check endpoints at <code>/health</code> for load balancer monitoring.
+      </Callout>
 
       <h3>Key Metrics to Monitor</h3>
-      <div className="grid gap-4 md:grid-cols-3 my-6">
+      <div className="not-prose grid gap-4 md:grid-cols-3 my-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Performance</CardTitle>
+            <CardTitle className="text-base">Performance</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <li className="text-sm">API response times</li>
-            <li className="text-sm">Chunk upload/download speeds</li>
-            <li className="text-sm">Database query latency</li>
-            <li className="text-sm">Cache hit rates</li>
+          <CardContent>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>API response times</li>
+              <li>Chunk upload/download speeds</li>
+              <li>Database query latency</li>
+              <li>Cache hit rates</li>
+            </ul>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Resources</CardTitle>
+            <CardTitle className="text-base">Resources</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <li className="text-sm">CPU utilization</li>
-            <li className="text-sm">Memory usage</li>
-            <li className="text-sm">Disk I/O</li>
-            <li className="text-sm">Network bandwidth</li>
+          <CardContent>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>CPU utilization</li>
+              <li>Memory usage</li>
+              <li>Disk I/O</li>
+              <li>Network bandwidth</li>
+            </ul>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Business</CardTitle>
+            <CardTitle className="text-base">Business</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <li className="text-sm">Active users</li>
-            <li className="text-sm">Storage usage</li>
-            <li className="text-sm">Repository count</li>
-            <li className="text-sm">API call volume</li>
+          <CardContent>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>Active users</li>
+              <li>Storage usage</li>
+              <li>Repository count</li>
+              <li>API call volume</li>
+            </ul>
           </CardContent>
         </Card>
       </div>
 
-      <h2>Backup & Recovery</h2>
+      <h2>Backup &amp; Recovery</h2>
 
-      <div className="bg-muted p-6 rounded-lg my-6">
+      <div className="not-prose bg-muted p-6 rounded-lg my-6">
         <h3 className="font-semibold mb-4">Backup Strategy</h3>
         <div className="grid md:grid-cols-2 gap-6">
           <div>
             <h4 className="font-medium mb-2">Database Backups</h4>
-            <ul className="text-sm space-y-1">
+            <ul className="text-sm space-y-1 text-muted-foreground">
               <li>Daily full backups</li>
               <li>Hourly incremental backups</li>
               <li>Point-in-time recovery</li>
@@ -544,7 +546,7 @@ export default function DeploymentPage() {
           </div>
           <div>
             <h4 className="font-medium mb-2">Chunk Storage Backups</h4>
-            <ul className="text-sm space-y-1">
+            <ul className="text-sm space-y-1 text-muted-foreground">
               <li>Cross-region replication</li>
               <li>Immutable backups</li>
               <li>Content verification</li>
@@ -554,18 +556,18 @@ export default function DeploymentPage() {
         </div>
       </div>
 
-      <h2>Support & Resources</h2>
+      <h2>Support &amp; Resources</h2>
 
-      <div className="grid gap-4 md:grid-cols-3 my-6">
+      <div className="not-prose grid gap-4 md:grid-cols-3 my-6">
         <Card>
           <CardHeader>
             <CardTitle>Documentation</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="text-sm space-y-1">
-              <li><Link href="/docs/deployment/docker">Docker Guide</Link></li>
-              <li><Link href="/docs/deployment/kubernetes">Kubernetes Guide</Link></li>
-              <li><Link href="/docs/deployment/self-hosting">Self-Hosting Guide</Link></li>
+            <ul className="text-sm space-y-1 text-muted-foreground">
+              <li><Link href="/docs/deployment/docker" className="text-brand hover:underline">Docker Guide</Link></li>
+              <li><Link href="/docs/deployment/kubernetes" className="text-brand hover:underline">Kubernetes Guide</Link></li>
+              <li><Link href="/docs/deployment/self-hosting" className="text-brand hover:underline">Self-Hosting Guide</Link></li>
             </ul>
           </CardContent>
         </Card>
@@ -575,10 +577,10 @@ export default function DeploymentPage() {
             <CardTitle>Community</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="text-sm space-y-1">
-              <li><Link href="https://github.com/byronwade/dits/discussions">GitHub Discussions</Link></li>
-              <li><Link href="https://github.com/byronwade/dits/issues">Issue Tracker</Link></li>
-              <li><Link href="/docs/troubleshooting">Troubleshooting Guide</Link></li>
+            <ul className="text-sm space-y-1 text-muted-foreground">
+              <li><Link href="https://github.com/byronwade/dits/discussions" className="text-brand hover:underline">GitHub Discussions</Link></li>
+              <li><Link href="https://github.com/byronwade/dits/issues" className="text-brand hover:underline">Issue Tracker</Link></li>
+              <li><Link href="/docs/troubleshooting" className="text-brand hover:underline">Troubleshooting Guide</Link></li>
             </ul>
           </CardContent>
         </Card>
@@ -588,7 +590,7 @@ export default function DeploymentPage() {
             <CardTitle>Professional Services</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="text-sm space-y-1">
+            <ul className="text-sm space-y-1 text-muted-foreground">
               <li>Deployment consulting</li>
               <li>Performance optimization</li>
               <li>Enterprise integration</li>
@@ -598,16 +600,11 @@ export default function DeploymentPage() {
         </Card>
       </div>
 
-      <Alert className="not-prose my-6">
-        <Users className="h-4 w-4" />
-        <AlertTitle>Need Help?</AlertTitle>
-        <AlertDescription>
-          For deployment assistance or enterprise requirements,
-          <Link href="/contact" className="underline">contact our team</Link> or
-          <Link href="https://github.com/byronwade/dits/discussions" className="underline">join the community</Link>.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Need Help?" className="not-prose my-6">
+        For deployment assistance or enterprise requirements,{" "}
+        <Link href="/contact" className="underline">contact our team</Link> or{" "}
+        <Link href="https://github.com/byronwade/dits/discussions" className="underline">join the community</Link>.
+      </Callout>
     </div>
   );
 }
-

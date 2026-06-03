@@ -3,11 +3,11 @@ import Link from "next/link";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import {
   Table,
   TableBody,
@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Info, HardDrive, Zap, Cloud } from "lucide-react";
+import { HardDrive, Zap, Cloud } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -27,11 +27,11 @@ export const metadata: Metadata = {
 export default function VFSPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Virtual Filesystem (VFS)</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Mount Dits repositories as virtual drives, accessing files on-demand
-        without downloading the entire repository.
-      </p>
+      <DocPageHeader
+        eyebrow="Advanced Topics"
+        title="Virtual Filesystem (VFS)"
+        description="Mount Dits repositories as virtual drives, accessing files on-demand without downloading the entire repository."
+      />
 
       <h2>Overview</h2>
       <p>
@@ -43,46 +43,46 @@ export default function VFSPage() {
       <div className="not-prose grid gap-4 md:grid-cols-3 my-8">
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Cloud className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Cloud className="size-5 text-brand" />
             </div>
-            <CardTitle>On-Demand Access</CardTitle>
+            <CardTitle className="text-base">On-Demand Access</CardTitle>
           </CardHeader>
           <CardContent>
-            <CardDescription>
+            <p className="text-sm text-muted-foreground">
               Only download chunks when files are actually read. Browse a 500GB
               repository using just megabytes of storage.
-            </CardDescription>
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Zap className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Zap className="size-5 text-brand" />
             </div>
-            <CardTitle>Instant Mount</CardTitle>
+            <CardTitle className="text-base">Instant Mount</CardTitle>
           </CardHeader>
           <CardContent>
-            <CardDescription>
+            <p className="text-sm text-muted-foreground">
               Mount any branch or commit instantly. No waiting for downloads -
               files appear immediately and load as needed.
-            </CardDescription>
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <HardDrive className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <HardDrive className="size-5 text-brand" />
             </div>
-            <CardTitle>Smart Caching</CardTitle>
+            <CardTitle className="text-base">Smart Caching</CardTitle>
           </CardHeader>
           <CardContent>
-            <CardDescription>
+            <p className="text-sm text-muted-foreground">
               Frequently accessed data is cached locally. Subsequent accesses
               are as fast as local disk.
-            </CardDescription>
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -119,15 +119,11 @@ export default function VFSPage() {
         </TableBody>
       </Table>
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>macOS System Extension</AlertTitle>
-        <AlertDescription>
-          macFUSE requires enabling a system extension. After installing, go to
-          System Preferences → Security & Privacy → General and allow the
-          extension, then restart.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="macOS System Extension" className="not-prose my-6">
+        macFUSE requires enabling a system extension. After installing, go to
+        System Preferences → Security & Privacy → General and allow the
+        extension, then restart.
+      </Callout>
 
       <h2>Basic Usage</h2>
 

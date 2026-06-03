@@ -8,8 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Cloud, Info, Download, Upload, RefreshCw, Globe } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { Download, Upload, RefreshCw, Globe } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -43,13 +44,11 @@ const commands = [
 export default function RemoteCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <div className="flex items-center gap-2 mb-2">
-        <Cloud className="h-8 w-8 text-info" />
-        <h1 className="mb-0">Remote Commands</h1>
-      </div>
-      <p className="lead text-xl text-muted-foreground">
-        Commands for synchronizing your local repository with remote servers.
-      </p>
+      <DocPageHeader
+        eyebrow="CLI Reference"
+        title="Remote Commands"
+        description="Commands for synchronizing your local repository with remote servers."
+      />
 
       <Table className="not-prose my-6">
         <TableHeader>
@@ -183,15 +182,11 @@ Updating a1b2c3d..f5e4d3c
 Applying stashed changes...`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Delta Transfer</AlertTitle>
-        <AlertDescription>
-          Dits only transfers missing chunks. If you already have similar files
-          locally, pull operations are significantly faster than downloading
-          everything.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Delta Transfer" className="not-prose my-6">
+        Dits only transfers missing chunks. If you already have similar files
+        locally, pull operations are significantly faster than downloading
+        everything.
+      </Callout>
 
       <h2 className="flex items-center gap-2">
         <Upload className="h-5 w-5" />
@@ -260,15 +255,11 @@ Would push:
   Already on remote: 10,078`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Force Push Warning</AlertTitle>
-        <AlertDescription>
-          Avoid <code>--force</code> on shared branches. It overwrites remote
-          history and can cause data loss. Use <code>--force-with-lease</code>
-          for safer force pushes that fail if someone else pushed first.
-        </AlertDescription>
-      </Alert>
+      <Callout type="warning" title="Force Push Warning" className="not-prose my-6">
+        Avoid <code>--force</code> on shared branches. It overwrites remote
+        history and can cause data loss. Use <code>--force-with-lease</code>
+        for safer force pushes that fail if someone else pushed first.
+      </Callout>
 
       <h2 className="flex items-center gap-2">
         <Globe className="h-5 w-5" />

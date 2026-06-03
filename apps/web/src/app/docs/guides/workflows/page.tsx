@@ -7,10 +7,11 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CodeBlock } from "@/components/ui/code-block";
-import { Users, User, Building, GitBranch, CheckCircle, Check } from "lucide-react";
+import { Users, User, Building, GitBranch, Check } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Workflows - Common Patterns",
@@ -20,27 +21,27 @@ export const metadata: Metadata = {
 export default function WorkflowsPage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <h1>Workflow Patterns</h1>
-            <p className="lead text-xl text-muted-foreground">
-                Choose the right workflow for your team size and project type.
-                From solo projects to enterprise deployments, Dits adapts to your needs.
-            </p>
+            <DocPageHeader
+                eyebrow="Guides"
+                title="Workflow Patterns"
+                description="Choose the right workflow for your team size and project type. From solo projects to enterprise deployments, Dits adapts to your needs."
+            />
 
             <h2>Choose Your Workflow</h2>
 
-            <div className="grid gap-6 md:grid-cols-3 my-8">
-                <Card className="border-primary/30">
+            <div className="not-prose grid gap-6 md:grid-cols-3 my-8">
+                <Card className="border-brand/40 bg-brand/5">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <User className="h-5 w-5 text-primary" />
-                            Solo Developer
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <User className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base text-brand">Solo Developer</CardTitle>
                         <CardDescription>
                             Simple linear workflow
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>Single branch workflow</li>
                             <li>Direct commits to main</li>
                             <li>Minimal overhead</li>
@@ -50,16 +51,16 @@ export default function WorkflowsPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Users className="h-5 w-5 text-primary" />
-                            Small Team
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Users className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Small Team</CardTitle>
                         <CardDescription>
                             Feature branch workflow
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>Feature branches</li>
                             <li>Pull request reviews</li>
                             <li>Protected main branch</li>
@@ -69,16 +70,16 @@ export default function WorkflowsPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Building className="h-5 w-5 text-primary" />
-                            Enterprise
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Building className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Enterprise</CardTitle>
                         <CardDescription>
                             Gitflow-style workflow
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>Release branches</li>
                             <li>Hotfix process</li>
                             <li>Multiple environments</li>
@@ -297,14 +298,10 @@ dits fetch origin
 dits merge origin/main  # Get latest from main`}
             />
 
-            <Alert className="not-prose my-6">
-                <GitBranch className="h-4 w-4" />
-                <AlertTitle>P2P Collaboration</AlertTitle>
-                <AlertDescription>
-                    For real-time collaboration without a central server, use P2P sync:
-                    <code className="block mt-2">dits p2p sync --with teammate-ip:9001</code>
-                </AlertDescription>
-            </Alert>
+            <Callout type="note" title="P2P Collaboration" className="not-prose my-6">
+                For real-time collaboration without a central server, use P2P sync:
+                <code className="block mt-2">dits p2p sync --with teammate-ip:9001</code>
+            </Callout>
 
             <h2>Related Topics</h2>
             <ul>

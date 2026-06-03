@@ -3,11 +3,11 @@ import Link from "next/link";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import {
   Table,
   TableBody,
@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Info, HardDrive, Cloud, Archive } from "lucide-react";
+import { HardDrive, Cloud, Archive } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -27,12 +27,11 @@ export const metadata: Metadata = {
 export default function StorageTiersPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Storage Tiers</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Dits supports multiple storage tiers, automatically moving data between
-        fast local storage, cloud storage, and cold archive based on access
-        patterns and policies.
-      </p>
+      <DocPageHeader
+        eyebrow="Advanced Topics"
+        title="Storage Tiers"
+        description="Dits supports multiple storage tiers, automatically moving data between fast local storage, cloud storage, and cold archive based on access patterns and policies."
+      />
 
       <h2>Storage Hierarchy</h2>
       <p>
@@ -42,46 +41,46 @@ export default function StorageTiersPage() {
       <div className="not-prose grid gap-4 md:grid-cols-3 my-8">
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mb-2">
-              <HardDrive className="h-6 w-6 text-success" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-success/10">
+              <HardDrive className="size-5 text-success" />
             </div>
-            <CardTitle>Hot (Local)</CardTitle>
+            <CardTitle className="text-base">Hot (Local)</CardTitle>
           </CardHeader>
           <CardContent>
-            <CardDescription>
+            <p className="text-sm text-muted-foreground">
               Fast local storage for actively used data. Instant access, highest
               cost per GB.
-            </CardDescription>
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-info/10 flex items-center justify-center mb-2">
-              <Cloud className="h-6 w-6 text-info" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-info/10">
+              <Cloud className="size-5 text-info" />
             </div>
-            <CardTitle>Warm (Cloud)</CardTitle>
+            <CardTitle className="text-base">Warm (Cloud)</CardTitle>
           </CardHeader>
           <CardContent>
-            <CardDescription>
+            <p className="text-sm text-muted-foreground">
               Cloud object storage for recent data. Seconds to access, moderate
               cost.
-            </CardDescription>
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-brand/10 flex items-center justify-center mb-2">
-              <Archive className="h-6 w-6 text-brand" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Archive className="size-5 text-brand" />
             </div>
-            <CardTitle>Cold (Archive)</CardTitle>
+            <CardTitle className="text-base">Cold (Archive)</CardTitle>
           </CardHeader>
           <CardContent>
-            <CardDescription>
+            <p className="text-sm text-muted-foreground">
               Deep archive for rarely accessed data. Hours to retrieve, lowest
               cost.
-            </CardDescription>
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -277,18 +276,14 @@ HOT:
 
       <h2>Retrieval from Cold Storage</h2>
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Archive Retrieval Times</AlertTitle>
-        <AlertDescription>
-          Cold storage (Glacier, Archive tiers) has retrieval delays:
-          <ul className="mt-2 list-disc list-inside">
-            <li>Glacier Instant: 1-5 minutes</li>
-            <li>Glacier Flexible: 3-5 hours</li>
-            <li>Glacier Deep: 12-48 hours</li>
-          </ul>
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Archive Retrieval Times" className="not-prose my-6">
+        Cold storage (Glacier, Archive tiers) has retrieval delays:
+        <ul className="mt-2 list-disc list-inside">
+          <li>Glacier Instant: 1-5 minutes</li>
+          <li>Glacier Flexible: 3-5 hours</li>
+          <li>Glacier Deep: 12-48 hours</li>
+        </ul>
+      </Callout>
 
       <CodeBlock
         language="bash"

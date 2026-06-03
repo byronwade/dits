@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { Database, Layers, GitBranch, Globe } from "lucide-react";
 import { ArchitectureDiagram } from "@/components/diagrams/architecture-diagram";
 import { FileClassifierDiagram, FileClassifierCompact } from "@/components/diagrams/file-classifier-diagram";
@@ -95,12 +96,11 @@ export default function ArchitecturePage() {
         }}
       />
       <div className="prose dark:prose-invert max-w-none">
-      <h1>Architecture Overview</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Dits is built as a layered system with a core engine handling content
-        management, transport layer for network operations, and client interfaces
-        for different use cases.
-      </p>
+        <DocPageHeader
+          eyebrow="Architecture"
+          title="Architecture Overview"
+          description="Dits is built as a layered system with a core engine handling content management, transport layer for network operations, and client interfaces for different use cases."
+        />
 
       <h2>High-Level Architecture</h2>
       <ArchitectureDiagram />
@@ -116,8 +116,8 @@ export default function ArchitecturePage() {
       <div className="not-prose grid gap-4 md:grid-cols-2 my-8">
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Database className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Database className="size-5 text-brand" />
             </div>
             <CardTitle>Content Store</CardTitle>
           </CardHeader>
@@ -126,7 +126,7 @@ export default function ArchitecturePage() {
               The content-addressable storage layer handles chunking, hashing,
               deduplication, and compression of all repository data.
             </CardDescription>
-            <Link href="/docs/architecture/data-structures" className="text-sm text-primary hover:underline mt-2 block">
+            <Link href="/docs/architecture/data-structures" className="text-sm text-brand hover:underline mt-2 block">
               Learn about data structures →
             </Link>
           </CardContent>
@@ -134,8 +134,8 @@ export default function ArchitecturePage() {
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Layers className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Layers className="size-5 text-brand" />
             </div>
             <CardTitle>Object Model</CardTitle>
           </CardHeader>
@@ -144,7 +144,7 @@ export default function ArchitecturePage() {
               Commits, trees, assets, and chunks form a directed acyclic graph
               (DAG) that represents repository history.
             </CardDescription>
-            <Link href="/docs/architecture/data-structures" className="text-sm text-primary hover:underline mt-2 block">
+            <Link href="/docs/architecture/data-structures" className="text-sm text-brand hover:underline mt-2 block">
               Learn about objects →
             </Link>
           </CardContent>
@@ -152,8 +152,8 @@ export default function ArchitecturePage() {
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <GitBranch className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <GitBranch className="size-5 text-brand" />
             </div>
             <CardTitle>Reference System</CardTitle>
           </CardHeader>
@@ -162,7 +162,7 @@ export default function ArchitecturePage() {
               Branches, tags, and HEAD provide named pointers into the commit
               graph, enabling version navigation.
             </CardDescription>
-            <Link href="/docs/concepts/branching" className="text-sm text-primary hover:underline mt-2 block">
+            <Link href="/docs/concepts/branching" className="text-sm text-brand hover:underline mt-2 block">
               Learn about branches →
             </Link>
           </CardContent>
@@ -170,8 +170,8 @@ export default function ArchitecturePage() {
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Globe className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Globe className="size-5 text-brand" />
             </div>
             <CardTitle>Transport Protocol</CardTitle>
           </CardHeader>
@@ -180,7 +180,7 @@ export default function ArchitecturePage() {
               QUIC-based protocol for efficient chunk transfer with delta
               synchronization and resumable uploads.
             </CardDescription>
-            <Link href="/docs/architecture/protocol" className="text-sm text-primary hover:underline mt-2 block">
+            <Link href="/docs/architecture/protocol" className="text-sm text-brand hover:underline mt-2 block">
               Learn about protocol →
             </Link>
           </CardContent>

@@ -8,8 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -77,11 +77,11 @@ const configOptions = [
 export default function ConfigurationPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Configuration</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Dits uses a layered configuration system similar to Git. Settings can be
-        configured at the system, global, or repository level.
-      </p>
+      <DocPageHeader
+        eyebrow="Configuration"
+        title="Configuration"
+        description="Dits uses a layered configuration system similar to Git. Settings can be configured at the system, global, or repository level."
+      />
 
       <h2>Configuration Levels</h2>
       <ul>
@@ -183,14 +183,10 @@ cache.size=10GB
 $ dits config --global user.email "you@example.com"`}
       />
 
-      <Alert className="not-prose my-4">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Required for Commits</AlertTitle>
-        <AlertDescription>
-          Dits requires user.name and user.email to be set before you can create
-          commits. Set them globally to avoid setting them for each repository.
-        </AlertDescription>
-      </Alert>
+      <Callout type="warning" title="Required for Commits" className="not-prose my-4">
+        Dits requires user.name and user.email to be set before you can create
+        commits. Set them globally to avoid setting them for each repository.
+      </Callout>
 
       <h2>Configuration File Format</h2>
       <p>

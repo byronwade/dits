@@ -7,9 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, Share2, Wifi, Globe, Shield, Zap, Server, Radio } from "lucide-react";
+import { Share2, Wifi, Globe, Shield, Zap, Server, Radio } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { FlowDiagram } from "@/components/docs/flow-diagram";
 
 export const metadata: Metadata = {
@@ -20,11 +21,11 @@ export const metadata: Metadata = {
 export default function PeerToPeerPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Peer-to-Peer Sharing</h1>
-      <p className="lead text-xl text-muted-foreground">
-        DITS includes Wormhole-style P2P capabilities for sharing files directly
-        between peers without uploading to a central server.
-      </p>
+      <DocPageHeader
+        eyebrow="Core Concepts"
+        title="Peer-to-Peer Sharing"
+        description="DITS includes Wormhole-style P2P capabilities for sharing files directly between peers without uploading to a central server."
+      />
 
       <h2>What is P2P Sharing?</h2>
       <p>
@@ -37,10 +38,10 @@ export default function PeerToPeerPage() {
       <div className="not-prose grid gap-4 md:grid-cols-3 my-8">
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mb-2">
-              <Zap className="h-6 w-6 text-success" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-success/10">
+              <Zap className="size-5 text-success" />
             </div>
-            <CardTitle>Fast</CardTitle>
+            <CardTitle className="text-base">Fast</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -52,10 +53,10 @@ export default function PeerToPeerPage() {
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-info/10 flex items-center justify-center mb-2">
-              <Shield className="h-6 w-6 text-info" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-info/10">
+              <Shield className="size-5 text-info" />
             </div>
-            <CardTitle>Private</CardTitle>
+            <CardTitle className="text-base">Private</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -67,10 +68,10 @@ export default function PeerToPeerPage() {
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-brand/10 flex items-center justify-center mb-2">
-              <Wifi className="h-6 w-6 text-brand" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Wifi className="size-5 text-brand" />
             </div>
-            <CardTitle>Works Anywhere</CardTitle>
+            <CardTitle className="text-base">Works Anywhere</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -100,10 +101,10 @@ export default function PeerToPeerPage() {
       <div className="not-prose grid gap-4 md:grid-cols-2 my-8">
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Globe className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Globe className="size-5 text-brand" />
             </div>
-            <CardTitle>Direct IP (Priority 0)</CardTitle>
+            <CardTitle className="text-base">Direct IP (Priority 0)</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -115,10 +116,10 @@ export default function PeerToPeerPage() {
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Wifi className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Wifi className="size-5 text-brand" />
             </div>
-            <CardTitle>mDNS (Priority 10)</CardTitle>
+            <CardTitle className="text-base">mDNS (Priority 10)</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -130,10 +131,10 @@ export default function PeerToPeerPage() {
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Radio className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Radio className="size-5 text-brand" />
             </div>
-            <CardTitle>STUN (Priority 20)</CardTitle>
+            <CardTitle className="text-base">STUN (Priority 20)</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -145,10 +146,10 @@ export default function PeerToPeerPage() {
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Server className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Server className="size-5 text-brand" />
             </div>
-            <CardTitle>Signal Server (Priority 30)</CardTitle>
+            <CardTitle className="text-base">Signal Server (Priority 30)</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -158,12 +159,12 @@ export default function PeerToPeerPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-success/50 bg-success/5">
+        <Card className="border-brand/40 bg-brand/5">
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mb-2">
-              <Share2 className="h-6 w-6 text-success" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Share2 className="size-5 text-brand" />
             </div>
-            <CardTitle>Relay (Priority 40) - No Port Forwarding!</CardTitle>
+            <CardTitle className="text-base text-brand">Relay (Priority 40) - No Port Forwarding!</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -175,25 +176,17 @@ export default function PeerToPeerPage() {
         </Card>
       </div>
 
-      <Alert className="not-prose my-6 border-success/50">
-        <Share2 className="h-4 w-4 text-success" />
-        <AlertTitle>Zero Port Forwarding with Relay Mode</AlertTitle>
-        <AlertDescription>
-          With relay mode (<code>--relay</code>), you never need to configure port forwarding
-          on your router. Traffic flows through the relay server, bypassing NAT completely.
-          Your files are still encrypted end-to-end - the relay only forwards encrypted bytes.
-        </AlertDescription>
-      </Alert>
+      <Callout type="tip" title="Zero Port Forwarding with Relay Mode" className="not-prose my-6">
+        With relay mode (<code>--relay</code>), you never need to configure port forwarding
+        on your router. Traffic flows through the relay server, bypassing NAT completely.
+        Your files are still encrypted end-to-end - the relay only forwards encrypted bytes.
+      </Callout>
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Signal Server vs. File Server</AlertTitle>
-        <AlertDescription>
-          The signal server only exchanges peer addresses - it never sees your files.
-          Think of it like a phone directory: it helps you find your friend&apos;s number,
-          but your conversation happens directly between you.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Signal Server vs. File Server" className="not-prose my-6">
+        The signal server only exchanges peer addresses - it never sees your files.
+        Think of it like a phone directory: it helps you find your friend&apos;s number,
+        but your conversation happens directly between you.
+      </Callout>
 
       <h2>Local vs. Internet Sharing</h2>
 
@@ -262,9 +255,9 @@ $ dits p2p connect XYZ-789`}
       <h2>When to Use P2P</h2>
 
       <div className="not-prose grid gap-4 md:grid-cols-2 my-8">
-        <Card className="border-success/20">
+        <Card className="border-brand/40 bg-brand/5">
           <CardHeader>
-            <CardTitle className="text-success">Good For</CardTitle>
+            <CardTitle className="text-base text-brand">Good For</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="text-sm space-y-2">
@@ -277,9 +270,9 @@ $ dits p2p connect XYZ-789`}
           </CardContent>
         </Card>
 
-        <Card className="border-warning/20">
+        <Card className="border-warning/40 bg-warning/5">
           <CardHeader>
-            <CardTitle className="text-warning">Consider Alternatives</CardTitle>
+            <CardTitle className="text-base text-warning">Consider Alternatives</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="text-sm space-y-2">

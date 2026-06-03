@@ -8,8 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { FileSearch, Info, List, BarChart, Download } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { List, BarChart, Download } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -26,24 +27,17 @@ const commands = [
 export default function AuditCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <div className="flex items-center gap-2 mb-2">
-        <FileSearch className="h-8 w-8 text-brand" />
-        <h1 className="mb-0">Audit Commands</h1>
-      </div>
-      <p className="lead text-xl text-muted-foreground">
-        Track and export repository activity. Audit logs provide a complete
-        record of who did what and when, essential for compliance and security.
-      </p>
+      <DocPageHeader
+        eyebrow="CLI Reference"
+        title="Audit Commands"
+        description="Track and export repository activity. Audit logs provide a complete record of who did what and when, essential for compliance and security."
+      />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Compliance Ready</AlertTitle>
-        <AlertDescription>
-          Audit logs track all significant operations: commits, pushes, pulls,
-          lock operations, access attempts, and configuration changes. Logs can
-          be exported for compliance reporting and security analysis.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Compliance Ready" className="not-prose my-6">
+        Audit logs track all significant operations: commits, pushes, pulls,
+        lock operations, access attempts, and configuration changes. Logs can
+        be exported for compliance reporting and security analysis.
+      </Callout>
 
       <Table className="not-prose my-6">
         <TableHeader>

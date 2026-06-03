@@ -8,8 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { HardDrive, Info, Snowflake, Sun, Settings, BarChart } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { Snowflake, Sun, Settings, BarChart } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -28,26 +29,18 @@ const commands = [
 export default function StorageCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <div className="flex items-center gap-2 mb-2">
-        <HardDrive className="h-8 w-8 text-info" />
-        <h1 className="mb-0">Storage Tier Commands</h1>
-      </div>
-      <p className="lead text-xl text-muted-foreground">
-        Manage data across hot, warm, and cold storage tiers. Automatically move
-        infrequently accessed files to cheaper storage while keeping active files
-        instantly available.
-      </p>
+      <DocPageHeader
+        eyebrow="CLI Reference"
+        title="Storage Tier Commands"
+        description="Manage data across hot, warm, and cold storage tiers. Automatically move infrequently accessed files to cheaper storage while keeping active files instantly available."
+      />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Tiered Storage Architecture</AlertTitle>
-        <AlertDescription>
-          <strong>Hot:</strong> Local SSD for active files (instant access).
-          <strong> Warm:</strong> Cloud object storage like S3 Standard (seconds).
-          <strong> Cold:</strong> Archive storage like Glacier (hours). Dits moves
-          data between tiers based on access patterns.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Tiered Storage Architecture" className="not-prose my-6">
+        <strong>Hot:</strong> Local SSD for active files (instant access).
+        <strong> Warm:</strong> Cloud object storage like S3 Standard (seconds).
+        <strong> Cold:</strong> Archive storage like Glacier (hours). Dits moves
+        data between tiers based on access patterns.
+      </Callout>
 
       <Table className="not-prose my-6">
         <TableHeader>
@@ -216,7 +209,7 @@ WARM (234.5 GB, 45,892 chunks):
       <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits freeze [OPTIONS] &lt;PATH&gt;...`}
+        code={`dits freeze [OPTIONS] <PATH>...`}
       />
 
       <h3>Options</h3>
@@ -282,7 +275,7 @@ Total: 234.5 GB would move to WARM`}
       <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits thaw [OPTIONS] &lt;PATH&gt;...`}
+        code={`dits thaw [OPTIONS] <PATH>...`}
       />
 
       <h3>Options</h3>

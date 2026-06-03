@@ -7,9 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, GitBranch, GitMerge, Lock } from "lucide-react";
+import { GitBranch, GitMerge, Lock } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { FileTree } from "@/components/docs/file-tree";
 
 export const metadata: Metadata = {
@@ -20,11 +21,11 @@ export const metadata: Metadata = {
 export default function BranchingPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Branching & Merging</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Branches let you work on different versions of your project simultaneously.
-        Create branches for experiments, features, or different edit versions.
-      </p>
+      <DocPageHeader
+        eyebrow="Core Concepts"
+        title="Branching & Merging"
+        description="Branches let you work on different versions of your project simultaneously. Create branches for experiments, features, or different edit versions."
+      />
 
       <h2>Why Use Branches?</h2>
       <p>
@@ -42,10 +43,10 @@ export default function BranchingPage() {
       <div className="not-prose grid gap-4 md:grid-cols-3 my-8">
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <GitBranch className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <GitBranch className="size-5 text-brand" />
             </div>
-            <CardTitle>Create</CardTitle>
+            <CardTitle className="text-base">Create</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -57,10 +58,10 @@ export default function BranchingPage() {
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <GitBranch className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <GitBranch className="size-5 text-brand" />
             </div>
-            <CardTitle>Switch</CardTitle>
+            <CardTitle className="text-base">Switch</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -72,10 +73,10 @@ export default function BranchingPage() {
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <GitMerge className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <GitMerge className="size-5 text-brand" />
             </div>
-            <CardTitle>Merge</CardTitle>
+            <CardTitle className="text-base">Merge</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -117,15 +118,11 @@ $ dits status
 On branch client-version`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Efficient Branch Switching</AlertTitle>
-        <AlertDescription>
-          Unlike Git with large files, switching branches in Dits only hydrates
-          files that differ between branches. Switching between branches with
-          mostly the same content is nearly instant.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Efficient Branch Switching" className="not-prose my-6">
+        Unlike Git with large files, switching branches in Dits only hydrates
+        files that differ between branches. Switching between branches with
+        mostly the same content is nearly instant.
+      </Callout>
 
       <h2>Branch Visualization</h2>
       <CodeBlock
@@ -219,10 +216,10 @@ $ dits commit -m "Merge client-version, keep our scene1"`}
       <div className="not-prose grid gap-4 md:grid-cols-2 my-8">
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Lock className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Lock className="size-5 text-brand" />
             </div>
-            <CardTitle>Advisory Locks</CardTitle>
+            <CardTitle className="text-base">Advisory Locks</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -238,10 +235,10 @@ $ dits commit -m "Merge client-version, keep our scene1"`}
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Lock className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Lock className="size-5 text-brand" />
             </div>
-            <CardTitle>Strict Locks</CardTitle>
+            <CardTitle className="text-base">Strict Locks</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -370,17 +367,13 @@ Rebasing (3/3): Adjust audio levels
 Successfully rebased and updated refs/heads/feature/audio.`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>When to Rebase vs Merge</AlertTitle>
-        <AlertDescription>
-          <ul className="mt-2 list-disc list-inside">
-            <li><strong>Rebase:</strong> For local branches to keep history clean</li>
-            <li><strong>Merge:</strong> For shared branches or preserving history</li>
-            <li>Never rebase branches that others are using</li>
-          </ul>
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="When to Rebase vs Merge" className="not-prose my-6">
+        <ul className="mt-2 list-disc list-inside">
+          <li><strong>Rebase:</strong> For local branches to keep history clean</li>
+          <li><strong>Merge:</strong> For shared branches or preserving history</li>
+          <li>Never rebase branches that others are using</li>
+        </ul>
+      </Callout>
 
       <h2>Cherry-Picking</h2>
       <p>

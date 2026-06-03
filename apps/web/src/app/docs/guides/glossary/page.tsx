@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { Book } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -176,10 +177,11 @@ export default function GlossaryPage() {
 
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <h1>Glossary</h1>
-            <p className="lead text-xl text-muted-foreground">
-                Definitions of key terms and concepts used throughout the Dits documentation.
-            </p>
+            <DocPageHeader
+                eyebrow="Guides"
+                title="Glossary"
+                description="Definitions of key terms and concepts used throughout the Dits documentation."
+            />
 
             <div className="not-prose my-8">
                 <div className="flex flex-wrap gap-2 mb-8">
@@ -187,7 +189,7 @@ export default function GlossaryPage() {
                         <a
                             key={letter}
                             href={`#section-${letter}`}
-                            className="px-3 py-1 bg-muted rounded hover:bg-primary hover:text-primary-foreground transition-colors"
+                            className="px-3 py-1 bg-muted rounded hover:bg-brand hover:text-background transition-colors text-sm font-medium"
                         >
                             {letter}
                         </a>
@@ -197,7 +199,7 @@ export default function GlossaryPage() {
                 {Object.keys(grouped).sort().map(letter => (
                     <div key={letter} id={`section-${letter}`} className="mb-8">
                         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                            <Book className="h-5 w-5 text-primary" />
+                            <Book className="h-5 w-5 text-brand" />
                             {letter}
                         </h2>
                         <div className="space-y-3">

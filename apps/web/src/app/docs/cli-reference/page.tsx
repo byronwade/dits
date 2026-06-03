@@ -435,7 +435,7 @@ export default function CLIReferencePage() {
           const Icon = category.icon;
           return (
             <Link key={category.title} href={category.href}>
-              <Card className="h-full hover:border-primary/50 transition-colors cursor-pointer">
+              <Card className="h-full hover:border-brand/50 transition-colors cursor-pointer">
                 <CardHeader className="pb-3">
                   <div className={`w-10 h-10 rounded-lg ${category.bgColor} flex items-center justify-center mb-2`}>
                     <Icon className={`h-5 w-5 ${category.color}`} />

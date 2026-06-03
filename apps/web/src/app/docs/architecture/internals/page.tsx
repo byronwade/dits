@@ -3,13 +3,13 @@ import Link from "next/link";
 import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
-import { Cog, Database, Hash, FileCode, AlertTriangle } from "lucide-react";
+import { Cog, Database, Hash, FileCode } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Internals - Low-Level Commands",
@@ -19,33 +19,28 @@ export const metadata: Metadata = {
 export default function InternalsPage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <h1>Internals &amp; Plumbing</h1>
-            <p className="lead text-xl text-muted-foreground">
-                Low-level commands for advanced operations, scripting, and understanding
-                how Dits works under the hood. These are the building blocks that power
-                higher-level commands.
-            </p>
+            <DocPageHeader
+                eyebrow="Architecture"
+                title="Internals & Plumbing"
+                description="Low-level commands for advanced operations, scripting, and understanding how Dits works under the hood. These are the building blocks that power higher-level commands."
+            />
 
-            <Alert className="not-prose my-6">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Advanced Usage</AlertTitle>
-                <AlertDescription>
-                    These commands are intended for advanced users, scripts, and tooling.
-                    For everyday work, use the high-level commands in the CLI reference.
-                </AlertDescription>
-            </Alert>
+            <Callout type="warning" title="Advanced Usage" className="not-prose my-6">
+                These commands are intended for advanced users, scripts, and tooling.
+                For everyday work, use the high-level commands in the CLI reference.
+            </Callout>
 
             <h2>Object Types</h2>
 
             <p>Dits stores four types of objects:</p>
 
-            <div className="grid gap-4 md:grid-cols-2 my-8">
+            <div className="not-prose grid gap-4 md:grid-cols-2 my-8">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Hash className="h-5 w-5 text-primary" />
-                            Chunk
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Hash className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Chunk</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground">
@@ -57,10 +52,10 @@ export default function InternalsPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <FileCode className="h-5 w-5 text-primary" />
-                            Blob
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <FileCode className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Blob</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground">
@@ -72,10 +67,10 @@ export default function InternalsPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Database className="h-5 w-5 text-primary" />
-                            Tree
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Database className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Tree</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground">
@@ -87,10 +82,10 @@ export default function InternalsPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Cog className="h-5 w-5 text-primary" />
-                            Commit
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Cog className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Commit</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground">
@@ -356,14 +351,10 @@ Checking connectivity...
 All objects OK.`}
             />
 
-            <Alert className="not-prose my-6">
-                <Cog className="h-4 w-4" />
-                <AlertTitle>Scripting Friendly</AlertTitle>
-                <AlertDescription>
-                    These commands are designed for scripting. Use <code>--porcelain</code> for
-                    machine-readable output and check exit codes for success/failure.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="Scripting Friendly" className="not-prose my-6">
+                These commands are designed for scripting. Use <code>--porcelain</code> for
+                machine-readable output and check exit codes for success/failure.
+            </Callout>
 
             <h2>Related Topics</h2>
             <ul>
