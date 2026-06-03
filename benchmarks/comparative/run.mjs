@@ -55,27 +55,14 @@ for (const w of WORKLOADS) {
   }
 }
 
-// Showcase: cumulative-over-N-edits sweep (slow; manual).
-// Only the generic byte-store tools are accumulated here — for them, "store v2 over v1"
-// is the honest per-edit cost on a re-export. dits' FACR per-edit cost is frame-level and
-// NOT byte-measurable yet (facr runners return stored_bytes:null), so dits is intentionally
-// left out of the measured sweep rather than fabricated; the page shows it as a labeled
-// projection until Phase 3 adds frame-level stored-byte accounting.
+// Showcase: real measured cumulative sweep (slow; manual). N localized edits to one
+// lossless clip; tracks each tool's store growth. dits-facr dedups at the frame level
+// (grows by changed frames only); git-lfs/restic store the whole file each time / can't
+// dedup across the FFV1 bitstream shifts. All three measured on one machine.
 if (profile === "showcase") {
-  const N = 50;
-  for (const toolName of ["git-lfs", "restic"]) {
-    const r = byTool[toolName];
-    if (!r?.available()) continue;
-    const points = [];
-    let total = 0;
-    for (let i = 1; i <= N; i++) {
-      const m = await r.run({ v1: path.join(MEDIA, "v1.mov"), v2: path.join(MEDIA, "v2_reexport.mov") });
-      total += (m.stored_bytes ?? 0);
-      points.push({ edit: i, total_bytes: total });
-    }
-    doc.cumulative.push({ tool: r.tool, points });
-  }
-  console.log("note: dits FACR cumulative is a labeled projection until Phase 3 (frame-level stored bytes).");
+  const { runCumulative } = await import("./sweep-cumulative.mjs");
+  const series = await runCumulative({ edits: 15, duration: 8, log: (m) => console.log("  " + m) });
+  doc.cumulative.push(...series);
 }
 
 // CI asserts: known wins must hold.

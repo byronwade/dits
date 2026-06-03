@@ -40,7 +40,8 @@ export function CumulativeChart({
   const maxTotal = Math.max(...series.flatMap((s) => s.points.map((p) => p.total_bytes)));
   const x = (e: number) => PAD_L + (e / maxEdit) * (W - PAD_L - PAD_R);
   const y = (b: number) => H - PAD_B - (b / maxTotal) * (H - PAD_T - PAD_B);
-  const gb = (b: number) => (b / 1_073_741_824).toFixed(1) + " GB";
+  const fmt = (b: number) =>
+    b >= 1_073_741_824 ? `${(b / 1_073_741_824).toFixed(1)} GB` : `${Math.round(b / 1_048_576)} MB`;
 
   return (
     <div className="mt-7 rounded-2xl border border-border bg-card p-6">
@@ -48,6 +49,10 @@ export function CumulativeChart({
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="300" className="font-mono">
         <line x1={PAD_L} y1={PAD_T} x2={PAD_L} y2={H - PAD_B} stroke="var(--border)" />
         <line x1={PAD_L} y1={H - PAD_B} x2={W - PAD_R} y2={H - PAD_B} stroke="var(--border)" />
+        <text x={PAD_L - 10} y={PAD_T + 4} fontSize="11" fill="var(--muted-foreground)" textAnchor="end">
+          {fmt(maxTotal)}
+        </text>
+        <text x={PAD_L - 10} y={H - PAD_B} fontSize="11" fill="var(--muted-foreground)" textAnchor="end">0</text>
         <text x={W / 2} y={H - 8} fontSize="11" fill="var(--muted-foreground)" textAnchor="middle">
           number of edits →
         </text>
@@ -59,7 +64,7 @@ export function CumulativeChart({
               <polyline fill="none" stroke={COLORS[s.tool] ?? "#888"} strokeWidth={3} points={pts} />
               <text x={x(last.edit) - 4} y={y(last.total_bytes) - 8} fontSize="12" fontWeight={700}
                 fill={COLORS[s.tool] ?? "#888"} textAnchor="end">
-                {gb(last.total_bytes)}
+                {fmt(last.total_bytes)}
               </text>
             </g>
           );
