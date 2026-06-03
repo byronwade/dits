@@ -35,14 +35,14 @@ export function AlphaBanner() {
   return (
     // AGENTS.md: role="alert" with aria-live="polite" for screen reader announcements
     <div
-      className="fixed top-16 left-0 right-0 z-40 bg-amber-500/10 border-b border-amber-500/20 backdrop-blur-sm"
+      className="fixed top-16 left-0 right-0 z-40 bg-warning/10 border-b border-warning/20 backdrop-blur-sm"
       role="alert"
       aria-live="polite"
     >
       <div className="container flex items-center justify-between gap-4 py-2 text-xs sm:text-sm">
-        <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+        <div className="flex items-center gap-2 text-foreground">
           {/* AGENTS.md: Decorative icons are aria-hidden */}
-          <AlertTriangle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+          <AlertTriangle className="h-4 w-4 flex-shrink-0 text-warning" aria-hidden="true" />
           <p>
             <strong>Alpha Software:</strong>{" "}
             <span className="hidden sm:inline">
@@ -56,7 +56,7 @@ export function AlphaBanner() {
         {/* AGENTS.md: min-h/w for touch targets, visible focus, aria-label for icon button */}
         <button
           onClick={handleDismiss}
-          className="text-amber-700 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-200 p-2 rounded-md hover:bg-amber-500/20 transition-colors flex-shrink-0 min-h-[24px] min-w-[24px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
+          className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-warning/20 transition-colors flex-shrink-0 min-h-[24px] min-w-[24px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning focus-visible:ring-offset-2"
           aria-label="Dismiss alpha software warning banner"
           type="button"
         >

@@ -18,10 +18,10 @@ import {
   Apple,
   Terminal,
   Package,
-  CodeXml,
   CheckCircle2,
   Info,
 } from "lucide-react";
+import { GithubIcon } from "@/components/icons/github-icon";
 
 /**
  * Download page following AGENTS.md guidelines:
@@ -253,7 +253,7 @@ export default function DownloadPage() {
 
             <div className="mt-8 text-center">
               <Button variant="outline" render={<Link href="https://github.com/byronwade/dits/releases" target="_blank" rel="noopener noreferrer" aria-label="View all Dits releases on GitHub (opens in new tab)" />}>
-                <CodeXml className="mr-2 h-4 w-4" aria-hidden="true" />
+                <GithubIcon className="mr-2 h-4 w-4" />
                 View All Releases
               </Button>
             </div>

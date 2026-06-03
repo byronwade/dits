@@ -11,7 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  CodeXml,
   MessageCircle,
   Bug,
   BookOpen,
@@ -20,6 +19,7 @@ import {
   Star,
   Users,
 } from "lucide-react";
+import { GithubIcon } from "@/components/icons/github-icon";
 
 import { generateMetadata as genMeta } from "@/lib/seo";
 
@@ -69,7 +69,7 @@ const communityLinks = [
   {
     title: "Source Code",
     description: "Browse the source, fork, and contribute",
-    icon: CodeXml,
+    icon: GithubIcon,
     href: "https://github.com/byronwade/dits",
     action: "View Code",
   },
@@ -229,7 +229,7 @@ export default function CommunityPage() {
                   </ol>
                   <div className="flex gap-4 pt-4">
                     <Button render={<Link href="https://github.com/byronwade/dits" target="_blank" />}>
-                      <CodeXml className="mr-2 h-4 w-4" />
+                      <GithubIcon className="mr-2 h-4 w-4" />
                       Fork on GitHub
                     </Button>
                     <Button variant="outline" render={<Link href="/docs" />}>

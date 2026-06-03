@@ -23,12 +23,12 @@ import {
   Code,
   Download,
   Book,
-  CodeXml,
   CheckCircle,
   Star,
   Package,
   Terminal
 } from "lucide-react";
+import { GithubIcon } from "@/components/icons/github-icon";
 
 export const metadata: Metadata = {
   title: "SDKs",
@@ -559,7 +559,7 @@ fn process_chunk(chunk: &[u8]) {
 
       <div className="text-center my-8">
         <Button size="lg" render={<Link href="https://github.com/dits-io" />}>
-          <CodeXml className="mr-2 h-5 w-5" />
+          <GithubIcon className="mr-2 h-5 w-5" />
           View All SDKs on GitHub
         </Button>
       </div>

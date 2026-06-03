@@ -36,6 +36,7 @@ import {
   Cpu,
   Wifi,
 } from "lucide-react";
+import { GithubIcon } from "@/components/icons/github-icon";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -617,7 +618,7 @@ export default function Home() {
               </div>
 
               <Button variant="outline" render={<Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer" />}>
-                <CodeXml className="mr-2 h-4 w-4" />
+                <GithubIcon className="mr-2 h-4 w-4" />
                 Follow on GitHub
               </Button>
             </div>
@@ -647,7 +648,7 @@ export default function Home() {
                   className="h-14 px-10 text-lg rounded-xl bg-transparent border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
                   render={<Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer" />}
                 >
-                  <CodeXml className="mr-2 h-5 w-5" />
+                  <GithubIcon className="mr-2 h-5 w-5" />
                   Star on GitHub
                 </Button>
               </div>
