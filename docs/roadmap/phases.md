@@ -20,6 +20,11 @@ This document outlines the phased development plan for Dits. Phases 1-3.5 are co
 | 8 | Deep Freeze | 🚧 Planned | Tiered storage lifecycle |
 | 9 | The Black Box | 🚧 Planned | Client-side encryption |
 
+> Note: Networked sync (Phase 4b — `push`/`pull`/`fetch`/`sync`, network `clone`), P2P, and QUIC
+> delta transport are **not implemented**; they remain roadmap. (Several local features in later
+> phases — proxy, dependency graph, freeze/thaw, encryption — already ship in the CLI; see
+> `docs/STATUS.md`.)
+
 ---
 
 ## Completed Phases

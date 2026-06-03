@@ -2,6 +2,13 @@
 
 A complete guide for setting up Dits for the first time, from installation to first commit.
 
+> 🚧 **Roadmap notice.** Some steps below assume networked features that are **not
+> implemented yet**: `dits auth login` does not exist (there is no `dits auth` command —
+> `login`/`logout`/`change-password` manage **local encryption keys** only), network
+> `dits clone <url>`, `dits push`, and `dits remote` do not transfer data, and there is no
+> `dits mount` / `dits unmount`. Local setup — `init`, `config`, `add`, `commit` — works
+> today. Use a **local-path** `dits clone /path/to/repo` for local copies.
+
 ---
 
 ## Prerequisites

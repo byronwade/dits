@@ -2,6 +2,16 @@
 
 Complete command-line reference for the Dits version control system.
 
+> 🚧 **Roadmap notice.** Dits is **local-first**. The **Remote Operations**, **P2P
+> Sharing**, and **Virtual Filesystem (VFS)** sections below describe **roadmap**
+> functionality: `push`, `pull`, `fetch`, `sync`, network `clone`, `remote`, `serve`, and
+> all `p2p` subcommands print placeholders and **transfer no data**; QUIC is not
+> implemented. There is **no `dits mount` / `dits unmount`** command (the VFS is internal)
+> and **no `dits auth`** command (auth manages **local encryption keys** via
+> `login`/`logout`/`change-password`). For the authoritative, flag-verified command list,
+> see `docs/user-guide/cli-reference.md`. `clone` works only against a **local filesystem
+> path**.
+
 ---
 
 ## Table of Contents
@@ -90,7 +100,11 @@ dits init --bare /path/to/repo.dits
 
 ### dits clone
 
-Clone a repository from a remote source.
+> ⚠️ **Only local-path clone works today.** Cloning from a network URL and partial/shallow
+> flags (`--depth`, `--filter`, `--single-branch`, `-j`) are **roadmap — not implemented
+> yet**. The real command accepts only `<SOURCE> [DEST]` and `-b/--branch`.
+
+Clone a repository from a local path (network URL support is roadmap).
 
 ```bash
 dits clone [options] <url> [directory]
@@ -736,6 +750,12 @@ dits tag -n 5
 
 ## Remote Operations
 
+> 🚧 **Roadmap — not implemented yet.** Everything in this section (`remote`, `fetch`,
+> `pull`, `push`, `sync`) is **scaffolding**. `remote` stores config only; `fetch`/`pull`/
+> `push`/`sync` print placeholders and **transfer no data**. The documented partial-clone,
+> `--ff-only`, `--prune`, `-j`, and protocol flags do not exist on the real commands —
+> verify with `dits <cmd> --help`.
+
 ### dits remote
 
 Manage remote repositories.
@@ -1228,6 +1248,10 @@ dits locks --path "Assets/*"
 
 ## P2P Sharing
 
+> 🚧 **Roadmap — not implemented yet.** All `p2p` subcommands are **scaffolding**: no data
+> transfer, no NAT traversal, no QUIC sync. The commands run and print output but do not
+> move repository data between peers.
+
 ### dits p2p share
 
 Start a P2P sharing session.
@@ -1320,6 +1344,11 @@ dits p2p status
 ---
 
 ## Virtual Filesystem (VFS)
+
+> ℹ️ **There is no `dits vfs`, `dits mount`, or `dits unmount` command.** The virtual
+> filesystem is an **internal** module used by checkout and the proxy system; it is not
+> exposed on the CLI. The commands in this section were never implemented. To work with
+> files, use `checkout`, `restore`, and the FACR/photo commands.
 
 ### dits vfs mount
 

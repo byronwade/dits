@@ -1,5 +1,7 @@
 # Client-Side Caching Strategy
 
+> ⚠️ ROADMAP / not implemented. Networked sync (push/pull/fetch/sync), P2P/Wormhole, and QUIC delta transport are scaffolding only — they print placeholders and transfer no data today. Prefetching and cache coherence depend on that transport. See docs/STATUS.md.
+
 This document specifies the multi-tier caching architecture for the Dits client, including cache structures, eviction policies, prefetching strategies, and cache coherence mechanisms.
 
 ## Cache Architecture Overview

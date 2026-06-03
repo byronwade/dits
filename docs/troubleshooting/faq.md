@@ -2,6 +2,11 @@
 
 Find answers to the most common questions about Dits. If you can't find what you're looking for, check our [Troubleshooting Guide](common-issues.md) or reach out on [Discord](https://discord.gg/dits).
 
+> 🚧 **Roadmap notice.** Answers describing **P2P sharing**, **remotes**, **network clone**,
+> and **TLS/QUIC transport** refer to **roadmap** features that are **not implemented yet** —
+> they print placeholders and transfer no data. Dits is **local-first** today: commits,
+> branches, locks, MP4/FACR tooling, encryption, and audit all work locally.
+
 ---
 
 ## Table of Contents
@@ -193,6 +198,10 @@ dits gc --dry-run
 ## Collaboration
 
 ### How do I share my repository with others?
+
+> 🚧 **Roadmap — not implemented yet.** Both options below are scaffolding and transfer no
+> data today. For now, share a repository by copying it and using a **local-path** clone
+> (`dits clone /path/to/repo`).
 
 **Option 1: P2P (Direct sharing, no cloud)**
 ```bash
@@ -416,14 +425,16 @@ Other video formats work but without keyframe-aligned chunking.
 
 ### Is my data encrypted?
 
-**In transit**: Yes, all network transfers use TLS 1.3 or QUIC encryption.
-
-**At rest**: Optional. Enable with:
+**At rest**: Optional, and **available today**. Enable with:
 ```bash
 dits encrypt-init
 ```
 
-**P2P transfers**: End-to-end encrypted with AES-256-GCM.
+**In transit**: 🚧 Roadmap. Network transfer (TLS 1.3 / QUIC) is not implemented yet, so
+there is no in-transit encryption to speak of — there is no networked transfer today.
+
+**P2P transfers**: 🚧 Roadmap. P2P is scaffolding; no encrypted (or any) data transfer
+happens yet.
 
 ### Where is my data stored with DitsHub?
 

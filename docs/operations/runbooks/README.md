@@ -1,5 +1,7 @@
 # Operations Runbooks
 
+> ⚠️ Describes the quarantined backend service (see legacy/backend-crates), NOT the current product. Dits today is a local-first CLI — no server or database required. This doc is retained as design reference for a future hosted offering.
+
 This directory contains operational runbooks for common scenarios and incidents.
 
 ## Runbook Index

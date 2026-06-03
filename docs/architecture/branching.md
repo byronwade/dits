@@ -1,5 +1,7 @@
 # Branching Model Architecture
 
+> Media versioning is implemented via FACR (frame-addressable content representation): `facr-add`/`facr-checkout`/`facr-trim` for video and `photo-add`/`photo-edit`/`photo-render` for photos. See docs/superpowers/specs/2026-06-02-unified-media-model.md.
+
 **Project:** Dits (Data-Intensive Version Control System)
 **Document:** Branching, Merging, and History Model
 **Objective:** Define how Dits handles divergent work, parallel editing, and history navigation for large binary media files.

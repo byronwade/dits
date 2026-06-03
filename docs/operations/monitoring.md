@@ -1,5 +1,7 @@
 # Monitoring & Observability
 
+> ⚠️ Describes the quarantined backend service (see legacy/backend-crates), NOT the current product. Dits today is a local-first CLI — no server or database required. This doc is retained as design reference for a future hosted offering.
+
 **Project:** Dits (Data-Intensive Version Control System)
 **Document:** Monitoring, Metrics, Logging, and Alerting Architecture
 **Objective:** Ensure system health visibility, rapid incident response, and performance optimization.

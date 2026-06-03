@@ -22,6 +22,7 @@
 pub mod config;
 pub mod core;
 pub mod dependency;
+pub mod facr;
 pub mod lifecycle;
 pub mod metadata;
 pub mod mp4;

@@ -1,5 +1,7 @@
 # Python SDK Guide
 
+> ⚠️ These SDKs target a quarantined/legacy backend service (legacy/backend-crates), not the current local-first CLI. Retained as design reference.
+
 Complete guide to using the Dits Python SDK.
 
 ---

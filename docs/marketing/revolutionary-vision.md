@@ -21,6 +21,11 @@ Dits handles massive creative projects with desktop application speed.
 
 ## 🌟 Standout Features That Create a New Category
 
+### 0. **Frame-Addressable Versioning (FACR) — real today**
+- **What:** Every frame is independently content-addressed; re-grade 150 frames of a 1,000-frame clip and Dits stores 150 frames, not 1,000. Photos get the same non-destructive, content-addressed edit log over the original RAW.
+- **Why Unique:** No other VCS versions media at frame granularity. This is shipping (`facr-add`/`facr-checkout`/`facr-trim`, `photo-add`/`photo-edit`/`photo-render`; try `dits facr-demo`), not a slide.
+- **Marketing:** "See which frames changed. Store only those."
+
 ### 1. **Semantic Creative Versioning**
 - **What:** Version artistic intent, not just file changes
 - **Why Unique:** No other VCS understands "color correction" vs "footage replacement"

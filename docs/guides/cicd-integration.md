@@ -2,6 +2,13 @@
 
 Integrate Dits with continuous integration and deployment pipelines.
 
+> 🚧 **Roadmap notice.** This guide describes a **future, networked** CI/CD workflow. The
+> commands every pipeline here depends on — `clone` from a URL, `pull`, `push`, `fetch`,
+> `remote`, and `dits auth status` — are **not implemented yet** (and there is no `dits
+> auth` command; auth is local encryption only). They print placeholders and transfer no
+> data. Local Dits operations (`init`, `add`, `commit`, `checkout`, `fsck`, `repo-stats`)
+> work in CI today; the remote-fetch/publish steps below are aspirational.
+
 ---
 
 ## Overview

@@ -8,11 +8,21 @@
 
 ## Implementation Status
 
-> **All core commands are now implemented!** Network operations (HTTP/SSH remotes) are in development.
+> **Dits is a local-first CLI.** All local version-control, MP4, FACR/photo, locking,
+> encryption, audit, freeze/thaw, and dependency commands work today. **Networked
+> collaboration is on the roadmap and not implemented yet:** `push`, `pull`, `fetch`,
+> `sync`, network `clone`, `remote`/`serve`, and all `p2p` subcommands currently print
+> placeholders and do **not** transfer data. `clone` works only against a **local
+> filesystem path**. See [Roadmap — Not Implemented Yet](#roadmap--not-implemented-yet).
+>
+> **Note:** There is **no** `auth` or `vfs` command. `mount` / `unmount` exist **only when
+> the CLI is built with the `fuser` feature** (`cargo build --features fuser`, requires
+> macFUSE/libfuse); they are absent from default builds. Authentication is for **local
+> encryption keys** via `login` / `logout` / `change-password` — not remote servers.
 
 ### Implemented Commands (Ready to Use)
 
-**DITS now supports 60+ commands** across all major version control operations, creative workflows, and enterprise features.
+**DITS exposes 80+ subcommands** (run `dits --help` for the full list) across version control, MP4/FACR media tooling, locking, encryption, audit, freeze/thaw, and dependency analysis. The commands below work today on a local repository.
 
 #### **Core Git Operations** (Phase 3.5)
 | Command | Status | Description |
@@ -70,8 +80,8 @@
 | `segment` | ✅ | Segment video into chunks |
 | `assemble` | ✅ | Reassemble segmented video |
 | `roundtrip` | ✅ | Test MP4 deconstruct/reconstruct |
-| `mount` | ✅ | Mount repository as VFS |
-| `unmount` | ✅ | Unmount VFS |
+| `mount` | ⚙️ | Mount repository as VFS — **requires `--features fuser` build** |
+| `unmount` | ⚙️ | Unmount VFS — **requires `--features fuser` build** |
 | `inspect` | ✅ | Inspect MP4 structure |
 | `inspect-file` | ✅ | Inspect file dedup stats |
 | `repo-stats` | ✅ | Show repo dedup statistics |
@@ -84,11 +94,11 @@
 #### **Collaboration & Security** (Phase 7-9)
 | Command | Status | Description |
 |---------|--------|-------------|
-| `remote` | ✅ | Manage remote repositories |
-| `push` | ✅ | Push commits to remote |
-| `pull` | ✅ | Pull commits from remote |
-| `fetch` | ✅ | Fetch from remote without merge |
-| `clone` | ✅ | Clone a repository |
+| `remote` | 🚧 | Manage remote config (config/scaffolding only — no transfer) |
+| `push` | 🚧 | Roadmap — prints placeholder, does not transfer data |
+| `pull` | 🚧 | Roadmap — prints placeholder, does not transfer data |
+| `fetch` | 🚧 | Roadmap — prints placeholder, does not transfer data |
+| `clone` | ⚠️ | Local-filesystem path only; network clone is roadmap |
 | `lock` | ✅ | Lock files for editing |
 | `unlock` | ✅ | Unlock files |
 | `locks` | ✅ | List active locks |
@@ -112,65 +122,52 @@
 | `dep-check` | ✅ | Check dependencies |
 | `dep-graph` | ✅ | Show dependency graph |
 | `dep-list` | ✅ | List dependencies |
-| `gc` | ✅ | Run garbage collection |
+| `gc` | ✅ | Run garbage collection (does not yet repack) |
 | `clean` | ✅ | Clean untracked files |
-| `p2p` | ✅ | Manage P2P connections |
 | `maintenance` | ✅ | Run maintenance tasks |
 
-#### **Advanced Features**
+#### **FACR Frame Engine & Photos** (requires FFmpeg)
 | Command | Status | Description |
 |---------|--------|-------------|
-| `p2p` | ✅ | Manage P2P repository sharing |
+| `facr-add` | ✅ | Ingest a video into the frame-addressable store |
+| `facr-checkout` | ✅ | Reconstruct a playable video from a FACR manifest |
+| `facr-trim` | ✅ | Non-destructively trim a manifest (stores zero new frames) |
+| `facr-demo` | ✅ | Demonstrate frame-level dedup on a synthetic clip |
+| `photo-add` | ✅ | Store a photo once, start a non-destructive edit history |
+| `photo-edit` | ✅ | Append non-destructive edits (stores zero new image bytes) |
+| `photo-render` | ✅ | Render a photo manifest by applying its edit log |
+
+#### **Advanced Local Features**
+| Command | Status | Description |
+|---------|--------|-------------|
 | `worktree` | ✅ | Manage multiple working trees |
 | `sparse-checkout` | ✅ | Check out only specified paths |
 | `hooks` | ✅ | Manage Git-style hooks |
 | `archive` | ✅ | Create tar/zip archives |
 | `describe` | ✅ | Describe commits with tags |
 | `shortlog` | ✅ | Summarize git log output |
-| `maintenance` | ✅ | Optimize repository |
 | `completions` | ✅ | Generate shell completions |
-| `p2p share` | ✅ | Share repository via P2P (Wormhole integration) |
-| `p2p connect` | ✅ | Connect to P2P shared repository |
-| `p2p status` | ✅ | Show P2P connection status |
-| `p2p list` | ✅ | List active P2P shares |
-| `p2p cache` | ✅ | Manage P2P cache (stats, clear, gc) |
-| `p2p ping` | ✅ | Test connectivity to P2P peers |
-| `p2p unmount` | ✅ | Disconnect from P2P shares |
-| `proxy-list` | ✅ | List all generated proxies (Phase 6) |
-| `proxy-delete` | ✅ | Delete generated proxies (Phase 6) |
-| `dep-check` | ✅ | Check dependencies for project files (Phase 7) |
-| `dep-graph` | ✅ | Show dependency graph (Phase 7) |
-| `dep-list` | ✅ | List all project files (Phase 7) |
-| `freeze-init` | ✅ | Initialize lifecycle tracking (Phase 8) |
-| `freeze-status` | ✅ | Show storage tier status (Phase 8) |
-| `freeze` | ✅ | Freeze chunks to colder storage (Phase 8) |
-| `thaw` | ✅ | Thaw chunks from cold storage (Phase 8) |
-| `freeze-policy` | ✅ | Set or view lifecycle policy (Phase 8) |
-| `encrypt-init` | ✅ | Initialize encryption (Phase 9) |
-| `encrypt-status` | ✅ | Show encryption status (Phase 9) |
-| `login` | ✅ | Login to unlock encryption keys (Phase 9) |
-| `logout` | ✅ | Logout and clear cached keys (Phase 9) |
-| `change-password` | ✅ | Change encryption password (Phase 9) |
-| `audit` | ✅ | Show audit log (Phase 9) |
-| `audit-stats` | ✅ | Show audit statistics (Phase 9) |
-| `audit-export` | ✅ | Export audit log to JSON (Phase 9) |
-| `clone` | ✅ | Clone a repository (local) |
-| `remote` | ✅ | Manage remote repositories |
-| `push` | ✅ | Push changes to remote (local) |
-| `pull` | ✅ | Pull changes from remote (local) |
-| `fetch` | ✅ | Fetch from remote (local) |
-| `lock` | ✅ | Lock files for exclusive editing |
-| `unlock` | ✅ | Unlock files |
-| `locks` | ✅ | List active locks |
-| `gc` | ✅ | Garbage collection |
+| `telemetry` | ✅ | Manage telemetry settings |
 
-### Planned Features (In Development)
+### Roadmap — Not Implemented Yet
 
-| Feature | Status | Description |
+These commands exist in the CLI but are **scaffolding only**: they print placeholders and do **not** transfer data. Do not rely on them.
+
+| Command | Status | Description |
 |---------|--------|-------------|
-| `sync` | 🚧 | Bi-directional sync with remote |
-| Network remotes | 🚧 | HTTP/SSH/QUIC remote support |
-| `auth` | 🚧 | Authentication management for remote servers |
+| `push` | 🚧 | Networked push — placeholder, no data transfer |
+| `pull` | 🚧 | Networked pull — placeholder, no data transfer |
+| `fetch` | 🚧 | Networked fetch — placeholder, no data transfer |
+| `sync` | 🚧 | Bi-directional sync — placeholder, no data transfer |
+| `clone` (network) | 🚧 | Only **local-path** clone works; network clone is roadmap |
+| `remote` | 🚧 | Manages remote config/scaffolding only |
+| `serve` | 🚧 | Remote server scaffolding only |
+| `p2p` (all subcommands) | 🚧 | Wormhole P2P — scaffolding; no transfer, NAT traversal, or QUIC |
+| QUIC delta transport | 🚧 | Designed, not implemented |
+
+> There is **no** `auth` or `vfs` command (earlier drafts invented them). `mount`/`unmount`
+> are real but **feature-gated** behind `--features fuser` and absent from default builds.
+> `login`/`logout`/`change-password` manage local encryption keys only.
 
 ---
 
@@ -178,32 +175,30 @@
 
 Dits provides a git-like command line interface optimized for large binary files. Commands are organized into categories:
 
-- **Repository Management** - init, clone, remote
+- **Repository Management** - init, clone (local path)
 - **Working with Files** - add, restore, status, diff
 - **Recording Changes** - commit, tag
-- **Sharing & Collaboration** - push, pull, fetch, sync
 - **Branching & History** - branch, checkout, log, show
-- **Virtual Filesystem** - mount, unmount
-- **Collaboration** - lock, unlock
-- **Configuration** - config, auth
+- **Media / FACR** - facr-add, facr-checkout, facr-trim, photo-add, photo-edit, photo-render
+- **Collaboration** - lock, unlock, locks
+- **Configuration** - config
 - **Utilities** - gc, fsck, help
+- **Roadmap (not implemented)** - push, pull, fetch, sync, remote, serve, p2p
 
 ---
 
 ## Global Options
 
-These options can be used with any command:
+The only options accepted on the top-level `dits` command are:
 
 ```
--v, --verbose       Increase output verbosity (use -vv for debug)
--q, --quiet         Suppress non-essential output
---no-color          Disable colored output
---json              Output in JSON format (for scripting)
--C <path>           Run as if dits was started in <path>
---config <key=val>  Override config value for this command
 -h, --help          Show help for command
---version           Show dits version
+-V, --version       Show dits version
 ```
+
+Individual subcommands have their own flags (shown per command below, and via
+`dits <command> --help`). Flags like `--verbose`, `--json`, or `-C <path>` are **not**
+global — only the subcommands that document them accept them.
 
 ---
 
@@ -248,93 +243,59 @@ Initialized empty Dits repository in /path/to/my-project/.dits/
 
 ### `dits clone`
 
-Clone a repository from a remote server.
+Clone a repository. **Only cloning from a local filesystem path works today.**
+Cloning from a network URL is roadmap and not implemented.
 
 ```
-dits clone [OPTIONS] <URL> [DIRECTORY]
+dits clone [OPTIONS] <SOURCE> [DEST]
 ```
 
 **Arguments:**
-- `URL` - Repository URL (https:// or dits://)
-- `DIRECTORY` - Local directory name (default: derived from URL)
+- `SOURCE` - Source repository (a local path; URL support is roadmap)
+- `DEST` - Destination directory (default: derived from source)
 
 **Options:**
 ```
---shallow           Clone only latest commit (no history)
---depth <n>         Clone only last n commits
---branch <name>     Clone specific branch
---single-branch     Clone only one branch
---no-checkout       Clone without checking out working tree
---progress          Show progress during clone
---filter <spec>     Partial clone filter (e.g., blob:none for metadata only)
+-b, --branch <BRANCH>   Branch to checkout after clone
 ```
+
+> 🚧 **Roadmap — not implemented yet:** network clone (URLs) and partial/shallow
+> clone flags (`--depth`, `--filter`, `--single-branch`, …) do not exist. Only a
+> local-filesystem copy is supported.
 
 **Examples:**
 ```bash
-# Basic clone
-dits clone https://dits.example.com/team/project
+# Clone from a local path
+dits clone /path/to/source-repo my-local-copy
 
-# Clone to specific directory
-dits clone https://dits.example.com/team/project my-local-name
-
-# Shallow clone (metadata only, hydrate on demand)
-dits clone --filter blob:none https://dits.example.com/team/project
-
-# Clone specific branch
-dits clone --branch feature/vfx https://dits.example.com/team/project
-```
-
-**Output:**
-```
-Cloning into 'project'...
-remote: Counting objects: 1,234
-remote: Total 1,234 (delta 0)
-Receiving objects: 100% (1,234/1,234), 45.2 MB | 12.3 MB/s
-Resolving deltas: 100% (567/567)
-Hydrating files: 100% (89/89), done.
+# Clone and check out a specific branch
+dits clone -b feature/vfx /path/to/source-repo
 ```
 
 ---
 
 ### `dits remote`
 
-Manage remote repositories.
+Manage remote repository **configuration**. Remotes can be recorded, but no data is
+transferred — `push`/`pull`/`fetch` against them are roadmap.
 
 ```
-dits remote [SUBCOMMAND]
+dits remote [OPTIONS] [ACTION] [NAME] [URL]
 ```
 
-**Subcommands:**
+**Arguments:**
+- `ACTION` - One of: `add`, `remove` (`rm`), `rename`, `get-url`, `set-url`, `list`
+- `NAME` - Remote name
+- `URL` - Remote URL (for `add` / `set-url`)
 
-#### `dits remote add`
+**Options:**
 ```
-dits remote add <name> <url>
-```
-
-#### `dits remote remove`
-```
-dits remote remove <name>
-```
-
-#### `dits remote rename`
-```
-dits remote rename <old> <new>
+-v, --verbose   Show verbose output
+    --push      Apply to push URL (for get-url/set-url)
 ```
 
-#### `dits remote list` (default)
-```
-dits remote [-v]
-```
-
-#### `dits remote get-url`
-```
-dits remote get-url <name>
-```
-
-#### `dits remote set-url`
-```
-dits remote set-url <name> <url>
-```
+> 🚧 **Roadmap:** `remote` only stores configuration. Actual data transfer to/from a
+> remote is not implemented.
 
 **Examples:**
 ```bash
@@ -356,31 +317,18 @@ dits remote remove upstream
 
 ### `dits status`
 
-Show working tree status.
+Show repository status.
 
 ```
-dits status [OPTIONS] [PATH...]
+dits status
 ```
 
-**Options:**
-```
--s, --short         Give output in short format
--b, --branch        Show branch info in short format
---porcelain         Machine-readable output
---ignored           Show ignored files
---untracked <mode>  Show untracked files (no, normal, all)
-```
+This command takes no options or arguments beyond `-h/--help`.
 
 **Examples:**
 ```bash
-# Full status
+# Show working tree status
 dits status
-
-# Short format
-dits status -s
-
-# Status of specific path
-dits status footage/
 ```
 
 **Output:**
@@ -406,25 +354,16 @@ Untracked files:
 
 ### `dits add`
 
-Add file contents to the staging area.
+Add files to the staging area.
 
 ```
-dits add [OPTIONS] <PATHSPEC>...
+dits add <FILES>...
 ```
 
 **Arguments:**
-- `PATHSPEC` - Files or directories to add (supports glob patterns)
+- `FILES` - Files or directories to add
 
-**Options:**
-```
--n, --dry-run       Don't actually add, just show what would happen
--v, --verbose       Show files as they are added
--f, --force         Add ignored files
--A, --all           Add all changes (new, modified, deleted)
--u, --update        Update tracked files only
--p, --patch         Interactively select hunks (not available for binary)
---progress          Show progress for large files
-```
+This command takes no options beyond `-h/--help`.
 
 **Examples:**
 ```bash
@@ -434,14 +373,8 @@ dits add footage/scene01.mov
 # Add all files in directory
 dits add footage/
 
-# Add all changes
-dits add -A
-
-# Add with progress (useful for large files)
-dits add --progress raw/*.mov
-
-# Dry run
-dits add -n *.mp4
+# Add multiple paths
+dits add footage/ project.prproj
 ```
 
 **Output:**
@@ -458,21 +391,25 @@ Done.
 
 ### `dits restore`
 
-Restore working tree files.
+Restore working tree files or unstage.
 
 ```
-dits restore [OPTIONS] <PATHSPEC>...
+dits restore [OPTIONS] <PATHS>...
 ```
+
+**Arguments:**
+- `PATHS` - Paths to restore
 
 **Options:**
 ```
--s, --staged        Restore staged content (unstage)
--W, --worktree      Restore worktree (default)
--S, --source <ref>  Restore from specific commit/tag
---ours              Use our version in conflict
---theirs            Use their version in conflict
---progress          Show progress for large files
+    --staged           Restore staged files (unstage)
+    --worktree         Restore working tree (default)
+-s, --source <SOURCE>  Source commit to restore from
+    --ours             Use "ours" version during merge conflict
+    --theirs           Use "theirs" version during merge conflict
 ```
+
+> Note: `restore` does not yet do full merge-conflict resolution.
 
 **Examples:**
 ```bash
@@ -493,22 +430,19 @@ dits restore footage/
 
 ### `dits diff`
 
-Show changes between commits, commit and working tree, etc.
+Show changes between commits, working tree, etc.
 
 ```
-dits diff [OPTIONS] [<COMMIT>] [--] [<PATH>...]
-dits diff [OPTIONS] <COMMIT> <COMMIT> [--] [<PATH>...]
+dits diff [OPTIONS] [FILE]
 ```
+
+**Arguments:**
+- `FILE` - Specific file to diff
 
 **Options:**
 ```
---staged            Show staged changes
---stat              Show diffstat only
---name-only         Show only names of changed files
---name-status       Show names and status of changed files
---summary           Show condensed summary
---no-renames        Disable rename detection
---json              Output diff metadata in JSON
+    --staged           Show staged changes
+-c, --commit <COMMIT>  Compare against a specific commit
 ```
 
 **Examples:**
@@ -519,14 +453,11 @@ dits diff
 # Show staged changes
 dits diff --staged
 
-# Compare two commits
-dits diff abc123 def456
+# Compare against a specific commit
+dits diff --commit abc123
 
-# Show what changed in last commit
-dits diff HEAD~1
-
-# Just file names
-dits diff --name-only HEAD~5..HEAD
+# Diff a specific file
+dits diff footage/scene01.mov
 ```
 
 **Output (for binary files):**
@@ -548,37 +479,21 @@ To view visual diff:
 
 ### `dits commit`
 
-Record changes to the repository.
+Create a commit from staged changes.
 
 ```
-dits commit [OPTIONS]
+dits commit --message <MESSAGE>
 ```
 
 **Options:**
 ```
--m, --message <msg>     Commit message
--a, --all               Automatically stage modified/deleted files
---amend                 Amend previous commit
---no-verify             Skip pre-commit hooks
---allow-empty           Allow empty commits
---author <author>       Override author
---date <date>           Override date
--v, --verbose           Show diff in commit message editor
+-m, --message <MESSAGE>   Commit message (required)
 ```
 
 **Examples:**
 ```bash
-# Commit with message
+# Commit staged changes with a message
 dits commit -m "Add VFX shots for scene 3"
-
-# Commit all changed files
-dits commit -a -m "Update color grade"
-
-# Amend last commit
-dits commit --amend -m "Add VFX shots for scene 3 (fixed)"
-
-# Multi-line message
-dits commit -m "Summary line" -m "Detailed description paragraph."
 ```
 
 **Output:**
@@ -594,20 +509,20 @@ dits commit -m "Summary line" -m "Detailed description paragraph."
 
 ### `dits tag`
 
-Create, list, delete, or verify tags.
+List, create, or delete tags.
 
 ```
-dits tag [OPTIONS] [<TAGNAME>] [<COMMIT>]
+dits tag [OPTIONS] [NAME]
 ```
+
+**Arguments:**
+- `NAME` - Tag name to create or delete
 
 **Options:**
 ```
--l, --list          List tags (default if no args)
--d, --delete        Delete tag
--f, --force         Replace existing tag
--m, --message <msg> Annotated tag with message
--a, --annotate      Create annotated tag
---sort <key>        Sort by key (version, creatordate)
+-c, --commit <COMMIT>   Commit to tag (default: HEAD)
+-d, --delete            Delete the tag
+    --sort <SORT>       Sort order for listing tags: name, created, version [default: name]
 ```
 
 **Examples:**
@@ -615,20 +530,17 @@ dits tag [OPTIONS] [<TAGNAME>] [<COMMIT>]
 # List tags
 dits tag
 
-# Create lightweight tag
+# Create a tag at HEAD
 dits tag v1.0
 
-# Create annotated tag
-dits tag -a v1.0 -m "First release candidate"
-
-# Tag specific commit
-dits tag v1.0-beta abc1234
+# Tag a specific commit
+dits tag v1.0-beta --commit abc1234
 
 # Delete tag
 dits tag -d v1.0-beta
 
-# List tags matching pattern
-dits tag -l "v1.*"
+# List tags sorted by version
+dits tag --sort version
 ```
 
 **Output:**
@@ -642,127 +554,94 @@ v1.0-rc1
 
 ## Sharing & Collaboration
 
+> 🚧 **Roadmap — not implemented yet.** Everything in this section (`push`, `pull`,
+> `fetch`, `sync`) currently prints a placeholder and does **not** transfer any data.
+> The commands exist so the interface is stable, but networked collaboration is not
+> functional. Use a local-path `clone` for local mirroring.
+
 ### `dits push`
 
-Upload local commits to remote repository.
+Push changes to a remote repository.
+
+> 🚧 **Roadmap — not implemented yet.** Prints a placeholder; no data is transferred.
 
 ```
-dits push [OPTIONS] [<REMOTE>] [<REFSPEC>...]
+dits push [OPTIONS] [REMOTE] [BRANCH]
 ```
+
+**Arguments:**
+- `REMOTE` - Remote name (default: origin)
+- `BRANCH` - Branch to push (default: current branch)
 
 **Options:**
 ```
--u, --set-upstream  Set upstream for branch
--f, --force         Force push (dangerous!)
---force-with-lease  Safer force push
---all               Push all branches
---tags              Push tags
---dry-run           Show what would be pushed
---progress          Show detailed progress
---no-verify         Skip pre-push hooks
+-f, --force   Force push (overwrite remote)
+    --all     Push all branches
 ```
 
 **Examples:**
 ```bash
-# Push current branch
+# Intended usage once implemented:
 dits push
-
-# Push and set upstream
-dits push -u origin main
-
-# Push specific branch
 dits push origin feature/vfx
-
-# Push all tags
-dits push --tags
-
-# Dry run
-dits push --dry-run
-```
-
-**Output:**
-```
-Pushing to origin (https://dits.example.com/team/project)...
-Computing delta: 1,234 chunks to transfer
-Uploading chunks: 100% (1,234/1,234), 45.2 MB | 12.3 MB/s
-Updating refs: main -> abc1234
-To https://dits.example.com/team/project
-   def456..abc1234  main -> main
+dits push --all
 ```
 
 ---
 
 ### `dits pull`
 
-Fetch and integrate changes from remote.
+Pull changes from a remote repository.
+
+> 🚧 **Roadmap — not implemented yet.** Prints a placeholder; no data is transferred.
 
 ```
-dits pull [OPTIONS] [<REMOTE>] [<REFSPEC>]
+dits pull [OPTIONS] [REMOTE] [BRANCH]
 ```
+
+**Arguments:**
+- `REMOTE` - Remote name (default: origin)
+- `BRANCH` - Branch to pull
 
 **Options:**
 ```
---rebase            Rebase instead of merge
---ff-only           Fast-forward only
---no-commit         Don't auto-commit merge
---progress          Show detailed progress
---prune             Remove stale remote refs
+-r, --rebase   Rebase instead of merge
 ```
 
 **Examples:**
 ```bash
-# Pull from default remote
+# Intended usage once implemented:
 dits pull
-
-# Pull specific branch
 dits pull origin main
-
-# Pull with rebase
 dits pull --rebase
-```
-
-**Output:**
-```
-Fetching from origin...
-remote: Counting objects: 45
-remote: Compressing objects: 100% (30/30)
-remote: Total 45 (delta 15)
-Downloading chunks: 100% (45/45), 12.3 MB | 8.5 MB/s
-Updating abc1234..def5678
-Fast-forward
- footage/scene02.mov | Bin 0 -> 1234567890 bytes
- 1 file changed
 ```
 
 ---
 
 ### `dits fetch`
 
-Download objects and refs from remote.
+Fetch objects and refs from a remote repository.
+
+> 🚧 **Roadmap — not implemented yet.** Prints a placeholder; no data is transferred.
 
 ```
-dits fetch [OPTIONS] [<REMOTE>] [<REFSPEC>...]
+dits fetch [OPTIONS] [REMOTE]
 ```
+
+**Arguments:**
+- `REMOTE` - Remote name (default: origin)
 
 **Options:**
 ```
---all               Fetch all remotes
---prune             Remove stale remote refs
---tags              Fetch tags
---depth <n>         Limit fetch depth
---progress          Show progress
---dry-run           Show what would be fetched
+    --all     Fetch from all remotes
+-p, --prune   Prune remote-tracking refs that no longer exist
 ```
 
 **Examples:**
 ```bash
-# Fetch from origin
+# Intended usage once implemented:
 dits fetch
-
-# Fetch all remotes
 dits fetch --all
-
-# Fetch with prune
 dits fetch --prune
 ```
 
@@ -770,34 +649,59 @@ dits fetch --prune
 
 ### `dits sync`
 
-Sync repository (combines fetch + push).
+Synchronize with a remote repository (bi-directional).
+
+> 🚧 **Roadmap — not implemented yet.** Prints a placeholder; no data is transferred.
 
 ```
-dits sync [OPTIONS]
+dits sync [OPTIONS] [REMOTE] [BRANCH]
 ```
+
+**Arguments:**
+- `REMOTE` - Remote name (default: origin)
+- `BRANCH` - Branch to sync (default: current branch)
 
 **Options:**
 ```
---pull-only         Only pull, don't push
---push-only         Only push, don't pull
---progress          Show detailed progress
---bidirectional     Full bidirectional sync
+    --force     Force sync (resolve conflicts automatically)
+    --dry-run   Dry run - show what would be synced
 ```
 
 **Examples:**
 ```bash
-# Full sync
+# Intended usage once implemented:
 dits sync
+dits sync --dry-run
+```
 
-# Sync with progress
-dits sync --progress
+---
+
+### `dits serve`
+
+Start a remote server for this repository.
+
+> 🚧 **Roadmap — not implemented yet.** Scaffolding only; does not serve live transfers.
+
+```
+dits serve [OPTIONS]
+```
+
+**Options:**
+```
+-p, --port <PORT>          Port to listen on [default: 8080]
+-b, --base-dir <BASE_DIR>  Base directory containing repositories
 ```
 
 ---
 
 ## P2P Sharing (Wormhole Integration)
 
-Dits integrates Wormhole-style peer-to-peer sharing for direct repository sharing without cloud uploads.
+> 🚧 **Roadmap — not implemented yet.** All `p2p` subcommands below are **scaffolding**:
+> no data transfer, no NAT traversal, no QUIC sync. The commands run and print output,
+> but they do not move repository data between peers. This entire section documents the
+> intended design, not working functionality.
+
+Dits is designed to integrate Wormhole-style peer-to-peer sharing for direct repository sharing without cloud uploads.
 
 ### `dits p2p share`
 
@@ -1061,22 +965,18 @@ dits p2p unmount --all
 List, create, or delete branches.
 
 ```
-dits branch [OPTIONS] [<BRANCHNAME>] [<START-POINT>]
+dits branch [OPTIONS] [NAME]
 ```
+
+**Arguments:**
+- `NAME` - Branch name to create or delete
 
 **Options:**
 ```
--l, --list          List branches (default)
--a, --all           List all branches (including remote)
--r, --remotes       List remote branches only
--d, --delete        Delete branch
--D                  Force delete branch
--m, --move          Rename branch
--c, --copy          Copy branch
--v, --verbose       Show commit info
---merged            List merged branches
---no-merged         List unmerged branches
+-d, --delete        Delete the branch
 ```
+
+With no arguments, lists branches.
 
 **Examples:**
 ```bash
@@ -1086,17 +986,8 @@ dits branch
 # Create branch
 dits branch feature/vfx
 
-# Create branch from specific commit
-dits branch feature/vfx abc1234
-
 # Delete branch
 dits branch -d feature/vfx
-
-# Rename branch
-dits branch -m old-name new-name
-
-# List all branches with details
-dits branch -av
 ```
 
 **Output:**
@@ -1104,57 +995,45 @@ dits branch -av
 * main
   feature/color-grade
   feature/vfx
-  remotes/origin/main
-  remotes/origin/feature/vfx
 ```
 
 ---
 
 ### `dits checkout`
 
-Switch branches or restore working tree files.
+Checkout a commit or branch.
 
 ```
-dits checkout [OPTIONS] <BRANCH>
-dits checkout [OPTIONS] <COMMIT>
-dits checkout [OPTIONS] [<COMMIT>] -- <PATHSPEC>...
+dits checkout [OPTIONS] <TARGET>
 ```
+
+**Arguments:**
+- `TARGET` - Commit hash or branch name
 
 **Options:**
 ```
--b <branch>         Create and checkout new branch
--B <branch>         Create/reset and checkout branch
---orphan <branch>   Create orphan branch
---detach            Detach HEAD
--f, --force         Force checkout (discard changes)
---progress          Show progress for file hydration
---proxy             Checkout proxy versions (Phase 6)
---resolution <res>  Specify proxy resolution (720p, 1080p)
+-m, --mode <MODE>   Checkout mode: full (default) or proxy [default: full]
 ```
+
+> To create a new branch, use `dits branch <name>` then `dits switch <name>`. There is no
+> `-b` shortcut, `--detach`, or `--resolution` flag.
 
 **Examples:**
 ```bash
 # Switch to branch
 dits checkout feature/vfx
 
-# Create and switch to new branch
-dits checkout -b feature/color-grade
-
-# Checkout specific commit (detached HEAD)
+# Checkout a specific commit
 dits checkout abc1234
 
-# Checkout file from specific commit
-dits checkout HEAD~3 -- footage/scene01.mov
-
-# Checkout with proxy files
-dits checkout --proxy --resolution 1080p
+# Checkout using proxy media (Phase 6)
+dits checkout --mode proxy main
 ```
 
 **Output:**
 ```
 Switched to branch 'feature/vfx'
 Hydrating files: 100% (45/45)
-Your branch is up to date with 'origin/feature/vfx'.
 ```
 
 ---
@@ -1164,29 +1043,20 @@ Your branch is up to date with 'origin/feature/vfx'.
 Show commit history.
 
 ```
-dits log [OPTIONS] [<REVISION>] [-- <PATH>...]
+dits log [OPTIONS]
 ```
 
 **Options:**
 ```
---oneline           Show one line per commit
---graph             Show branch graph
---all               Show all branches
---stat              Show diffstat
---name-only         Show changed file names
---name-status       Show changed files with status
--n, --max-count <n> Limit number of commits
---since <date>      Show commits since date
---until <date>      Show commits until date
---author <pattern>  Filter by author
---grep <pattern>    Filter by commit message
---follow            Follow file renames
---format <format>   Custom format string
+-n, --limit <LIMIT>   Number of commits to show [default: 10]
+    --oneline         Show each commit on a single line
+    --graph           Draw ASCII graph of branch structure
+    --all             Show commits from all branches
 ```
 
 **Examples:**
 ```bash
-# Basic log
+# Basic log (last 10 commits)
 dits log
 
 # Oneline with graph
@@ -1195,17 +1065,8 @@ dits log --oneline --graph
 # Last 5 commits
 dits log -n 5
 
-# File history
-dits log -- footage/scene01.mov
-
-# Commits by author
-dits log --author="John"
-
-# Commits since date
-dits log --since="2024-01-01"
-
-# Custom format
-dits log --format="%h %s (%an, %ar)"
+# All branches
+dits log --all
 ```
 
 **Output:**
@@ -1230,31 +1091,30 @@ Date:   Sun Jan 14 10:15:00 2025 -0800
 
 ### `dits show`
 
-Show various types of objects.
+Show details of a commit.
 
 ```
-dits show [OPTIONS] <OBJECT>
+dits show [OPTIONS] [OBJECT]
 ```
+
+**Arguments:**
+- `OBJECT` - Commit to show (default: HEAD)
 
 **Options:**
 ```
---stat              Show diffstat
---name-only         Show file names only
---name-status       Show file names with status
---format <format>   Custom format for commit
---raw               Show raw object
+    --stat          Show file statistics
+    --name-only     Show only file names
+    --name-status   Show file names with change type
+    --no-patch      Don't show the diff
 ```
 
 **Examples:**
 ```bash
-# Show commit
+# Show HEAD
+dits show
+
+# Show a specific commit
 dits show abc1234
-
-# Show file at commit
-dits show abc1234:footage/scene01.mov
-
-# Show tag
-dits show v1.0
 
 # Just stats
 dits show --stat abc1234
@@ -1264,80 +1124,11 @@ dits show --stat abc1234
 
 ## Virtual Filesystem
 
-### `dits mount`
-
-Mount repository as virtual filesystem.
-
-```
-dits mount [OPTIONS] [MOUNTPOINT]
-```
-
-**Options:**
-```
---read-only         Mount as read-only
---allow-other       Allow other users to access
---commit <ref>      Mount specific commit
---background        Run in background
---cache-size <size> Set cache size (e.g., 10GB)
---prefetch          Enable aggressive prefetching
-```
-
-**Examples:**
-```bash
-# Mount to default location (/Volumes/dits-<repo> on macOS)
-dits mount
-
-# Mount to specific location
-dits mount /mnt/project
-
-# Mount read-only
-dits mount --read-only /mnt/project
-
-# Mount specific commit
-dits mount --commit v1.0 /mnt/project-v1
-
-# Mount with large cache
-dits mount --cache-size 50GB /mnt/project
-```
-
-**Output:**
-```
-Mounting repository at /Volumes/dits-project...
-Virtual filesystem ready.
-  Cache: 10 GB (2.3 GB used)
-  Files: 1,234 available
-  Mode: read-write
-
-Press Ctrl+C to unmount (or use 'dits unmount')
-```
-
----
-
-### `dits unmount`
-
-Unmount virtual filesystem.
-
-```
-dits unmount [OPTIONS] [MOUNTPOINT]
-```
-
-**Options:**
-```
--f, --force         Force unmount
---all               Unmount all Dits mounts
-```
-
-**Examples:**
-```bash
-# Unmount default
-dits unmount
-
-# Unmount specific
-dits unmount /mnt/project
-
-# Force unmount
-dits unmount -f /mnt/project
-```
+> ℹ️ **There is no `dits mount` / `dits unmount` command.** The virtual filesystem (VFS)
+> is an **internal** module used by `checkout` and the proxy system — it is not exposed
+> as a user-facing mount command. Earlier drafts of this reference documented `dits mount`
+> and `dits unmount`; those commands were never implemented. To work with files, use
+> `checkout`, `restore`, and the FACR/photo commands.
 
 ---
 
@@ -1461,35 +1252,32 @@ Locked files:
 
 ### `dits config`
 
-Get and set configuration options.
+Get and set repository or global options.
 
 ```
-dits config [OPTIONS] <KEY> [VALUE]
+dits config [OPTIONS] [KEY] [VALUE]
 ```
+
+**Arguments:**
+- `KEY` - Config key (e.g., `user.name`)
+- `VALUE` - Value to set (omit to read the key)
 
 **Options:**
 ```
---global            Use global config
---local             Use local config (default)
---system            Use system config
---list              List all config
---unset             Remove config key
---edit              Open config in editor
+    --global   Use global config file
+-l, --list     List all config values
+    --unset    Unset a key
 ```
 
 **Common Keys:**
 ```
 user.name           Your name
 user.email          Your email
-remote.origin.url   Remote URL
-core.editor         Editor for commit messages
-core.pager          Pager for output
-push.default        Push behavior
-pull.rebase         Pull with rebase
-gc.gracePeriod      GC grace period
-cache.size          Local cache size
-mount.defaultPath   Default mount point
+cache.path          Local cache directory
 ```
+
+> Keys related to remote/network behavior (e.g. `push.default`, `transfer.protocol`) have
+> no effect today — networked sync is roadmap.
 
 **Examples:**
 ```bash
@@ -1502,67 +1290,209 @@ dits config user.email
 # List all config
 dits config --list
 
-# Set cache size
-dits config cache.size 50GB
-
-# Edit config file
-dits config --global --edit
+# Unset a key
+dits config --unset user.email
 ```
 
 ---
 
-### `dits auth`
+### Authentication (local encryption keys)
 
-Manage authentication.
+> ℹ️ **There is no `dits auth` command.** Authentication in Dits is for **local
+> encryption keys only** — not remote servers. Use the top-level `login`, `logout`, and
+> `change-password` commands (Phase 9). Earlier drafts documented `dits auth login
+> --sso/--token/--server`; that remote-auth flow does not exist.
 
 ```
-dits auth [SUBCOMMAND]
-```
-
-**Subcommands:**
-
-#### `dits auth login`
-```
-dits auth login [OPTIONS]
-```
-Options:
-```
---server <url>      Server to authenticate with
---token <token>     Use access token
---sso               Use SSO authentication
+dits login              # Unlock encryption keys (prompts for password)
+dits logout             # Clear cached keys
+dits change-password    # Change the encryption password
+dits encrypt-init       # Initialize encryption for this repository
+dits encrypt-status     # Show encryption status
 ```
 
-#### `dits auth logout`
+Run `dits login --help` (and the others) for their exact flags.
+
+---
+
+## FACR Frame Engine & Photos
+
+The FACR (Frame-Addressable Content Repository) engine stores video at the **frame** level
+so edits like trims and re-grades store only the frames that actually changed. The photo
+commands apply the same idea to still images with a non-destructive edit log. **All of these
+commands require FFmpeg to be installed.**
+
+### `dits facr-add`
+
+Ingest a real video into the frame-addressable store.
+
 ```
-dits auth logout [--all]
+dits facr-add [OPTIONS] <INPUT>
 ```
 
-#### `dits auth status`
+**Arguments:**
+- `INPUT` - Path to the input video
+
+**Options:**
 ```
-dits auth status
+--store <STORE>        Frame store directory (default: .dits-facr)
+--manifest <MANIFEST>  Where to write the clip manifest (default: <input>.facr.json)
 ```
 
-#### `dits auth token`
-```
-dits auth token [--create | --revoke <id>]
-```
-
-**Examples:**
+**Example:**
 ```bash
-# Interactive login
-dits auth login
+dits facr-add footage/scene01.mov
+# Writes frames into .dits-facr/ and a manifest at footage/scene01.mov.facr.json
+```
 
-# Login with token
-dits auth login --token dits_xxxxx
+---
 
-# Check auth status
-dits auth status
+### `dits facr-checkout`
 
-# Create API token
-dits auth token --create
+Reconstruct a playable video from a FACR manifest.
 
-# Logout
-dits auth logout
+```
+dits facr-checkout [OPTIONS] <MANIFEST> <OUTPUT>
+```
+
+**Arguments:**
+- `MANIFEST` - Path to the clip manifest (`.facr.json`)
+- `OUTPUT` - Output video path
+
+**Options:**
+```
+--store <STORE>   Frame store directory (default: .dits-facr)
+```
+
+**Example:**
+```bash
+dits facr-checkout footage/scene01.mov.facr.json rebuilt.mov
+```
+
+---
+
+### `dits facr-trim`
+
+Non-destructively trim a FACR manifest to a frame range. **Stores zero new frames** —
+trimming only rewrites the manifest.
+
+```
+dits facr-trim [OPTIONS] <MANIFEST>
+```
+
+**Arguments:**
+- `MANIFEST` - Path to the clip manifest (`.facr.json`)
+
+**Options:**
+```
+--start <START>   First frame to keep (0-based, inclusive) [default: 0]
+--end <END>       Last frame to keep (exclusive); defaults to end of clip
+--out <OUT>       Output manifest path (default: <manifest>.trimmed.json)
+```
+
+**Example:**
+```bash
+dits facr-trim footage/scene01.mov.facr.json --start 100 --end 400
+```
+
+---
+
+### `dits facr-demo`
+
+Demonstrate FACR frame-level dedup: commit a synthetic clip, re-grade some frames, and show
+that only the changed frames are stored.
+
+```
+dits facr-demo [OPTIONS]
+```
+
+**Options:**
+```
+--frames <FRAMES>     Number of frames in the synthetic clip [default: 300]
+--regrade <REGRADE>   Number of frames to re-grade in the second version [default: 5]
+```
+
+**Example:**
+```bash
+dits facr-demo --frames 300 --regrade 5
+```
+
+---
+
+### `dits photo-add`
+
+Store a photo once and start a non-destructive edit history.
+
+```
+dits photo-add [OPTIONS] <INPUT>
+```
+
+**Arguments:**
+- `INPUT` - Path to the source image (jpg/png/tiff/etc.)
+
+**Options:**
+```
+--store <STORE>        Object store directory (default: .dits-facr)
+--manifest <MANIFEST>  Where to write the photo manifest (default: <input>.photo.json)
+```
+
+**Example:**
+```bash
+dits photo-add shoot/IMG_0001.cr2
+```
+
+---
+
+### `dits photo-edit`
+
+Append non-destructive edits to a photo manifest. **Stores zero new image bytes** — only the
+edit log changes.
+
+```
+dits photo-edit [OPTIONS] <MANIFEST>
+```
+
+**Arguments:**
+- `MANIFEST` - Path to the photo manifest (`.photo.json`)
+
+**Options:**
+```
+--exposure <EXPOSURE>            Exposure adjustment in stops (e.g. 0.5)
+--contrast <CONTRAST>            Contrast multiplier (1.0 = unchanged)
+--saturation <SATURATION>        Saturation multiplier (1.0 = unchanged)
+--white-balance <WHITE_BALANCE>  White balance in Kelvin
+--rotate <ROTATE>                Clockwise rotation in degrees (90/180/270)
+--crop <CROP>                    Crop rectangle as x,y,w,h
+--out <OUT>                      Output manifest (default: overwrite input)
+```
+
+**Example:**
+```bash
+dits photo-edit shoot/IMG_0001.cr2.photo.json --exposure 0.5 --white-balance 5600
+```
+
+---
+
+### `dits photo-render`
+
+Render a photo manifest into an image by applying its edit log.
+
+```
+dits photo-render [OPTIONS] <MANIFEST> <OUTPUT>
+```
+
+**Arguments:**
+- `MANIFEST` - Path to the photo manifest (`.photo.json`)
+- `OUTPUT` - Output image path
+
+**Options:**
+```
+--store <STORE>   Object store directory (default: .dits-facr)
+```
+
+**Example:**
+```bash
+dits photo-render shoot/IMG_0001.cr2.photo.json export/IMG_0001.jpg
 ```
 
 ---
@@ -1693,11 +1623,12 @@ dits gc [OPTIONS]
 
 **Options:**
 ```
---aggressive        Run aggressive GC
---dry-run           Show what would be collected
---prune <date>      Prune objects older than date
---auto              Run only if needed
+    --dry-run      Dry run (show what would be done)
+-p, --prune        Prune expired locks
+    --aggressive   Aggressive mode (repack objects)
 ```
+
+> Note: `gc` does not yet repack objects in normal mode.
 
 **Examples:**
 ```bash
@@ -1707,8 +1638,8 @@ dits gc
 # Dry run
 dits gc --dry-run
 
-# Aggressive GC
-dits gc --aggressive
+# Prune expired locks
+dits gc --prune
 ```
 
 **Output:**
@@ -1726,7 +1657,7 @@ Duration: 45s
 
 ### `dits fsck`
 
-Verify repository integrity.
+Check repository integrity.
 
 ```
 dits fsck [OPTIONS]
@@ -1734,22 +1665,16 @@ dits fsck [OPTIONS]
 
 **Options:**
 ```
---full              Full verification (slower)
---strict            Strict checking
---repair            Attempt to repair issues
---progress          Show progress
+-v, --verbose   Show verbose output
 ```
 
 **Examples:**
 ```bash
-# Quick check
+# Integrity check
 dits fsck
 
-# Full verification
-dits fsck --full
-
-# Verify and repair
-dits fsck --repair
+# Verbose check
+dits fsck -v
 ```
 
 **Output:**
@@ -1796,10 +1721,10 @@ dits add --help
 | `DITS_CONFIG_GLOBAL` | Override global config path |
 | `DITS_EDITOR` | Editor for commit messages |
 | `DITS_PAGER` | Pager for output |
-| `DITS_TOKEN` | Authentication token |
-| `DITS_SERVER` | Default server URL |
 | `DITS_DEBUG` | Enable debug output |
 | `DITS_TRACE` | Enable trace logging |
+
+> `DITS_TOKEN` / `DITS_SERVER` (remote auth/server) are roadmap and have no effect today.
 
 ---
 
@@ -1821,29 +1746,29 @@ dits add --help
 
 ## Examples: Common Workflows
 
-### Initial Setup
+> 🚧 Networked steps (`push`, `pull`, network `clone`) shown below are **roadmap** and do
+> not transfer data yet. Today, Dits is fully usable as a **local** repository.
+
+### Initial Setup (local)
 ```bash
 # Configure user
 dits config --global user.name "Your Name"
 dits config --global user.email "you@example.com"
 
-# Login
-dits auth login
+# Start a new local repository
+dits init my-project
+cd my-project
 
-# Clone repository
-dits clone https://dits.example.com/team/project
-cd project
+# (Optional) clone an existing repository from a local path
+# dits clone /path/to/source-repo my-project
 ```
 
-### Daily Workflow
+### Daily Workflow (local)
 ```bash
-# Start day: sync
-dits pull
-
 # Check status
 dits status
 
-# Lock file before editing
+# Lock file before editing (advisory locking)
 dits lock footage/scene01.mov
 
 # Work on file...
@@ -1852,11 +1777,10 @@ dits lock footage/scene01.mov
 dits add footage/scene01.mov
 dits commit -m "Color grade scene 1"
 
-# Push changes
-dits push
-
 # Unlock file
 dits unlock footage/scene01.mov
+
+# 🚧 Roadmap: `dits pull` / `dits push` to sync with a remote (not implemented)
 ```
 
 ### Reviewing History
@@ -1879,27 +1803,35 @@ dits diff v1.0 HEAD -- footage/
 # Create release tag
 dits tag -a v1.0 -m "Final delivery"
 
-# Push tag
-dits push origin v1.0
-
 # Checkout tag
 dits checkout v1.0
 
 # List tags
 dits tag -l
+
+# 🚧 Roadmap: `dits push origin v1.0` to publish a tag (not implemented)
 ```
 
-### Using Virtual Filesystem
+### Frame-Level Video Editing (FACR, requires FFmpeg)
 ```bash
-# Mount repository
-dits mount /mnt/project
+# Ingest a clip into the frame store
+dits facr-add footage/scene01.mov
 
-# Files appear instantly (hydrate on access)
-ls /mnt/project/footage/
+# Non-destructively trim it (stores zero new frames)
+dits facr-trim footage/scene01.mov.facr.json --start 100 --end 400
 
-# Edit in NLE
-# (files stream on demand)
+# Reconstruct a playable file
+dits facr-checkout footage/scene01.mov.facr.trimmed.json scene01_trimmed.mov
+```
 
-# When done
-dits unmount /mnt/project
+### Non-Destructive Photo Editing (requires FFmpeg)
+```bash
+# Store the photo once
+dits photo-add shoot/IMG_0001.cr2
+
+# Append edits (stores zero new image bytes)
+dits photo-edit shoot/IMG_0001.cr2.photo.json --exposure 0.5 --white-balance 5600
+
+# Render the result
+dits photo-render shoot/IMG_0001.cr2.photo.json export/IMG_0001.jpg
 ```

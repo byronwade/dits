@@ -53,8 +53,9 @@ pub fn archive(options: &ArchiveOptions) -> Result<PathBuf> {
     let repo = Repository::open(Path::new("."))
         .context("Not in a dits repository")?;
     
-    // Resolve the tree-ish to a commit
-    let commit_hash = repo.resolve_ref(&options.tree_ish)?
+    // Resolve the tree-ish to a commit (handles HEAD, HEAD~N, branches, tags, and
+    // full/short hashes — resolve_ref alone does not understand the HEAD symbolic ref).
+    let commit_hash = repo.resolve_ref_or_prefix(&options.tree_ish)?
         .with_context(|| format!("Cannot resolve '{}' to a commit", options.tree_ish))?;
     
     let commit = repo.load_commit(&commit_hash)?;

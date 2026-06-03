@@ -1,5 +1,7 @@
 # Merge & Conflict Resolution
 
+> Media versioning is implemented via FACR (frame-addressable content representation): `facr-add`/`facr-checkout`/`facr-trim` for video and `photo-add`/`photo-edit`/`photo-render` for photos. See docs/superpowers/specs/2026-06-02-unified-media-model.md.
+
 This document specifies how Dits handles merging branches and resolving conflicts across all file types.
 
 > **Phase 3.6 Update:** Dits now uses a **hybrid merge strategy** that delegates text files to libgit2 for Git-quality 3-way merging with conflict markers, while binary files use the "Choose, Don't Merge" approach.
@@ -1056,12 +1058,12 @@ This uses the REUC (Resolve Undo Cache) index extension to restore the conflict 
 
 ```bash
 # Before starting work, pull latest and lock files
-dits pull origin main
+dits pull origin main   # 🚧 networked pull is roadmap — not implemented yet
 dits lock footage/hero-shot.mp4
 
 # Do your work...
 
 # Unlock when done
 dits unlock footage/hero-shot.mp4
-dits push
+dits push   # 🚧 networked push is roadmap — not implemented yet
 ```

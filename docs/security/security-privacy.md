@@ -128,7 +128,9 @@ dits fsck --strict
 
 ### Encryption in Transit
 
-All network transfers are encrypted:
+> ⚠️ Roadmap — networked sync (push/pull/fetch/sync), the QUIC transport, and P2P transfers are **not implemented** today (the commands print placeholders and transfer no data). The transit-encryption designs below describe the intended behavior for that future network layer. At-rest encryption (next section) is real and shipping.
+
+When the network layer ships, all transfers are designed to be encrypted:
 
 **HTTPS/TLS:**
 ```
@@ -196,22 +198,25 @@ Decryption happens automatically when you access files.
 ### Encryption Options
 
 ```bash
+# Initialize at-rest encryption
+dits encrypt-init
+
 # Check encryption status
-dits config encryption.enabled
+dits encrypt-status
 
-# Enable encryption for new files only
-dits config encryption.enabled true
-
-# Encrypt existing content (re-encrypts everything)
-dits encrypt-all
+# Unlock / lock the encrypted repository for this session
+dits login
+dits logout
 
 # Change passphrase
-dits encrypt-change-passphrase
+dits change-password
 ```
 
 ---
 
 ## Authentication
+
+> ⚠️ Roadmap — the **Remote Authentication** subsection below (DitsHub browser login, SSH keys, personal access tokens, MFA, and any `dits push`/`dits clone <network>` flows) describes the **unimplemented** network layer. Networked sync and network clone do not work today; `clone` only targets a local filesystem path. Note `dits login`/`dits logout` are real commands today — but for the **local** at-rest keystore (unlock/lock for encryption), not DitsHub auth. **Local Authentication** (credential storage) and local at-rest encryption are real.
 
 ### Local Authentication
 
@@ -326,6 +331,8 @@ dits config lock.required "*.psd,*.blend"
 ---
 
 ## Network Security
+
+> ⚠️ Roadmap — this entire section describes the security model for the **unimplemented** network layer (push/pull/fetch/sync, QUIC transport, DitsHub server). None of it ships today; the CLI is local-first. It is documented here as the intended design.
 
 ### TLS Configuration
 
@@ -726,10 +733,10 @@ dits config audit.detailed true
 ### Is my data safe?
 
 Yes. All data is:
-- Encrypted in transit (TLS 1.3)
-- Optionally encrypted at rest
-- Verified with BLAKE3 hashes
-- Backed up regularly (DitsHub)
+- Optionally encrypted at rest (real today via `dits encrypt-init`)
+- Verified with BLAKE3 hashes (real today, on every read)
+- Designed to be encrypted in transit (TLS 1.3) once the network layer ships (roadmap)
+- Backed up regularly (DitsHub — roadmap)
 
 ### Can Dits employees read my code?
 
@@ -747,12 +754,14 @@ Without the passphrase:
 
 ### Is P2P sharing secure?
 
-Yes. P2P transfers use:
+> ⚠️ Roadmap — P2P is scaffolding today (`dits p2p` commands print placeholders and transfer no data). The design calls for:
 - End-to-end encryption (AES-256-GCM)
 - Authenticated key exchange (SPAKE2)
-- No data passes through servers
+- No data passing through servers
 
 ### How do I rotate credentials?
+
+> ⚠️ Roadmap — DitsHub tokens and `dits push` over a network remote are not implemented today.
 
 ```bash
 # Regenerate personal access token

@@ -1,5 +1,7 @@
 # Tech Stack (Rust Ecosystem)
 
+> ⚠️ ROADMAP / not implemented. The network transport row (QUIC / `quinn`) describes a transport that does not exist yet — networked sync (push/pull/fetch/sync) and P2P are scaffolding only. See docs/STATUS.md.
+
 | Component | Library/Tool | Rationale |
 | :--- | :--- | :--- |
 | Core Language | Rust | Memory safety, zero-GC, strong concurrency. |

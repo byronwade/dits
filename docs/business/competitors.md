@@ -411,12 +411,13 @@ Dits occupies a unique position: **version control semantics + virtual file syst
 | File locking | **Yes** | No | No | Basic | No | No |
 | **Video-Specific** |
 | Proxy workflow | **Yes** | No | **Yes** | No | No | **Yes** |
+| Frame-addressable versioning (FACR) | **Yes** | No | No | No | No | No |
 | Frame-accurate review | Planned | No | **Yes** | No | No | **Yes** |
 | NLE integration | Planned | **Yes** | **Yes** | No | No | **Yes** |
 | Timecode preservation | **Yes** | Yes | Yes | N/A | N/A | Yes |
 | **Operations** |
 | Offline work | **Yes** | Limited | No | **Yes** | **Yes** | No |
-| Delta sync | **Yes** | No | No | No | No | No |
+| Delta sync | Roadmap | No | No | No | No | No |
 | Lifecycle/Archive | **Yes** | Partial | No | No | No | **Yes** |
 | Self-hosted option | **Yes** | No | No | **Yes** | **Yes** | No |
 | **Enterprise** |
@@ -644,10 +645,11 @@ Once a team has history in Dits:
 | Competitor Weakness | Dits Strength |
 | :--- | :--- |
 | LucidLink has no versioning | Full git-like history |
-| Frame.io requires re-upload | Delta sync, chunk dedup |
+| Frame.io requires full re-upload per version | Chunk-level deduplication (changed chunks only) |
 | Git LFS no streaming | Virtual filesystem |
 | DVC not media-focused | Format-aware, proxy workflow |
 | Perforce is expensive/complex | Developer-friendly, affordable |
 | All lack chunk dedup | 50-80% storage savings |
+| None version media at frame granularity | Frame-addressable versioning (FACR) + photo edit-logs |
 
 **The pitch:** "Git for video that doesn't break your storage budget."

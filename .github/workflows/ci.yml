@@ -74,6 +74,9 @@ jobs:
       - name: Check documentation
         run: cargo doc --no-deps --document-private-items
 
+      - name: Check CLI docs match the binary
+        run: bash scripts/check-cli-docs.sh
+
   # Rust unit tests
   test-rust:
     name: Test Rust

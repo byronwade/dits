@@ -14,7 +14,7 @@ This document provides comprehensive context and guidelines for AI assistants wo
 
 3. **Content-Addressable Deduplication**: Uses BLAKE3 hashing for fast, parallelizable content addressing. Similar footage across projects shares storage.
 
-4. **Delta Sync over QUIC**: Only transfers missing chunks, using UDP-based QUIC for maximum bandwidth utilization.
+4. **Delta Sync over QUIC** *(roadmap — NOT implemented)*: Designed to transfer only missing chunks over UDP-based QUIC. Networked sync, P2P, and QUIC delta transport are not built; `push`/`pull`/`fetch`/`sync` are placeholders.
 
 5. **Virtual Filesystem**: Mount repositories as drives with JIT chunk fetching - no full download required.
 
@@ -23,6 +23,12 @@ This document provides comprehensive context and guidelines for AI assistants wo
 ---
 
 ## Architecture Overview
+
+> ⚠️ The layered client/server/QUIC/PostgreSQL design below describes the
+> quarantined backend workspace (`legacy/backend-crates`) and aspirational
+> roadmap, **not** the current product. The live architecture is the local-first
+> CLI — see "Architecture: Module Structure" below. Networked sync, P2P, and QUIC
+> delta transport are roadmap (not implemented).
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -120,17 +126,33 @@ pub fn classify_file(path: &Path, content: &[u8]) -> StorageStrategy;
 
 ---
 
-## Crate Structure
+## Architecture: Module Structure
 
-| Crate | Purpose | Key Dependencies |
-|-------|---------|------------------|
-| `dits-core` | Chunking, hashing, manifests, object model | `blake3`, `fastcdc` |
-| `dits-parsers` | ISOBMFF, NLE project file parsing | `mp4`, `ffmpeg-next` |
-| `dits-storage` | Local and remote storage backends | `aws-sdk-s3`, `sled` |
-| `dits-protocol` | Wire protocol, serialization | `quinn`, `tokio`, `serde` |
-| `dits-client` | CLI implementation | `clap`, `indicatif` |
-| `dits-server` | REST API and QUIC server | `axum`, `sqlx`, `tower` |
-| `dits-sdk` | Public Rust SDK | All above |
+> ⚠️ The `dits-*` backend crates described here are quarantined in `legacy/backend-crates`; the current architecture is the modules under `apps/cli/src/`.
+
+The canonical product is the local-first CLI at `apps/cli` (binary `dits`). Its
+architecture is a set of modules under `apps/cli/src/`:
+
+| Module | Purpose |
+|--------|---------|
+| `core` | VCS object model, index, refs, commits |
+| `store` | Local object/chunk storage |
+| `mp4` | ISOBMFF/MP4 parsing & roundtrip |
+| `facr` | FACR frame engine (`facr-add`/`checkout`/`trim`) and photo (`photo-add`/`edit`/`render`) |
+| `segment` | Segmentation / assembly |
+| `proxy` | Proxy generation & management |
+| `vfs` | Virtual filesystem mount |
+| `security` | Locking, encryption, auth, audit |
+| `metadata` | Metadata scan/show |
+| `dependency` | Dependency graph |
+| `lifecycle` | Freeze/thaw tiered storage |
+| `p2p` | P2P scaffolding (roadmap — not implemented) |
+| `commands` | CLI command handlers |
+
+The former backend crate workspace (`dits-core`, `dits-api`, `dits-worker`,
+`dits-db`, `dits-storage`, `dits-protocol`, `dits-sdk`, `dits-chunker`,
+`dits-cache`, `dits-signal`) is quarantined in `legacy/backend-crates` and is
+**not** current architecture.
 
 ---
 

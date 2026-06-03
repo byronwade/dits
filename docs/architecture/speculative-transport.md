@@ -1,5 +1,7 @@
 # Speculative Transport (Zero-Latency Uploads)
 
+> ⚠️ ROADMAP / not implemented. Networked sync (push/pull/fetch/sync), P2P/Wormhole, and QUIC delta transport are scaffolding only — they print placeholders and transfer no data today. See docs/STATUS.md.
+
 Background upload system that predicts and uploads content before the user explicitly requests it.
 
 ---

@@ -1,5 +1,7 @@
 # Known Issues, Edge Cases, and Solutions
 
+> ⚠️ Some of this describes a quarantined/legacy backend design (now in legacy/backend-crates), not the current local-first architecture. The live architecture is the modules under apps/cli/src/ (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands).
+
 > Comprehensive analysis of potential problems identified across the Dits documentation, with recommended solutions and implementation priorities.
 
 ## Executive Summary

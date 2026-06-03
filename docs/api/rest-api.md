@@ -1,5 +1,7 @@
 # REST API Reference
 
+> ⚠️ Some of this describes a quarantined/legacy backend design (now in legacy/backend-crates), not the current local-first architecture. The live architecture is the modules under apps/cli/src/ (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands).
+
 Complete API specification for the Dits server control plane.
 
 ---

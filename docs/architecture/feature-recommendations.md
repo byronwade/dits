@@ -1,5 +1,7 @@
 # Feature Recommendations: Wormhole Analysis for Dits
 
+> ⚠️ ROADMAP / not implemented. Networked sync (push/pull/fetch/sync), P2P/Wormhole, and QUIC delta transport are scaffolding only — they print placeholders and transfer no data today. See docs/STATUS.md.
+
 ## Executive Summary
 
 Analysis of Wormhole (P2P folder mounting) features reveals significant opportunities to enhance Dits with real-time collaboration, intelligent caching, and adaptive networking capabilities. Four features stand out as high-value additions that align perfectly with Dits' mission to revolutionize version control for large media.

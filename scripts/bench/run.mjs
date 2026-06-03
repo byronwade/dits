@@ -142,22 +142,15 @@ const meta = {
 const allResults = [];
 
 // Rust benchmarks (ignored tests that print DITS_BENCH: JSON lines)
+//
+// NOTE: the `dits-core` and `dits-chunker` benchmark suites lived in the backend
+// crate workspace that was quarantined to legacy/backend-crates (2026-06-02, see
+// legacy/README.md). Those crates are excluded from the root workspace, so
+// `cargo test -p dits-core` no longer resolves. These benchmarks are skipped until
+// they are ported to the canonical `dits` engine (apps/cli) or the backend is
+// reinstated, so that `npm run bench` does not fail.
 {
-  const env = { ...process.env, RUST_TEST_THREADS: "1" };
-
-  const core = run(
-    "cargo",
-    ["test", "-p", "dits-core", "--release", "--test", "benchmarks", "--", "--ignored", "--nocapture"],
-    { env }
-  );
-  allResults.push(...extractBenchLines(core.stdout));
-
-  const chunker = run(
-    "cargo",
-    ["test", "-p", "dits-chunker", "--release", "--test", "benchmarks", "--", "--ignored", "--nocapture"],
-    { env }
-  );
-  allResults.push(...extractBenchLines(chunker.stdout));
+  // Intentionally skipped — see note above.
 }
 
 // Node benchmarks (node:test file that prints DITS_BENCH: JSON lines)

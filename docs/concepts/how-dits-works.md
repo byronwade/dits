@@ -311,6 +311,14 @@ Dits parses and optimizes for:
 - **MXF**: Broadcast formats
 - Other formats work but without keyframe optimization
 
+### Frame-Addressable Versioning (FACR) and Photo Edit-Logs
+
+Dits goes a step further than container-level chunking with a real **frame-addressable** representation: every frame is independently content-addressed, so re-grading 150 frames of a 1,000-frame clip stores 150 frames, not 1,000. Photos get the same treatment as a non-destructive, content-addressed edit log over the original RAW.
+
+These paths work today and require FFmpeg:
+- **Video:** `dits facr-add`, `dits facr-checkout`, `dits facr-trim` (and `dits facr-demo` to try the dedup core).
+- **Photos:** `dits photo-add`, `dits photo-edit`, `dits photo-render`.
+
 ---
 
 ## Hybrid Storage: Best of Both Worlds
@@ -430,6 +438,8 @@ Asset (asset-111):
 
 ## How Syncing Works
 
+> ⚠️ Roadmap — networked sync is **not implemented**. The `push`/`pull`/`fetch`/`sync` commands print placeholders and transfer no data today; `clone` works only against a local filesystem path, not a network remote. The push/pull negotiation below describes the intended design for the future network layer.
+
 ### Push: Uploading Changes
 
 ```
@@ -530,10 +540,12 @@ Merge result:   ??? (impossible to combine)
    ┌─────────────────────────────────────────┐
    │ dits add video.mp4                      │
    │ dits commit -m "Updated edit"           │
-   │ dits push                               │
+   │ # dits push  (roadmap — not implemented)│
    │ dits unlock video.mp4                   │
    └─────────────────────────────────────────┘
 ```
+
+> Note: file locking works locally today. Remote lock coordination (sharing locks with teammates over the network) ships with the roadmap network layer.
 
 ### Lock Enforcement
 
@@ -628,6 +640,8 @@ When cache is full:
 ---
 
 ## P2P Sharing
+
+> ⚠️ Roadmap — P2P is scaffolding today (`dits p2p` commands print placeholders and transfer no data; no NAT traversal, no QUIC sync). This describes the intended design.
 
 ### Why P2P?
 
@@ -725,11 +739,11 @@ Repository is healthy.
 
 ### Encryption Options
 
-**In transit:**
-- All network transfers use TLS 1.3 or QUIC
-- P2P uses AES-256-GCM
+**In transit (roadmap — network layer not implemented):**
+- Network transfers are designed to use TLS 1.3 or QUIC
+- P2P is designed to use AES-256-GCM
 
-**At rest (optional):**
+**At rest (optional, real today):**
 ```bash
 # Enable encryption
 dits encrypt-init
@@ -769,11 +783,11 @@ Hashing 10 GB video:
 ### The User Experience
 
 ```bash
-# It just works like Git
+# It just works like Git (local-first today; push is roadmap)
 dits init
 dits add .
 dits commit -m "My changes"
-dits push
+# dits push   # roadmap — networked sync not implemented yet
 
 # But with massive storage savings
 $ dits repo-stats

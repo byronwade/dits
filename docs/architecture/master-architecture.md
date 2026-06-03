@@ -1,5 +1,8 @@
 # Master System Architecture (v1.0)
 
+> ⚠️ Some of this describes a quarantined/legacy backend design (now in legacy/backend-crates), not the current local-first architecture. The live architecture is the modules under apps/cli/src/ (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands).
+> ⚠️ ROADMAP / not implemented. The QUIC transport / L3 fetch / networked sync described here are scaffolding only — they print placeholders and transfer no data today. See docs/STATUS.md.
+
 Unified blueprint for Dits: structure-aware, deduplicating version control for video across 8 phases.
 
 ---

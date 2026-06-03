@@ -1,5 +1,7 @@
 # Phase 1: The Engine (Foundation)
 
+> ⚠️ **Historical plan.** References to `dits-*` crates describe the original (now quarantined) backend layout in `legacy/backend-crates`. The current architecture is the modules under `apps/cli/src/`. See [docs/STATUS.md](../STATUS.md).
+
 > **Status: ✅ COMPLETE** - All Phase 1 deliverables have been implemented.
 
 Execution manual for building a real, code-ready engine. Expanded with module-level detail, data model, and concrete build order.

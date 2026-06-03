@@ -2,6 +2,8 @@
 
 A Git-style, content-addressed VCS engineered for large media: video, game builds, 3D scenes, RAW photo libraries, and other binary beasts. This document is a website-ready, 1000+ line explainer that blends product value, architecture, safety guarantees, roadmap, and operations—all distilled from the `docs/` corpus.
 
+> ⚠️ Status note: the shipping product is the **local-first CLI**. Networked sync (push/pull/fetch/sync/network-clone), all P2P, and the QUIC delta transport are **roadmap / scaffolding** — not implemented. Where this summary describes QUIC sync, have/want negotiation, or peer transfer as if present, read it as intended design. Real and shipping today: local chunking/dedup, MP4 structure-awareness, at-rest encryption, locking, and **frame-addressable versioning (FACR) + photo edit-logs** (`facr-*`, `photo-*`).
+
 ## How to Use This Summary
 - Share as a project profile on a personal site or portfolio.
 - Lift sections for talks, one-pagers, or RFP answers.
@@ -47,9 +49,10 @@ A Git-style, content-addressed VCS engineered for large media: video, game build
 - Git-like version control built for massive binaries.
 - Content-defined chunking so only changed bytes move.
 - Format-aware: keeps MP4 atoms intact, aligns to keyframes.
-- QUIC delta sync with Bloom-filter-based have/want negotiation.
+- Frame-addressable versioning (FACR) + photo edit-logs: store only the frames/edits that changed (shipping today).
+- QUIC delta sync with Bloom-filter-based have/want negotiation *(roadmap — not implemented)*.
 - Virtual filesystem mounts for on-demand hydration; locks prevent binary conflicts.
-- Open core you can self-host; optional cloud (Ditshub) shares the same protocol.
+- Open core you can self-host; optional cloud (Ditshub) intended to share the same protocol *(roadmap)*.
 
 ## The Problem Space
 - Traditional VCS treats every binary edit as a full-file replacement.
@@ -61,7 +64,7 @@ A Git-style, content-addressed VCS engineered for large media: video, game build
 - Teams lack reproducibility: “Which build shipped?” often cannot be answered.
 
 ## One-Line Solution
-- A content-addressed, FastCDC-chunked VCS with manifest-driven file recipes, QUIC-based delta sync, keyframe-aware media handling, and a virtual filesystem for just-in-time hydration—so media versions travel as small deltas, not multi-gigabyte blobs.
+- A content-addressed, FastCDC-chunked VCS with manifest-driven file recipes, keyframe-aware media handling, frame-addressable versioning (FACR), and a virtual filesystem for just-in-time hydration—designed so media versions travel as small deltas (QUIC-based delta sync is roadmap, not yet implemented), not multi-gigabyte blobs.
 
 ## Who It Serves
 - Video editors who need to branch timelines without re-uploading source.
@@ -120,6 +123,7 @@ A Git-style, content-addressed VCS engineered for large media: video, game build
 - QUIC tuning: idle timeouts, stream limits, congestion control for high throughput.
 
 ## Sync and Transport (QUIC Wire Protocol)
+> ⚠️ Roadmap — the QUIC transport and networked sync are **not implemented**. This section describes the designed wire protocol, not shipping code.
 - Frames: magic `DITS`, version, type, flags (compressed/encrypted/chunked/final), payload length, request id, payload.
 - Message types: PING/PONG, AUTH/AUTH_OK/FAIL, CHECK/UPLOAD/DOWNLOAD, MANIFEST GET/PUSH, SYNC REQUEST/RESPONSE, BLOOM_FILTER, DELTA_REQUEST/DATA.
 - Resumable upload: server tracks confirmed bytes; client resumes from last ack.

@@ -300,7 +300,9 @@ Beyond the storage engine, files can be assigned storage classes:
 
 ## Sync Protocol and Delta Efficiency
 
-Dits uses a sophisticated sync protocol to minimize bandwidth usage.
+> ⚠️ Roadmap — networked sync (push/pull/fetch/sync) is **not implemented**. The `push`/`pull`/`fetch`/`sync` commands print placeholders and transfer no data today; `clone` works only against a local filesystem path, not a network remote. The have/want negotiation, Bloom filters, and delta transport below describe the intended design for the future network layer.
+
+Dits is designed to use a sophisticated sync protocol to minimize bandwidth usage.
 
 ### Have/Want Protocol
 
@@ -389,6 +391,14 @@ Dits extracts comprehensive metadata:
 - **Camera:** Make/model, lens, shutter speed, ISO
 - **GPS:** Location data from camera
 - **Timecode:** Embedded SMPTE timecode
+
+### Frame-Addressable Versioning (FACR) and Photo Edit-Logs
+
+Beyond container-level chunking, Dits has a real frame-addressable representation (FACR) where every frame is independently content-addressed. Re-grade 150 frames of a 1,000-frame clip and Dits stores 150 frames — not 1,000. The same model applies to photos as a non-destructive, content-addressed edit log over the original RAW.
+
+These paths are real today and require FFmpeg:
+- **Video:** `dits facr-add`, `dits facr-checkout`, `dits facr-trim` (try the dedup core with `dits facr-demo`).
+- **Photos:** `dits photo-add`, `dits photo-edit`, `dits photo-render` — edits are recorded as a versioned log, not as new full-resolution copies.
 
 ## Deduplication in Action
 
@@ -507,12 +517,12 @@ Repository is healthy.
 
 ### Encryption Options
 
-**In transit:**
-- All network transfers use TLS 1.3 or QUIC
-- P2P uses AES-256-GCM encryption
+**In transit (roadmap — network layer not implemented):**
+- Network transfers are designed to use TLS 1.3 or QUIC
+- P2P is designed to use AES-256-GCM encryption
 - Keys derived from session-specific secrets
 
-**At rest (optional):**
+**At rest (optional, real today):**
 ```bash
 # Enable repository encryption
 $ dits encrypt-init
@@ -554,19 +564,23 @@ User Application                     Dits VFS Layer
 
 ### Throughput Benchmarks
 
+> ⚠️ The network rows below (QUIC Transfer, Multi-peer Download, Adaptive Transfer) are **roadmap** — QUIC delta transport and P2P swarm downloads are not implemented. Their figures are design targets, not measurements. The local rows (chunking, hashing, zero-copy I/O) are real.
+
 | Operation | Performance | Notes |
 |-----------|-------------|-------|
 | **Streaming Chunking** | Unlimited | No memory limits, any file size |
 | **Parallel Chunking** | 8+ GB/s | Multi-core processing |
 | **Hashing (BLAKE3)** | 6 GB/s | Multi-threaded |
-| **QUIC Transfer** | 1+ GB/s | 1000+ concurrent streams |
-| **Multi-peer Download** | N × peer bandwidth | Linear scaling with peers |
+| **QUIC Transfer** *(roadmap)* | 1+ GB/s | 1000+ concurrent streams (not implemented) |
+| **Multi-peer Download** *(roadmap)* | N × peer bandwidth | Linear scaling with peers (not implemented) |
 | **Zero-copy I/O** | 99% CPU reduction | Memory-mapped operations |
-| **Adaptive Transfer** | Auto-optimized | Self-tuning to network conditions |
+| **Adaptive Transfer** *(roadmap)* | Auto-optimized | Self-tuning to network conditions (not implemented) |
 
 ### Download Performance Optimizations
 
-Dits implements multiple optimizations to maximize download speeds and utilize full network capacity:
+> ⚠️ The network-dependent items here (High-Throughput QUIC, parallel/multi-peer downloads, adaptive chunk sizing over the wire) are **roadmap** — the QUIC transport and P2P layer are not implemented. They describe the intended download design. The local items (streaming FastCDC, parallel chunking, zero-copy operations) are real.
+
+Dits is designed to use multiple optimizations to maximize download speeds and utilize full network capacity:
 
 #### Streaming FastCDC
 - **Problem:** Traditional chunking loads entire files into memory
@@ -595,7 +609,7 @@ Dits implements multiple optimizations to maximize download speeds and utilize f
 - **Reduced copying:** 50-70% less CPU overhead
 - **Lower latency:** Faster data movement throughout pipeline
 
-**Result:** Downloads now utilize 100% of available bandwidth with no software limitations, scaling linearly with the number of available peers.
+**Intended result (roadmap):** once the network layer ships, downloads are designed to utilize available bandwidth with no software limitations, scaling with the number of available peers.
 
 ### Memory Usage
 
@@ -652,6 +666,8 @@ Total: ~10.2 GB stored
 
 ### P2P Sharing
 
+> ⚠️ Roadmap — P2P is scaffolding today (`dits p2p` commands print placeholders and transfer no data; no NAT traversal, no QUIC sync). This is the intended design.
+
 Direct peer-to-peer file sharing without central server:
 
 ```
@@ -662,7 +678,7 @@ You (NYC)  ◀──────────────────────
 Total transferred: 10 GB (direct, deduplicated)
 ```
 
-**Security:**
+**Planned security:**
 - AES-256-GCM encryption
 - SPAKE2 key exchange
 - BLAKE3 integrity verification

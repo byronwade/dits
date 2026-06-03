@@ -1,5 +1,7 @@
 # Engineering Execution Manual — Phase 6 (The Hologram Layer)
 
+> ⚠️ **Historical plan.** References to `dits-*` crates describe the original (now quarantined) backend layout in `legacy/backend-crates`. The current architecture is the modules under `apps/cli/src/`. See [docs/STATUS.md](../STATUS.md).
+
 **Project:** Dits (Data-Intensive Version Control System)  
 **Phase:** 6 — The Hologram Layer (Proxy Automation)  
 **Objective:** Serve lightweight 1080p proxies for editing over weak links while keeping edits frame-accurate to 8K originals; swap back to masters for render.

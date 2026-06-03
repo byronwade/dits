@@ -2,6 +2,12 @@
 
 A complete workflow guide for 3D artists, VFX professionals, motion designers, and animation studios managing large 3D assets.
 
+> 🚧 **Roadmap notice.** Dits today is **local-first**. Commands in this guide that sync
+> over a network — `push`, `pull`, `fetch`, network `clone`, `remote`, and all `p2p`
+> sharing — are **not implemented yet**; they print placeholders and transfer no data.
+> Everything **local** works: commits, branches, tags, locks, and MP4/FACR tooling. Treat
+> networked and P2P examples below as the intended future workflow.
+
 ---
 
 ## Table of Contents

@@ -14,12 +14,15 @@ This folder captures the Dits Master Specification in a navigable structure. Use
 | 3.5 | Git Parity | ✅ Complete | Branching, tags, diff, merge, stash, config |
 | 3.6 | Hybrid Storage | ✅ Complete | Git+Dits storage for optimal text/binary handling |
 | 4 | POC & Introspection | ✅ Complete | Dedup stats, inspect-file, repo-stats, Redis caching |
-| 4b | Network Sync | ✅ Complete | QUIC delta sync, push/pull, P2P networking |
-| 5 | Conflict & Locking | ✅ Complete | Binary locks, visual diff, conflict resolution |
+| 4b | Network Sync | 🚧 Scaffolding | QUIC/P2P/push/pull are stubs that print placeholders. Only local-filesystem clone works. |
+| 5 | Conflict & Locking | ✅ Complete (local) | Binary locks, visual diff, conflict resolution |
+| FACR | Frame Engine | 🚧 In Progress | Frame-addressable video + photo edit-log. Real & working: `facr-add/checkout/trim`, `photo-add/edit/render`. Audio + production codecs pending. |
 | 6 | Hologram Layer | 🚧 In Progress | Proxy-based editing workflows |
 | 7 | Dependency Graph | ✅ Complete | Project file parsing, creative ecosystem |
 | 8 | Deep Freeze | 🚧 Planned | Tiered storage lifecycle |
 | 9 | Black Box | 🚧 Planned | Client-side encryption |
+
+> **Honest status note:** the **local-first engine** at `apps/cli` is the canonical product and works today. A former backend crate workspace (`dits-api`, `dits-worker`, `dits-db`, `dits-storage`, etc.) was quarantined to `legacy/backend-crates` and is **not** current architecture — ignore docs that still describe it as live. **Networking (QUIC/P2P/remote push/pull/sync) is not implemented yet.**
 
 **Comprehensive Testing Infrastructure:**
 - **120+ Automated Tests**: Git-inspired shell script framework + Rust unit tests
@@ -33,7 +36,8 @@ This folder captures the Dits Master Specification in a navigable structure. Use
 - ✅ **Core Git**: `init`, `add`, `status`, `commit`, `log`, `checkout`, `branch`, `switch`, `diff`, `tag`, `merge`, `reset`, `restore`, `config`, `stash`, `rebase`, `cherry-pick`, `bisect`, `reflog`, `blame`, `show`, `grep`, `worktree`, `sparse-checkout`, `hooks`, `archive`, `describe`, `shortlog`, `maintenance`, `completions`
 - ✅ **Creative Workflows**: `video-init`, `video-add-clip`, `video-show`, `video-list`, `proxy-generate`, `proxy-status`, `proxy-list`, `proxy-delete`
 - ✅ **Asset Management**: `segment`, `assemble`, `roundtrip`, `mount`, `unmount`, `inspect`, `inspect-file`, `repo-stats`, `cache-stats`, `fsck`, `meta-scan`, `meta-show`, `meta-list`
-- ✅ **Collaboration**: `remote`, `push`, `pull`, `fetch`, `clone`, `lock`, `unlock`, `locks`, `login`, `logout`, `change-password`, `audit`, `audit-stats`, `audit-export`, `p2p`
+- ✅ **Frame Engine (FACR)**: `facr-add`, `facr-checkout`, `facr-trim`, `facr-demo` (video), `photo-add`, `photo-edit`, `photo-render` (photos) — frame/edit-log dedup, requires FFmpeg
+- ⚠️ **Collaboration (partial)**: `lock`, `unlock`, `locks`, `login`, `logout`, `change-password`, `audit*` work locally. `remote`, `push`, `pull`, `fetch`, `clone`, `p2p` are **scaffolding** — only local-filesystem `clone` transfers data; networked sync is not implemented yet.
 - ✅ **Lifecycle**: `freeze-init`, `freeze-status`, `freeze`, `thaw`, `freeze-policy`, `encrypt-init`, `encrypt-status`, `dep-check`, `dep-graph`, `dep-list`, `gc`, `clean`
 
 ---

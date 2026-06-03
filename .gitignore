@@ -46,3 +46,4 @@ Cargo.lock
 # Debug
 debug/
 *.pdb
+tmp/corpus/

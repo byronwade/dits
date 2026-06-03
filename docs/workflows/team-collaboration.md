@@ -2,6 +2,11 @@
 
 How to effectively collaborate on video projects with multiple team members using Dits.
 
+> 🚧 **Roadmap notice.** Team collaboration over a network is **not implemented yet**.
+> Every sync step here — `clone` from a URL, `push`, `pull`, `fetch`, `remote` — prints a
+> placeholder and transfers no data. Branching, tagging, locks, and commits work locally
+> today; the shared-remote examples describe the intended future workflow.
+
 ---
 
 ## Team Setup

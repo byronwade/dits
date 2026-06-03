@@ -1,5 +1,9 @@
 # High-Level Architecture
 
+> ⚠️ ROADMAP / not implemented. The QUIC transport and partial-clone / on-demand fetch listed here are scaffolding only — networked sync (push/pull/fetch/sync) and P2P transfer no data today. See docs/STATUS.md.
+>
+> Media versioning is implemented via FACR (frame-addressable content representation): `facr-add`/`facr-checkout`/`facr-trim` for video and `photo-add`/`photo-edit`/`photo-render` for photos. See docs/superpowers/specs/2026-06-02-unified-media-model.md.
+
 Dits is a **hybrid media version control system** combining:
 1. **Smart Storage Delegation** - Git for text, Dits for binary
 2. **Universal Binary Deduplication** - Works on ANY file type

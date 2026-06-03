@@ -1,5 +1,7 @@
 # Compatibility Matrix
 
+> ⚠️ Network/server rows below (server OS, server database, transport protocols such as HTTP/3/QUIC, and remote/library "sync") describe the quarantined/legacy backend (legacy/backend-crates) and roadmap transport — **not implemented** in the current local-first CLI. Treat them as design reference. Local platform/format support is accurate.
+
 Supported platforms, formats, and application versions.
 
 ---
