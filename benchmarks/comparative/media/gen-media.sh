@@ -16,7 +16,10 @@ gen () { # $1 outfile  $2.. ffmpeg-args
 }
 # v1 + variants (ProRes intra-frame for frame work; H.264 for metadata)
 gen v1.mov        -c:v prores_ks -profile:v 2
-gen v1.mp4        -c:v libx264 -preset medium -g 60 -pix_fmt yuv420p
+# H.264 at a realistic bitrate (~40 Mbps) so per-tool store overhead doesn't dominate
+# the true delta on metadata/append workloads — otherwise tiny files make CDC tools
+# look artificially bad. This keeps those comparisons honest.
+gen v1.mp4        -c:v libx264 -preset medium -g 60 -pix_fmt yuv420p -b:v 40M -maxrate 40M -bufsize 80M
 # v2: full re-export with a brightness bump on the 8-10s window (the honest-loss case)
 [ -f "$DIR/v2_reexport.mov" ] || ffmpeg -y -v error -i "$DIR/v1.mov" \
   -vf "eq=brightness=0.30:enable='between(t,8,10)'" -c:v prores_ks -profile:v 2 "$DIR/v2_reexport.mov"
@@ -33,7 +36,7 @@ gen v1.mp4        -c:v libx264 -preset medium -g 60 -pix_fmt yuv420p
 }
 # v2: whole-clip color grade — every frame rewritten (the honest loss for everyone)
 [ -f "$DIR/v2_grade.mp4" ] || ffmpeg -y -v error -i "$DIR/v1.mp4" \
-  -vf "eq=contrast=1.3:saturation=1.4:brightness=0.1" -c:v libx264 -preset medium -g 60 -pix_fmt yuv420p "$DIR/v2_grade.mp4"
+  -vf "eq=contrast=1.3:saturation=1.4:brightness=0.1" -c:v libx264 -preset medium -g 60 -pix_fmt yuv420p -b:v 40M -maxrate 40M -bufsize 80M "$DIR/v2_grade.mp4"
 # photo fixture for the non-destructive photo-edit workload
 gen photo.png -frames:v 1
 # pin hashes

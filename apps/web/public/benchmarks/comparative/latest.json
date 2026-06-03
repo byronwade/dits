@@ -1,8 +1,8 @@
 {
   "meta": {
     "profile": "ci",
-    "generated_at": "2026-06-03T13:59:22.533Z",
-    "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
+    "generated_at": "2026-06-03T14:18:28.867Z",
+    "git_sha": "8a7c77f26bb03c5d9c4bbaf48a08703ba305b810",
     "machine": "darwin arm64 Apple M2 Pro",
     "assumptions_url": "/benchmarks#methodology",
     "tool_versions": {
@@ -26,9 +26,9 @@
         "label": "Re-export a finished clip"
       },
       "metrics": {
-        "stored_bytes": 35992164,
-        "wire_bytes": 35992164,
-        "wall_ms": 402.749209,
+        "stored_bytes": 35992163,
+        "wire_bytes": 35992163,
+        "wall_ms": 493.99475,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 0
@@ -39,8 +39,8 @@
         "upload_seconds_at_line": 5.5
       },
       "tool_version": "git-lfs",
-      "run_timestamp": "2026-06-03T13:59:22.533Z",
-      "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
+      "run_timestamp": "2026-06-03T14:18:28.867Z",
+      "git_sha": "8a7c77f26bb03c5d9c4bbaf48a08703ba305b810",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -55,21 +55,21 @@
         "label": "Re-export a finished clip"
       },
       "metrics": {
-        "stored_bytes": 29512017,
-        "wire_bytes": 29512017,
-        "wall_ms": 900.93425,
+        "stored_bytes": 29581136,
+        "wire_bytes": 29581136,
+        "wall_ms": 921.661083,
         "peak_rss_bytes": null,
         "restore_ms": null,
-        "dedup_pct": 18
+        "dedup_pct": 17.8
       },
       "derived": {
         "cost_storage_usd_yr": 0.01,
-        "cost_egress_usd_per_1k": 2.47,
+        "cost_egress_usd_per_1k": 2.48,
         "upload_seconds_at_line": 4.5
       },
       "tool_version": "restic",
-      "run_timestamp": "2026-06-03T13:59:22.533Z",
-      "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
+      "run_timestamp": "2026-06-03T14:18:28.867Z",
+      "git_sha": "8a7c77f26bb03c5d9c4bbaf48a08703ba305b810",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -84,9 +84,9 @@
         "label": "Re-export a finished clip"
       },
       "metrics": {
-        "stored_bytes": 30725963,
-        "wire_bytes": 30725963,
-        "wall_ms": 323.079791,
+        "stored_bytes": 30721196,
+        "wire_bytes": 30721196,
+        "wall_ms": 325.671166,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 14.6
@@ -97,8 +97,8 @@
         "upload_seconds_at_line": 4.7
       },
       "tool_version": "borg",
-      "run_timestamp": "2026-06-03T13:59:22.533Z",
-      "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
+      "run_timestamp": "2026-06-03T14:18:28.867Z",
+      "git_sha": "8a7c77f26bb03c5d9c4bbaf48a08703ba305b810",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -115,7 +115,7 @@
       "metrics": {
         "stored_bytes": 28312800,
         "wire_bytes": 28312800,
-        "wall_ms": 4948.355333,
+        "wall_ms": 4837.044375,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 21.3
@@ -126,8 +126,8 @@
         "upload_seconds_at_line": 4.3
       },
       "tool_version": "xdelta3",
-      "run_timestamp": "2026-06-03T13:59:22.533Z",
-      "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
+      "run_timestamp": "2026-06-03T14:18:28.867Z",
+      "git_sha": "8a7c77f26bb03c5d9c4bbaf48a08703ba305b810",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -142,9 +142,9 @@
         "label": "Re-export a finished clip"
       },
       "metrics": {
-        "stored_bytes": 36266473,
-        "wire_bytes": 36266473,
-        "wall_ms": 192.73075,
+        "stored_bytes": 36266475,
+        "wire_bytes": 36266475,
+        "wall_ms": 194.504917,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 0
@@ -155,8 +155,8 @@
         "upload_seconds_at_line": 5.5
       },
       "tool_version": "dits-generic",
-      "run_timestamp": "2026-06-03T13:59:22.533Z",
-      "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
+      "run_timestamp": "2026-06-03T14:18:28.867Z",
+      "git_sha": "8a7c77f26bb03c5d9c4bbaf48a08703ba305b810",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -166,26 +166,26 @@
       "tier": "bleeding-edge",
       "tool": "restic",
       "dataset": {
-        "bytes": 3179035,
+        "bytes": 14302703,
         "codec": "h264",
         "label": "Rename / metadata fix"
       },
       "metrics": {
-        "stored_bytes": 3182774,
-        "wire_bytes": 3182774,
-        "wall_ms": 796.145625,
+        "stored_bytes": 1160326,
+        "wire_bytes": 1160326,
+        "wall_ms": 808.0475,
         "peak_rss_bytes": null,
         "restore_ms": null,
-        "dedup_pct": 0
+        "dedup_pct": 91.9
       },
       "derived": {
         "cost_storage_usd_yr": 0,
-        "cost_egress_usd_per_1k": 0.27,
-        "upload_seconds_at_line": 0.5
+        "cost_egress_usd_per_1k": 0.1,
+        "upload_seconds_at_line": 0.2
       },
       "tool_version": "restic",
-      "run_timestamp": "2026-06-03T13:59:22.533Z",
-      "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
+      "run_timestamp": "2026-06-03T14:18:28.867Z",
+      "git_sha": "8a7c77f26bb03c5d9c4bbaf48a08703ba305b810",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -195,26 +195,26 @@
       "tier": "bleeding-edge",
       "tool": "borg",
       "dataset": {
-        "bytes": 3179035,
+        "bytes": 14302703,
         "codec": "h264",
         "label": "Rename / metadata fix"
       },
       "metrics": {
-        "stored_bytes": 3180838,
-        "wire_bytes": 3180838,
-        "wall_ms": 196.66375,
+        "stored_bytes": 5916077,
+        "wire_bytes": 5916077,
+        "wall_ms": 221.996334,
         "peak_rss_bytes": null,
         "restore_ms": null,
-        "dedup_pct": 0
+        "dedup_pct": 58.6
       },
       "derived": {
         "cost_storage_usd_yr": 0,
-        "cost_egress_usd_per_1k": 0.27,
-        "upload_seconds_at_line": 0.5
+        "cost_egress_usd_per_1k": 0.5,
+        "upload_seconds_at_line": 0.9
       },
       "tool_version": "borg",
-      "run_timestamp": "2026-06-03T13:59:22.533Z",
-      "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
+      "run_timestamp": "2026-06-03T14:18:28.867Z",
+      "git_sha": "8a7c77f26bb03c5d9c4bbaf48a08703ba305b810",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -224,14 +224,14 @@
       "tier": "bleeding-edge",
       "tool": "xdelta3",
       "dataset": {
-        "bytes": 3179035,
+        "bytes": 14302703,
         "codec": "h264",
         "label": "Rename / metadata fix"
       },
       "metrics": {
-        "stored_bytes": 221,
-        "wire_bytes": 221,
-        "wall_ms": 65.686583,
+        "stored_bytes": 298,
+        "wire_bytes": 298,
+        "wall_ms": 143.939417,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 100
@@ -242,8 +242,8 @@
         "upload_seconds_at_line": 0
       },
       "tool_version": "xdelta3",
-      "run_timestamp": "2026-06-03T13:59:22.533Z",
-      "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
+      "run_timestamp": "2026-06-03T14:18:28.867Z",
+      "git_sha": "8a7c77f26bb03c5d9c4bbaf48a08703ba305b810",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -253,17 +253,17 @@
       "tier": "dits-generic",
       "tool": "dits-generic",
       "dataset": {
-        "bytes": 3179035,
+        "bytes": 14302703,
         "codec": "h264",
         "label": "Rename / metadata fix"
       },
       "metrics": {
-        "stored_bytes": 148665,
-        "wire_bytes": 148665,
-        "wall_ms": 28.233417,
+        "stored_bytes": 176006,
+        "wire_bytes": 176006,
+        "wall_ms": 63.733917,
         "peak_rss_bytes": null,
         "restore_ms": null,
-        "dedup_pct": 95.3
+        "dedup_pct": 98.8
       },
       "derived": {
         "cost_storage_usd_yr": 0,
@@ -271,8 +271,8 @@
         "upload_seconds_at_line": 0
       },
       "tool_version": "dits-generic",
-      "run_timestamp": "2026-06-03T13:59:22.533Z",
-      "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
+      "run_timestamp": "2026-06-03T14:18:28.867Z",
+      "git_sha": "8a7c77f26bb03c5d9c4bbaf48a08703ba305b810",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -289,7 +289,7 @@
       "metrics": {
         "stored_bytes": null,
         "wire_bytes": null,
-        "wall_ms": 111.45125,
+        "wall_ms": 106.204125,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 98.3
@@ -300,8 +300,8 @@
         "upload_seconds_at_line": 0
       },
       "tool_version": "dits-facr",
-      "run_timestamp": "2026-06-03T13:59:22.533Z",
-      "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
+      "run_timestamp": "2026-06-03T14:18:28.867Z",
+      "git_sha": "8a7c77f26bb03c5d9c4bbaf48a08703ba305b810",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -316,21 +316,21 @@
         "label": "FACR demo clip"
       },
       "metrics": {
-        "stored_bytes": 9318,
-        "wire_bytes": 9318,
-        "wall_ms": 90001.67075,
+        "stored_bytes": 805581,
+        "wire_bytes": 805581,
+        "wall_ms": 90004.936625,
         "peak_rss_bytes": null,
         "restore_ms": null,
-        "dedup_pct": 80.8
+        "dedup_pct": 77.1
       },
       "derived": {
         "cost_storage_usd_yr": 0,
-        "cost_egress_usd_per_1k": 0,
-        "upload_seconds_at_line": 0
+        "cost_egress_usd_per_1k": 0.07,
+        "upload_seconds_at_line": 0.1
       },
       "tool_version": "dits-facr",
-      "run_timestamp": "2026-06-03T13:59:22.533Z",
-      "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
+      "run_timestamp": "2026-06-03T14:18:28.867Z",
+      "git_sha": "8a7c77f26bb03c5d9c4bbaf48a08703ba305b810",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -340,14 +340,14 @@
       "tier": "dits",
       "tool": "dits-facr",
       "dataset": {
-        "bytes": 3178999,
+        "bytes": 14302667,
         "codec": "h264",
         "label": "Trim / cut a clip"
       },
       "metrics": {
         "stored_bytes": 0,
         "wire_bytes": 0,
-        "wall_ms": 7.545458,
+        "wall_ms": 8.419542,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 100
@@ -358,8 +358,8 @@
         "upload_seconds_at_line": 0
       },
       "tool_version": "dits-facr",
-      "run_timestamp": "2026-06-03T13:59:22.533Z",
-      "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
+      "run_timestamp": "2026-06-03T14:18:28.867Z",
+      "git_sha": "8a7c77f26bb03c5d9c4bbaf48a08703ba305b810",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -376,7 +376,7 @@
       "metrics": {
         "stored_bytes": 0,
         "wire_bytes": 0,
-        "wall_ms": 6.871833,
+        "wall_ms": 7.929042,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 100
@@ -387,95 +387,8 @@
         "upload_seconds_at_line": 0
       },
       "tool_version": "dits-facr",
-      "run_timestamp": "2026-06-03T13:59:22.533Z",
-      "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
-      "machine": "darwin arm64 Apple M2 Pro",
-      "available": true
-    },
-    {
-      "workload": "append",
-      "workload_label": "Append footage",
-      "tier": "bleeding-edge",
-      "tool": "restic",
-      "dataset": {
-        "bytes": 4367744,
-        "codec": "h264",
-        "label": "Append footage"
-      },
-      "metrics": {
-        "stored_bytes": 4371018,
-        "wire_bytes": 4371018,
-        "wall_ms": 815.99575,
-        "peak_rss_bytes": null,
-        "restore_ms": null,
-        "dedup_pct": 0
-      },
-      "derived": {
-        "cost_storage_usd_yr": 0,
-        "cost_egress_usd_per_1k": 0.37,
-        "upload_seconds_at_line": 0.7
-      },
-      "tool_version": "restic",
-      "run_timestamp": "2026-06-03T13:59:22.533Z",
-      "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
-      "machine": "darwin arm64 Apple M2 Pro",
-      "available": true
-    },
-    {
-      "workload": "append",
-      "workload_label": "Append footage",
-      "tier": "bleeding-edge",
-      "tool": "borg",
-      "dataset": {
-        "bytes": 4367744,
-        "codec": "h264",
-        "label": "Append footage"
-      },
-      "metrics": {
-        "stored_bytes": 4370072,
-        "wire_bytes": 4370072,
-        "wall_ms": 222.017084,
-        "peak_rss_bytes": null,
-        "restore_ms": null,
-        "dedup_pct": 0
-      },
-      "derived": {
-        "cost_storage_usd_yr": 0,
-        "cost_egress_usd_per_1k": 0.37,
-        "upload_seconds_at_line": 0.7
-      },
-      "tool_version": "borg",
-      "run_timestamp": "2026-06-03T13:59:22.533Z",
-      "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
-      "machine": "darwin arm64 Apple M2 Pro",
-      "available": true
-    },
-    {
-      "workload": "append",
-      "workload_label": "Append footage",
-      "tier": "dits-generic",
-      "tool": "dits-generic",
-      "dataset": {
-        "bytes": 4367744,
-        "codec": "h264",
-        "label": "Append footage"
-      },
-      "metrics": {
-        "stored_bytes": 1397392,
-        "wire_bytes": 1397392,
-        "wall_ms": 28.986625,
-        "peak_rss_bytes": null,
-        "restore_ms": null,
-        "dedup_pct": 68
-      },
-      "derived": {
-        "cost_storage_usd_yr": 0,
-        "cost_egress_usd_per_1k": 0.12,
-        "upload_seconds_at_line": 0.2
-      },
-      "tool_version": "dits-generic",
-      "run_timestamp": "2026-06-03T13:59:22.533Z",
-      "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
+      "run_timestamp": "2026-06-03T14:18:28.867Z",
+      "git_sha": "8a7c77f26bb03c5d9c4bbaf48a08703ba305b810",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -485,26 +398,26 @@
       "tier": "bleeding-edge",
       "tool": "restic",
       "dataset": {
-        "bytes": 3441601,
+        "bytes": 15100325,
         "codec": "h264",
         "label": "Color-grade the whole clip"
       },
       "metrics": {
-        "stored_bytes": 3445523,
-        "wire_bytes": 3445523,
-        "wall_ms": 792.720083,
+        "stored_bytes": 15105566,
+        "wire_bytes": 15105566,
+        "wall_ms": 835.18125,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 0
       },
       "derived": {
         "cost_storage_usd_yr": 0,
-        "cost_egress_usd_per_1k": 0.29,
-        "upload_seconds_at_line": 0.5
+        "cost_egress_usd_per_1k": 1.27,
+        "upload_seconds_at_line": 2.3
       },
       "tool_version": "restic",
-      "run_timestamp": "2026-06-03T13:59:22.533Z",
-      "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
+      "run_timestamp": "2026-06-03T14:18:28.867Z",
+      "git_sha": "8a7c77f26bb03c5d9c4bbaf48a08703ba305b810",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -514,26 +427,26 @@
       "tier": "dits-generic",
       "tool": "dits-generic",
       "dataset": {
-        "bytes": 3441601,
+        "bytes": 15100325,
         "codec": "h264",
         "label": "Color-grade the whole clip"
       },
       "metrics": {
-        "stored_bytes": 3475805,
-        "wire_bytes": 3475805,
-        "wall_ms": 31.394833,
+        "stored_bytes": 15223842,
+        "wire_bytes": 15223842,
+        "wall_ms": 71.219833,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 0
       },
       "derived": {
         "cost_storage_usd_yr": 0,
-        "cost_egress_usd_per_1k": 0.29,
-        "upload_seconds_at_line": 0.5
+        "cost_egress_usd_per_1k": 1.28,
+        "upload_seconds_at_line": 2.3
       },
       "tool_version": "dits-generic",
-      "run_timestamp": "2026-06-03T13:59:22.533Z",
-      "git_sha": "de8994dc3050ab7a2674015a9503e06fe9996e82",
+      "run_timestamp": "2026-06-03T14:18:28.867Z",
+      "git_sha": "8a7c77f26bb03c5d9c4bbaf48a08703ba305b810",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     }

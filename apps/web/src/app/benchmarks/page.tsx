@@ -219,8 +219,9 @@ export default async function BenchmarksPage() {
         </h2>
         {metaRows.length > 0 && <TwoTierBar rows={metaRows} />}
         <p className="mt-6 max-w-2xl text-sm text-muted-foreground">
-          You changed almost nothing — so dits saves almost nothing. Generic chunkers can&apos;t
-          always tell, because a small change shuffles bytes around the file.
+          Here&apos;s the honest part: the good general-purpose dedup tools handle this well too —
+          restic skips ~95% of it. dits edges ahead, but structural edits aren&apos;t where the
+          gap is. The real difference is frame work (chapters 03–04), not renames.
         </p>
       </KeynoteSection>
 

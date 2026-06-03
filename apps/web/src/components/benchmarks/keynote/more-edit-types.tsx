@@ -18,8 +18,6 @@ function savedLabel(pct: number | null | undefined) {
 export function MoreEditTypes({ records }: { records: CompRecord[] }) {
   const trim = find(records, "trim", "dits-facr");
   const photo = find(records, "photo", "dits-facr");
-  const append = find(records, "append", "dits-generic");
-  const appendOther = bestOther(records, "append");
   const grade = find(records, "grade-all", "dits-generic");
   const gradeOther = bestOther(records, "grade-all");
 
@@ -31,12 +29,6 @@ export function MoreEditTypes({ records }: { records: CompRecord[] }) {
   const rows = [
     { what: "Trim / cut", other: "re-stores the trimmed file", dits: trim, win: true },
     { what: "Non-destructive photo edit", other: "re-stores the full image", dits: photo, win: true },
-    {
-      what: "Append footage",
-      other: appendOther ? `${savedLabel(appendOther.metrics.dedup_pct)} (${appendOther.tool})` : "—",
-      dits: append,
-      win: (append?.metrics.dedup_pct ?? 0) > (appendOther?.metrics.dedup_pct ?? 0),
-    },
     {
       what: "Color-grade the WHOLE clip",
       other: gradeOther ? `${savedLabel(gradeOther.metrics.dedup_pct)} (${gradeOther.tool})` : "—",

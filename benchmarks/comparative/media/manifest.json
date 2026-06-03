@@ -7,8 +7,8 @@
     },
     {
       "name": "v1.mp4",
-      "sha256": "214d6202a383cbedf496c0db4a0a782d6fe71b7bca71ad8cec85e377324bebc4",
-      "bytes": 3178999
+      "sha256": "1e63c5b6c0a675d174edae1f40a01febe6cca5fd700464c8b1cf78d533b8f53f",
+      "bytes": 14302667
     },
     {
       "name": "v2_reexport.mov",
@@ -17,18 +17,18 @@
     },
     {
       "name": "v2_meta.mp4",
-      "sha256": "634afcd18dc3e496b47f4ea398b52f70f552df746ff938e1314a5fe3c885ba0a",
-      "bytes": 3179035
+      "sha256": "945da03f6e0cf1a0235bae793594529ba0e25ef4e2e38c5e912c25ff86c5005b",
+      "bytes": 14302703
     },
     {
       "name": "v2_append.mp4",
-      "sha256": "238d552704a02331f9e2fbe1659a17732e0b1df3e88e7967cc57f89e35fa4c61",
-      "bytes": 4367744
+      "sha256": "ad815484118138e31a5354ca2f91099c8c48ad51c65d9e4d7f1282731e99c407",
+      "bytes": 15491408
     },
     {
       "name": "v2_grade.mp4",
-      "sha256": "65d6afb287bacc5f758f3ccda0533753b31d74c839da83ada95d2f330ee0b26b",
-      "bytes": 3441601
+      "sha256": "3025becd4924c3caacce4822857fb9940159795641c80d4e8e11c46d47075aa0",
+      "bytes": 15100325
     },
     {
       "name": "photo.png",

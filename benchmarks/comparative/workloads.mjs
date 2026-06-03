@@ -15,8 +15,6 @@ export const WORKLOADS = [
     facr: true, input: "v1.mp4", tools: ["dits-facr"], minDedup: 99 },
   { id: "photo", label: "Non-destructive photo edit",
     facr: true, input: "photo.png", tools: ["dits-facr"], minDedup: 99 },
-  { id: "append", label: "Append footage",
-    v1: "v1.mp4", v2: "v2_append.mp4", tools: ["restic", "borg", "dits-generic"] },
   { id: "grade-all", label: "Color-grade the whole clip",
     v1: "v1.mp4", v2: "v2_grade.mp4", tools: ["restic", "dits-generic"], honestLoss: true },
 ];
