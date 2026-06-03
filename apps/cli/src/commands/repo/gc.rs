@@ -1,5 +1,7 @@
 //! Garbage collection command - clean up unreferenced objects.
 
+use crate::core::Hash;
+use crate::store::Repository;
 use anyhow::{Result, bail};
 use std::collections::HashSet;
 use std::fs;
@@ -108,45 +110,39 @@ struct GcStats {
     locks_pruned: usize,
 }
 
-/// Collect all reachable object hashes.
-fn collect_reachable_objects(dits_dir: &Path) -> Result<HashSet<String>> {
-    let mut reachable = HashSet::new();
+/// Collect every object hash reachable from any ref, by actually walking the object
+/// graph: refs/HEAD/tags/stash -> commits -> parents -> manifest -> per-entry
+/// content/chunks/mp4 blobs. (Git-text content lives in the git engine, not
+/// `.dits/objects`, so it is never scanned for pruning here.)
+fn collect_reachable_objects(_dits_dir: &Path) -> Result<HashSet<String>> {
+    let repo = Repository::open(Path::new("."))?;
+    let mut reachable: HashSet<String> = HashSet::new();
+    let mut seen: HashSet<Hash> = HashSet::new();
+    let mut stack: Vec<Hash> = Vec::new();
 
-    // Walk all refs (heads, tags, remotes)
-    let refs_dir = dits_dir.join("refs");
-    if refs_dir.exists() {
-        collect_refs_objects(&refs_dir, &mut reachable)?;
+    // Roots: HEAD, every branch, every tag.
+    if let Some(h) = repo.head()? {
+        stack.push(h);
     }
-
-    // Check HEAD
-    let head = dits_dir.join("HEAD");
-    if head.exists() {
-        let content = fs::read_to_string(&head)?;
-        if let Some(commit_hash) = content.strip_prefix("ref: ") {
-            // Symbolic ref - resolve it
-            let ref_path = dits_dir.join(commit_hash.trim());
-            if ref_path.exists() {
-                let hash = fs::read_to_string(&ref_path)?.trim().to_string();
-                collect_commit_objects(dits_dir, &hash, &mut reachable)?;
-            }
-        } else {
-            // Direct commit hash
-            let hash = content.trim();
-            collect_commit_objects(dits_dir, hash, &mut reachable)?;
+    for branch in repo.list_branches()? {
+        if let Some(h) = repo.refs().get_branch(&branch)? {
+            stack.push(h);
         }
     }
-
-    // Check stash
-    let stash_dir = dits_dir.join("stash");
+    for tag in repo.refs().list_tags()? {
+        if let Some(h) = repo.refs().get_tag(&tag)? {
+            stack.push(h);
+        }
+    }
+    // Stash entries also keep commits alive — harvest any 64-hex hashes they contain.
+    let stash_dir = Path::new(".dits").join("stash");
     if stash_dir.exists() {
-        for entry in fs::read_dir(&stash_dir)? {
-            let entry = entry?;
-            if entry.file_type()?.is_file() {
-                // Stash entries contain commit hashes
-                if let Ok(content) = fs::read_to_string(entry.path()) {
-                    for line in content.lines() {
-                        if line.len() >= 64 {
-                            collect_commit_objects(dits_dir, line.trim(), &mut reachable)?;
+        for entry in fs::read_dir(&stash_dir)?.flatten() {
+            if let Ok(content) = fs::read_to_string(entry.path()) {
+                for tok in content.split(|c: char| !c.is_ascii_hexdigit()) {
+                    if tok.len() == 64 {
+                        if let Ok(h) = Hash::from_hex(tok) {
+                            stack.push(h);
                         }
                     }
                 }
@@ -154,62 +150,45 @@ fn collect_reachable_objects(dits_dir: &Path) -> Result<HashSet<String>> {
         }
     }
 
-    Ok(reachable)
-}
+    while let Some(commit_hash) = stack.pop() {
+        if !seen.insert(commit_hash) {
+            continue;
+        }
+        reachable.insert(commit_hash.to_hex());
 
-/// Collect objects referenced by refs in a directory.
-fn collect_refs_objects(refs_dir: &Path, reachable: &mut HashSet<String>) -> Result<()> {
-    for entry in fs::read_dir(refs_dir)? {
-        let entry = entry?;
-        let path = entry.path();
+        let commit = match repo.load_commit(&commit_hash) {
+            Ok(c) => c,
+            Err(_) => continue, // dangling reference — nothing more to mark
+        };
 
-        if path.is_dir() {
-            collect_refs_objects(&path, reachable)?;
-        } else if path.is_file() {
-            let content = fs::read_to_string(&path)?;
-            let hash = content.trim();
-            if !hash.is_empty() {
-                // This is a dits directory, not a git one
-                let dits_dir = refs_dir.parent().unwrap();
-                collect_commit_objects(dits_dir, hash, reachable)?;
+        // The commit's manifest and everything it references.
+        reachable.insert(commit.manifest.to_hex());
+        if let Ok(manifest) = repo.load_manifest(&commit.manifest) {
+            for entry in manifest.entries.values() {
+                reachable.insert(entry.content_hash.to_hex());
+                for chunk in &entry.chunks {
+                    reachable.insert(chunk.hash.to_hex());
+                }
+                if let Some(mp4) = &entry.mp4_metadata {
+                    if let Some(h) = &mp4.ftyp_hash {
+                        reachable.insert(h.to_hex());
+                    }
+                    if let Some(h) = &mp4.moov_hash {
+                        reachable.insert(h.to_hex());
+                    }
+                }
             }
         }
-    }
-    Ok(())
-}
 
-/// Recursively collect objects reachable from a commit.
-fn collect_commit_objects(dits_dir: &Path, hash: &str, reachable: &mut HashSet<String>) -> Result<()> {
-    if hash.is_empty() || reachable.contains(hash) {
-        return Ok(());
-    }
-
-    reachable.insert(hash.to_string());
-
-    // Try to read the commit object
-    let obj_path = object_path(dits_dir, hash);
-    if !obj_path.exists() {
-        return Ok(()); // Object doesn't exist, skip
+        if let Some(p) = commit.parent {
+            stack.push(p);
+        }
+        for p in &commit.parents {
+            stack.push(*p);
+        }
     }
 
-    // In a full implementation, we would parse the commit to find:
-    // - Parent commits
-    // - Tree/manifest objects
-    // - Blob objects
-    // For now, we just mark the object as reachable
-
-    Ok(())
-}
-
-/// Get the path to an object given its hash.
-fn object_path(dits_dir: &Path, hash: &str) -> std::path::PathBuf {
-    let objects = dits_dir.join("objects");
-    if hash.len() >= 2 {
-        // Fan-out layout
-        objects.join(&hash[..2]).join(&hash[2..])
-    } else {
-        objects.join(hash)
-    }
+    Ok(reachable)
 }
 
 /// Find unreferenced objects.
@@ -220,30 +199,30 @@ fn find_unreferenced_objects(objects_dir: &Path, reachable: &HashSet<String>) ->
         return Ok(unreferenced);
     }
 
-    for entry in fs::read_dir(objects_dir)? {
-        let entry = entry?;
-        let path = entry.path();
-
-        if path.is_dir() {
-            // Fan-out directory
-            let prefix = entry.file_name().to_string_lossy().to_string();
-
-            for sub_entry in fs::read_dir(&path)? {
-                let sub_entry = sub_entry?;
-                if sub_entry.file_type()?.is_file() {
-                    let suffix = sub_entry.file_name().to_string_lossy().to_string();
+    // Only prune Dits's own content-addressed categories, laid out as
+    // objects/<category>/<aa>/<rest> where <aa><rest> is the object hash. CRITICALLY,
+    // never descend into objects/git — that is the embedded git engine; its files
+    // (HEAD/config/blobs/...) are not Dits hashes and deleting them corrupts text
+    // storage. The git engine manages its own garbage.
+    for category in ["commits", "manifests", "chunks", "blobs"] {
+        let cat_dir = objects_dir.join(category);
+        if !cat_dir.exists() {
+            continue;
+        }
+        for fanout in fs::read_dir(&cat_dir)?.flatten() {
+            let fanout_path = fanout.path();
+            if !fanout_path.is_dir() {
+                continue;
+            }
+            let prefix = fanout.file_name().to_string_lossy().to_string();
+            for obj in fs::read_dir(&fanout_path)?.flatten() {
+                if obj.file_type()?.is_file() {
+                    let suffix = obj.file_name().to_string_lossy().to_string();
                     let hash = format!("{}{}", prefix, suffix);
-
                     if !reachable.contains(&hash) {
-                        unreferenced.push(sub_entry.path());
+                        unreferenced.push(obj.path());
                     }
                 }
-            }
-        } else if path.is_file() {
-            // Direct object file
-            let hash = entry.file_name().to_string_lossy().to_string();
-            if !reachable.contains(&hash) {
-                unreferenced.push(path);
             }
         }
     }
