@@ -212,12 +212,9 @@ fn show_line_blame(
 
     let entry = manifest.get(file).context("File not found")?;
 
-    // Reconstruct file content
-    let mut content = Vec::new();
-    for chunk_ref in &entry.chunks {
-        let chunk = repo.objects().load_chunk(&chunk_ref.hash)?;
-        content.extend_from_slice(&chunk.data);
-    }
+    // Reconstruct file content (strategy-aware: GitText -> git engine, else chunks).
+    // Chunk-only reconstruction blanked git-text files, so blame showed nothing.
+    let content = repo.reconstruct_entry_bytes(entry)?;
 
     // Try to decode as UTF-8
     let text = String::from_utf8(content)

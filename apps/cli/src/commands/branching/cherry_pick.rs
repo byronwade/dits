@@ -99,12 +99,8 @@ fn cherry_pick_single(repo: &Repository, commit_ref: &str, no_commit: bool) -> R
                 fs::create_dir_all(parent)?;
             }
 
-            // Restore file from chunks
-            let mut data = Vec::with_capacity(entry.size as usize);
-            for chunk_ref in &entry.chunks {
-                let chunk = repo.objects().load_chunk(&chunk_ref.hash)?;
-                data.extend_from_slice(&chunk.data);
-            }
+            // Restore file (strategy-aware: GitText -> git engine, else chunks).
+            let data = repo.reconstruct_entry_bytes(entry)?;
             fs::write(&full_path, &data)?;
 
             // Update index

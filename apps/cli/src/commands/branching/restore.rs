@@ -177,12 +177,8 @@ fn restore_worktree_files(
                 // Restore MP4 file
                 restore_mp4_file(repo, &full_path, entry, mp4_meta)?;
             } else {
-                // Restore regular file
-                let mut data = Vec::with_capacity(entry.size as usize);
-                for chunk_ref in &entry.chunks {
-                    let chunk = repo.objects().load_chunk(&chunk_ref.hash)?;
-                    data.extend_from_slice(&chunk.data);
-                }
+                // Restore regular file (strategy-aware: GitText -> git engine, else chunks).
+                let data = repo.reconstruct_entry_bytes(entry)?;
                 fs::write(&full_path, &data)?;
             }
 
