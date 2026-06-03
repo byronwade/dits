@@ -31,6 +31,11 @@ import {
   MessageSquare,
   BookOpen,
   Code2,
+  ArrowRight,
+  AlertTriangle,
+  Boxes,
+  Cloud,
+  Server,
 } from "lucide-react";
 import { GithubIcon } from "@/components/icons/github-icon";
 
@@ -128,55 +133,44 @@ const techStack = [
   },
 ];
 
-const toolComparison = [
+// Honest implementation status — sourced from README "Implementation status".
+const workingToday = [
+  "Content-addressed object store with BLAKE3 verification",
+  "FastCDC chunking, dedup, and byte-exact reconstruction",
+  "Structure-aware MP4/ISOBMFF parse → deconstruct → reconstruct",
+  "Convergent AES-256-GCM encryption",
+  "Hybrid Git (libgit2) text + Dits binary storage",
+  "Local commit / add / status / diff / log / branch / merge / checkout",
+  "Local-filesystem clone & push",
+  "FACR frame-addressable video (experimental — try dits facr-demo)",
+];
+
+const onRoadmap = [
+  "QUIC delta sync (network push / pull / fetch is scaffolding today)",
+  "P2P rendezvous & NAT traversal",
+  "Bi-directional sync over a network remote",
+  "FUSE/WinFSP virtual filesystem mounts",
+  "Distributed file locking for teams",
+];
+
+// Honest results — real numbers from the benchmark spike (one machine, one run).
+const honestResults = [
+  { tone: "win" as const, stat: "98.3%", label: "deduplicated on a frame-addressable re-grade (store 5 changed frames, reuse 295)" },
+  { tone: "win" as const, stat: "7.4×", label: "less data shipped on an incremental streaming re-publish (re-encode 1 of 6 segments)" },
+  { tone: "win" as const, stat: "0.19 MiB", label: "stored for a metadata-only MP4 change — beats restic (0.77) and borg (5.93)" },
+  { tone: "loss" as const, stat: "Loses", label: "on a full video re-export: generic chunking can't help when every byte shifts. We say so." },
+];
+
+const openCore = [
   {
-    feature: "Large file handling",
-    dits: { supported: true, note: "Native, no extensions needed" },
-    git: { supported: false, note: "Requires Git LFS" },
-    gitlfs: { supported: true, note: "Pointer files, separate storage" },
-    perforce: { supported: true, note: "Centralized model" },
+    icon: Boxes,
+    name: "Dits (open source core)",
+    points: ["CLI, libraries & protocol — run locally or self-host", "Open data formats and wire protocol", "Local-first, works offline", "Apache-2.0 / MIT"],
   },
   {
-    feature: "Content deduplication",
-    dits: { supported: true, note: "Automatic, cross-file" },
-    git: { supported: false, note: "No deduplication" },
-    gitlfs: { supported: false, note: "Full file copies" },
-    perforce: { supported: false, note: "Limited" },
-  },
-  {
-    feature: "Partial clone/sparse checkout",
-    dits: { supported: true, note: "First-class VFS support" },
-    git: { supported: true, note: "Limited, complex setup" },
-    gitlfs: { supported: true, note: "Manual file selection" },
-    perforce: { supported: true, note: "Workspace views" },
-  },
-  {
-    feature: "File locking",
-    dits: { supported: true, note: "Built-in, distributed" },
-    git: { supported: false, note: "No native support" },
-    gitlfs: { supported: true, note: "Basic locking" },
-    perforce: { supported: true, note: "Exclusive checkouts" },
-  },
-  {
-    feature: "Distributed architecture",
-    dits: { supported: true, note: "Fully distributed" },
-    git: { supported: true, note: "Fully distributed" },
-    gitlfs: { supported: true, note: "Hybrid (files centralized)" },
-    perforce: { supported: false, note: "Centralized" },
-  },
-  {
-    feature: "Open source",
-    dits: { supported: true, note: "Apache 2.0 + MIT" },
-    git: { supported: true, note: "GPL v2" },
-    gitlfs: { supported: true, note: "MIT" },
-    perforce: { supported: false, note: "Proprietary" },
-  },
-  {
-    feature: "Video-optimized chunking",
-    dits: { supported: true, note: "Keyframe-aligned" },
-    git: { supported: false, note: "Not applicable" },
-    gitlfs: { supported: false, note: "Full file storage" },
-    perforce: { supported: false, note: "Not specialized" },
+    icon: Cloud,
+    name: "Ditshub (hosted platform)",
+    points: ["Managed cloud built on the open protocol", "Real-time collaboration & permissions", "Cloud render / transcode compute", "Everything it does is possible self-hosted"],
   },
 ];
 
@@ -360,6 +354,9 @@ $ dits commit -m "Final cut v3"
 [main abc1234] Final cut v3
   847 files, 788 GB (net)`}
                     </pre>
+                    <p className="text-xs text-muted-foreground/70 italic">
+                      Illustrative example. See real benchmark numbers below.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -403,152 +400,159 @@ $ dits commit -m "Final cut v3"
           </div>
         </section>
 
-        {/* How It Works */}
-        <section className="container py-16 md:py-24" aria-labelledby="how-it-works-heading">
-          <div className="mx-auto max-w-4xl">
-            <h2 id="how-it-works-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
-              How Dits Works
+        {/* How It Works teaser */}
+        <section className="container py-16 md:py-24" aria-labelledby="how-teaser-heading">
+          <div className="mx-auto max-w-4xl text-center">
+            <h2 id="how-teaser-heading" className="text-3xl font-bold tracking-tight mb-4">
+              Chunk, hash, deduplicate
             </h2>
-            <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-              Instead of storing files as single objects, Dits breaks them into
-              content-defined chunks that can be shared across files and versions.
+            <p className="text-muted-foreground mb-8 max-w-2xl mx-auto text-lg">
+              Instead of storing files as single objects, Dits breaks them into content-defined
+              chunks, names each by its BLAKE3 hash, and stores every unique chunk exactly once —
+              across versions, files, and projects. The full walkthrough, with diagrams and the
+              honest Git-vs-Dits comparison, lives on its own page.
             </p>
+            <Button size="lg" variant="outline" render={<Link href="/how-it-works" />}>
+              See how Dits works
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Button>
+          </div>
+        </section>
 
-            <div className="grid md:grid-cols-3 gap-6" role="list" aria-label="How Dits works in 3 steps">
-              <Card role="listitem">
-                <CardHeader className="text-center">
-                  <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <span className="text-2xl font-bold text-primary" aria-hidden="true">1</span>
-                  </div>
-                  <CardTitle>Chunk</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-center">
-                    Files are split into variable-size chunks using content-defined
-                    boundaries. Changes only affect nearby chunks, so small edits
-                    don&apos;t invalidate the entire file.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-
-              <Card role="listitem">
-                <CardHeader className="text-center">
-                  <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <span className="text-2xl font-bold text-primary" aria-hidden="true">2</span>
-                  </div>
-                  <CardTitle>Hash</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-center">
-                    Each chunk is identified by its BLAKE3 hash. Identical chunks
-                    share the same hash and are stored only once, regardless of
-                    which files contain them.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-
-              <Card role="listitem">
-                <CardHeader className="text-center">
-                  <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <span className="text-2xl font-bold text-primary" aria-hidden="true">3</span>
-                  </div>
-                  <CardTitle>Deduplicate</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-center">
-                    Similar footage, multiple versions, and shared content
-                    automatically deduplicate. A 4K timeline with 100 cuts from
-                    the same source? Minimal overhead.
-                  </CardDescription>
-                </CardContent>
-              </Card>
+        {/* What we're actually building */}
+        <section className="border-y bg-muted/50" aria-labelledby="status-heading">
+          <div className="container py-16 md:py-24">
+            <div className="mx-auto max-w-5xl">
+              <h2 id="status-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
+                What we&apos;re actually building
+              </h2>
+              <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+                Dits is in active alpha. To set expectations honestly, here&apos;s exactly what
+                works today versus what&apos;s still on the roadmap.
+              </p>
+              <div className="grid gap-6 md:grid-cols-2">
+                <Card className="h-full border-brand/30">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="size-5 text-brand" aria-hidden="true" />
+                      <CardTitle>Working today</CardTitle>
+                    </div>
+                    <CardDescription>The local-first engine you can run right now.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2.5" role="list">
+                      {workingToday.map((item) => (
+                        <li key={item} className="flex gap-2.5 text-sm">
+                          <CheckCircle2 className="size-4 shrink-0 mt-0.5 text-brand" aria-hidden="true" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+                <Card className="h-full">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="size-5 text-amber-500" aria-hidden="true" />
+                      <CardTitle>On the roadmap</CardTitle>
+                    </div>
+                    <CardDescription>Designed and scaffolded — don&apos;t rely on these yet.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2.5" role="list">
+                      {onRoadmap.map((item) => (
+                        <li key={item} className="flex gap-2.5 text-sm text-muted-foreground">
+                          <Clock className="size-4 shrink-0 mt-0.5" aria-hidden="true" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Tool Comparison */}
-        <section className="border-y bg-muted/50" aria-labelledby="comparison-heading">
+        {/* Honest results */}
+        <section className="border-y bg-muted/50" aria-labelledby="results-heading">
           <div className="container py-16 md:py-24">
-            <div className="mx-auto max-w-6xl">
-              <h2 id="comparison-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
-                How Dits Compares
+            <div className="mx-auto max-w-5xl">
+              <h2 id="results-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
+                Where Dits wins — and where it loses
               </h2>
               <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-                See how Dits stacks up against existing version control solutions
-                for media and large file workflows.
+                Real numbers from a benchmark spike against git-lfs, restic, borg, and xdelta3.
+                The differentiator is the format-aware layer — and we show the case where generic
+                chunking loses, because that&apos;s what makes the wins credible.
               </p>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse" role="table">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left p-4 font-semibold">Feature</th>
-                      <th className="text-center p-4 font-semibold bg-primary/5">Dits</th>
-                      <th className="text-center p-4 font-semibold">Git</th>
-                      <th className="text-center p-4 font-semibold">Git LFS</th>
-                      <th className="text-center p-4 font-semibold">Perforce</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {toolComparison.map((row, i) => (
-                      <tr key={i} className="border-b hover:bg-muted/30 transition-colors">
-                        <td className="p-4 font-medium">{row.feature}</td>
-                        <td className="p-4 text-center bg-primary/5">
-                          {row.dits.supported ? (
-                            <div className="flex flex-col items-center gap-1">
-                              <CheckCircle2 className="w-5 h-5 text-green-600" aria-label="Supported" />
-                              <span className="text-xs text-muted-foreground">{row.dits.note}</span>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-center gap-1">
-                              <XCircle className="w-5 h-5 text-destructive" aria-label="Not supported" />
-                              <span className="text-xs text-muted-foreground">{row.dits.note}</span>
-                            </div>
-                          )}
-                        </td>
-                        <td className="p-4 text-center">
-                          {row.git.supported ? (
-                            <div className="flex flex-col items-center gap-1">
-                              <CheckCircle2 className="w-5 h-5 text-green-600" aria-label="Supported" />
-                              <span className="text-xs text-muted-foreground">{row.git.note}</span>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-center gap-1">
-                              <XCircle className="w-5 h-5 text-muted-foreground" aria-label="Not supported" />
-                              <span className="text-xs text-muted-foreground">{row.git.note}</span>
-                            </div>
-                          )}
-                        </td>
-                        <td className="p-4 text-center">
-                          {row.gitlfs.supported ? (
-                            <div className="flex flex-col items-center gap-1">
-                              <CheckCircle2 className="w-5 h-5 text-green-600" aria-label="Supported" />
-                              <span className="text-xs text-muted-foreground">{row.gitlfs.note}</span>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-center gap-1">
-                              <XCircle className="w-5 h-5 text-muted-foreground" aria-label="Not supported" />
-                              <span className="text-xs text-muted-foreground">{row.gitlfs.note}</span>
-                            </div>
-                          )}
-                        </td>
-                        <td className="p-4 text-center">
-                          {row.perforce.supported ? (
-                            <div className="flex flex-col items-center gap-1">
-                              <CheckCircle2 className="w-5 h-5 text-green-600" aria-label="Supported" />
-                              <span className="text-xs text-muted-foreground">{row.perforce.note}</span>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-center gap-1">
-                              <XCircle className="w-5 h-5 text-muted-foreground" aria-label="Not supported" />
-                              <span className="text-xs text-muted-foreground">{row.perforce.note}</span>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {honestResults.map((r) => (
+                  <div
+                    key={r.label}
+                    className={`flex items-start gap-4 rounded-xl border p-5 ${
+                      r.tone === "win" ? "border-brand/30 bg-brand/5" : "border-destructive/40 bg-destructive/5"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 shrink-0">
+                      {r.tone === "win" ? (
+                        <CheckCircle2 className="size-5 text-brand" aria-hidden="true" />
+                      ) : (
+                        <XCircle className="size-5 text-destructive" aria-hidden="true" />
+                      )}
+                    </div>
+                    <div>
+                      <div className={`text-2xl font-bold ${r.tone === "win" ? "text-brand" : "text-destructive"}`}>
+                        {r.stat}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">{r.label}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
+              <div className="mt-8 text-center">
+                <Button variant="outline" size="sm" render={<Link href="/how-it-works" />}>
+                  See the full comparison
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Open core vs Ditshub */}
+        <section className="container py-16 md:py-24" aria-labelledby="opencore-heading">
+          <div className="mx-auto max-w-5xl">
+            <h2 id="opencore-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
+              Open core, hosted convenience
+            </h2>
+            <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+              Dits follows an open-core model inspired by Git and GitHub. The core is fully open
+              and self-hostable; the hosted platform adds scale and managed services.
+            </p>
+            <div className="grid gap-6 md:grid-cols-2">
+              {openCore.map((col) => (
+                <Card key={col.name} className="h-full">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+                        <col.icon className="size-5 text-primary" aria-hidden="true" />
+                      </div>
+                      <CardTitle>{col.name}</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2.5" role="list">
+                      {col.points.map((p) => (
+                        <li key={p} className="flex gap-2.5 text-sm text-muted-foreground">
+                          <Server className="size-4 shrink-0 mt-0.5 text-brand" aria-hidden="true" />
+                          <span>{p}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </section>

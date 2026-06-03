@@ -12,6 +12,8 @@ const footerLinks = {
   ],
   resources: [
     { title: "Download", href: "/download" },
+    { title: "How it works", href: "/how-it-works" },
+    { title: "Playground", href: "/playground" },
     { title: "About", href: "/about" },
     { title: "Community", href: "/community" },
     { title: "Blog", href: "/blog" },

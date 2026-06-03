@@ -14,6 +14,8 @@ import {
   MetricMatrix,
   MoreEditTypes,
 } from "@/components/benchmarks/keynote";
+import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "Benchmarks",
@@ -103,7 +105,9 @@ export default async function BenchmarksPage() {
     doc?.cumulative?.find((s) => s.tool.startsWith("dits"))?.points.length ?? 15;
 
   return (
-    <main id="main-content" className="mx-auto max-w-5xl px-7">
+    <div className="flex min-h-screen flex-col">
+      <Header />
+      <main id="main-content" className="mx-auto w-full max-w-5xl flex-1 px-7 pt-[104px]" tabIndex={-1}>
       {/* HERO */}
       <section className="flex min-h-[88vh] flex-col justify-center">
         <span className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 font-mono text-xs font-semibold text-muted-foreground">
@@ -366,7 +370,9 @@ export default async function BenchmarksPage() {
           </Link>
         </p>
       </KeynoteSection>
-    </main>
+      </main>
+      <Footer />
+    </div>
   );
 }
 
