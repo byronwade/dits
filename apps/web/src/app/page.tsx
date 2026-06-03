@@ -93,6 +93,11 @@ const phaseTone: Record<(typeof phases)[number]["status"], StatusTone> = {
   planned: "neutral",
 };
 
+const phaseComplete = phases.filter((p) => p.status === "complete").length;
+const phaseActive = phases.filter((p) => p.status === "active").length;
+const phasePlanned = phases.filter((p) => p.status === "planned").length;
+const phasePct = Math.round((phaseComplete / phases.length) * 100);
+
 // ============================================================================
 // COMPONENTS
 // ============================================================================
@@ -141,6 +146,21 @@ function SectionHeading({
         </p>
       )}
     </div>
+  );
+}
+
+function CheckList({ items }: { items: string[] }) {
+  return (
+    <ul className="space-y-3">
+      {items.map((item) => (
+        <li key={item} className="flex items-center gap-3 text-muted-foreground">
+          <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-brand/10">
+            <Check className="h-3 w-3 text-brand" />
+          </div>
+          {item}
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -312,20 +332,13 @@ export default function Home() {
                     only the changed chunks are stored. View diffs, track history, and understand
                     your storage at a glance.
                   </p>
-                  <ul className="space-y-3">
-                    {[
+                  <CheckList
+                    items={[
                       "Content-aware chunking at 2+ GB/s",
                       "BLAKE3 integrity verification",
                       "60-80% typical storage reduction",
-                    ].map((item, i) => (
-                      <li key={i} className="flex items-center gap-3 text-muted-foreground">
-                        <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-brand/10">
-                          <Check className="h-3 w-3 text-brand" />
-                        </div>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
+                    ]}
+                  />
                 </div>
 
                 {/* Visual demo - chunk visualization */}
@@ -461,20 +474,13 @@ export default function Home() {
                     transfers will resume where they drop and never re-send footage you both already
                     have. (Networking is in active development&mdash;local workflows work today.)
                   </p>
-                  <ul className="space-y-3">
-                    {[
+                  <CheckList
+                    items={[
                       "Works through firewalls and NATs",
                       "AES-256 encryption",
                       "No bandwidth caps or limits",
-                    ].map((item, i) => (
-                      <li key={i} className="flex items-center gap-3 text-muted-foreground">
-                        <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-brand/10">
-                          <Check className="h-3 w-3 text-brand" />
-                        </div>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
+                    ]}
+                  />
                 </div>
 
                 {/* Join code visual */}
@@ -593,20 +599,20 @@ export default function Home() {
                 Actively developed
               </h2>
               <p className="mb-10 text-lg text-muted-foreground">
-                <span className="font-semibold text-brand">4 of 10</span> phases complete &mdash; the
+                <span className="font-semibold text-brand">{phaseComplete} of {phases.length}</span> phases complete &mdash; the
                 local engine works today; networked sync is on the roadmap.
               </p>
 
               {/* Progress as metric tiles */}
               <div className="mx-auto mb-10 grid max-w-xl grid-cols-3 gap-4">
-                <StatCard label="Complete" value="4" hint="of 10 phases" />
-                <StatCard label="In progress" value="2" hint="active now" />
-                <StatCard label="Planned" value="4" hint="on the roadmap" />
+                <StatCard label="Complete" value={String(phaseComplete)} hint={`of ${phases.length} phases`} />
+                <StatCard label="In progress" value={String(phaseActive)} hint="active now" />
+                <StatCard label="Planned" value={String(phasePlanned)} hint="on the roadmap" />
               </div>
 
               {/* Progress bar */}
               <div className="mx-auto mb-10 h-2 max-w-xl overflow-hidden rounded-full bg-muted">
-                <div className="h-full w-[40%] rounded-full bg-brand" />
+                <div className="h-full rounded-full bg-brand" style={{ width: `${phasePct}%` }} />
               </div>
 
               {/* Phase pills */}
