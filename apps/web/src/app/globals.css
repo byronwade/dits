@@ -34,6 +34,10 @@
   --color-dock-muted: var(--dock-muted);
   --color-dock-active: var(--dock-active);
   --color-dock-active-foreground: var(--dock-active-foreground);
+  --color-card-border: var(--card-border);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -57,9 +61,21 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
-  --chart-1: var(--chart-1);
-  --ring: var(--ring);
-  --success: var(--success);
+}
+
+/* dits brand lime/olive palette (used by diagram components) */
+@theme {
+  --color-dits-50: #f7fee7;
+  --color-dits-100: #ecfccb;
+  --color-dits-200: #d9f99d;
+  --color-dits-300: #bef264;
+  --color-dits-400: #a3e635;
+  --color-dits-500: #84cc16;
+  --color-dits-600: #65a30d;
+  --color-dits-700: #4d7c0f;
+  --color-dits-800: #3f6212;
+  --color-dits-900: #365314;
+  --color-dits-950: #1a2e05;
 }
 
 /* Bridge Geist fonts to foundation --font-sans/--font-mono tokens */
@@ -113,6 +129,12 @@
   --sidebar-accent-foreground: oklch(0.235 0.006 72);
   --sidebar-border: oklch(0.91 0.004 85);
   --sidebar-ring: oklch(0.708 0.008 75);
+  /* Restored semantic tokens */
+  --card-border: oklch(0.90 0.008 95);
+  --destructive-foreground: oklch(0.985 0 0);
+  --info: oklch(0.68 0.14 233);
+  --info-foreground: oklch(0.985 0 0);
+  --glow-color: oklch(0.51 0.11 128);
 }
 
 .dark {
@@ -159,6 +181,10 @@
   --sidebar-accent-foreground: oklch(0.95 0.004 83);
   --sidebar-border: oklch(0.275 0.006 70);
   --sidebar-ring: oklch(0.556 0.006 75);
+  /* Restored semantic tokens */
+  --card-border: oklch(0.27 0.006 60);
+  --info: oklch(0.71 0.13 233);
+  --glow-color: oklch(0.64 0.13 128);
 }
 
 @layer utilities {
@@ -716,7 +742,7 @@ textarea {
   height: 2px;
   background: linear-gradient(90deg,
       color-mix(in oklch, var(--primary) 30%, transparent),
-      hsl(142.1 76.2% 36.3% / 0.6),
+      color-mix(in oklch, var(--brand) 60%, transparent),
       color-mix(in oklch, var(--primary) 30%, transparent));
   background-size: 200% 100%;
   animation: gradient-flow 4s ease infinite;
@@ -816,7 +842,7 @@ textarea {
   width: 16px;
   height: 3px;
   border-radius: 1px;
-  background: linear-gradient(90deg, var(--primary), hsl(142.1 76.2% 36.3%));
+  background: linear-gradient(90deg, var(--primary), var(--brand));
   transition: transform 0.2s ease;
 }
 
