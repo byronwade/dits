@@ -94,6 +94,30 @@ pub fn roundtrip(input: &str, output: &str) -> Result<()> {
         }
     }
 
+    // Report byte-level fidelity honestly: the deconstructor normalizes `moov`, so the
+    // reconstruction is structurally faithful but not necessarily a byte-for-byte copy.
+    // (Normal `dits` storage keeps media byte-exact via chunking; this is the
+    // structure-aware path.)
+    println!();
+    println!("  Byte fidelity...");
+    match (std::fs::read(input_path), std::fs::read(output_path)) {
+        (Ok(orig), Ok(rebuilt)) => {
+            if orig == rebuilt {
+                println!("    {} byte-for-byte identical", style("✓").green().bold());
+            } else {
+                let diff = (orig.len() as i64 - rebuilt.len() as i64).abs();
+                println!(
+                    "    {} structurally valid, NOT byte-identical ({} vs {} bytes; moov is normalized)",
+                    style("~").yellow().bold(),
+                    orig.len(),
+                    rebuilt.len()
+                );
+                let _ = diff;
+            }
+        }
+        _ => println!("    {} could not compare files", style("!").yellow()),
+    }
+
     println!();
     println!(
         "{} Roundtrip complete! Output: {}",
