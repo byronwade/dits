@@ -409,6 +409,17 @@ enum Commands {
         fps: Option<u32>,
     },
 
+    /// Import an OTIO timeline JSON into a FACR manifest referencing a source clip (0 new storage)
+    #[command(name = "facr-import-otio")]
+    FacrImportOtio {
+        /// Path to the OTIO (.otio) JSON file
+        otio: String,
+        /// Source clip manifest (.facr.json) the timeline clips reference
+        source: String,
+        /// Output manifest path
+        out: String,
+    },
+
     /// Store a photo once and start a non-destructive edit history (requires FFmpeg)
     #[command(name = "photo-add")]
     PhotoAdd {
@@ -1095,6 +1106,7 @@ async fn main() {
         Commands::FacrCheckout { .. } => "facr-checkout",
         Commands::FacrTrim { .. } => "facr-trim",
         Commands::FacrImportEdl { .. } => "facr-import-edl",
+        Commands::FacrImportOtio { .. } => "facr-import-otio",
         Commands::PhotoAdd { .. } => "photo-add",
         Commands::PhotoEdit { .. } => "photo-edit",
         Commands::PhotoRender { .. } => "photo-render",
@@ -1218,6 +1230,9 @@ async fn main() {
         }
         Commands::FacrImportEdl { edl, source, out, fps } => {
             commands::facr_import_edl(&edl, &source, &out, fps)
+        }
+        Commands::FacrImportOtio { otio, source, out } => {
+            commands::facr_import_otio(&otio, &source, &out)
         }
         Commands::FacrTrim { manifest, start, end, out } => {
             commands::facr_trim(&manifest, start, end, out.as_deref())
