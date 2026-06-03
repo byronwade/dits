@@ -791,6 +791,13 @@ enum Commands {
         prune: bool,
     },
 
+    /// Pull missing objects from another local dits repo (content-addressed, incremental)
+    #[command(name = "fetch-objects")]
+    FetchObjects {
+        /// Path to the source dits repository
+        source: String,
+    },
+
     /// Lock a file (for binary files)
     Lock {
         /// Path to lock
@@ -1068,6 +1075,7 @@ async fn main() {
         Commands::Push { .. } => "push",
         Commands::Pull { .. } => "pull",
         Commands::Fetch { .. } => "fetch",
+        Commands::FetchObjects { .. } => "fetch-objects",
         Commands::Remote { .. } => "remote",
         Commands::Config { .. } => "config",
         #[cfg(feature = "fuser")]
@@ -1298,6 +1306,7 @@ async fn main() {
         Commands::Pull { remote, branch, rebase } => {
             commands::pull(remote.as_deref(), branch.as_deref(), rebase).await
         }
+        Commands::FetchObjects { source } => commands::fetch_objects(&source),
         Commands::Fetch { remote, all, prune } => {
             commands::fetch(remote.as_deref(), all, prune).await
         }
