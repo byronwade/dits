@@ -464,11 +464,9 @@ dits webhook test <webhook-id>`}
       </Alert>
 
       <div className="text-center my-8">
-        <Button asChild size="lg">
-          <Link href="/docs/api/webhooks">
-            <Settings className="h-4 w-4" />
-            Learn About Webhooks
-          </Link>
+        <Button size="lg" render={<Link href="/docs/api/webhooks" />}>
+          <Settings className="h-4 w-4" />
+          Learn About Webhooks
         </Button>
       </div>
     </div>

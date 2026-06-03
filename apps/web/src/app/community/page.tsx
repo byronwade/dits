@@ -165,13 +165,8 @@ export default function CommunityPage() {
                       <CardDescription className="mb-4">
                         {link.description}
                       </CardDescription>
-                      <Button variant="outline" asChild>
-                        <Link
-                          href={link.href}
-                          target={link.href.startsWith("http") ? "_blank" : undefined}
-                        >
-                          {link.action}
-                        </Link>
+                      <Button variant="outline" render={<Link href={link.href} target={link.href.startsWith("http") ? "_blank" : undefined} />}>
+                        {link.action}
                       </Button>
                     </CardContent>
                   </Card>
@@ -233,20 +228,13 @@ export default function CommunityPage() {
                     <li>Submit a pull request with a clear description</li>
                   </ol>
                   <div className="flex gap-4 pt-4">
-                    <Button asChild>
-                      <Link
-                        href="https://github.com/byronwade/dits"
-                        target="_blank"
-                      >
-                        <CodeXml className="mr-2 h-4 w-4" />
-                        Fork on GitHub
-                      </Link>
+                    <Button render={<Link href="https://github.com/byronwade/dits" target="_blank" />}>
+                      <CodeXml className="mr-2 h-4 w-4" />
+                      Fork on GitHub
                     </Button>
-                    <Button variant="outline" asChild>
-                      <Link href="/docs">
-                        <BookOpen className="mr-2 h-4 w-4" />
-                        Read the Docs
-                      </Link>
+                    <Button variant="outline" render={<Link href="/docs" />}>
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Read the Docs
                     </Button>
                   </div>
                 </CardContent>
@@ -263,9 +251,7 @@ export default function CommunityPage() {
               Dits is dual-licensed under the Apache 2.0 and MIT licenses. You
               can choose whichever license works best for your use case.
             </p>
-            <Button variant="outline" asChild>
-              <Link href="/license">View License Details</Link>
-            </Button>
+            <Button variant="outline" render={<Link href="/license" />}>View License Details</Button>
           </div>
         </section>
       </main>

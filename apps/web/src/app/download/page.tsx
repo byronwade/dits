@@ -240,15 +240,10 @@ export default function DownloadPage() {
                         key={version.file}
                         variant="outline"
                         className="w-full justify-start"
-                        asChild
+                        render={<Link href={`https://github.com/byronwade/dits/releases/latest/download/${version.file}`} aria-label={`Download Dits for ${platform.name} ${version.arch}`} />}
                       >
-                        <Link
-                          href={`https://github.com/byronwade/dits/releases/latest/download/${version.file}`}
-                          aria-label={`Download Dits for ${platform.name} ${version.arch}`}
-                        >
-                          <Download className="mr-2 h-4 w-4" aria-hidden="true" />
-                          {version.arch}
-                        </Link>
+                        <Download className="mr-2 h-4 w-4" aria-hidden="true" />
+                        {version.arch}
                       </Button>
                     ))}
                   </CardContent>
@@ -257,16 +252,9 @@ export default function DownloadPage() {
             </div>
 
             <div className="mt-8 text-center">
-              <Button variant="outline" asChild>
-                <Link
-                  href="https://github.com/byronwade/dits/releases"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="View all Dits releases on GitHub (opens in new tab)"
-                >
-                  <CodeXml className="mr-2 h-4 w-4" aria-hidden="true" />
-                  View All Releases
-                </Link>
+              <Button variant="outline" render={<Link href="https://github.com/byronwade/dits/releases" target="_blank" rel="noopener noreferrer" aria-label="View all Dits releases on GitHub (opens in new tab)" />}>
+                <CodeXml className="mr-2 h-4 w-4" aria-hidden="true" />
+                View All Releases
               </Button>
             </div>
           </div>
@@ -358,10 +346,8 @@ No commits yet`}</code>
             </Card>
 
             <div className="mt-8 text-center">
-              <Button asChild>
-                <Link href="/docs/getting-started">
-                  Continue to Getting Started Guide
-                </Link>
+              <Button render={<Link href="/docs/getting-started" />}>
+                Continue to Getting Started Guide
               </Button>
             </div>
           </div>

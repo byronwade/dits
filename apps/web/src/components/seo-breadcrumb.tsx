@@ -52,9 +52,7 @@ export function SEOBreadcrumb({ items, className }: SEOBreadcrumbProps) {
                 {item.current ? (
                   <BreadcrumbPage>{item.name}</BreadcrumbPage>
                 ) : (
-                  <BreadcrumbLink asChild>
-                    <Link href={item.url}>{item.name}</Link>
-                  </BreadcrumbLink>
+                  <BreadcrumbLink render={<Link href={item.url} />}>{item.name}</BreadcrumbLink>
                 )}
               </BreadcrumbItem>
               {index < items.length - 1 && <BreadcrumbSeparator />}

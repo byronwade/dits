@@ -188,16 +188,12 @@ export default function Home() {
 
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10">
-                <Button size="lg" asChild>
-                  <Link href="/docs/getting-started">
-                    Get Started
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
+                <Button size="lg" render={<Link href="/docs/getting-started" />}>
+                  Get Started
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-                <Button size="lg" variant="outline" asChild>
-                  <Link href="/docs">
-                    Documentation
-                  </Link>
+                <Button size="lg" variant="outline" render={<Link href="/docs" />}>
+                  Documentation
                 </Button>
               </div>
 
@@ -565,7 +561,7 @@ export default function Home() {
                 Frequently asked questions
               </h2>
 
-              <Accordion type="single" collapsible className="w-full">
+              <Accordion multiple={false} className="w-full">
                 {faqs.map((faq, i) => (
                   <AccordionItem key={i} value={`faq-${i}`} className="border-b">
                     <AccordionTrigger className="text-left text-base font-medium py-5 hover:no-underline">
@@ -620,11 +616,9 @@ export default function Home() {
                 ))}
               </div>
 
-              <Button variant="outline" asChild>
-                <Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer">
-                  <CodeXml className="mr-2 h-4 w-4" />
-                  Follow on GitHub
-                </Link>
+              <Button variant="outline" render={<Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer" />}>
+                <CodeXml className="mr-2 h-4 w-4" />
+                Follow on GitHub
               </Button>
             </div>
           </div>
@@ -643,22 +637,18 @@ export default function Home() {
                 Start versioning your large files today. Free, open source, and built for creative workflows.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button size="lg" variant="secondary" className="h-14 px-10 text-lg rounded-xl" asChild>
-                  <Link href="/download">
-                    <Download className="mr-2 h-5 w-5" />
-                    Download Dits
-                  </Link>
+                <Button size="lg" variant="secondary" className="h-14 px-10 text-lg rounded-xl" render={<Link href="/download" />}>
+                  <Download className="mr-2 h-5 w-5" />
+                  Download Dits
                 </Button>
                 <Button
                   size="lg"
                   variant="outline"
                   className="h-14 px-10 text-lg rounded-xl bg-transparent border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
-                  asChild
+                  render={<Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer" />}
                 >
-                  <Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer">
-                    <CodeXml className="mr-2 h-5 w-5" />
-                    Star on GitHub
-                  </Link>
+                  <CodeXml className="mr-2 h-5 w-5" />
+                  Star on GitHub
                 </Button>
               </div>
             </div>

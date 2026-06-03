@@ -287,12 +287,8 @@ export default function AboutPage() {
               Finally, version control that understands your workflow.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Button size="lg" asChild>
-                <Link href="/download">Get Started</Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/docs/getting-started">Read the Docs</Link>
-              </Button>
+              <Button size="lg" render={<Link href="/download" />}>Get Started</Button>
+              <Button size="lg" variant="outline" render={<Link href="/docs/getting-started" />}>Read the Docs</Button>
             </div>
           </div>
         </section>
@@ -759,9 +755,7 @@ $ dits commit -m "Final cut v3"
                   </CardHeader>
                   <CardContent>
                     <CardDescription className="mb-4">{area.description}</CardDescription>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link href={area.link}>Get Started</Link>
-                    </Button>
+                    <Button variant="outline" size="sm" render={<Link href={area.link} />}>Get Started</Button>
                   </CardContent>
                 </Card>
               ))}
@@ -775,10 +769,8 @@ $ dits commit -m "Final cut v3"
                     Help spread the word by starring our repository
                   </p>
                 </div>
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="https://github.com/dits-dev/dits" target="_blank" rel="noopener noreferrer">
-                    Star on GitHub
-                  </Link>
+                <Button variant="outline" size="sm" render={<Link href="https://github.com/dits-dev/dits" target="_blank" rel="noopener noreferrer" />}>
+                  Star on GitHub
                 </Button>
               </div>
             </div>
@@ -797,16 +789,14 @@ $ dits commit -m "Final cut v3"
                 It&apos;s free, open source, and ready to handle your biggest projects.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <Button size="lg" variant="secondary" asChild>
-                  <Link href="/download">Download Dits</Link>
-                </Button>
+                <Button size="lg" variant="secondary" render={<Link href="/download" />}>Download Dits</Button>
                 <Button
                   size="lg"
                   variant="outline"
                   className="bg-transparent border-primary-foreground/20 hover:bg-primary-foreground/10"
-                  asChild
+                  render={<Link href="/docs/getting-started" />}
                 >
-                  <Link href="/docs/getting-started">Read the Docs</Link>
+                  Read the Docs
                 </Button>
               </div>
             </div>

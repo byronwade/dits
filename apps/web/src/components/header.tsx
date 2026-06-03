@@ -123,63 +123,36 @@ export function Header() {
           <div className="flex flex-1 items-center justify-end space-x-2">
             <nav className="flex items-center space-x-1" aria-label="Secondary navigation">
               {/* GitHub link */}
-              <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground" asChild>
-                <Link
-                  href="https://github.com/byronwade/dits"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="View Dits on GitHub (opens in new tab)"
-                >
-                  <CodeXml className="h-[18px] w-[18px]" aria-hidden="true" />
-                </Link>
+              <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground" render={<Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer" aria-label="View Dits on GitHub (opens in new tab)" />}>
+                <CodeXml className="h-[18px] w-[18px]" aria-hidden="true" />
               </Button>
 
               {/* Sponsor button - with gradient on hover */}
               <Button
                 variant="ghost"
                 size="sm"
-                asChild
                 className="hidden sm:inline-flex gap-1.5 text-pink-500 hover:text-pink-600 hover:bg-pink-500/10"
+                render={<Link href="https://github.com/sponsors/byronwade" target="_blank" rel="noopener noreferrer" aria-label="Sponsor Dits on GitHub (opens in new tab)" />}
               >
-                <Link
-                  href="https://github.com/sponsors/byronwade"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Sponsor Dits on GitHub (opens in new tab)"
-                >
-                  <Heart className="h-4 w-4" aria-hidden="true" />
-                  <span>Sponsor</span>
-                </Link>
+                <Heart className="h-4 w-4" aria-hidden="true" />
+                <span>Sponsor</span>
               </Button>
 
               <ThemeToggle />
 
               {/* Primary CTA - GitHub for open source project in development */}
               <Button
-                asChild
                 className="hidden sm:inline-flex gap-1.5 bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/90 hover:to-emerald-600/90 shadow-sm"
+                render={<Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer" />}
               >
-                <Link
-                  href="https://github.com/byronwade/dits"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <CodeXml className="h-4 w-4" aria-hidden="true" />
-                  Star on GitHub
-                </Link>
+                <CodeXml className="h-4 w-4" aria-hidden="true" />
+                Star on GitHub
               </Button>
 
               {/* Mobile menu */}
               <Sheet>
-                <SheetTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="md:hidden"
-                    aria-label="Open navigation menu"
-                  >
-                    <Menu className="h-5 w-5" aria-hidden="true" />
-                  </Button>
+                <SheetTrigger render={<Button variant="ghost" size="icon" className="md:hidden" aria-label="Open navigation menu" />}>
+                  <Menu className="h-5 w-5" aria-hidden="true" />
                 </SheetTrigger>
                 <SheetContent side="right" className="overscroll-contain">
                   <SheetHeader>
