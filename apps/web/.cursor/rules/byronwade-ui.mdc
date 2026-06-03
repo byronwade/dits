@@ -1,0 +1,126 @@
+---
+description: byronwade/ui design system — how AI agents must build and edit UI in this project
+alwaysApply: true
+---
+
+# byronwade/ui — design-system rules
+
+This project uses the **@byronwade/ui** design system (a namespaced shadcn registry).
+Every piece of UI you generate or edit MUST stay on-system. Treat the rules below as
+non-negotiable constraints, not suggestions.
+
+## The one rule that matters
+
+**Compose from the installed design system. Never hand-roll what the system already provides,
+and never style with raw values.** If you reach for a `<div>` with bespoke classes where a
+system component exists, you are doing it wrong.
+
+## 1. Use the components — don't reinvent them
+
+Before writing any markup, check whether a component already exists. Reach for these first:
+
+- **Forms** — `button`, `input`, `textarea`, `label`, `select`, `checkbox`, `switch`,
+  `radio-group`, `toggle`, `toggle-group`, `input-group`
+- **Overlays** — `dialog`, `sheet`, `popover`, `tooltip`, `hover-card`, `dropdown-menu`,
+  `command`, `navigation-menu`
+- **Feedback** — `alert`, `progress`, `skeleton`, `sonner` (toasts)
+- **Data display** — `card`, `table`, `tabs`, `accordion`, `avatar`, `badge`, `separator`,
+  `breadcrumb`, `aspect-ratio`, `scroll-area`, `collapsible`, `chart`
+- **House UI** — `status-dot`, `gauge`, `gradient-avatar`, `activity-grid`, `filter-pill`,
+  `segmented-control`
+- **Morph (morphing chrome)** — `use-chrome-morph` (the size + cross-fade hook), `morph-dock`
+  (config-driven nav dock that blooms into a panel via the hook)
+- **Composites / patterns** — `page-header`, `detail-header`, `section`, `metric-stat`,
+  `stat-card`, `status-pill`, `empty-state`, `event-timeline`, `verification-progress`,
+  `hero-section`, `centered-focal`, `split-with-rail`, `timeline-rail`
+
+Import from the consumer paths (these are where shadcn installs them):
+
+```tsx
+import { Button } from "@/components/ui/button"      // primitives → components/ui/*
+import { StatCard } from "@/components/stat-card"     // composites → components/*
+import { cn } from "@/lib/utils"                      // helpers   → lib/*
+```
+
+### If a component isn't installed yet, add it — don't rebuild it
+
+```bash
+npx shadcn@latest add @byronwade/<name>
+# e.g. npx shadcn@latest add @byronwade/sheet @byronwade/command
+```
+
+Transitive dependencies resolve automatically (`add @byronwade/gauge` pulls `status-dot` + `utils`).
+Only build a brand-new component when nothing in the list above fits — and when you do, follow
+sections 2–4 so it looks like it belongs.
+
+## 2. Style with tokens only — never hardcode color
+
+**Never** write hex (`#16a34a`), `rgb()`, `hsl()`, named CSS colors, or arbitrary color values
+like `text-[#333]`. Always use the semantic token utilities. They adapt to light/dark and to
+re-skinning automatically:
+
+| Need | Use | Never |
+|------|-----|-------|
+| Page / surface | `bg-background`, `bg-card`, `bg-popover` | `bg-white`, `bg-[#fff]` |
+| Text | `text-foreground`, `text-muted-foreground` | `text-black`, `text-gray-500` |
+| Primary action | `bg-primary text-primary-foreground` | `bg-blue-600` |
+| Brand / accent | `bg-brand`, `text-brand`, `bg-brand-muted` | `bg-green-500` |
+| Success | `bg-success`, `text-success` | `text-green-600` |
+| Warning | `bg-warning`, `text-warning` | `text-amber-500` |
+| Error / danger | `bg-destructive`, `text-destructive` | `text-red-500` |
+| Borders / inputs | `border-border`, `bg-input` | `border-gray-200` |
+| Focus ring | `ring-ring` (already on primitives) | custom outline |
+| Muted fill | `bg-muted`, `bg-secondary`, `bg-accent` | `bg-gray-100` |
+| Sidebar | `bg-sidebar`, `text-sidebar-foreground`, … | — |
+| Charts | `--chart-1` … `--chart-5` (via `chart`) | fixed palettes |
+
+Tone the same token with opacity instead of new colors: `bg-brand/10`, `text-destructive`,
+`bg-success/10`. This is the house pattern for soft chips and rings (see `status-pill`).
+
+### Radius and spacing
+
+Use the radius scale, never raw pixels: `rounded-sm`, `rounded-md`, `rounded-lg`, `rounded-xl`,
+`rounded-2xl` … `rounded-4xl` (all derived from `--radius`). Pills use `rounded-full`.
+
+### House utilities (already defined by `foundation`)
+
+`bg-grid`, `bg-grid-lines`, `glow-brand`, `text-gradient`, `text-gradient-brand`, `mask-fade-x`,
+`full-bleed`, `shadow-float`, `shadow-card`, `scrollbar-thin`. Prefer these over re-implementing
+gradients, grids, or shadows by hand.
+
+## 3. Re-skinning is one variable — leave the rest alone
+
+The entire accent (rings, primary chart line, active states, success) follows `--brand`.
+To re-theme, override **only** `--brand` in your `globals.css`:
+
+```css
+:root  { --brand: oklch(0.55 0.20 25); }   /* light */
+.dark  { --brand: oklch(0.65 0.20 25); }   /* dark  */
+```
+
+Do **not** edit other foundation tokens, hardcode the green, or fork `globals.css` token values
+to achieve a color. If the design needs a different accent, change `--brand`.
+
+## 4. Component conventions (match these when extending or composing)
+
+- **Primitives are built on Base UI** (`@base-ui/react`) with **CVA** variants and
+  **`data-slot`** attributes. New variants belong in the component's `cva(...)`, not as one-off
+  `className` overrides at call sites.
+- **Always merge classes with `cn()`** from `@/lib/utils` and accept a `className` prop so callers
+  can extend without breaking base styles.
+- **Accessibility is non-optional**: keep labels, `aria-*`, keyboard behavior, and the built-in
+  `focus-visible:ring-ring`. Don't strip focus rings or outlines.
+- **Dark mode is automatic** through tokens — if you only use token utilities, dark mode just works.
+  Never branch on a hardcoded color for dark mode.
+- Compose composites from primitives (e.g. `status-pill` = `status-dot` + tokens); follow that
+  pattern instead of new bespoke elements.
+
+## Quick self-check before you finish UI work
+
+1. Did I use an existing `@byronwade/ui` component instead of a raw element? 
+2. Are all colors semantic tokens (no hex/rgb/named/arbitrary colors)? 
+3. Is radius from the scale, and did I use `cn()` + a `className` passthrough? 
+4. Did I leave foundation tokens alone and only consider `--brand` for theming? 
+5. Are focus states, labels, and keyboard behavior intact?
+
+If any answer is "no", fix it before moving on.
