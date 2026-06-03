@@ -1309,7 +1309,7 @@ async fn main() {
         Commands::Pull { remote, branch, rebase } => {
             commands::pull(remote.as_deref(), branch.as_deref(), rebase).await
         }
-        Commands::FetchObjects { source } => commands::fetch_objects(&source),
+        Commands::FetchObjects { source } => commands::fetch_objects(&source).await,
         Commands::Fetch { remote, all, prune } => {
             commands::fetch(remote.as_deref(), all, prune).await
         }

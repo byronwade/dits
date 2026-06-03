@@ -33,8 +33,50 @@ impl RepoServer {
         Router::new()
             .route("/repos/:repo/refs", get(Self::get_refs))
             .route("/repos/:repo/objects/:hash", get(Self::get_object))
+            // Content-addressed incremental sync: list every object path, then serve any
+            // object file by its store-relative path.
+            .route("/repos/:repo/object-list", get(Self::list_objects))
+            .route("/repos/:repo/object/*path", get(Self::get_object_file))
             .layer(CorsLayer::permissive())
             .with_state(self)
+    }
+
+    /// List every object's store-relative path (newline-separated) — the "have" set.
+    async fn list_objects(
+        Path(repo): Path<String>,
+        state: axum::extract::State<Arc<RepoServer>>,
+    ) -> Result<String, StatusCode> {
+        let objects_dir = state.base_dir.join(&repo).join(".dits/objects");
+        if !objects_dir.is_dir() {
+            return Err(StatusCode::NOT_FOUND);
+        }
+        let mut out = String::new();
+        for entry in walkdir::WalkDir::new(&objects_dir)
+            .into_iter()
+            .filter_map(|e| e.ok())
+        {
+            if entry.file_type().is_file() {
+                if let Ok(rel) = entry.path().strip_prefix(&objects_dir) {
+                    out.push_str(&rel.to_string_lossy());
+                    out.push('\n');
+                }
+            }
+        }
+        Ok(out)
+    }
+
+    /// Serve a single object file by its store-relative path.
+    async fn get_object_file(
+        Path((repo, path)): Path<(String, String)>,
+        state: axum::extract::State<Arc<RepoServer>>,
+    ) -> Result<Vec<u8>, StatusCode> {
+        // Reject path traversal.
+        if path.split('/').any(|c| c == ".." || c.is_empty()) {
+            return Err(StatusCode::BAD_REQUEST);
+        }
+        let objects_dir = state.base_dir.join(&repo).join(".dits/objects");
+        let file = objects_dir.join(&path);
+        std::fs::read(&file).map_err(|_| StatusCode::NOT_FOUND)
     }
 
     /// Get repository refs

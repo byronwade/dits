@@ -134,7 +134,7 @@
 | `facr-trim` | ✅ | Non-destructively trim a manifest (stores zero new frames) |
 | `facr-import-edl` | ✅ | Import a CMX3600 EDL into a manifest referencing a source clip (zero new frames) |
 | `facr-import-otio` | ✅ | Import an OTIO timeline JSON into a manifest referencing a source clip (zero new frames) |
-| `fetch-objects` | ✅ | Pull missing objects from another local dits repo (content-addressed, incremental, resumable) |
+| `fetch-objects` | ✅ | Pull missing objects from another dits repo — local path OR a `dits serve` http:// URL (content-addressed, incremental) |
 | `facr-demo` | ✅ | Demonstrate frame-level dedup on a synthetic clip |
 | `photo-add` | ✅ | Store a photo once, start a non-destructive edit history |
 | `photo-edit` | ✅ | Append non-destructive edits (stores zero new image bytes) |

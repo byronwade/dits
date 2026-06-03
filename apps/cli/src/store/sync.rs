@@ -65,6 +65,53 @@ pub fn transfer_objects(src_dits: &Path, dst_dits: &Path) -> io::Result<Transfer
     Ok(stats)
 }
 
+/// Same incremental, additive transfer as [`transfer_objects`], but pulling from a remote
+/// Dits HTTP server (`dits serve`). `base_url` is `http://host:port/repos/<name>`. Fetches
+/// the remote object list, then downloads only the objects the destination lacks.
+pub async fn transfer_objects_http(base_url: &str, dst_dits: &Path) -> anyhow::Result<TransferStats> {
+    use anyhow::Context;
+    let base = base_url.trim_end_matches('/');
+    let client = reqwest::Client::new();
+
+    let list = client
+        .get(format!("{base}/object-list"))
+        .send()
+        .await
+        .context("requesting object list")?
+        .error_for_status()
+        .context("remote returned an error for object-list")?
+        .text()
+        .await?;
+
+    let dst_objects = dst_dits.join("objects");
+    let mut stats = TransferStats::default();
+    for rel in list.lines().map(|l| l.trim()).filter(|l| !l.is_empty()) {
+        let dst_path = dst_objects.join(rel);
+        if dst_path.exists() {
+            stats.skipped += 1;
+            continue;
+        }
+        let bytes = client
+            .get(format!("{base}/object/{rel}"))
+            .send()
+            .await
+            .with_context(|| format!("requesting object {rel}"))?
+            .error_for_status()
+            .with_context(|| format!("remote error for object {rel}"))?
+            .bytes()
+            .await?;
+        if let Some(parent) = dst_path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        let tmp = dst_path.with_extension("tmp-incoming");
+        std::fs::write(&tmp, &bytes)?;
+        std::fs::rename(&tmp, &dst_path)?;
+        stats.copied += 1;
+        stats.bytes += bytes.len() as u64;
+    }
+    Ok(stats)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
