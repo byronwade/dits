@@ -7,7 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import {
   Table,
   TableBody,
@@ -16,7 +17,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Lightbulb, Info } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 import { SyncDiagram } from "@/components/docs/sync-diagram";
 import { ComparisonBlocks } from "@/components/docs/comparison-blocks";
@@ -104,11 +104,11 @@ export default function ConceptsPage() {
         }}
       />
       <div className="prose dark:prose-invert max-w-none">
-        <h1>Core Concepts</h1>
-        <p className="lead text-xl text-muted-foreground">
-          Understanding how Dits works will help you use it effectively. This page
-          explains the key concepts behind Dits.
-        </p>
+        <DocPageHeader
+          eyebrow="Documentation"
+          title="Core Concepts"
+          description="Understanding how Dits works will help you use it effectively. This page explains the key concepts behind Dits."
+        />
 
         <h2>Content-Defined Chunking</h2>
         <p>
@@ -487,23 +487,15 @@ dits config core.hashAlgorithm sha256
           This ensures optimal performance and features for each file type while maintaining Git compatibility.
         </p>
 
-        <Alert className="not-prose my-4">
-          <Lightbulb className="h-4 w-4" />
-          <AlertTitle>Best of Both Worlds</AlertTitle>
-          <AlertDescription>
-            Use Git's powerful text operations for code while benefiting from Dits' binary optimizations for creative assets.
-            All files coexist in the same repository with unified version control.
-          </AlertDescription>
-        </Alert>
+        <Callout type="tip" title="Best of Both Worlds" className="not-prose my-4">
+          Use Git's powerful text operations for code while benefiting from Dits' binary optimizations for creative assets.
+          All files coexist in the same repository with unified version control.
+        </Callout>
 
-        <Alert className="not-prose my-4">
-          <Info className="h-4 w-4" />
-          <AlertTitle>Working Alongside Git</AlertTitle>
-          <AlertDescription>
-            Dits is designed to work alongside Git in the same project directory. Initialize both repositories separately
-            (<code>git init</code> then <code>dits init</code>) to get hybrid storage that automatically uses the best system for each file type.
-          </AlertDescription>
-        </Alert>
+        <Callout type="note" title="Working Alongside Git" className="not-prose my-4">
+          Dits is designed to work alongside Git in the same project directory. Initialize both repositories separately
+          (<code>git init</code> then <code>dits init</code>) to get hybrid storage that automatically uses the best system for each file type.
+        </Callout>
 
         <h2>Manifest System</h2>
         <p>
@@ -737,13 +729,9 @@ dits config core.hashAlgorithm sha256
           </Table>
         </div>
 
-        <Alert className="not-prose my-4">
-          <Lightbulb className="h-4 w-4" />
-          <AlertTitle>Maximum Speed Downloads</AlertTitle>
-          <AlertDescription>
-            Downloads now utilize 100% of available bandwidth with no software limitations, scaling linearly with the number of available peers.
-          </AlertDescription>
-        </Alert>
+        <Callout type="tip" title="Maximum Speed Downloads" className="not-prose my-4">
+          Downloads now utilize 100% of available bandwidth with no software limitations, scaling linearly with the number of available peers.
+        </Callout>
 
         <h3>Throughput Benchmarks</h3>
         <div className="not-prose my-6 overflow-x-auto">
@@ -792,15 +780,11 @@ dits config core.hashAlgorithm sha256
 
         <h2>Video-Aware Features</h2>
 
-        <Alert className="not-prose my-4">
-          <Lightbulb className="h-4 w-4" />
-          <AlertTitle>Why Video-Aware Matters</AlertTitle>
-          <AlertDescription>
-            Video files have internal structure (containers, tracks, keyframes).
-            Dits understands this structure to optimize chunking and
-            reconstruction.
-          </AlertDescription>
-        </Alert>
+        <Callout type="tip" title="Why Video-Aware Matters" className="not-prose my-4">
+          Video files have internal structure (containers, tracks, keyframes).
+          Dits understands this structure to optimize chunking and
+          reconstruction.
+        </Callout>
 
         <p>For MP4/MOV files, Dits:</p>
         <ul>

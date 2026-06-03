@@ -16,7 +16,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
 import {
   FolderGit2,
@@ -32,9 +33,6 @@ import {
   FileSearch,
   Activity,
   Settings,
-  Terminal,
-  Info,
-  CheckCircle2,
 } from "lucide-react";
 
 import { generateMetadata as genMeta, generateArticleSchema, generateItemListSchema, generateCollectionPageSchema, generateBreadcrumbSchema } from "@/lib/seo";
@@ -401,23 +399,16 @@ export default function CLIReferencePage() {
         }}
       />
       <div className="prose dark:prose-invert max-w-none">
-      <div className="flex items-center gap-2 mb-2">
-        <Terminal className="h-8 w-8 text-primary" />
-        <h1 className="mb-0">CLI Reference</h1>
-      </div>
-      <p className="lead text-xl text-muted-foreground">
-        Complete reference for all 60+ Dits commands covering core Git operations, creative workflows,
-        enterprise features, and advanced version control for large binary assets.
-      </p>
+      <DocPageHeader
+        eyebrow="Documentation"
+        title="CLI Reference"
+        description="Complete reference for all 60+ Dits commands covering core Git operations, creative workflows, enterprise features, and advanced version control for large binary assets."
+      />
 
-      <Alert className="not-prose my-6">
-        <CheckCircle2 className="h-4 w-4" />
-        <AlertTitle>Production-Ready Implementation</AlertTitle>
-        <AlertDescription>
-          All 60+ commands are fully implemented with 120+ automated tests covering 80+ file formats.
-          Includes Git-compatible operations, creative workflows, enterprise security, and comprehensive testing.
-        </AlertDescription>
-      </Alert>
+      <Callout type="important" title="Production-Ready Implementation" className="not-prose my-6">
+        All 60+ commands are fully implemented with 120+ automated tests covering 80+ file formats.
+        Includes Git-compatible operations, creative workflows, enterprise security, and comprehensive testing.
+      </Callout>
 
       <h2>Global Options</h2>
       <p>These options can be used with any command:</p>
@@ -716,14 +707,10 @@ dits proxy-generate --resolution 1080p footage/
 dits proxy-status`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Need Help?</AlertTitle>
-        <AlertDescription>
-          Use <code>dits help &lt;command&gt;</code> or <code>dits &lt;command&gt; --help</code> to
-          get detailed help for any command directly in your terminal.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Need Help?" className="not-prose my-6">
+        Use <code>dits help &lt;command&gt;</code> or <code>dits &lt;command&gt; --help</code> to
+        get detailed help for any command directly in your terminal.
+      </Callout>
 
       <h2>Related Topics</h2>
       <ul>
