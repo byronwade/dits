@@ -49,12 +49,37 @@ impl StreamVersion {
     }
 }
 
+/// Render an HLS master playlist: one `#EXT-X-STREAM-INF` per rung pointing at that rung's
+/// media playlist. Each entry is `(bandwidth_bps, width, height, media_playlist_uri)`.
+pub fn master_playlist(rungs: &[(u64, u32, u32, String)]) -> String {
+    let mut out = String::new();
+    out.push_str("#EXTM3U\n#EXT-X-VERSION:7\n");
+    for (bandwidth, w, h, uri) in rungs {
+        out.push_str(&format!(
+            "#EXT-X-STREAM-INF:BANDWIDTH={bandwidth},RESOLUTION={w}x{h}\n{uri}\n"
+        ));
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     fn h(b: &[u8]) -> Hash {
         Hash::from_slice(blake3::hash(b).as_bytes())
+    }
+
+    #[test]
+    fn master_playlist_has_one_stream_inf_per_rung() {
+        let m = master_playlist(&[
+            (2_500_000, 1280, 720, "/r/v2/720p.m3u8".into()),
+            (1_200_000, 854, 480, "/r/v2/480p.m3u8".into()),
+        ]);
+        assert!(m.starts_with("#EXTM3U"));
+        assert_eq!(m.matches("#EXT-X-STREAM-INF").count(), 2);
+        assert!(m.contains("BANDWIDTH=2500000,RESOLUTION=1280x720\n/r/v2/720p.m3u8"));
+        assert!(m.contains("RESOLUTION=854x480"));
     }
 
     #[test]

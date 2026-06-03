@@ -20,10 +20,29 @@ pub struct CmafSegment {
     pub media: Vec<u8>,
 }
 
+/// How to encode a delivery rendition: optional downscale height and target bitrate.
+/// `source()` reproduces the pre-ABR encode exactly (no scale, no bitrate cap).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct EncodeProfile {
+    pub height: Option<u32>,
+    pub bitrate_kbps: Option<u32>,
+}
+
+impl EncodeProfile {
+    pub fn source() -> Self {
+        EncodeProfile { height: None, bitrate_kbps: None }
+    }
+}
+
 /// Encode the given ordered frame blobs into one CMAF segment. `frame_rate` is the ffmpeg
 /// fraction string from the manifest (e.g. "10/1"); `frame_ext` is the frames' image format
 /// extension ("png" or "jxl") so ffmpeg decodes them correctly.
-pub fn encode_cmaf_segment(frame_blobs: &[Vec<u8>], frame_rate: &str, frame_ext: &str) -> Result<CmafSegment> {
+pub fn encode_cmaf_segment(
+    frame_blobs: &[Vec<u8>],
+    frame_rate: &str,
+    frame_ext: &str,
+    profile: &EncodeProfile,
+) -> Result<CmafSegment> {
     if frame_blobs.is_empty() {
         bail!("cannot encode an empty segment");
     }
@@ -38,15 +57,24 @@ pub fn encode_cmaf_segment(frame_blobs: &[Vec<u8>], frame_rate: &str, frame_ext:
 
     let pattern = work.join(format!("f_%08d.{frame_ext}"));
     let out_path = work.join("seg.mp4");
-    let status = Command::new("ffmpeg")
-        .args(["-v", "error", "-y", "-framerate", frame_rate, "-start_number", "0", "-i"])
-        .arg(&pattern)
-        .args([
-            "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p",
-            "-sc_threshold", "0", "-an",
-            "-movflags", "+empty_moov+frag_keyframe+default_base_moof",
-            "-f", "mp4",
-        ])
+    let mut cmd = Command::new("ffmpeg");
+    cmd.args(["-v", "error", "-y", "-framerate", frame_rate, "-start_number", "0", "-i"])
+        .arg(&pattern);
+    // Optional downscale (even width, preserving aspect) for an ABR rung.
+    if let Some(h) = profile.height {
+        cmd.args(["-vf", &format!("scale=-2:{h}")]);
+    }
+    cmd.args(["-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p", "-sc_threshold", "0", "-an"]);
+    // Optional target bitrate for the rung.
+    if let Some(kbps) = profile.bitrate_kbps {
+        cmd.args([
+            "-b:v", &format!("{kbps}k"),
+            "-maxrate", &format!("{kbps}k"),
+            "-bufsize", &format!("{}k", kbps * 2),
+        ]);
+    }
+    cmd.args(["-movflags", "+empty_moov+frag_keyframe+default_base_moof", "-f", "mp4"]);
+    let status = cmd
         .arg(&out_path)
         .output()
         .context("running ffmpeg cmaf encode")?;
@@ -208,13 +236,45 @@ mod tests {
             return;
         }
         let frames = make_png_frames(20);
-        let seg = encode_cmaf_segment(&frames, "10/1", "png").unwrap();
+        let seg = encode_cmaf_segment(&frames, "10/1", "png", &EncodeProfile::source()).unwrap();
         assert!(!seg.init.is_empty() && !seg.media.is_empty());
         // Init starts with an ftyp box; media starts with a moof box.
         assert_eq!(&seg.init[4..8], b"ftyp");
         assert_eq!(&seg.media[4..8], b"moof");
         // init+media concatenation is a valid, probeable h264 stream.
         assert!(probe_fmp4_is_video(&seg.init, &seg.media));
+    }
+
+    fn probe_height(init: &[u8], media: &[u8]) -> u32 {
+        let tmp = std::env::temp_dir().join(format!("dits-ph-{}.mp4", uuid::Uuid::new_v4()));
+        let mut buf = init.to_vec();
+        buf.extend_from_slice(media);
+        std::fs::write(&tmp, &buf).unwrap();
+        let h = Command::new("ffprobe")
+            .args([
+                "-v", "error", "-select_streams", "v:0",
+                "-show_entries", "stream=height", "-of", "csv=p=0",
+            ])
+            .arg(&tmp)
+            .output()
+            .ok()
+            .and_then(|o| String::from_utf8_lossy(&o.stdout).trim().parse().ok())
+            .unwrap_or(0);
+        let _ = std::fs::remove_file(&tmp);
+        h
+    }
+
+    #[test]
+    fn profile_downscales_to_rung_height() {
+        if !ffmpeg_available() {
+            eprintln!("skipping: no ffmpeg");
+            return;
+        }
+        // 64x48 source frames; a rung at height 24 should produce a 24-high segment.
+        let frames = make_png_frames(10);
+        let profile = EncodeProfile { height: Some(24), bitrate_kbps: Some(100) };
+        let seg = encode_cmaf_segment(&frames, "10/1", "png", &profile).unwrap();
+        assert_eq!(probe_height(&seg.init, &seg.media), 24);
     }
 
     #[test]
@@ -225,8 +285,8 @@ mod tests {
         }
         // The shared-init + reuse model depends on this: same frames -> identical init AND media.
         let frames = make_png_frames(20);
-        let a = encode_cmaf_segment(&frames, "10/1", "png").unwrap();
-        let b = encode_cmaf_segment(&frames, "10/1", "png").unwrap();
+        let a = encode_cmaf_segment(&frames, "10/1", "png", &EncodeProfile::source()).unwrap();
+        let b = encode_cmaf_segment(&frames, "10/1", "png", &EncodeProfile::source()).unwrap();
         assert_eq!(a.init, b.init, "init must be byte-identical across independent encodes");
         assert_eq!(a.media, b.media, "media must be hash-stable across independent encodes");
     }
@@ -282,8 +342,8 @@ mod tests {
         // segment 0 -> the concatenation decodes to the full 20 frames.
         let f0 = make_png_frames(10);
         let f1 = make_png_frames(10);
-        let s0 = encode_cmaf_segment(&f0, "10/1", "png").unwrap();
-        let mut s1 = encode_cmaf_segment(&f1, "10/1", "png").unwrap();
+        let s0 = encode_cmaf_segment(&f0, "10/1", "png", &EncodeProfile::source()).unwrap();
+        let mut s1 = encode_cmaf_segment(&f1, "10/1", "png", &EncodeProfile::source()).unwrap();
         let per_frame = frame_duration_ticks(&s0.media).expect("per-frame ticks");
         assert!(per_frame > 0);
         set_base_media_decode_time(&mut s1.media, 10 * per_frame as u64).unwrap();
@@ -308,8 +368,8 @@ mod tests {
         }
         // The reuse guarantee: same frames + same position -> identical patched bytes.
         let frames = make_png_frames(10);
-        let mut a = encode_cmaf_segment(&frames, "10/1", "png").unwrap();
-        let mut b = encode_cmaf_segment(&frames, "10/1", "png").unwrap();
+        let mut a = encode_cmaf_segment(&frames, "10/1", "png", &EncodeProfile::source()).unwrap();
+        let mut b = encode_cmaf_segment(&frames, "10/1", "png", &EncodeProfile::source()).unwrap();
         let pf = frame_duration_ticks(&a.media).unwrap();
         set_base_media_decode_time(&mut a.media, 40 * pf as u64).unwrap();
         set_base_media_decode_time(&mut b.media, 40 * pf as u64).unwrap();
@@ -318,6 +378,6 @@ mod tests {
 
     #[test]
     fn empty_segment_errors() {
-        assert!(encode_cmaf_segment(&[], "10/1", "png").is_err());
+        assert!(encode_cmaf_segment(&[], "10/1", "png", &EncodeProfile::source()).is_err());
     }
 }

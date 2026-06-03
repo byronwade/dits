@@ -4,7 +4,7 @@
 use crate::core::Hash;
 use crate::facr::manifest::ClipManifest;
 use crate::facr::store::FrameStore;
-use crate::stream::encode::encode_cmaf_segment;
+use crate::stream::encode::{encode_cmaf_segment, EncodeProfile};
 use crate::stream::layout::{parse_fps, SegmentLayout};
 use crate::stream::origin::SegmentOrigin;
 use crate::stream::playlist::{SegmentRef, StreamVersion};
@@ -53,6 +53,7 @@ pub fn build_full(
     store: &FrameStore,
     layout: &SegmentLayout,
     origin: &dyn SegmentOrigin,
+    profile: &EncodeProfile,
 ) -> Result<StreamVersion> {
     let n = manifest.frames.len();
     let seg_count = layout.segment_count(n);
@@ -60,11 +61,26 @@ pub fn build_full(
     let mut init_hash = Hash::default();
     for s in 0..seg_count {
         let range = layout.frame_range(s, n);
-        let (media_hash, seg_init, dur) = encode_and_store(manifest, store, &range, origin)?;
+        let (media_hash, seg_init, dur) = encode_and_store(manifest, store, &range, origin, profile)?;
         init_hash = seg_init; // shared, constant across same-resolution encodes
         segments.push(SegmentRef { index: s, hash: media_hash, duration_ms: dur });
     }
-    Ok(StreamVersion { width: manifest.width, height: manifest.height, init_hash, segments })
+    let (width, height) = output_dims(manifest, profile);
+    Ok(StreamVersion { width, height, init_hash, segments })
+}
+
+/// Output (width, height) for a profile: source dims, or scaled to the rung height. Width uses
+/// ffmpeg's `scale=-2` rule — `round(w * h / H / 2) * 2` — so the advertised RESOLUTION matches
+/// the bytes ffmpeg actually produces.
+fn output_dims(manifest: &ClipManifest, profile: &EncodeProfile) -> (u32, u32) {
+    match profile.height {
+        Some(h) if manifest.height > 0 => {
+            let exact = manifest.width as f64 * h as f64 / manifest.height as f64;
+            let w = ((exact / 2.0).round() as u32) * 2;
+            (w, h)
+        }
+        _ => (manifest.width, manifest.height),
+    }
 }
 
 /// Build v2 incrementally: reuse v1's SegmentRefs for unchanged segments (bytes already
@@ -76,6 +92,7 @@ pub fn build_incremental(
     layout: &SegmentLayout,
     origin: &dyn SegmentOrigin,
     plan: &IncrementalPlan,
+    profile: &EncodeProfile,
 ) -> Result<StreamVersion> {
     let n = v2_manifest.frames.len();
     let seg_count = layout.segment_count(n);
@@ -91,15 +108,15 @@ pub fn build_incremental(
             segments.push(reused.clone());
         } else {
             let range = layout.frame_range(s, n);
-            let (media_hash, _init, dur) = encode_and_store(v2_manifest, store, &range, origin)?;
+            let (media_hash, _init, dur) = encode_and_store(v2_manifest, store, &range, origin, profile)?;
             segments.push(SegmentRef { index: s, hash: media_hash, duration_ms: dur });
         }
     }
-    // The init is shared and constant across same-resolution encodes, so v2 reuses v1's
-    // (already in the origin from the v1 build).
+    // The init is shared and constant across same-resolution encodes within this rung, so v2
+    // reuses v1's (already in the origin from the v1 build).
     Ok(StreamVersion {
-        width: v2_manifest.width,
-        height: v2_manifest.height,
+        width: v1_version.width,
+        height: v1_version.height,
         init_hash: v1_version.init_hash,
         segments,
     })
@@ -112,6 +129,7 @@ fn encode_and_store(
     store: &FrameStore,
     range: &std::ops::Range<usize>,
     origin: &dyn SegmentOrigin,
+    profile: &EncodeProfile,
 ) -> Result<(Hash, Hash, u64)> {
     let mut pngs = Vec::with_capacity(range.len());
     for i in range.clone() {
@@ -123,7 +141,7 @@ fn encode_and_store(
     }
     let fps = parse_fps(&manifest.frame_rate);
     let ext = crate::facr::video::frame_ext(&manifest.codec);
-    let mut seg = encode_cmaf_segment(&pngs, &manifest.frame_rate, ext)?;
+    let mut seg = encode_cmaf_segment(&pngs, &manifest.frame_rate, ext, profile)?;
     // Place this fragment at its true position on a continuous timeline by patching
     // tfdt.baseMediaDecodeTime = (frames before this segment) * per-frame ticks. The position
     // is the segment INDEX (range.start), which is identical for an unchanged segment across

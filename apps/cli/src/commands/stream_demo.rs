@@ -7,6 +7,7 @@
 use crate::facr::store::FrameStore;
 use crate::facr::video::{check_ffmpeg, ingest_video_with_format, FrameFormat};
 use crate::stream::incremental::{build_full, build_incremental, plan};
+use crate::stream::ladder::default_ladder;
 use crate::stream::layout::SegmentLayout;
 use crate::stream::origin::{LocalDiskOrigin, SegmentOrigin};
 use crate::stream::serve::{serve, ServeState};
@@ -39,7 +40,7 @@ pub async fn stream_demo(
             let ok = Command::new("ffmpeg")
                 .args([
                     "-v", "error", "-y", "-f", "lavfi", "-i",
-                    "testsrc=duration=10:size=320x240:rate=10", "-pix_fmt", "yuv420p",
+                    "testsrc=duration=10:size=1280x720:rate=10", "-pix_fmt", "yuv420p",
                 ])
                 .arg(&p)
                 .status()
@@ -64,8 +65,6 @@ pub async fn stream_demo(
         v1m.codec,
         frame_bytes as f64 / 1024.0
     );
-    let v1 = build_full(&v1m, &store, &layout, &origin)?;
-
     // 3. Re-grade [grade_start, grade_end) seconds -> v2 manifest.
     let fps = layout.fps;
     let start = (grade_start * fps).round() as usize;
@@ -74,39 +73,58 @@ pub async fn stream_demo(
     println!("re-grading frames {:?} ({}s-{}s)", r, grade_start, grade_end);
     let v2m = crate::stream::edit::regrade_range(&v1m, &store, r, 0.3)?;
 
-    // 4. Plan + build v2 incrementally.
+    // 4. Plan once (rendition-independent), then build every ABR rung for v1 and v2.
     let p = plan(&v1m, &v2m, &layout);
-    let v2 = build_incremental(&v1, &v2m, &store, &layout, &origin, &p)?;
+    let ladder = default_ladder(v1m.height);
+    let rung_names: Vec<&str> = ladder.iter().map(|r| r.name.as_str()).collect();
+    println!("ABR ladder: {} renditions [{}]", ladder.len(), rung_names.join(", "));
 
-    // 5. Byte accounting: naive (all v2 segs) vs incremental (only re-encoded).
-    let bytes_total: u64 = v2
-        .segments
-        .iter()
-        .map(|s| origin.get(&s.hash).map(|b| b.len() as u64).unwrap_or(0))
-        .sum();
-    let bytes_reencoded: u64 = v2
-        .segments
-        .iter()
-        .filter(|s| p.reencoded.contains(&s.index))
-        .map(|s| origin.get(&s.hash).map(|b| b.len() as u64).unwrap_or(0))
-        .sum();
-    let total = v2.segments.len();
-    let reuse_pct = if total == 0 { 0.0 } else { p.reused.len() as f64 / total as f64 * 100.0 };
+    let mut v1_ladder = Vec::new();
+    let mut v2_ladder = Vec::new();
+    for rend in &ladder {
+        let prof = rend.profile();
+        let sv1 = build_full(&v1m, &store, &layout, &origin, &prof)?;
+        let sv2 = build_incremental(&sv1, &v2m, &store, &layout, &origin, &p, &prof)?;
+        v1_ladder.push((rend.clone(), sv1));
+        v2_ladder.push((rend.clone(), sv2));
+    }
 
-    println!("\n  -- FACR incremental result --");
-    println!("  segments total : {total}");
-    println!("  re-encoded     : {} ({:?})", p.reencoded.len(), p.reencoded);
-    println!("  reused (0 xfer): {} ({:.1}% reused)", p.reused.len(), reuse_pct);
+    // 5. Byte accounting across every rung of v2: naive (all segments) vs incremental (only changed).
+    let mut bytes_total = 0u64;
+    let mut bytes_reencoded = 0u64;
+    let mut total_segs = 0usize;
+    let mut reencoded_segs = 0usize;
+    for (_, sv2) in &v2_ladder {
+        for seg in &sv2.segments {
+            let sz = origin.get(&seg.hash).map(|b| b.len() as u64).unwrap_or(0);
+            bytes_total += sz;
+            total_segs += 1;
+            if p.reencoded.contains(&seg.index) {
+                bytes_reencoded += sz;
+                reencoded_segs += 1;
+            }
+        }
+    }
+    let reuse_pct = if total_segs == 0 {
+        0.0
+    } else {
+        (total_segs - reencoded_segs) as f64 / total_segs as f64 * 100.0
+    };
+
+    println!("\n  -- FACR incremental result (across {} renditions) --", ladder.len());
+    println!("  segments total : {total_segs}  ({} per rung x {} rungs)", p.reused.len() + p.reencoded.len(), ladder.len());
+    println!("  re-encoded     : {reencoded_segs}  (changed segment(s) {:?} x each rung)", p.reencoded);
+    println!("  reused (0 xfer): {}  ({:.1}% reused)", total_segs - reencoded_segs, reuse_pct);
     println!(
         "  re-delivered   : {:.1} KB   (naive full re-encode: {:.1} KB)",
         bytes_reencoded as f64 / 1024.0,
         bytes_total as f64 / 1024.0
     );
 
-    // 6. Serve the browser proof.
+    // 6. Serve the browser proof (hls.js loads the master playlist and adapts between rungs).
     let state = ServeState {
-        v1,
-        v2,
+        v1: v1_ladder,
+        v2: v2_ladder,
         origin: Box::new(origin),
         bytes_total,
         bytes_reencoded,
