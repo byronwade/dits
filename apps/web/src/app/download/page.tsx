@@ -13,7 +13,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { PageHeader } from "@/components/page-header";
 import {
   Download,
   Apple,
@@ -138,13 +137,15 @@ export default function DownloadPage() {
             <div className="absolute inset-x-0 top-0 h-[420px] glow-brand" />
           </div>
           <div className="container">
-            <PageHeader
-              align="center"
-              title="Download Dits"
-              description="Choose your platform and installation method. Dits is available for macOS, Linux, and Windows."
-            >
-              <Badge variant="secondary" className="font-mono">v0.1.2</Badge>
-            </PageHeader>
+            <div className="mx-auto max-w-4xl text-center">
+              <Badge variant="secondary" className="mb-6 font-mono">v0.1.2</Badge>
+              <h1 id="download-heading" className="text-4xl font-bold tracking-tight md:text-6xl">
+                Download <span className="text-gradient-brand">Dits</span>
+              </h1>
+              <p className="mx-auto mt-6 max-w-2xl text-xl text-muted-foreground">
+                Choose your platform and installation method. Dits is available for macOS, Linux, and Windows.
+              </p>
+            </div>
           </div>
         </section>
 

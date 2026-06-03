@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { PageHeader } from "@/components/page-header";
+import { Badge } from "@/components/ui/badge";
 import {
   MessageCircle,
   Bug,
@@ -128,20 +128,24 @@ export default function CommunityPage() {
       <Header />
       <main id="main-content" className="flex-1 pt-[104px]">
         {/* Hero */}
-        <section className="relative overflow-hidden py-20 md:py-28">
+        <section className="relative overflow-hidden py-20 md:py-28" aria-labelledby="community-heading">
           <div className="pointer-events-none absolute inset-0 -z-10">
             <div className="absolute inset-0 bg-grid opacity-60 [mask-image:radial-gradient(70%_60%_at_50%_0%,black,transparent)]" />
             <div className="absolute inset-x-0 top-0 h-[420px] glow-brand" />
           </div>
           <div className="container">
-            <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-brand/10">
-              <Users className="size-8 text-brand" aria-hidden="true" />
+            <div className="mx-auto max-w-4xl text-center">
+              <Badge variant="outline" className="mb-6">
+                <Users className="mr-1.5 size-3.5" aria-hidden="true" />
+                Open Source Community
+              </Badge>
+              <h1 id="community-heading" className="text-4xl font-bold tracking-tight md:text-6xl">
+                Join the <span className="text-gradient-brand">Community</span>
+              </h1>
+              <p className="mx-auto mt-6 max-w-3xl text-xl text-muted-foreground">
+                Dits is built by and for the media community. Whether you&apos;re a video editor, game developer, or content creator, you&apos;re welcome here.
+              </p>
             </div>
-            <PageHeader
-              align="center"
-              title="Join the Community"
-              description="Dits is built by and for the media community. Whether you're a video editor, game developer, or content creator, you're welcome here."
-            />
           </div>
         </section>
 
