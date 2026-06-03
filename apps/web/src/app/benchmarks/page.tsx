@@ -289,16 +289,17 @@ export default async function BenchmarksPage() {
         />
       </KeynoteSection>
 
-      {/* 09 — SCALING */}
-      <KeynoteSection chapter="09" tag="Does it hold at scale? · illustration">
+      {/* 09 — SCALING (measured sweep) */}
+      <KeynoteSection chapter="09" tag="Does it hold at scale?">
         <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
-          We expect the savings to hold as files grow.
+          The bigger the file, the more dits saves.
         </h2>
         <ScalingChart series={doc?.scaling ?? []} projectedPct={Math.round(dedup(facr) ?? 98)} />
         <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-          Frame-addressing cost tracks the <em>edit</em>, not the file, so the percentage
-          shouldn&apos;t shrink as files grow — but we&apos;ve measured one size so far. The
-          multi-size sweep is the showcase profile.
+          Same localized edit, clips of growing size. Frame-addressing cost tracks the{" "}
+          <em>edit</em>, not the file — so the bigger the clip, the smaller a fixed edit looks,
+          and the more dits skips. It beats byte-level dedup at <em>every</em> size (storing
+          several times less even where restic does best). Measured, not projected.
         </p>
       </KeynoteSection>
 

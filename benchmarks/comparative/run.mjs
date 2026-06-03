@@ -61,8 +61,9 @@ for (const w of WORKLOADS) {
 // dedup across the FFV1 bitstream shifts. All three measured on one machine.
 if (profile === "showcase") {
   const { runCumulative } = await import("./sweep-cumulative.mjs");
-  const series = await runCumulative({ edits: 15, duration: 8, log: (m) => console.log("  " + m) });
-  doc.cumulative.push(...series);
+  doc.cumulative.push(...await runCumulative({ edits: 15, duration: 8, log: (m) => console.log("  " + m) }));
+  const { runScaling } = await import("./sweep-scaling.mjs");
+  doc.scaling.push(...await runScaling({ durations: [2, 4, 8, 16], log: (m) => console.log("  " + m) }));
 }
 
 // CI asserts: known wins must hold.

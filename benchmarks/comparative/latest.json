@@ -1,8 +1,8 @@
 {
   "meta": {
     "profile": "showcase",
-    "generated_at": "2026-06-03T14:44:46.948Z",
-    "git_sha": "c568e9b1ce3081e6a6ae01d1ef91b2ee40d3a78b",
+    "generated_at": "2026-06-03T14:58:02.319Z",
+    "git_sha": "d022ba3ff92bfd5c24f3ae102d5a89c94458bcc0",
     "machine": "darwin arm64 Apple M2 Pro",
     "assumptions_url": "/benchmarks#methodology",
     "tool_versions": {
@@ -28,7 +28,7 @@
       "metrics": {
         "stored_bytes": 35992164,
         "wire_bytes": 35992164,
-        "wall_ms": 590.739,
+        "wall_ms": 461.393666,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 0
@@ -39,8 +39,8 @@
         "upload_seconds_at_line": 5.5
       },
       "tool_version": "git-lfs",
-      "run_timestamp": "2026-06-03T14:44:46.948Z",
-      "git_sha": "c568e9b1ce3081e6a6ae01d1ef91b2ee40d3a78b",
+      "run_timestamp": "2026-06-03T14:58:02.319Z",
+      "git_sha": "d022ba3ff92bfd5c24f3ae102d5a89c94458bcc0",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -55,21 +55,21 @@
         "label": "Re-export a finished clip"
       },
       "metrics": {
-        "stored_bytes": 29521343,
-        "wire_bytes": 29521343,
-        "wall_ms": 946.613458,
+        "stored_bytes": 29549186,
+        "wire_bytes": 29549186,
+        "wall_ms": 920.876541,
         "peak_rss_bytes": null,
         "restore_ms": null,
-        "dedup_pct": 18
+        "dedup_pct": 17.9
       },
       "derived": {
         "cost_storage_usd_yr": 0.01,
-        "cost_egress_usd_per_1k": 2.47,
+        "cost_egress_usd_per_1k": 2.48,
         "upload_seconds_at_line": 4.5
       },
       "tool_version": "restic",
-      "run_timestamp": "2026-06-03T14:44:46.948Z",
-      "git_sha": "c568e9b1ce3081e6a6ae01d1ef91b2ee40d3a78b",
+      "run_timestamp": "2026-06-03T14:58:02.319Z",
+      "git_sha": "d022ba3ff92bfd5c24f3ae102d5a89c94458bcc0",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -84,9 +84,9 @@
         "label": "Re-export a finished clip"
       },
       "metrics": {
-        "stored_bytes": 30730702,
-        "wire_bytes": 30730702,
-        "wall_ms": 386.673709,
+        "stored_bytes": 30724367,
+        "wire_bytes": 30724367,
+        "wall_ms": 349.571,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 14.6
@@ -97,8 +97,8 @@
         "upload_seconds_at_line": 4.7
       },
       "tool_version": "borg",
-      "run_timestamp": "2026-06-03T14:44:46.948Z",
-      "git_sha": "c568e9b1ce3081e6a6ae01d1ef91b2ee40d3a78b",
+      "run_timestamp": "2026-06-03T14:58:02.319Z",
+      "git_sha": "d022ba3ff92bfd5c24f3ae102d5a89c94458bcc0",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -115,7 +115,7 @@
       "metrics": {
         "stored_bytes": 28312800,
         "wire_bytes": 28312800,
-        "wall_ms": 6228.070416,
+        "wall_ms": 5926.599291,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 21.3
@@ -126,8 +126,8 @@
         "upload_seconds_at_line": 4.3
       },
       "tool_version": "xdelta3",
-      "run_timestamp": "2026-06-03T14:44:46.948Z",
-      "git_sha": "c568e9b1ce3081e6a6ae01d1ef91b2ee40d3a78b",
+      "run_timestamp": "2026-06-03T14:58:02.319Z",
+      "git_sha": "d022ba3ff92bfd5c24f3ae102d5a89c94458bcc0",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -142,9 +142,9 @@
         "label": "Re-export a finished clip"
       },
       "metrics": {
-        "stored_bytes": 36266487,
-        "wire_bytes": 36266487,
-        "wall_ms": 232.952667,
+        "stored_bytes": 36266479,
+        "wire_bytes": 36266479,
+        "wall_ms": 190.024667,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 0
@@ -155,8 +155,8 @@
         "upload_seconds_at_line": 5.5
       },
       "tool_version": "dits-generic",
-      "run_timestamp": "2026-06-03T14:44:46.948Z",
-      "git_sha": "c568e9b1ce3081e6a6ae01d1ef91b2ee40d3a78b",
+      "run_timestamp": "2026-06-03T14:58:02.319Z",
+      "git_sha": "d022ba3ff92bfd5c24f3ae102d5a89c94458bcc0",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -171,21 +171,21 @@
         "label": "Rename / metadata fix"
       },
       "metrics": {
-        "stored_bytes": 2536574,
-        "wire_bytes": 2536574,
-        "wall_ms": 826.161625,
+        "stored_bytes": 3596831,
+        "wire_bytes": 3596831,
+        "wall_ms": 810.230333,
         "peak_rss_bytes": null,
         "restore_ms": null,
-        "dedup_pct": 82.3
+        "dedup_pct": 74.9
       },
       "derived": {
         "cost_storage_usd_yr": 0,
-        "cost_egress_usd_per_1k": 0.21,
-        "upload_seconds_at_line": 0.4
+        "cost_egress_usd_per_1k": 0.3,
+        "upload_seconds_at_line": 0.5
       },
       "tool_version": "restic",
-      "run_timestamp": "2026-06-03T14:44:46.948Z",
-      "git_sha": "c568e9b1ce3081e6a6ae01d1ef91b2ee40d3a78b",
+      "run_timestamp": "2026-06-03T14:58:02.319Z",
+      "git_sha": "d022ba3ff92bfd5c24f3ae102d5a89c94458bcc0",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -200,21 +200,21 @@
         "label": "Rename / metadata fix"
       },
       "metrics": {
-        "stored_bytes": 8818059,
-        "wire_bytes": 8818059,
-        "wall_ms": 287.604125,
+        "stored_bytes": 5131954,
+        "wire_bytes": 5131954,
+        "wall_ms": 266.874666,
         "peak_rss_bytes": null,
         "restore_ms": null,
-        "dedup_pct": 38.3
+        "dedup_pct": 64.1
       },
       "derived": {
         "cost_storage_usd_yr": 0,
-        "cost_egress_usd_per_1k": 0.74,
-        "upload_seconds_at_line": 1.3
+        "cost_egress_usd_per_1k": 0.43,
+        "upload_seconds_at_line": 0.8
       },
       "tool_version": "borg",
-      "run_timestamp": "2026-06-03T14:44:46.948Z",
-      "git_sha": "c568e9b1ce3081e6a6ae01d1ef91b2ee40d3a78b",
+      "run_timestamp": "2026-06-03T14:58:02.319Z",
+      "git_sha": "d022ba3ff92bfd5c24f3ae102d5a89c94458bcc0",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -231,7 +231,7 @@
       "metrics": {
         "stored_bytes": 298,
         "wire_bytes": 298,
-        "wall_ms": 185.835417,
+        "wall_ms": 207.193958,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 100
@@ -242,8 +242,8 @@
         "upload_seconds_at_line": 0
       },
       "tool_version": "xdelta3",
-      "run_timestamp": "2026-06-03T14:44:46.948Z",
-      "git_sha": "c568e9b1ce3081e6a6ae01d1ef91b2ee40d3a78b",
+      "run_timestamp": "2026-06-03T14:58:02.319Z",
+      "git_sha": "d022ba3ff92bfd5c24f3ae102d5a89c94458bcc0",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -258,9 +258,9 @@
         "label": "Rename / metadata fix"
       },
       "metrics": {
-        "stored_bytes": 176022,
-        "wire_bytes": 176022,
-        "wall_ms": 77.778917,
+        "stored_bytes": 176014,
+        "wire_bytes": 176014,
+        "wall_ms": 78.026541,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 98.8
@@ -271,8 +271,8 @@
         "upload_seconds_at_line": 0
       },
       "tool_version": "dits-generic",
-      "run_timestamp": "2026-06-03T14:44:46.948Z",
-      "git_sha": "c568e9b1ce3081e6a6ae01d1ef91b2ee40d3a78b",
+      "run_timestamp": "2026-06-03T14:58:02.319Z",
+      "git_sha": "d022ba3ff92bfd5c24f3ae102d5a89c94458bcc0",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -289,7 +289,7 @@
       "metrics": {
         "stored_bytes": null,
         "wire_bytes": null,
-        "wall_ms": 124.567375,
+        "wall_ms": 162.185542,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 98.3
@@ -300,8 +300,8 @@
         "upload_seconds_at_line": 0
       },
       "tool_version": "dits-facr",
-      "run_timestamp": "2026-06-03T14:44:46.948Z",
-      "git_sha": "c568e9b1ce3081e6a6ae01d1ef91b2ee40d3a78b",
+      "run_timestamp": "2026-06-03T14:58:02.319Z",
+      "git_sha": "d022ba3ff92bfd5c24f3ae102d5a89c94458bcc0",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -316,12 +316,12 @@
         "label": "FACR demo clip"
       },
       "metrics": {
-        "stored_bytes": 802816,
-        "wire_bytes": 802816,
-        "wall_ms": 90003.291958,
+        "stored_bytes": 804454,
+        "wire_bytes": 804454,
+        "wall_ms": 90009.081209,
         "peak_rss_bytes": null,
         "restore_ms": null,
-        "dedup_pct": 77.1
+        "dedup_pct": 77.2
       },
       "derived": {
         "cost_storage_usd_yr": 0,
@@ -329,8 +329,8 @@
         "upload_seconds_at_line": 0.1
       },
       "tool_version": "dits-facr",
-      "run_timestamp": "2026-06-03T14:44:46.948Z",
-      "git_sha": "c568e9b1ce3081e6a6ae01d1ef91b2ee40d3a78b",
+      "run_timestamp": "2026-06-03T14:58:02.319Z",
+      "git_sha": "d022ba3ff92bfd5c24f3ae102d5a89c94458bcc0",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -347,7 +347,7 @@
       "metrics": {
         "stored_bytes": 0,
         "wire_bytes": 0,
-        "wall_ms": 9.719125,
+        "wall_ms": 9.552084,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 100
@@ -358,8 +358,8 @@
         "upload_seconds_at_line": 0
       },
       "tool_version": "dits-facr",
-      "run_timestamp": "2026-06-03T14:44:46.948Z",
-      "git_sha": "c568e9b1ce3081e6a6ae01d1ef91b2ee40d3a78b",
+      "run_timestamp": "2026-06-03T14:58:02.319Z",
+      "git_sha": "d022ba3ff92bfd5c24f3ae102d5a89c94458bcc0",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -376,7 +376,7 @@
       "metrics": {
         "stored_bytes": 0,
         "wire_bytes": 0,
-        "wall_ms": 9.834166,
+        "wall_ms": 8.477833,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 100
@@ -387,8 +387,8 @@
         "upload_seconds_at_line": 0
       },
       "tool_version": "dits-facr",
-      "run_timestamp": "2026-06-03T14:44:46.948Z",
-      "git_sha": "c568e9b1ce3081e6a6ae01d1ef91b2ee40d3a78b",
+      "run_timestamp": "2026-06-03T14:58:02.319Z",
+      "git_sha": "d022ba3ff92bfd5c24f3ae102d5a89c94458bcc0",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -403,9 +403,9 @@
         "label": "Color-grade the whole clip"
       },
       "metrics": {
-        "stored_bytes": 15106102,
-        "wire_bytes": 15106102,
-        "wall_ms": 852.05,
+        "stored_bytes": 15105397,
+        "wire_bytes": 15105397,
+        "wall_ms": 872.87575,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 0
@@ -416,8 +416,8 @@
         "upload_seconds_at_line": 2.3
       },
       "tool_version": "restic",
-      "run_timestamp": "2026-06-03T14:44:46.948Z",
-      "git_sha": "c568e9b1ce3081e6a6ae01d1ef91b2ee40d3a78b",
+      "run_timestamp": "2026-06-03T14:58:02.319Z",
+      "git_sha": "d022ba3ff92bfd5c24f3ae102d5a89c94458bcc0",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     },
@@ -432,9 +432,9 @@
         "label": "Color-grade the whole clip"
       },
       "metrics": {
-        "stored_bytes": 15223846,
-        "wire_bytes": 15223846,
-        "wall_ms": 93.183708,
+        "stored_bytes": 15223852,
+        "wire_bytes": 15223852,
+        "wall_ms": 120.009959,
         "peak_rss_bytes": null,
         "restore_ms": null,
         "dedup_pct": 0
@@ -445,8 +445,8 @@
         "upload_seconds_at_line": 2.3
       },
       "tool_version": "dits-generic",
-      "run_timestamp": "2026-06-03T14:44:46.948Z",
-      "git_sha": "c568e9b1ce3081e6a6ae01d1ef91b2ee40d3a78b",
+      "run_timestamp": "2026-06-03T14:58:02.319Z",
+      "git_sha": "d022ba3ff92bfd5c24f3ae102d5a89c94458bcc0",
       "machine": "darwin arm64 Apple M2 Pro",
       "available": true
     }
@@ -522,43 +522,43 @@
       "points": [
         {
           "edit": 1,
-          "total_bytes": 4111563
+          "total_bytes": 4111565
         },
         {
           "edit": 2,
-          "total_bytes": 8176926
+          "total_bytes": 8176928
         },
         {
           "edit": 3,
-          "total_bytes": 12223173
+          "total_bytes": 12223177
         },
         {
           "edit": 4,
-          "total_bytes": 16251680
+          "total_bytes": 16251686
         },
         {
           "edit": 5,
-          "total_bytes": 20261029
+          "total_bytes": 20261035
         },
         {
           "edit": 6,
-          "total_bytes": 24250642
+          "total_bytes": 24250648
         },
         {
           "edit": 7,
-          "total_bytes": 28219212
+          "total_bytes": 28219216
         },
         {
           "edit": 8,
-          "total_bytes": 32169010
+          "total_bytes": 32169013
         },
         {
           "edit": 9,
-          "total_bytes": 36099288
+          "total_bytes": 36099291
         },
         {
           "edit": 10,
-          "total_bytes": 40009781
+          "total_bytes": 40009782
         },
         {
           "edit": 11,
@@ -570,15 +570,15 @@
         },
         {
           "edit": 13,
-          "total_bytes": 51600216
+          "total_bytes": 51600215
         },
         {
           "edit": 14,
-          "total_bytes": 55420152
+          "total_bytes": 55420149
         },
         {
           "edit": 15,
-          "total_bytes": 59218261
+          "total_bytes": 59218260
         }
       ]
     },
@@ -587,66 +587,109 @@
       "points": [
         {
           "edit": 1,
-          "total_bytes": 3860558
+          "total_bytes": 3854812
         },
         {
           "edit": 2,
-          "total_bytes": 5244473
+          "total_bytes": 4740744
         },
         {
           "edit": 3,
-          "total_bytes": 6610018
+          "total_bytes": 8558515
         },
         {
           "edit": 4,
-          "total_bytes": 7959001
+          "total_bytes": 12360006
         },
         {
           "edit": 5,
-          "total_bytes": 10318071
+          "total_bytes": 16143791
         },
         {
           "edit": 6,
-          "total_bytes": 12658668
+          "total_bytes": 19909015
         },
         {
           "edit": 7,
-          "total_bytes": 14979892
+          "total_bytes": 23654547
         },
         {
           "edit": 8,
-          "total_bytes": 17283724
+          "total_bytes": 27383294
         },
         {
           "edit": 9,
-          "total_bytes": 20993792
+          "total_bytes": 31093175
         },
         {
           "edit": 10,
-          "total_bytes": 24685556
+          "total_bytes": 34784759
         },
         {
           "edit": 11,
-          "total_bytes": 28352956
+          "total_bytes": 38451966
         },
         {
           "edit": 12,
-          "total_bytes": 32002514
+          "total_bytes": 42101322
         },
         {
           "edit": 13,
-          "total_bytes": 35625676
+          "total_bytes": 45724248
         },
         {
           "edit": 14,
-          "total_bytes": 39230478
+          "total_bytes": 49328852
         },
         {
           "edit": 15,
-          "total_bytes": 42814989
+          "total_bytes": 52913317
         }
       ]
     }
   ],
-  "scaling": []
+  "scaling": [
+    {
+      "tool": "dits-facr",
+      "points": [
+        {
+          "dataset_bytes": 971733,
+          "dedup_pct": 72.8
+        },
+        {
+          "dataset_bytes": 2004873,
+          "dedup_pct": 86.8
+        },
+        {
+          "dataset_bytes": 4068908,
+          "dedup_pct": 93.5
+        },
+        {
+          "dataset_bytes": 8147215,
+          "dedup_pct": 96.8
+        }
+      ]
+    },
+    {
+      "tool": "restic",
+      "points": [
+        {
+          "dataset_bytes": 971733,
+          "dedup_pct": 5.3
+        },
+        {
+          "dataset_bytes": 2004873,
+          "dedup_pct": 35.8
+        },
+        {
+          "dataset_bytes": 4068908,
+          "dedup_pct": 52.4
+        },
+        {
+          "dataset_bytes": 8147215,
+          "dedup_pct": 82.6
+        }
+      ]
+    }
+  ]
 }
