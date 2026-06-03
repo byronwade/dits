@@ -105,7 +105,7 @@ export default function ConceptsPage() {
       />
       <div className="prose dark:prose-invert max-w-none">
         <DocPageHeader
-          eyebrow="Documentation"
+          eyebrow="Core Concepts"
           title="Core Concepts"
           description="Understanding how Dits works will help you use it effectively. This page explains the key concepts behind Dits."
         />

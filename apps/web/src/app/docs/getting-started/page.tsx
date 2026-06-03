@@ -297,7 +297,7 @@ git log --oneline  # Code commits
 dits log --oneline # Asset commits`}
         />
 
-        <Callout type="important" title="Production-Ready with Comprehensive Testing" className="not-prose my-6">
+        <Callout type="tip" title="Production-Ready with Comprehensive Testing" className="not-prose my-6">
           <strong>120+ automated tests</strong> covering 80+ file formats, Git operations on binaries, cross-platform compatibility,
           1TB+ workload simulation, and enterprise security. Every feature is thoroughly tested before release.
         </Callout>

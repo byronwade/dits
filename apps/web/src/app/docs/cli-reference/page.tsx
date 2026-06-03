@@ -400,12 +400,12 @@ export default function CLIReferencePage() {
       />
       <div className="prose dark:prose-invert max-w-none">
       <DocPageHeader
-        eyebrow="Documentation"
+        eyebrow="CLI Reference"
         title="CLI Reference"
         description="Complete reference for all 60+ Dits commands covering core Git operations, creative workflows, enterprise features, and advanced version control for large binary assets."
       />
 
-      <Callout type="important" title="Production-Ready Implementation" className="not-prose my-6">
+      <Callout type="tip" title="Production-Ready Implementation" className="not-prose my-6">
         All 60+ commands are fully implemented with 120+ automated tests covering 80+ file formats.
         Includes Git-compatible operations, creative workflows, enterprise security, and comprehensive testing.
       </Callout>
