@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
-import type { TooltipValueType } from "recharts"
+type TooltipValueType = string | number | Array<string | number>
 
 import { cn } from "@/lib/utils"
 
