@@ -19,6 +19,17 @@ pub struct FrameRef {
     pub duration: i64,
 }
 
+/// A content-addressed audio track stored alongside the frames. The audio is extracted
+/// stream-copied (lossless) into a container and stored once; it dedups across versions
+/// just like frames, and is muxed back on reconstruction.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AudioTrack {
+    /// Content hash of the stored audio container bytes.
+    pub hash: Hash,
+    /// Container/format extension used when storing the audio (e.g. "mka").
+    pub format: String,
+}
+
 /// An ordered manifest describing one version of a clip.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClipManifest {
@@ -34,6 +45,9 @@ pub struct ClipManifest {
     /// reconstruction keeps exact timing. Defaults for manifests built without video.
     #[serde(default = "default_frame_rate")]
     pub frame_rate: String,
+    /// Optional audio track (None for silent clips or manifests built without video).
+    #[serde(default)]
+    pub audio: Option<AudioTrack>,
     /// Ordered frame references.
     pub frames: Vec<FrameRef>,
 }
@@ -51,6 +65,7 @@ impl ClipManifest {
             codec: codec.into(),
             timescale,
             frame_rate: default_frame_rate(),
+            audio: None,
             frames: Vec::new(),
         }
     }
