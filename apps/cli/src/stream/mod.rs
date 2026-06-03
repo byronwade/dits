@@ -3,6 +3,7 @@
 //! `docs/superpowers/specs/2026-06-02-facr-incremental-streaming-slice-design.md`.
 
 pub mod cdc;
+pub mod crypto;
 pub mod edit;
 pub mod encode;
 pub mod incremental;

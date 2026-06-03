@@ -30,6 +30,7 @@ pub async fn stream_demo(
     edit: Option<String>,
     otio: bool,
     import: Option<String>,
+    encrypt: bool,
     port: u16,
 ) -> Result<()> {
     check_ffmpeg().context("FFmpeg is required for stream-demo")?;
@@ -71,6 +72,10 @@ pub async fn stream_demo(
     // P4 #3: reconstruct an edit from an OpenTimelineIO timeline (generated, or a real --import file).
     if otio || import.is_some() {
         return otio_demo(&v1m, import.as_deref(), &work).await;
+    }
+    // P5 #1: AES-128 segment encryption (deterministic, so reuse + delta-push survive).
+    if encrypt {
+        return encrypt_demo(&v1m, &store, &layout).await;
     }
 
     let frame_bytes = dir_size(&frames_dir);
@@ -189,6 +194,82 @@ pub async fn stream_demo(
         bytes_reencoded,
     };
     serve(state, port).await?;
+    Ok(())
+}
+
+/// Segment-encryption demo: build encrypted segments deterministically (so reuse holds), prove
+/// they decrypt back to valid media, and emit an AES-128 EXT-X-KEY playlist.
+async fn encrypt_demo(
+    v1m: &crate::facr::manifest::ClipManifest,
+    store: &FrameStore,
+    layout: &SegmentLayout,
+) -> Result<()> {
+    use crate::stream::crypto::{decrypt_segment, derive_iv, encrypt_segment, iv_hex, SegmentKey};
+    use crate::stream::encode::{encode_cmaf_segment, EncodeProfile};
+    use crate::stream::playlist::to_hls_encrypted;
+
+    let key = SegmentKey::from_passphrase("dits-demo-key");
+    let ext = crate::facr::video::frame_ext(&v1m.codec);
+    let n = v1m.frames.len();
+    let seg_count = layout.segment_count(n);
+
+    // Build + encrypt each segment; keep the first segment's init + ciphertext for verification.
+    let mut entries: Vec<(crate::core::Hash, u64, String)> = Vec::new();
+    let mut total_ct = 0u64;
+    let mut sample: Option<(Vec<u8>, Vec<u8>, [u8; 16])> = None; // (init, ciphertext, iv)
+    let mut init_hash = crate::core::Hash::default();
+    let mut first_ct_hash = crate::core::Hash::default();
+    for s in 0..seg_count {
+        let range = layout.frame_range(s, n);
+        let pngs: Vec<Vec<u8>> = range
+            .clone()
+            .map(|i| store.load_frame(&v1m.frames[i].hash))
+            .collect::<std::io::Result<_>>()?;
+        let cm = encode_cmaf_segment(&pngs, &v1m.frame_rate, ext, &EncodeProfile::source())?;
+        let pt_hash = crate::core::Hash::from_slice(blake3::hash(&cm.media).as_bytes());
+        let iv = derive_iv(&pt_hash);
+        let ct = encrypt_segment(&cm.media, &key, &iv);
+        let ct_hash = crate::core::Hash::from_slice(blake3::hash(&ct).as_bytes());
+        let dur_ms = ((range.len() as f64 / layout.fps) * 1000.0).round() as u64;
+        init_hash = crate::core::Hash::from_slice(blake3::hash(&cm.init).as_bytes());
+        total_ct += ct.len() as u64;
+        if s == 0 {
+            sample = Some((cm.init.clone(), ct.clone(), iv));
+            first_ct_hash = ct_hash;
+        }
+        entries.push((ct_hash, dur_ms, iv_hex(&iv)));
+    }
+
+    // Determinism / reuse: re-encrypting the same first segment yields the identical ciphertext hash.
+    let range0 = layout.frame_range(0, n);
+    let pngs0: Vec<Vec<u8>> = range0.map(|i| store.load_frame(&v1m.frames[i].hash)).collect::<std::io::Result<_>>()?;
+    let cm0 = encode_cmaf_segment(&pngs0, &v1m.frame_rate, ext, &EncodeProfile::source())?;
+    let iv0 = derive_iv(&crate::core::Hash::from_slice(blake3::hash(&cm0.media).as_bytes()));
+    let ct0_hash = crate::core::Hash::from_slice(blake3::hash(&encrypt_segment(&cm0.media, &key, &iv0)).as_bytes());
+    let reuse_stable = ct0_hash == first_ct_hash;
+
+    // Objective verification: decrypt the sample segment and confirm init+plaintext probes as h264.
+    let (init, ct, iv) = sample.context("no segments")?;
+    let pt = decrypt_segment(&ct, &key, &iv)?;
+    let tmp = std::env::temp_dir().join(format!("dits-encdec-{}.mp4", uuid::Uuid::new_v4()));
+    let mut buf = init.clone();
+    buf.extend_from_slice(&pt);
+    std::fs::write(&tmp, &buf)?;
+    let probe_ok = Command::new("ffprobe")
+        .args(["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=codec_name", "-of", "csv=p=0"])
+        .arg(&tmp)
+        .output()
+        .map(|o| String::from_utf8_lossy(&o.stdout).contains("h264"))
+        .unwrap_or(false);
+    let _ = std::fs::remove_file(&tmp);
+
+    let m3u8 = to_hls_encrypted(&init_hash, &entries, "/seg/", "/key");
+    println!("\n  -- FACR segment encryption (AES-128) --");
+    println!("  segments encrypted     : {seg_count}  ({:.1} KB ciphertext)", total_ct as f64 / 1024.0);
+    println!("  deterministic (reuse)  : {}  (same plaintext -> identical ciphertext hash)", if reuse_stable { "yes" } else { "NO" });
+    println!("  decrypt -> valid h264  : {}  (sample segment round-trips to playable media)", if probe_ok { "yes" } else { "NO" });
+    println!("  playlist               : {} EXT-X-KEY lines, key at /key (the license-gated point)", m3u8.matches("#EXT-X-KEY").count());
+    println!("  => segments are encrypted at rest/in transit; deterministic IV keeps them content-addressable (reuse + QUIC delta-push intact).");
     Ok(())
 }
 
