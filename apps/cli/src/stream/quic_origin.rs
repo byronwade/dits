@@ -35,6 +35,9 @@ fn ensure_crypto_provider() {
 /// One request or response on the segment-transfer protocol.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum SegMessage {
+    Auth(String),
+    AuthOk,
+    AuthFail,
     Have(Hash),
     HaveResp(bool),
     Put { hash: Hash, bytes: Vec<u8> },
@@ -77,6 +80,7 @@ async fn read_msg(recv: &mut RecvStream) -> Result<SegMessage> {
 pub async fn serve_quic_origin(
     bind: SocketAddr,
     backing: Arc<dyn SegmentOrigin + Send + Sync>,
+    token: String,
 ) -> Result<(SocketAddr, CertFingerprint, JoinHandle<()>)> {
     ensure_crypto_provider();
     let (endpoint, fingerprint) =
@@ -86,9 +90,10 @@ pub async fn serve_quic_origin(
     let handle = tokio::spawn(async move {
         while let Some(incoming) = endpoint.accept().await {
             let backing = backing.clone();
+            let token = token.clone();
             tokio::spawn(async move {
                 if let Ok(conn) = incoming.await {
-                    handle_connection(QuicConnection::new(conn), backing).await;
+                    handle_connection(QuicConnection::new(conn), backing, token).await;
                 }
             });
         }
@@ -96,21 +101,36 @@ pub async fn serve_quic_origin(
     Ok((addr, fingerprint, handle))
 }
 
-/// Serve requests on one connection until it closes.
-async fn handle_connection(conn: QuicConnection, backing: Arc<dyn SegmentOrigin + Send + Sync>) {
+/// Serve requests on one connection until it closes. The client must authenticate (first stream)
+/// with the expected token before any segment request is served.
+async fn handle_connection(conn: QuicConnection, backing: Arc<dyn SegmentOrigin + Send + Sync>, token: String) {
+    let mut authed = false;
     while let Ok((mut send, mut recv)) = conn.accept_stream().await {
         let req = match read_msg(&mut recv).await {
             Ok(m) => m,
             Err(_) => continue,
         };
         let resp = match req {
+            SegMessage::Auth(t) => {
+                if t == token {
+                    authed = true;
+                    SegMessage::AuthOk
+                } else {
+                    let _ = write_msg(&mut send, &SegMessage::AuthFail).await;
+                    let _ = send.finish();
+                    break; // reject unauthorized connection
+                }
+            }
+            _ if !authed => {
+                // Unauthenticated segment request: refuse and close the connection.
+                break;
+            }
             SegMessage::Have(h) => SegMessage::HaveResp(backing.has(&h)),
             SegMessage::Put { hash, bytes } => {
                 let _ = backing.put(&hash, &bytes);
                 SegMessage::PutOk
             }
             SegMessage::Get(h) => SegMessage::GetResp(backing.get(&h).ok()),
-            // Response-only variants are never valid requests.
             _ => continue,
         };
         if write_msg(&mut send, &resp).await.is_ok() {
@@ -125,14 +145,19 @@ pub struct QuicOriginClient {
 }
 
 impl QuicOriginClient {
-    pub async fn connect(addr: SocketAddr, fingerprint: CertFingerprint) -> Result<Self> {
+    pub async fn connect(addr: SocketAddr, fingerprint: CertFingerprint, token: &str) -> Result<Self> {
         ensure_crypto_provider();
         let endpoint = create_client_endpoint_with_pinned_cert(0, fingerprint)
             .map_err(|e| anyhow::anyhow!("client endpoint: {e}"))?;
         let conn = connect(&endpoint, addr, "localhost")
             .await
             .map_err(|e| anyhow::anyhow!("connect: {e}"))?;
-        Ok(Self { conn })
+        let client = Self { conn };
+        // Authenticate before any segment request (the server rejects otherwise).
+        match client.request(SegMessage::Auth(token.to_string())).await? {
+            SegMessage::AuthOk => Ok(client),
+            _ => bail!("origin rejected auth token"),
+        }
     }
 
     /// One request -> one response on a fresh bidirectional stream.
@@ -202,18 +227,28 @@ mod tests {
         Hash::from_slice(blake3::hash(b).as_bytes())
     }
 
+    const TOKEN: &str = "test-token";
+
     async fn start_origin() -> (SocketAddr, CertFingerprint, Arc<LocalDiskOrigin>, tempfile::TempDir) {
         let dir = tempfile::tempdir().unwrap();
         let backing = Arc::new(LocalDiskOrigin::new(dir.path()).unwrap());
         let (addr, fp, _task) =
-            serve_quic_origin("127.0.0.1:0".parse().unwrap(), backing.clone()).await.unwrap();
+            serve_quic_origin("127.0.0.1:0".parse().unwrap(), backing.clone(), TOKEN.to_string()).await.unwrap();
         (addr, fp, backing, dir)
+    }
+
+    #[tokio::test]
+    async fn wrong_token_is_rejected() {
+        let (addr, fp, _backing, _dir) = start_origin().await;
+        assert!(QuicOriginClient::connect(addr, fp, "bad-token").await.is_err());
+        // Correct token still works.
+        assert!(QuicOriginClient::connect(addr, fp, TOKEN).await.is_ok());
     }
 
     #[tokio::test]
     async fn put_get_has_roundtrip_over_quic() {
         let (addr, fp, _backing, _dir) = start_origin().await;
-        let client = QuicOriginClient::connect(addr, fp).await.unwrap();
+        let client = QuicOriginClient::connect(addr, fp, TOKEN).await.unwrap();
         let data = b"hello-segment".to_vec();
         let key = h(&data);
 
@@ -227,7 +262,7 @@ mod tests {
     #[tokio::test]
     async fn delta_push_only_sends_missing() {
         let (addr, fp, backing, _dir) = start_origin().await;
-        let client = QuicOriginClient::connect(addr, fp).await.unwrap();
+        let client = QuicOriginClient::connect(addr, fp, TOKEN).await.unwrap();
 
         let a = b"aaa".to_vec();
         let b = b"bbbb".to_vec();

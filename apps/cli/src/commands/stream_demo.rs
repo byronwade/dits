@@ -162,8 +162,8 @@ pub async fn stream_demo(
     if push {
         let remote_backing = Arc::new(LocalDiskOrigin::new(&work.join("remote"))?);
         let (addr, fp, _task) =
-            serve_quic_origin("127.0.0.1:0".parse().unwrap(), remote_backing).await?;
-        let client = QuicOriginClient::connect(addr, fp).await?;
+            serve_quic_origin("127.0.0.1:0".parse().unwrap(), remote_backing, "dits-demo-token".to_string()).await?;
+        let client = QuicOriginClient::connect(addr, fp, "dits-demo-token").await?;
         println!("\n  -- QUIC delta-push to remote origin ({addr}) --");
 
         let v1_hashes = ladder_hashes(&v1_ladder);
