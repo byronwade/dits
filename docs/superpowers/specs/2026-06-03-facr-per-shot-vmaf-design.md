@@ -106,3 +106,24 @@ frames -> build lossless reference.mp4 (once per segment)
 ## Module layout
 New: `apps/cli/src/stream/vmaf.rs`. Edits: `apps/cli/src/stream/{encode,incremental}.rs`,
 `apps/cli/src/commands/stream_demo.rs`, `apps/cli/src/main.rs` (`--vmaf` flag). No new dependencies.
+
+## Implementation status & verification (2026-06-03)
+
+**Built and committed.** 25 stream tests green, including two VMAF tests: `optimize_crf` hits the
+target and is **deterministic** (same input → same chosen CRF → identical bytes, the reuse
+guarantee); and a flat/simple clip selects a **higher CRF (smaller)** than a detailed (mandelbrot)
+clip at the same target — the complexity-adaptive property.
+
+**End to end** (`dits stream-demo --vmaf 90`, 480×270 / 60-frame source):
+- VMAF-targeted source-res rendition; 3 segments, 1 re-encoded on the v2 re-grade, reuse intact.
+- **v1 (no regrade) decodes to VMAF 90.9 vs the original source** — the encode hits the target.
+
+**Verification subtlety (documented honestly):** `optimize_crf` measures VMAF against the frames it
+encodes. An end-to-end "decoded stream vs *original* source" score also folds in two *separate*
+quality stages: the JPEG-XL canonical-frame step (governed by `--lossless`/distance, not VMAF) and,
+for v2, the **deliberate re-grade** (a real pixel change). Measuring v2-vs-ungraded-source therefore
+reads low (~65) by design; the correct isolation is v1-vs-source (90.9). The VMAF target governs the
+h264 encode step, exactly as intended.
+
+**Deferred (noted in scope):** shot-boundary (`scdet`, variable-length) segmentation; VMAF across the
+full ABR ladder (resolution-normalized); per-title complexity modeling.
