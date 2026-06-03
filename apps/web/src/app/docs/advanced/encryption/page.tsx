@@ -3,12 +3,12 @@ import Link from "next/link";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, Shield, Key, Lock, AlertTriangle } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { Shield, Key, Lock } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -19,11 +19,11 @@ export const metadata: Metadata = {
 export default function EncryptionPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Encryption</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Dits supports end-to-end encryption for sensitive content, ensuring your
-        files remain private even on shared storage.
-      </p>
+      <DocPageHeader
+        eyebrow="Advanced Topics"
+        title="Encryption"
+        description="Dits supports end-to-end encryption for sensitive content, ensuring your files remain private even on shared storage."
+      />
 
       <h2>Encryption Overview</h2>
       <p>
@@ -33,46 +33,46 @@ export default function EncryptionPage() {
       <div className="not-prose grid gap-4 md:grid-cols-3 my-8">
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Shield className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Shield className="size-5 text-brand" />
             </div>
-            <CardTitle>At Rest</CardTitle>
+            <CardTitle className="text-base">At Rest</CardTitle>
           </CardHeader>
           <CardContent>
-            <CardDescription>
+            <p className="text-sm text-muted-foreground">
               Chunks are encrypted before being written to storage. Even with
               storage access, data is unreadable.
-            </CardDescription>
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Lock className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Lock className="size-5 text-brand" />
             </div>
-            <CardTitle>In Transit</CardTitle>
+            <CardTitle className="text-base">In Transit</CardTitle>
           </CardHeader>
           <CardContent>
-            <CardDescription>
+            <p className="text-sm text-muted-foreground">
               All transfers use TLS encryption. Optional additional layer of
               content encryption for zero-trust scenarios.
-            </CardDescription>
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Key className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Key className="size-5 text-brand" />
             </div>
-            <CardTitle>Key Management</CardTitle>
+            <CardTitle className="text-base">Key Management</CardTitle>
           </CardHeader>
           <CardContent>
-            <CardDescription>
+            <p className="text-sm text-muted-foreground">
               Flexible key management with support for passphrases, key files,
               and hardware security modules.
-            </CardDescription>
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -179,15 +179,11 @@ $ dits config encrypt.requirePassphrase true
 # Now both are required to decrypt`}
       />
 
-      <Alert className="not-prose my-6">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Key Backup Warning</AlertTitle>
-        <AlertDescription>
-          If you lose your encryption key/passphrase, your data is
-          <strong> permanently unrecoverable</strong>. Always maintain secure
-          backups of your keys.
-        </AlertDescription>
-      </Alert>
+      <Callout type="warning" title="Key Backup Warning" className="not-prose my-6">
+        If you lose your encryption key/passphrase, your data is
+        <strong> permanently unrecoverable</strong>. Always maintain secure
+        backups of your keys.
+      </Callout>
 
       <h2>Selective Encryption</h2>
       <p>
@@ -205,7 +201,7 @@ financial/*.xlsx encrypt=true
 # Encrypt all video in specific folder
 client-confidential/** encrypt=true
 
-# Don&apos;t encrypt public assets
+# Don't encrypt public assets
 public/** encrypt=false
 
 # Encrypt by default for entire repo
@@ -256,15 +252,11 @@ Dits approach:
   Deduplication preserved across encrypted repos!`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Security Trade-off</AlertTitle>
-        <AlertDescription>
-          Convergent encryption reveals if two chunks are identical. For
-          maximum security at the cost of deduplication, use:
-          <code className="ml-2">dits config encrypt.convergent false</code>
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Security Trade-off" className="not-prose my-6">
+        Convergent encryption reveals if two chunks are identical. For
+        maximum security at the cost of deduplication, use:
+        <code className="ml-2">dits config encrypt.convergent false</code>
+      </Callout>
 
       <h2>Team Encryption</h2>
 

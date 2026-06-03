@@ -8,8 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -20,11 +20,11 @@ export const metadata: Metadata = {
 export default function ProtocolPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Network Protocol</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Dits uses a custom protocol over QUIC for efficient, resumable transfers
-        of large datasets with delta synchronization.
-      </p>
+      <DocPageHeader
+        eyebrow="Architecture"
+        title="Network Protocol"
+        description="Dits uses a custom protocol over QUIC for efficient, resumable transfers of large datasets with delta synchronization."
+      />
 
       <h2>Transport Layer</h2>
       <p>
@@ -414,14 +414,10 @@ POST /api/v1/repos/{repo}/batch
      }`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Protocol Selection</AlertTitle>
-        <AlertDescription>
-          Dits automatically selects the best available protocol. QUIC is
-          preferred for performance, but falls back to HTTPS if UDP is blocked.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Protocol Selection" className="not-prose my-6">
+        Dits automatically selects the best available protocol. QUIC is
+        preferred for performance, but falls back to HTTPS if UDP is blocked.
+      </Callout>
 
       <h2>Related Topics</h2>
       <ul>

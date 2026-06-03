@@ -96,7 +96,7 @@ export function BenchmarkTable({
                         <TableRow
                             key={row.label}
                             className={cn(
-                                row.highlight && "bg-primary/5 hover:bg-primary/10"
+                                row.highlight && "bg-brand/5 hover:bg-brand/10"
                             )}
                         >
                             <TableCell className="font-medium">{row.label}</TableCell>

@@ -8,8 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Activity, Info, CheckCircle, GitBranch, List } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { CheckCircle, GitBranch, List } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -26,25 +27,17 @@ const commands = [
 export default function DependencyCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <div className="flex items-center gap-2 mb-2">
-        <Activity className="h-8 w-8 text-info" />
-        <h1 className="mb-0">Dependency Commands</h1>
-      </div>
-      <p className="lead text-xl text-muted-foreground">
-        Track and analyze dependencies in NLE project files. Dits parses Premiere
-        Pro, DaVinci Resolve, After Effects, and Final Cut Pro projects to
-        identify linked media files and catch missing assets.
-      </p>
+      <DocPageHeader
+        eyebrow="CLI Reference"
+        title="Dependency Commands"
+        description="Track and analyze dependencies in NLE project files. Dits parses Premiere Pro, DaVinci Resolve, After Effects, and Final Cut Pro projects to identify linked media files and catch missing assets."
+      />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Why Track Dependencies?</AlertTitle>
-        <AlertDescription>
-          NLE project files reference external media. When you commit a project,
-          Dits ensures all referenced files are also tracked. This prevents
-          &quot;missing media&quot; errors when someone else opens your project.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Why Track Dependencies?" className="not-prose my-6">
+        NLE project files reference external media. When you commit a project,
+        Dits ensures all referenced files are also tracked. This prevents
+        &quot;missing media&quot; errors when someone else opens your project.
+      </Callout>
 
       <Table className="not-prose my-6">
         <TableHeader>
@@ -328,15 +321,11 @@ $ dits dep-check --strict --json | jq '.issues | length'
 0  # No issues = ready to merge`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Automatic Tracking</AlertTitle>
-        <AlertDescription>
-          When you run <code>dits add project.prproj</code>, Dits automatically
-          prompts you to add any untracked dependencies. Use <code>dits add -A</code>
-          to include all dependencies automatically.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Automatic Tracking" className="not-prose my-6">
+        When you run <code>dits add project.prproj</code>, Dits automatically
+        prompts you to add any untracked dependencies. Use <code>dits add -A</code>
+        to include all dependencies automatically.
+      </Callout>
 
       <h2>Related Commands</h2>
       <ul>

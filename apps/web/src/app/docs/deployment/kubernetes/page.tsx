@@ -6,9 +6,10 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Cloud, CheckCircle, Shield, Zap } from "lucide-react";
+import { Cloud, Shield, Zap } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Kubernetes Deployment",
@@ -18,19 +19,15 @@ export const metadata: Metadata = {
 export default function KubernetesPage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <h1>Kubernetes Deployment</h1>
-            <p className="lead text-xl text-muted-foreground">
-                Deploy Dits on Kubernetes for enterprise-grade scalability, high availability,
-                and automated operations.
-            </p>
+            <DocPageHeader
+                eyebrow="Deployment"
+                title="Kubernetes Deployment"
+                description="Deploy Dits on Kubernetes for enterprise-grade scalability, high availability, and automated operations."
+            />
 
-            <Alert className="not-prose my-6">
-                <CheckCircle className="h-4 w-4" />
-                <AlertTitle>Production Ready</AlertTitle>
-                <AlertDescription>
-                    Kubernetes deployment includes auto-scaling, rolling updates, and self-healing.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="Production Ready" className="not-prose my-6">
+                Kubernetes deployment includes auto-scaling, rolling updates, and self-healing.
+            </Callout>
 
             <h2>Prerequisites</h2>
 
@@ -265,11 +262,11 @@ spec:
 
             <h2>Scaling</h2>
 
-            <div className="grid gap-6 md:grid-cols-2 my-8">
+            <div className="not-prose grid gap-6 md:grid-cols-2 my-8">
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Zap className="h-5 w-5 text-primary" />
+                            <Zap className="h-5 w-5 text-brand" />
                             Horizontal Pod Autoscaler
                         </CardTitle>
                     </CardHeader>
@@ -298,7 +295,7 @@ spec:
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Shield className="h-5 w-5 text-primary" />
+                            <Shield className="h-5 w-5 text-brand" />
                             Pod Disruption Budget
                         </CardTitle>
                     </CardHeader>
@@ -333,14 +330,10 @@ spec:
     path: /metrics
     interval: 30s`}</code></pre>
 
-            <Alert className="not-prose my-6">
-                <Cloud className="h-4 w-4" />
-                <AlertTitle>Cloud Provider Integration</AlertTitle>
-                <AlertDescription>
-                    For managed Kubernetes services (GKE, EKS, AKS), see our cloud-specific
-                    deployment guides for optimized configurations.
-                </AlertDescription>
-            </Alert>
+            <Callout type="note" title="Cloud Provider Integration" className="not-prose my-6">
+                For managed Kubernetes services (GKE, EKS, AKS), see our cloud-specific
+                deployment guides for optimized configurations.
+            </Callout>
         </div>
     );
 }

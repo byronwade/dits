@@ -7,9 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, GitCommit, History, Search } from "lucide-react";
+import { GitCommit, History, Search } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 
 export const metadata: Metadata = {
   title: "Commits & History",
@@ -19,12 +20,11 @@ export const metadata: Metadata = {
 export default function CommitsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Commits & History</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Commits are snapshots of your project at a point in time. They form a
-        chain of history that lets you track changes, compare versions, and
-        restore previous states.
-      </p>
+      <DocPageHeader
+        eyebrow="Core Concepts"
+        title="Commits & History"
+        description="Commits are snapshots of your project at a point in time. They form a chain of history that lets you track changes, compare versions, and restore previous states."
+      />
 
       <h2>What is a Commit?</h2>
       <p>
@@ -97,18 +97,14 @@ Staged footage/scene1.mov`}
         Good commit messages help you and your team understand what changed and why.
       </p>
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Commit Message Best Practices</AlertTitle>
-        <AlertDescription>
-          <ul className="mt-2 list-disc list-inside">
-            <li>Use present tense: &quot;Add feature&quot; not &quot;Added feature&quot;</li>
-            <li>Be specific: &quot;Fix audio sync in scene 3&quot; not &quot;Fix bug&quot;</li>
-            <li>Keep the first line under 50 characters</li>
-            <li>Add details in the body if needed</li>
-          </ul>
-        </AlertDescription>
-      </Alert>
+      <Callout type="tip" title="Commit Message Best Practices" className="not-prose my-6">
+        <ul className="mt-2 list-disc list-inside">
+          <li>Use present tense: &quot;Add feature&quot; not &quot;Added feature&quot;</li>
+          <li>Be specific: &quot;Fix audio sync in scene 3&quot; not &quot;Fix bug&quot;</li>
+          <li>Keep the first line under 50 characters</li>
+          <li>Add details in the body if needed</li>
+        </ul>
+      </Callout>
 
       <CodeBlock
         language="bash"
@@ -131,10 +127,10 @@ $ dits commit -m "Add scene 1 color grading
       <div className="not-prose grid gap-4 md:grid-cols-3 my-8">
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <GitCommit className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <GitCommit className="size-5 text-brand" />
             </div>
-            <CardTitle>dits log</CardTitle>
+            <CardTitle className="text-base">dits log</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -145,10 +141,10 @@ $ dits commit -m "Add scene 1 color grading
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <History className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <History className="size-5 text-brand" />
             </div>
-            <CardTitle>dits show</CardTitle>
+            <CardTitle className="text-base">dits show</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -159,10 +155,10 @@ $ dits commit -m "Add scene 1 color grading
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Search className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Search className="size-5 text-brand" />
             </div>
-            <CardTitle>dits diff</CardTitle>
+            <CardTitle className="text-base">dits diff</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -326,14 +322,10 @@ $ dits commit --amend
 $ dits commit --amend -m "Better commit message"`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Warning About Amending</AlertTitle>
-        <AlertDescription>
-          Only amend commits that haven&apos;t been pushed to shared repositories.
-          Amending rewrites history, which can cause problems for collaborators.
-        </AlertDescription>
-      </Alert>
+      <Callout type="warning" title="Warning About Amending" className="not-prose my-6">
+        Only amend commits that haven&apos;t been pushed to shared repositories.
+        Amending rewrites history, which can cause problems for collaborators.
+      </Callout>
 
       <h2>Undoing Commits</h2>
 

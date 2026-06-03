@@ -7,7 +7,8 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
 import { Shield, Download, Upload, RotateCcw, Clock, HardDrive } from "lucide-react";
 
@@ -19,30 +20,26 @@ export const metadata: Metadata = {
 export default function BackupRecoveryPage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <h1>Backup &amp; Recovery</h1>
-            <p className="lead text-xl text-muted-foreground">
-                Protect your repositories with robust backup strategies and know how to
-                recover from data loss, corruption, or accidental deletions.
-            </p>
+            <DocPageHeader
+                eyebrow="Guides"
+                title="Backup &amp; Recovery"
+                description="Protect your repositories with robust backup strategies and know how to recover from data loss, corruption, or accidental deletions."
+            />
 
-            <Alert className="not-prose my-6">
-                <Shield className="h-4 w-4" />
-                <AlertTitle>Distributed by Design</AlertTitle>
-                <AlertDescription>
-                    Dits repositories are inherently distributed. Every clone is a full backup.
-                    The more team members, the more redundancy you have.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="Distributed by Design" className="not-prose my-6">
+                Dits repositories are inherently distributed. Every clone is a full backup.
+                The more team members, the more redundancy you have.
+            </Callout>
 
             <h2>Backup Strategies</h2>
 
-            <div className="grid gap-6 md:grid-cols-2 my-8">
+            <div className="not-prose grid gap-6 md:grid-cols-2 my-8">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Download className="h-5 w-5 text-primary" />
-                            Multiple Remotes
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Download className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Multiple Remotes</CardTitle>
                         <CardDescription>
                             Push to multiple backup locations
                         </CardDescription>
@@ -62,10 +59,10 @@ dits push --all origin backup-s3 backup-gcs`}
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <HardDrive className="h-5 w-5 text-primary" />
-                            Bundle Export
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <HardDrive className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Bundle Export</CardTitle>
                         <CardDescription>
                             Create portable backup files
                         </CardDescription>
@@ -96,18 +93,18 @@ DATE=$(date +%Y-%m-%d)
 for repo in /repos/*/.dits; do
   REPO_DIR=$(dirname "$repo")
   REPO_NAME=$(basename "$REPO_DIR")
-  
+
   cd "$REPO_DIR"
-  
+
   # Create bundle backup
   dits bundle create "$BACKUP_DIR/$REPO_NAME-$DATE.bundle" --all
-  
+
   # Push to backup remotes
   dits push backup-s3 --all --tags
-  
+
   # Keep only last 30 days locally
   find "$BACKUP_DIR" -name "$REPO_NAME-*.bundle" -mtime +30 -delete
-  
+
   echo "Backed up $REPO_NAME"
 done`}
             />
@@ -184,14 +181,10 @@ $ dits remote add backup file:///backups/repo.bundle
 $ dits fetch backup --repair`}
             />
 
-            <Alert className="not-prose my-6">
-                <RotateCcw className="h-4 w-4" />
-                <AlertTitle>Chunk-Level Recovery</AlertTitle>
-                <AlertDescription>
-                    Dits can recover individual corrupted chunks from any source that has them,
-                    including team members&apos; machines via P2P.
-                </AlertDescription>
-            </Alert>
+            <Callout type="note" title="Chunk-Level Recovery" className="not-prose my-6">
+                Dits can recover individual corrupted chunks from any source that has them,
+                including team members&apos; machines via P2P.
+            </Callout>
 
             <h3>Recover Specific File Version</h3>
             <CodeBlock
@@ -267,33 +260,33 @@ gc: 0 packs`}
 
             <h2>Best Practices</h2>
 
-            <div className="grid gap-4 md:grid-cols-2 my-6">
+            <div className="not-prose grid gap-4 md:grid-cols-2 my-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Clock className="h-5 w-5 text-primary" />
-                            Backup Schedule
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Clock className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Backup Schedule</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
-                            <li><strong>Hourly:</strong> Push to backup remote</li>
-                            <li><strong>Daily:</strong> Create bundle backup</li>
-                            <li><strong>Weekly:</strong> Verify backup integrity</li>
-                            <li><strong>Monthly:</strong> Test restore procedure</li>
+                        <ul className="text-sm space-y-1 text-muted-foreground">
+                            <li><strong className="text-foreground">Hourly:</strong> Push to backup remote</li>
+                            <li><strong className="text-foreground">Daily:</strong> Create bundle backup</li>
+                            <li><strong className="text-foreground">Weekly:</strong> Verify backup integrity</li>
+                            <li><strong className="text-foreground">Monthly:</strong> Test restore procedure</li>
                         </ul>
                     </CardContent>
                 </Card>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Upload className="h-5 w-5 text-primary" />
-                            Redundancy Rules
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Upload className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Redundancy Rules</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>Minimum 3 copies (3-2-1 rule)</li>
                             <li>2 different storage types</li>
                             <li>1 offsite location</li>
@@ -305,7 +298,7 @@ gc: 0 packs`}
 
             <h2>Disaster Recovery Plan</h2>
 
-            <div className="bg-muted p-6 rounded-lg my-6">
+            <div className="not-prose bg-muted p-6 rounded-lg my-6">
                 <h3 className="font-semibold mb-4">Recovery Steps</h3>
                 <ol className="space-y-3">
                     <li>

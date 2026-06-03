@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CodeBlock } from "@/components/ui/code-block";
+import { DocPageHeader } from "@/components/doc-page-header";
 import {
   BookOpen,
   Terminal,
@@ -18,6 +19,7 @@ import {
   Zap,
   Check,
   Beaker,
+  ArrowRight,
 } from "lucide-react";
 import { generateMetadata as genMeta } from "@/lib/seo";
 import Script from "next/script";
@@ -149,20 +151,18 @@ export default function DocsPage() {
         }}
       />
       <div className="prose dark:prose-invert max-w-none">
-      <h1>Dits Documentation</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Welcome to the Dits documentation. Dits is a comprehensive, production-ready version control system
-        with 120+ automated tests covering 80+ file formats. Built for creative industries with Git-like workflows
-        for massive binary assets - from video production to game development to 3D animation.
-        Features hybrid Git+Dits storage, Redis caching, P2P networking, and enterprise-grade security.
-      </p>
+      <DocPageHeader
+        eyebrow="Documentation"
+        title="Dits Documentation"
+        description="Welcome to the Dits documentation. Dits is a comprehensive, production-ready version control system with 120+ automated tests covering 80+ file formats. Built for creative industries with Git-like workflows for massive binary assets - from video production to game development to 3D animation. Features hybrid Git+Dits storage, Redis caching, P2P networking, and enterprise-grade security."
+      />
 
-      <div className="not-prose bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-6 my-8">
+      <div className="not-prose rounded-xl border border-brand/20 bg-gradient-to-br from-brand/10 to-brand/5 p-6 my-8">
         <h2 className="text-2xl font-bold mb-4">Why Dits Exists</h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <h3 className="font-semibold text-destructive mb-2">The Problem</h3>
-            <ul className="space-y-1 text-sm list-disc list-inside">
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-5">
+            <h3 className="font-semibold text-destructive mb-3">The Problem</h3>
+            <ul className="space-y-1.5 text-sm text-muted-foreground list-disc list-inside">
               <li>Git LFS is a bandaid, not a solution</li>
               <li>Large files get re-uploaded entirely for tiny changes</li>
               <li>No deduplication across versions or projects</li>
@@ -173,9 +173,9 @@ export default function DocsPage() {
               <li>No testing for creative workflows</li>
             </ul>
           </div>
-          <div>
-            <h3 className="font-semibold text-primary mb-2">The Dits Solution</h3>
-            <ul className="space-y-1 text-sm list-disc list-inside">
+          <div className="rounded-lg border border-brand/30 bg-brand/5 p-5">
+            <h3 className="font-semibold text-brand mb-3">The Dits Solution</h3>
+            <ul className="space-y-1.5 text-sm text-muted-foreground list-disc list-inside">
               <li>Content-defined chunking deduplicates automatically</li>
               <li>Only changed chunks transfer across network</li>
               <li>Video-aware optimizations (keyframe alignment)</li>
@@ -193,16 +193,21 @@ export default function DocsPage() {
 
       <div className="not-prose grid gap-4 md:grid-cols-2 lg:grid-cols-3 my-8">
         {sections.map((section) => (
-          <Link key={section.href} href={section.href} className="no-underline">
-            <Card className="h-full transition-colors hover:border-primary">
+          <Link key={section.href} href={section.href} className="group no-underline">
+            <Card className="h-full transition-colors hover:border-brand/40">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <section.icon className="h-8 w-8 text-primary" />
+                  <div className="flex size-11 items-center justify-center rounded-lg bg-brand/10">
+                    <section.icon className="h-5 w-5 text-brand" />
+                  </div>
                   {section.badge && (
                     <Badge variant="secondary">{section.badge}</Badge>
                   )}
                 </div>
-                <CardTitle className="mt-4">{section.title}</CardTitle>
+                <CardTitle className="mt-4 flex items-center gap-1.5">
+                  {section.title}
+                  <ArrowRight className="size-4 -translate-x-1 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-base">
@@ -281,28 +286,28 @@ dits clone /path/to/repo my-project`}
       </div>
 
       <div className="not-prose grid gap-4 md:grid-cols-3 my-6">
-        <div className="border rounded-lg p-4">
-          <h3 className="font-semibold mb-2 text-primary flex items-center gap-2"><Check className="h-5 w-5" /> Complete VCS (60+ Commands)</h3>
+        <div className="border border-border rounded-lg p-4">
+          <h3 className="font-semibold mb-2 text-brand flex items-center gap-2"><Check className="h-5 w-5" /> Complete VCS (60+ Commands)</h3>
           <p className="text-sm text-muted-foreground">
             Full Git-compatible workflow + advanced operations: branching, merging, rebasing, stashing, worktrees, hooks, maintenance
           </p>
         </div>
-        <div className="border rounded-lg p-4">
-          <h3 className="font-semibold mb-2 text-primary flex items-center gap-2"><Check className="h-5 w-5" /> Comprehensive Media Support</h3>
+        <div className="border border-border rounded-lg p-4">
+          <h3 className="font-semibold mb-2 text-brand flex items-center gap-2"><Check className="h-5 w-5" /> Comprehensive Media Support</h3>
           <p className="text-sm text-muted-foreground">
             80+ file formats tested: MP4/MOV video, 3D models (OBJ/FBX/glTF), game assets (Unity/Unreal), images, audio, custom formats
           </p>
         </div>
-        <div className="border rounded-lg p-4">
-          <h3 className="font-semibold mb-2 text-primary flex items-center gap-2"><Check className="h-5 w-5" /> Enterprise Features</h3>
+        <div className="border border-border rounded-lg p-4">
+          <h3 className="font-semibold mb-2 text-brand flex items-center gap-2"><Check className="h-5 w-5" /> Enterprise Features</h3>
           <p className="text-sm text-muted-foreground">
             Hybrid storage, Redis caching, P2P networking, encryption, audit logging, VFS mounting, cross-platform support
           </p>
         </div>
       </div>
 
-      <div className="not-prose bg-accent border border-primary/20 rounded-lg p-6 my-8">
-        <h3 className="text-lg font-semibold mb-4 text-foreground flex items-center gap-2"><Beaker className="h-5 w-5" /> Testing Infrastructure</h3>
+      <div className="not-prose bg-muted/40 border border-border rounded-lg p-6 my-8">
+        <h3 className="text-lg font-semibold mb-4 text-foreground flex items-center gap-2"><Beaker className="h-5 w-5 text-brand" /> Testing Infrastructure</h3>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <h4 className="font-medium mb-2">120+ Automated Tests</h4>

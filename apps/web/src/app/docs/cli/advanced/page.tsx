@@ -8,8 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, AlertTriangle } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -58,20 +58,16 @@ const commands = [
 export default function AdvancedCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Advanced Commands</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Low-level commands for repository maintenance, debugging, and advanced
-        operations.
-      </p>
+      <DocPageHeader
+        eyebrow="CLI Reference"
+        title="Advanced Commands"
+        description="Low-level commands for repository maintenance, debugging, and advanced operations."
+      />
 
-      <Alert className="not-prose my-6">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Advanced Use Only</AlertTitle>
-        <AlertDescription>
-          These commands operate on the internal structure of Dits repositories.
-          Use them carefully and make backups before running destructive operations.
-        </AlertDescription>
-      </Alert>
+      <Callout type="warning" title="Advanced Use Only" className="not-prose my-6">
+        These commands operate on the internal structure of Dits repositories.
+        Use them carefully and make backups before running destructive operations.
+      </Callout>
 
       <Table className="not-prose my-6">
         <TableHeader>
@@ -163,14 +159,10 @@ $ dits gc --prune=now  # Remove all unreachable
 $ dits gc --prune=2weeks  # Keep if < 2 weeks old`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Automatic GC</AlertTitle>
-        <AlertDescription>
-          Dits automatically runs <code>gc --auto</code> after operations that
-          create many loose objects. Manual GC is rarely needed.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Automatic GC" className="not-prose my-6">
+        Dits automatically runs <code>gc --auto</code> after operations that
+        create many loose objects. Manual GC is rarely needed.
+      </Callout>
 
       <h3>dits prune</h3>
       <p>Remove unreachable objects that are older than the grace period.</p>

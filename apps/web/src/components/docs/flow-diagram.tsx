@@ -63,8 +63,8 @@ export function FlowDiagram({ title, steps, className, direction = "vertical" }:
                                 !isVertical && "flex-col items-center text-center min-w-[140px] max-w-[180px]"
                             )}>
                                 {/* Icon circle */}
-                                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                    <IconComponent className="w-6 h-6 text-primary" />
+                                <div className="w-12 h-12 rounded-full bg-brand/10 flex items-center justify-center flex-shrink-0">
+                                    <IconComponent className="w-6 h-6 text-brand" />
                                 </div>
 
                                 {/* Content */}

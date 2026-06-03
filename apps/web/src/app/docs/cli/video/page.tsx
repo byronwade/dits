@@ -8,9 +8,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { Badge } from "@/components/ui/badge";
-import { Info, Video, Clapperboard, Scissors, Combine, RotateCcw, Play } from "lucide-react";
+import { Clapperboard, Scissors, Combine, RotateCcw, Play } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -33,25 +34,17 @@ const commands = [
 export default function VideoCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <div className="flex items-center gap-2 mb-2">
-        <Video className="h-8 w-8 text-brand" />
-        <h1 className="mb-0">Video & Media Commands</h1>
-      </div>
-      <p className="lead text-xl text-muted-foreground">
-        Dits provides specialized commands for working with video files, including
-        container inspection, format-aware chunking, timeline management, and
-        deduplication analysis.
-      </p>
+      <DocPageHeader
+        eyebrow="CLI Reference"
+        title="Video & Media Commands"
+        description="Dits provides specialized commands for working with video files, including container inspection, format-aware chunking, timeline management, and deduplication analysis."
+      />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Video-Aware Processing</AlertTitle>
-        <AlertDescription>
-          Unlike traditional version control, Dits understands video container formats
-          (MP4, MOV, MXF) and processes them at semantically meaningful boundaries
-          like keyframes and atoms, enabling efficient deduplication and streaming.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Video-Aware Processing" className="not-prose my-6">
+        Unlike traditional version control, Dits understands video container formats
+        (MP4, MOV, MXF) and processes them at semantically meaningful boundaries
+        like keyframes and atoms, enabling efficient deduplication and streaming.
+      </Callout>
 
       <Table className="not-prose my-6">
         <TableHeader>
@@ -84,7 +77,7 @@ export default function VideoCommandsPage() {
       <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits inspect [OPTIONS] &lt;FILE&gt;`}
+        code={`dits inspect [OPTIONS] <FILE>`}
       />
 
       <h3>Options</h3>
@@ -141,15 +134,11 @@ Keyframes (166 total):
 $ dits inspect --json footage/scene01.mov > info.json`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Why Keyframes Matter</AlertTitle>
-        <AlertDescription>
-          Dits aligns chunk boundaries to keyframes when possible. This ensures each
-          chunk can be decoded independently, enabling efficient random access and
-          partial file reconstruction without decoding the entire video.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Why Keyframes Matter" className="not-prose my-6">
+        Dits aligns chunk boundaries to keyframes when possible. This ensures each
+        chunk can be decoded independently, enabling efficient random access and
+        partial file reconstruction without decoding the entire video.
+      </Callout>
 
       <h2 className="flex items-center gap-2">
         <Scissors className="h-5 w-5" />
@@ -163,7 +152,7 @@ $ dits inspect --json footage/scene01.mov > info.json`}
       <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits segment [OPTIONS] &lt;FILE&gt;`}
+        code={`dits segment [OPTIONS] <FILE>`}
       />
 
       <h3>Options</h3>
@@ -223,7 +212,7 @@ $ dits segment --min-chunk 1MB --avg-chunk 4MB --max-chunk 16MB large-file.mov`}
       <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits assemble [OPTIONS] &lt;MANIFEST&gt;`}
+        code={`dits assemble [OPTIONS] <MANIFEST>`}
       />
 
       <h3>Options</h3>
@@ -270,7 +259,7 @@ $ dits assemble --parallel 8 --progress manifest.json`}
       <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits roundtrip [OPTIONS] &lt;FILE&gt;`}
+        code={`dits roundtrip [OPTIONS] <FILE>`}
       />
 
       <h3>Options</h3>
@@ -319,7 +308,7 @@ Files preserved in ./test/:
       <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits inspect-file [OPTIONS] &lt;PATH&gt;`}
+        code={`dits inspect-file [OPTIONS] <PATH>`}
       />
 
       <h3>Options</h3>
@@ -476,15 +465,11 @@ moov    Metadata container (CRITICAL - never chunked through)
 mdat    Media data (actual video/audio frames - chunked here)`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Protected Atoms</AlertTitle>
-        <AlertDescription>
-          The <code>moov</code> atom contains critical metadata for file playback.
-          Dits never chunks through it - the entire moov is kept as a single chunk
-          to ensure files remain playable after reconstruction.
-        </AlertDescription>
-      </Alert>
+      <Callout type="warning" title="Protected Atoms" className="not-prose my-6">
+        The <code>moov</code> atom contains critical metadata for file playback.
+        Dits never chunks through it - the entire moov is kept as a single chunk
+        to ensure files remain playable after reconstruction.
+      </Callout>
 
       <h3>Chunking Strategy</h3>
       <CodeBlock

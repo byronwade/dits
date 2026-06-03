@@ -7,9 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, FolderGit2, Database, Cloud } from "lucide-react";
+import { FolderGit2, Database, Cloud } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { FileTree } from "@/components/docs/file-tree";
 
 export const metadata: Metadata = {
@@ -65,11 +66,11 @@ const repositoryStructure = [
 export default function RepositoriesPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Repositories</h1>
-      <p className="lead text-xl text-muted-foreground">
-        A Dits repository is a directory that tracks the history of your files,
-        storing all versions efficiently using content-addressed chunks.
-      </p>
+      <DocPageHeader
+        eyebrow="Core Concepts"
+        title="Repositories"
+        description="A Dits repository is a directory that tracks the history of your files, storing all versions efficiently using content-addressed chunks."
+      />
 
       <h2>Creating a Repository</h2>
       <p>
@@ -111,10 +112,10 @@ Repository cloned (12 commits, 45 GB)`}
       <div className="not-prose grid gap-4 md:grid-cols-3 my-8">
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <FolderGit2 className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <FolderGit2 className="size-5 text-brand" />
             </div>
-            <CardTitle>Working Directory</CardTitle>
+            <CardTitle className="text-base">Working Directory</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -126,10 +127,10 @@ Repository cloned (12 commits, 45 GB)`}
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Database className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Database className="size-5 text-brand" />
             </div>
-            <CardTitle>Object Store</CardTitle>
+            <CardTitle className="text-base">Object Store</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -141,10 +142,10 @@ Repository cloned (12 commits, 45 GB)`}
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Cloud className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Cloud className="size-5 text-brand" />
             </div>
-            <CardTitle>References</CardTitle>
+            <CardTitle className="text-base">References</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -203,14 +204,10 @@ $ dits commit -m "Add scene 1 footage"
     email = jane@example.com`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Configuration Priority</AlertTitle>
-        <AlertDescription>
-          Repository config overrides global config (<code>~/.ditsconfig</code>),
-          which overrides system config (<code>/etc/ditsconfig</code>).
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Configuration Priority" className="not-prose my-6">
+        Repository config overrides global config (<code>~/.ditsconfig</code>),
+        which overrides system config (<code>/etc/ditsconfig</code>).
+      </Callout>
 
       <h2>Bare Repositories</h2>
       <p>

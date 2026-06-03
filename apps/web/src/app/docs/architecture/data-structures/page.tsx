@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
 import { FileTree } from "@/components/docs/file-tree";
 import { CommitGraph } from "@/components/docs/commit-graph";
@@ -14,11 +14,11 @@ export const metadata: Metadata = {
 export default function DataStructuresPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Data Structures</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Dits stores all repository data as content-addressed objects. This page
-        describes the core data structures and how they relate.
-      </p>
+      <DocPageHeader
+        eyebrow="Architecture"
+        title="Data Structures"
+        description="Dits stores all repository data as content-addressed objects. This page describes the core data structures and how they relate."
+      />
 
       <h2>Object Hierarchy</h2>
       <div className="not-prose my-6">
@@ -194,15 +194,11 @@ footage/scene2.mov  100644  def456...
 project.prproj      100644  ghi789...`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Tree Hashing</AlertTitle>
-        <AlertDescription>
-          Trees are hashed by sorting entries alphabetically and hashing the
-          concatenated representation. This ensures identical directory states
-          always produce the same hash.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Tree Hashing" className="not-prose my-6">
+        Trees are hashed by sorting entries alphabetically and hashing the
+        concatenated representation. This ensures identical directory states
+        always produce the same hash.
+      </Callout>
 
       <h2>Commit</h2>
       <p>

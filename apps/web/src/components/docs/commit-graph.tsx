@@ -180,7 +180,7 @@ export function CommitGraph({ commits, className }: CommitGraphProps) {
                                                         ? "bg-chart-2/40"
                                                         : isHead
                                                         ? "bg-success/40"
-                                                        : "bg-primary/40"
+                                                        : "bg-brand/40"
                                                 )}
                                                 style={{
                                                     transform: 'scale(1.5)',
@@ -208,7 +208,7 @@ export function CommitGraph({ commits, className }: CommitGraphProps) {
                                                         ? "bg-gradient-to-br from-chart-2/90 via-chart-2/80 to-chart-2/90 border-chart-2"
                                                         : isHead
                                                         ? "bg-gradient-to-br from-success/90 via-success/80 to-success/90 border-success"
-                                                        : "bg-gradient-to-br from-primary/90 via-primary/80 to-primary/90 border-primary"
+                                                        : "bg-gradient-to-br from-brand/90 via-brand/80 to-brand/90 border-brand"
                                                 )}
                                                 style={{
                                                     boxShadow: commit.isMerge

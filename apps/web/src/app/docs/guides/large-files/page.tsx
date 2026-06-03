@@ -3,13 +3,13 @@ import Link from "next/link";
 import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
-import { Video, Image, FileArchive, Zap, HardDrive, Settings, Check, X } from "lucide-react";
+import { Video, Image, FileArchive, HardDrive, Settings, Check, X } from "lucide-react";
 
 import { generateMetadata as genMeta, generateArticleSchema, generateHowToSchema, generateBreadcrumbSchema } from "@/lib/seo";
 import Script from "next/script";
@@ -77,36 +77,30 @@ export default function LargeFilesPage() {
                 }}
             />
             <div className="prose dark:prose-invert max-w-none">
-            <h1>Working with Large Files</h1>
-            <p className="lead text-xl text-muted-foreground">
-                Dits is designed for large files. Learn best practices for video, images,
-                3D models, and other binary assets to maximize storage efficiency and performance.
-            </p>
+            <DocPageHeader
+                eyebrow="Guides"
+                title="Working with Large Files"
+                description="Dits is designed for large files. Learn best practices for video, images, 3D models, and other binary assets to maximize storage efficiency and performance."
+            />
 
-            <Alert className="not-prose my-6">
-                <Zap className="h-4 w-4" />
-                <AlertTitle>No Special Configuration Needed</AlertTitle>
-                <AlertDescription>
-                    Unlike Git LFS, Dits handles large files natively. Just add and commit
-                    files normally - Dits automatically chunks and deduplicates them.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="No Special Configuration Needed" className="not-prose my-6">
+                Unlike Git LFS, Dits handles large files natively. Just add and commit
+                files normally - Dits automatically chunks and deduplicates them.
+            </Callout>
 
             <h2>File Types</h2>
 
-            <div className="grid gap-6 md:grid-cols-3 my-8">
+            <div className="not-prose grid gap-6 md:grid-cols-3 my-8">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Video className="h-5 w-5 text-destructive" />
-                            Video
-                        </CardTitle>
-                        <CardDescription>
-                            .mov, .mp4, .avi, .mxf, .r3d
-                        </CardDescription>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Video className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Video</CardTitle>
+                        <p className="text-xs text-muted-foreground mt-1">.mov, .mp4, .avi, .mxf, .r3d</p>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>GOP-aligned chunking</li>
                             <li>Frame-level dedup</li>
                             <li>Streaming playback</li>
@@ -116,16 +110,14 @@ export default function LargeFilesPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Image className="h-5 w-5 text-success" />
-                            Images
-                        </CardTitle>
-                        <CardDescription>
-                            .psd, .tiff, .raw, .exr, .dpx
-                        </CardDescription>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Image className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Images</CardTitle>
+                        <p className="text-xs text-muted-foreground mt-1">.psd, .tiff, .raw, .exr, .dpx</p>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>Layer-aware chunking</li>
                             <li>Proxy generation</li>
                             <li>Metadata preservation</li>
@@ -135,16 +127,14 @@ export default function LargeFilesPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <FileArchive className="h-5 w-5 text-info" />
-                            3D/Game
-                        </CardTitle>
-                        <CardDescription>
-                            .fbx, .uasset, .blend, .unity
-                        </CardDescription>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <FileArchive className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">3D/Game</CardTitle>
+                        <p className="text-xs text-muted-foreground mt-1">.fbx, .uasset, .blend, .unity</p>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>Binary-aware chunking</li>
                             <li>Mesh deduplication</li>
                             <li>Texture reuse</li>
@@ -320,13 +310,13 @@ Done.`}
 
             <h2>Storage Optimization</h2>
 
-            <div className="grid gap-4 md:grid-cols-2 my-6">
+            <div className="not-prose grid gap-4 md:grid-cols-2 my-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <HardDrive className="h-5 w-5 text-primary" />
-                            Local Storage
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <HardDrive className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Local Storage</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <CodeBlock
@@ -345,10 +335,10 @@ dits gc --dry-run`}
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Settings className="h-5 w-5 text-primary" />
-                            Remote Storage
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Settings className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Remote Storage</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <CodeBlock
@@ -367,7 +357,7 @@ dits storage stats`}
 
             <h2>Best Practices</h2>
 
-            <div className="bg-muted p-6 rounded-lg my-6">
+            <div className="not-prose bg-muted p-6 rounded-lg my-6">
                 <h3 className="font-semibold mb-4">Do&apos;s</h3>
                 <ul className="space-y-2">
                     <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Use proxies for daily editing, full-res for final delivery</li>

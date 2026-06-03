@@ -8,8 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -48,11 +48,11 @@ const options = [
 export default function RepositoryConfigPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Repository Configuration</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Repository-level configuration applies only to the current repository
-        and is stored in <code>.dits/config</code>.
-      </p>
+      <DocPageHeader
+        eyebrow="Configuration"
+        title="Repository Configuration"
+        description="Repository-level configuration applies only to the current repository and is stored in .dits/config."
+      />
 
       <h2>Configuration File Location</h2>
       <p>
@@ -220,14 +220,10 @@ $ dits push -u origin main`}
     post-checkout = true`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Hook Scripts</AlertTitle>
-        <AlertDescription>
-          Hook scripts are stored in <code>.dits/hooks/</code>. Create executable
-          scripts named <code>pre-commit</code>, <code>pre-push</code>, etc.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Hook Scripts" className="not-prose my-6">
+        Hook scripts are stored in <code>.dits/hooks/</code>. Create executable
+        scripts named <code>pre-commit</code>, <code>pre-push</code>, etc.
+      </Callout>
 
       <h2>Media-Specific Configuration</h2>
       <p>

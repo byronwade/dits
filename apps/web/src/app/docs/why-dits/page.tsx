@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { generateArticleSchema, generateBreadcrumbSchema } from "@/lib/seo";
@@ -13,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CheckCircle, XCircle, AlertTriangle, Zap, HardDrive, Network } from "lucide-react";
+import { CheckCircle, XCircle, Zap } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 import { generateMetadata as genMeta } from "@/lib/seo";
@@ -82,31 +83,23 @@ export default function WhyDitsPage() {
         }}
       />
       <div className="prose dark:prose-invert max-w-none">
-      <h1>Why Dits vs Git?</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Git revolutionized text-based development, but it wasn't designed for large binary files.
-        Dits brings version control to creative workflows where Git falls short.
-      </p>
+      <DocPageHeader
+        eyebrow="Getting Started"
+        title="Why Dits vs Git?"
+        description="Git revolutionized text-based development, but it wasn't designed for large binary files. Dits brings version control to creative workflows where Git falls short."
+      />
 
-      <Alert className="not-prose my-6">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>TL;DR</AlertTitle>
-        <AlertDescription>
-          Use <strong>Git</strong> for code, documentation, and small text files.
-          Use <strong>Dits</strong> for video, audio, images, game assets, and large creative files.
-          <strong>Dits is production-ready</strong> with 120+ automated tests covering 80+ file formats.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="TL;DR" className="not-prose my-6">
+        Use <strong>Git</strong> for code, documentation, and small text files.
+        Use <strong>Dits</strong> for video, audio, images, game assets, and large creative files.
+        <strong>Dits is production-ready</strong> with 120+ automated tests covering 80+ file formats.
+      </Callout>
 
-      <Alert className="not-prose my-6 bg-primary/10 border-primary/20">
-        <CheckCircle className="h-4 w-4 text-primary" />
-        <AlertTitle className="text-foreground">Production-Ready with Comprehensive Testing</AlertTitle>
-        <AlertDescription className="text-muted-foreground">
-          <strong>120+ automated tests</strong> covering Git operations on binaries, 80+ file formats,
-          cross-platform compatibility, 1TB+ workload simulation, and enterprise security.
-          Every feature is thoroughly tested and production-hardened.
-        </AlertDescription>
-      </Alert>
+      <Callout type="tip" title="Production-Ready with Comprehensive Testing" className="not-prose my-6">
+        <strong>120+ automated tests</strong> covering Git operations on binaries, 80+ file formats,
+        cross-platform compatibility, 1TB+ workload simulation, and enterprise security.
+        Every feature is thoroughly tested and production-hardened.
+      </Callout>
 
       <h2>The Problem Git Solves (and Doesn't)</h2>
       <p>
@@ -159,25 +152,25 @@ export default function WhyDitsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-primary/30">
+        <Card className="border-brand/30">
           <CardHeader>
-            <CardTitle className="text-primary flex items-center gap-2">
+            <CardTitle className="text-brand flex items-center gap-2">
               <CheckCircle className="h-5 w-5" />
               Dits Solutions
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="text-sm">
-              <strong className="text-primary">Content-defined chunking:</strong> Automatic deduplication
+              <strong className="text-brand">Content-defined chunking:</strong> Automatic deduplication
             </div>
             <div className="text-sm">
-              <strong className="text-primary">Delta transfers:</strong> Only changed chunks uploaded
+              <strong className="text-brand">Delta transfers:</strong> Only changed chunks uploaded
             </div>
             <div className="text-sm">
-              <strong className="text-primary">Self-contained:</strong> Works offline, no server required
+              <strong className="text-brand">Self-contained:</strong> Works offline, no server required
             </div>
             <div className="text-sm">
-              <strong className="text-primary">Open protocol:</strong> Self-hostable, interoperable
+              <strong className="text-brand">Open protocol:</strong> Self-hostable, interoperable
             </div>
           </CardContent>
         </Card>
@@ -189,9 +182,9 @@ export default function WhyDitsPage() {
       </p>
 
       <div className="not-prose my-6">
-        <Card className="border-primary">
+        <Card className="border-brand/40 bg-brand/5">
           <CardHeader>
-            <CardTitle className="text-primary flex items-center gap-2">
+            <CardTitle className="text-brand flex items-center gap-2">
               <Zap className="h-5 w-5" />
               Hybrid Git + Dits Workflow
             </CardTitle>
@@ -225,14 +218,10 @@ export default function WhyDitsPage() {
                 </p>
               </div>
             </div>
-            <Alert className="mt-4">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>How It Works</AlertTitle>
-              <AlertDescription>
-                Dits automatically classifies files and uses the optimal storage method.
-                Your repository becomes a unified workspace where code and creative assets coexist with full version control for both.
-              </AlertDescription>
-            </Alert>
+            <Callout type="note" title="How It Works" className="not-prose mt-4">
+              Dits automatically classifies files and uses the optimal storage method.
+              Your repository becomes a unified workspace where code and creative assets coexist with full version control for both.
+            </Callout>
           </CardContent>
         </Card>
       </div>
@@ -275,9 +264,9 @@ export default function WhyDitsPage() {
 
       <h3>Use Dits For:</h3>
       <div className="not-prose grid gap-3 md:grid-cols-2 lg:grid-cols-3 my-4">
-        <Card className="border-primary/20">
+        <Card className="border-brand/20">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm text-primary">Video Files</CardTitle>
+            <CardTitle className="text-sm text-brand">Video Files</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
@@ -285,9 +274,9 @@ export default function WhyDitsPage() {
             </p>
           </CardContent>
         </Card>
-        <Card className="border-primary/20">
+        <Card className="border-brand/20">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm text-primary">Audio Files</CardTitle>
+            <CardTitle className="text-sm text-brand">Audio Files</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
@@ -295,9 +284,9 @@ export default function WhyDitsPage() {
             </p>
           </CardContent>
         </Card>
-        <Card className="border-primary/20">
+        <Card className="border-brand/20">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm text-primary">RAW Photos</CardTitle>
+            <CardTitle className="text-sm text-brand">RAW Photos</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
@@ -305,9 +294,9 @@ export default function WhyDitsPage() {
             </p>
           </CardContent>
         </Card>
-        <Card className="border-primary/20">
+        <Card className="border-brand/20">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm text-primary">Game Assets</CardTitle>
+            <CardTitle className="text-sm text-brand">Game Assets</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
@@ -315,9 +304,9 @@ export default function WhyDitsPage() {
             </p>
           </CardContent>
         </Card>
-        <Card className="border-primary/20">
+        <Card className="border-brand/20">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm text-primary">3D Models</CardTitle>
+            <CardTitle className="text-sm text-brand">3D Models</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
@@ -325,9 +314,9 @@ export default function WhyDitsPage() {
             </p>
           </CardContent>
         </Card>
-        <Card className="border-primary/20">
+        <Card className="border-brand/20">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm text-primary">Design Files</CardTitle>
+            <CardTitle className="text-sm text-brand">Design Files</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
@@ -361,19 +350,19 @@ export default function WhyDitsPage() {
               <TableCell>Small edit (1MB change)</TableCell>
               <TableCell>10GB upload</TableCell>
               <TableCell>~200KB upload</TableCell>
-              <TableCell className="text-primary font-semibold">50,000x faster</TableCell>
+              <TableCell className="text-brand font-semibold">50,000x faster</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>Clone repository</TableCell>
               <TableCell>10GB download</TableCell>
               <TableCell>On-demand access</TableCell>
-              <TableCell className="text-primary font-semibold">Lazy loading</TableCell>
+              <TableCell className="text-brand font-semibold">Lazy loading</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>Storage efficiency</TableCell>
               <TableCell>10GB per version</TableCell>
               <TableCell>10GB + manifest</TableCell>
-              <TableCell className="text-primary font-semibold">Deduplication</TableCell>
+              <TableCell className="text-brand font-semibold">Deduplication</TableCell>
             </TableRow>
           </TableBody>
         </Table>
@@ -437,13 +426,9 @@ export default function WhyDitsPage() {
         <Link href="/docs/concepts">how Dits works</Link>.
       </p>
 
-      <Alert className="not-prose my-6">
-        <Zap className="h-4 w-4" />
-        <AlertTitle>Pro Tip</AlertTitle>
-        <AlertDescription>
-          Dits is designed to be Git-compatible. If you know Git, you'll feel right at home with Dits commands and workflows.
-        </AlertDescription>
-      </Alert>
+      <Callout type="tip" title="Pro Tip" className="not-prose my-6">
+        Dits is designed to be Git-compatible. If you know Git, you'll feel right at home with Dits commands and workflows.
+      </Callout>
     </div>
     </>
   );

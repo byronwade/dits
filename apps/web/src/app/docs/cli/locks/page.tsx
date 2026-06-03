@@ -8,8 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Lock, Info, Unlock, List, AlertTriangle } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { Lock, Unlock, List } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -26,24 +27,17 @@ const commands = [
 export default function LockCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <div className="flex items-center gap-2 mb-2">
-        <Lock className="h-8 w-8 text-destructive" />
-        <h1 className="mb-0">Lock Commands</h1>
-      </div>
-      <p className="lead text-xl text-muted-foreground">
-        Lock files for exclusive editing in team environments. Prevents merge
-        conflicts on binary files that cannot be automatically merged.
-      </p>
+      <DocPageHeader
+        eyebrow="CLI Reference"
+        title="Lock Commands"
+        description="Lock files for exclusive editing in team environments. Prevents merge conflicts on binary files that cannot be automatically merged."
+      />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Why Lock Binary Files?</AlertTitle>
-        <AlertDescription>
-          Unlike text files, binary files like videos and project files cannot be
-          automatically merged. Locking ensures only one person edits a file at a
-          time, preventing conflicting changes that would require manual resolution.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Why Lock Binary Files?" className="not-prose my-6">
+        Unlike text files, binary files like videos and project files cannot be
+        automatically merged. Locking ensures only one person edits a file at a
+        time, preventing conflicting changes that would require manual resolution.
+      </Callout>
 
       <Table className="not-prose my-6">
         <TableHeader>
@@ -135,15 +129,11 @@ Warning: Breaking lock held by jane@example.com
 Locked: footage/scene01.mov`}
       />
 
-      <Alert className="not-prose my-6">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Force Lock Warning</AlertTitle>
-        <AlertDescription>
-          Using <code>--force</code> breaks another user&apos;s lock. Only use this if
-          the lock holder is unavailable and you have team permission to take over.
-          The original lock holder will be notified.
-        </AlertDescription>
-      </Alert>
+      <Callout type="warning" title="Force Lock Warning" className="not-prose my-6">
+        Using <code>--force</code> breaks another user&apos;s lock. Only use this if
+        the lock holder is unavailable and you have team permission to take over.
+        The original lock holder will be notified.
+      </Callout>
 
       <h2 className="flex items-center gap-2">
         <Unlock className="h-5 w-5" />
@@ -342,18 +332,14 @@ $ dits lock --ttl 8h footage/scene01.mov
 Lock extended: expires in 8h`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Best Practices</AlertTitle>
-        <AlertDescription>
-          <ul className="mt-2 list-disc list-inside space-y-1">
-            <li>Lock files before editing, unlock immediately after</li>
-            <li>Always provide a reason so team knows what you&apos;re doing</li>
-            <li>Use shorter TTLs for quick edits, longer for complex work</li>
-            <li>Check locks before starting work on shared files</li>
-          </ul>
-        </AlertDescription>
-      </Alert>
+      <Callout type="tip" title="Best Practices" className="not-prose my-6">
+        <ul className="mt-2 list-disc list-inside space-y-1">
+          <li>Lock files before editing, unlock immediately after</li>
+          <li>Always provide a reason so team knows what you&apos;re doing</li>
+          <li>Use shorter TTLs for quick edits, longer for complex work</li>
+          <li>Check locks before starting work on shared files</li>
+        </ul>
+      </Callout>
 
       <h2>Related Commands</h2>
       <ul>

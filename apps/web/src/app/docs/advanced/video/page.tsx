@@ -3,11 +3,11 @@ import Link from "next/link";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import {
   Table,
   TableBody,
@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Info, Film, Layers, Clock, Check, AlertTriangle, Beaker } from "lucide-react";
+import { Film, Layers, Clock, Check, AlertTriangle, Beaker } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 import { generateMetadata as genMeta, generateArticleSchema, generateVideoObjectSchema, generateBreadcrumbSchema } from "@/lib/seo";
@@ -100,12 +100,11 @@ export default function VideoFeaturesPage() {
         }}
       />
       <div className="prose dark:prose-invert max-w-none">
-        <h1>Video Features</h1>
-        <p className="lead text-xl text-muted-foreground">
-          Dits is built from the ground up to handle video files efficiently, with
-          comprehensive support for 15+ video formats, format-aware chunking, keyframe alignment,
-          and video-specific metadata. All video features are thoroughly tested with automated tests.
-        </p>
+        <DocPageHeader
+          eyebrow="Advanced Topics"
+          title="Video Features"
+          description="Dits is built from the ground up to handle video files efficiently, with comprehensive support for 15+ video formats, format-aware chunking, keyframe alignment, and video-specific metadata. All video features are thoroughly tested with automated tests."
+        />
 
         <h2>Why Video Needs Special Handling</h2>
         <p>
@@ -121,59 +120,55 @@ export default function VideoFeaturesPage() {
         <div className="not-prose grid gap-4 md:grid-cols-3 my-8">
           <Card>
             <CardHeader>
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                <Film className="h-6 w-6 text-primary" />
+              <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                <Film className="size-5 text-brand" />
               </div>
-              <CardTitle>Keyframe Alignment</CardTitle>
+              <CardTitle className="text-base">Keyframe Alignment</CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription>
+              <p className="text-sm text-muted-foreground">
                 Chunk boundaries align to video keyframes (I-frames), making each
                 chunk independently decodable.
-              </CardDescription>
+              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                <Layers className="h-6 w-6 text-primary" />
+              <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                <Layers className="size-5 text-brand" />
               </div>
-              <CardTitle>Container Awareness</CardTitle>
+              <CardTitle className="text-base">Container Awareness</CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription>
+              <p className="text-sm text-muted-foreground">
                 Dits understands MP4/MOV/MXF structure and never splits critical
                 metadata atoms across chunks.
-              </CardDescription>
+              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                <Clock className="h-6 w-6 text-primary" />
+              <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                <Clock className="size-5 text-brand" />
               </div>
-              <CardTitle>Temporal Diff</CardTitle>
+              <CardTitle className="text-base">Temporal Diff</CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription>
+              <p className="text-sm text-muted-foreground">
                 See differences in terms of timecode and frames, not just bytes
                 and chunks.
-              </CardDescription>
+              </p>
             </CardContent>
           </Card>
         </div>
 
         <h2>Supported Video Formats</h2>
-        <Alert className="not-prose my-4 border-success/20 bg-success/10">
-          <Info className="h-4 w-4 text-success" />
-          <AlertTitle className="text-success">Comprehensive Testing</AlertTitle>
-          <AlertDescription className="text-success">
-            All listed formats are thoroughly tested with automated test suites covering chunking,
-            keyframe alignment, roundtrip integrity, and Git operations on video files.
-          </AlertDescription>
-        </Alert>
+        <Callout type="tip" title="Comprehensive Testing" className="not-prose my-4">
+          All listed formats are thoroughly tested with automated test suites covering chunking,
+          keyframe alignment, roundtrip integrity, and Git operations on video files.
+        </Callout>
 
         <Table className="not-prose my-6">
           <TableHeader>
@@ -321,15 +316,11 @@ Keyframe-aligned splits here:
     └── [video/audio samples]`}
         />
 
-        <Alert className="not-prose my-6">
-          <Info className="h-4 w-4" />
-          <AlertTitle>Protected Metadata</AlertTitle>
-          <AlertDescription>
-            Dits never chunks through the <code>moov</code> atom. Splitting
-            metadata would render the file unplayable. Only the <code>mdat</code>
-            (media data) section is chunked.
-          </AlertDescription>
-        </Alert>
+        <Callout type="note" title="Protected Metadata" className="not-prose my-6">
+          Dits never chunks through the <code>moov</code> atom. Splitting
+          metadata would render the file unplayable. Only the <code>mdat</code>
+          (media data) section is chunked.
+        </Callout>
 
         <h2>Video-Aware Diff</h2>
         <p>

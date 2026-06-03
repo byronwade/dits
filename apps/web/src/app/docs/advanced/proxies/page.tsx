@@ -3,12 +3,12 @@ import Link from "next/link";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, Image, Film, ArrowLeftRight } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { Image, Film, ArrowLeftRight } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -19,12 +19,11 @@ export const metadata: Metadata = {
 export default function ProxiesPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Proxy Files</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Proxy files are lower-resolution versions of your media that enable
-        faster editing workflows while keeping full-quality masters in the
-        repository.
-      </p>
+      <DocPageHeader
+        eyebrow="Advanced Topics"
+        title="Proxy Files"
+        description="Proxy files are lower-resolution versions of your media that enable faster editing workflows while keeping full-quality masters in the repository."
+      />
 
       <h2>What Are Proxies?</h2>
       <p>
@@ -34,46 +33,46 @@ export default function ProxiesPage() {
       <div className="not-prose grid gap-4 md:grid-cols-3 my-8">
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Image className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Image className="size-5 text-brand" />
             </div>
-            <CardTitle>Smaller Files</CardTitle>
+            <CardTitle className="text-base">Smaller Files</CardTitle>
           </CardHeader>
           <CardContent>
-            <CardDescription>
+            <p className="text-sm text-muted-foreground">
               720p H.264 proxies are 10-50x smaller than 4K ProRes masters,
               making editing responsive on any hardware.
-            </CardDescription>
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Film className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Film className="size-5 text-brand" />
             </div>
-            <CardTitle>Same Timecode</CardTitle>
+            <CardTitle className="text-base">Same Timecode</CardTitle>
           </CardHeader>
           <CardContent>
-            <CardDescription>
+            <p className="text-sm text-muted-foreground">
               Proxies match the exact frame rate and timecode of masters, so
               edits transfer perfectly.
-            </CardDescription>
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <ArrowLeftRight className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <ArrowLeftRight className="size-5 text-brand" />
             </div>
-            <CardTitle>Easy Switching</CardTitle>
+            <CardTitle className="text-base">Easy Switching</CardTitle>
           </CardHeader>
           <CardContent>
-            <CardDescription>
+            <p className="text-sm text-muted-foreground">
               Switch between proxy and master with a single command. Perfect for
               remote editing then local finishing.
-            </CardDescription>
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -125,11 +124,11 @@ $ dits proxy-gen --codec prores-proxy footage/
 $ dits proxy-gen --bitrate 5M footage/
 
 # All options
-$ dits proxy-gen \
-    --resolution 1920x1080 \
-    --codec h264 \
-    --bitrate 8M \
-    --fps preserve \
+$ dits proxy-gen \\
+    --resolution 1920x1080 \\
+    --codec h264 \\
+    --bitrate 8M \\
+    --fps preserve \\
     footage/`}
       />
 
@@ -243,7 +242,7 @@ footage/*.mxf proxy=auto
 # Higher quality proxies for hero shots
 footage/hero-*.mov proxy=auto proxy-preset=review
 
-# Don&apos;t generate proxies for already-compressed files
+# Don't generate proxies for already-compressed files
 renders/*.mp4 proxy=none
 
 # Custom proxy settings
@@ -350,15 +349,11 @@ Totals:
   Unmaterialized masters: 2 (29 GB)`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>NLE Compatibility</AlertTitle>
-        <AlertDescription>
-          Proxies are stored with the same relative paths and filenames as
-          masters. Most NLEs (Premiere, Resolve, FCPX) can switch between them
-          using their built-in proxy toggle features.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="NLE Compatibility" className="not-prose my-6">
+        Proxies are stored with the same relative paths and filenames as
+        masters. Most NLEs (Premiere, Resolve, FCPX) can switch between them
+        using their built-in proxy toggle features.
+      </Callout>
 
       <h2>Related Topics</h2>
       <ul>

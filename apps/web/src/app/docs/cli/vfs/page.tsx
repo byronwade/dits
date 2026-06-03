@@ -8,8 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { HardDrive, Info, Database, Unplug, BarChart3 } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { Database, Unplug, BarChart3 } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -26,25 +27,18 @@ const commands = [
 export default function VFSCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <div className="flex items-center gap-2 mb-2">
-        <HardDrive className="h-8 w-8 text-brand" />
-        <h1 className="mb-0">Virtual Filesystem Commands</h1>
-      </div>
-      <p className="lead text-xl text-muted-foreground">
-        Mount Dits repositories as virtual drives. Files appear instantly and
-        stream on-demand - no need to download entire files before opening them.
-      </p>
+      <DocPageHeader
+        eyebrow="CLI Reference"
+        title="Virtual Filesystem Commands"
+        description="Mount Dits repositories as virtual drives. Files appear instantly and stream on-demand - no need to download entire files before opening them."
+      />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Just-In-Time Hydration</AlertTitle>
-        <AlertDescription>
-          When you mount a repository, files appear immediately as placeholders.
-          Actual data is fetched only when a file is opened or accessed. This
-          enables instant access to multi-terabyte repositories without waiting
-          for downloads.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Just-In-Time Hydration" className="not-prose my-6">
+        When you mount a repository, files appear immediately as placeholders.
+        Actual data is fetched only when a file is opened or accessed. This
+        enables instant access to multi-terabyte repositories without waiting
+        for downloads.
+      </Callout>
 
       <Table className="not-prose my-6">
         <TableHeader>
@@ -216,15 +210,11 @@ Unmounting 3 mounts...
   /mnt/color-grade... done`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Close Applications First</AlertTitle>
-        <AlertDescription>
-          Before unmounting, close any applications that have files open from the
-          mount. Use <code>--force</code> only as a last resort, as it may interrupt
-          file operations.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Close Applications First" className="not-prose my-6">
+        Before unmounting, close any applications that have files open from the
+        mount. Use <code>--force</code> only as a last resort, as it may interrupt
+        file operations.
+      </Callout>
 
       <h2 className="flex items-center gap-2">
         <BarChart3 className="h-5 w-5" />

@@ -8,8 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Settings, Info, Trash2, ShieldCheck, BarChart, FileSearch, Wrench } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { Trash2, ShieldCheck, BarChart, FileSearch, Wrench } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -28,15 +29,11 @@ const commands = [
 export default function MaintenanceCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <div className="flex items-center gap-2 mb-2">
-        <Settings className="h-8 w-8 text-muted-foreground" />
-        <h1 className="mb-0">Maintenance Commands</h1>
-      </div>
-      <p className="lead text-xl text-muted-foreground">
-        Keep your repository healthy with garbage collection, integrity checks,
-        and configuration management. These commands help optimize storage and
-        ensure data integrity.
-      </p>
+      <DocPageHeader
+        eyebrow="CLI Reference"
+        title="Maintenance Commands"
+        description="Keep your repository healthy with garbage collection, integrity checks, and configuration management. These commands help optimize storage and ensure data integrity."
+      />
 
       <Table className="not-prose my-6">
         <TableHeader>
@@ -143,15 +140,11 @@ Repository doesn't need GC yet.
 (Run 'dits gc' to force)`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>When to Run GC</AlertTitle>
-        <AlertDescription>
-          Run garbage collection after: deleting large files, resetting branches,
-          cleaning up old stashes, or whenever you want to reclaim disk space.
-          Dits runs light GC automatically, but manual runs can be more thorough.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="When to Run GC" className="not-prose my-6">
+        Run garbage collection after: deleting large files, resetting branches,
+        cleaning up old stashes, or whenever you want to reclaim disk space.
+        Dits runs light GC automatically, but manual runs can be more thorough.
+      </Callout>
 
       <h2 className="flex items-center gap-2">
         <ShieldCheck className="h-5 w-5" />
@@ -363,7 +356,7 @@ Most Deduplicated Files:
       <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits inspect-file [OPTIONS] &lt;PATH&gt;`}
+        code={`dits inspect-file [OPTIONS] <PATH>`}
       />
 
       <h3>Options</h3>
@@ -421,7 +414,7 @@ Shares chunks with:
       <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits config [OPTIONS] &lt;KEY&gt; [VALUE]`}
+        code={`dits config [OPTIONS] <KEY> [VALUE]`}
       />
 
       <h3>Options</h3>

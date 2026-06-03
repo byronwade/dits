@@ -7,8 +7,9 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { GitBranch, Code, FileText, Bug, Heart, CheckCircle } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { Code, FileText, Bug, Heart, CheckCircle } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Contributing to Dits",
@@ -18,20 +19,16 @@ export const metadata: Metadata = {
 export default function ContributingPage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <h1>Contributing to Dits</h1>
-            <p className="lead text-xl text-muted-foreground">
-                We welcome contributions from the community! Whether you&apos;re fixing bugs,
-                adding features, or improving documentation, your help makes Dits better.
-            </p>
+            <DocPageHeader
+                eyebrow="Community"
+                title="Contributing to Dits"
+                description="We welcome contributions from the community! Whether you're fixing bugs, adding features, or improving documentation, your help makes Dits better."
+            />
 
-            <Alert className="not-prose my-6">
-                <Heart className="h-4 w-4" />
-                <AlertTitle>Thank You!</AlertTitle>
-                <AlertDescription>
-                    Every contribution, no matter how small, helps improve Dits for everyone.
-                    We appreciate your time and effort.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="Thank You!" className="not-prose my-6">
+                Every contribution, no matter how small, helps improve Dits for everyone.
+                We appreciate your time and effort.
+            </Callout>
 
             <h2>Ways to Contribute</h2>
 
@@ -39,7 +36,7 @@ export default function ContributingPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Code className="h-5 w-5 text-primary" />
+                            <Code className="h-5 w-5 text-brand" />
                             Code Contributions
                         </CardTitle>
                         <CardDescription>
@@ -59,7 +56,7 @@ export default function ContributingPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <FileText className="h-5 w-5 text-primary" />
+                            <FileText className="h-5 w-5 text-brand" />
                             Documentation
                         </CardTitle>
                         <CardDescription>
@@ -79,7 +76,7 @@ export default function ContributingPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Bug className="h-5 w-5 text-primary" />
+                            <Bug className="h-5 w-5 text-brand" />
                             Bug Reports
                         </CardTitle>
                         <CardDescription>
@@ -99,7 +96,7 @@ export default function ContributingPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Heart className="h-5 w-5 text-primary" />
+                            <Heart className="h-5 w-5 text-brand" />
                             Community
                         </CardTitle>
                         <CardDescription>
@@ -153,23 +150,23 @@ git checkout -b fix/issue-123`}</code></pre>
                 <h3 className="font-semibold mb-4">Before Submitting</h3>
                 <ul className="space-y-2 list-disc list-inside">
                     <li className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-success mt-1 flex-shrink-0" />
                         <span>Ensure all tests pass with <code>npm run test</code></span>
                     </li>
                     <li className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-success mt-1 flex-shrink-0" />
                         <span>Run linting with <code>npm run lint</code></span>
                     </li>
                     <li className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-success mt-1 flex-shrink-0" />
                         <span>Add tests for new functionality</span>
                     </li>
                     <li className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-success mt-1 flex-shrink-0" />
                         <span>Update documentation if needed</span>
                     </li>
                     <li className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-success mt-1 flex-shrink-0" />
                         <span>Write a clear commit message</span>
                     </li>
                 </ul>
@@ -204,14 +201,10 @@ chore(deps): update dependencies`}</code></pre>
                 <li><strong>Merge:</strong> Once approved, your PR will be merged</li>
             </ol>
 
-            <Alert className="not-prose my-6">
-                <GitBranch className="h-4 w-4" />
-                <AlertTitle>Need Help?</AlertTitle>
-                <AlertDescription>
-                    If you&apos;re stuck or have questions, don&apos;t hesitate to ask! Open a
-                    discussion on GitHub or reach out in our community channels.
-                </AlertDescription>
-            </Alert>
+            <Callout type="note" title="Need Help?" className="not-prose my-6">
+                If you&apos;re stuck or have questions, don&apos;t hesitate to ask! Open a
+                discussion on GitHub or reach out in our community channels.
+            </Callout>
 
             <h2>Related Resources</h2>
 

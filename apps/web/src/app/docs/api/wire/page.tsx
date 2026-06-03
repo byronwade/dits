@@ -8,7 +8,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import {
   Table,
   TableBody,
@@ -17,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Zap, Shield, Network, Clock, CheckCircle, AlertTriangle, Info } from "lucide-react";
+import { Zap, Shield, Network, Clock, CheckCircle } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Wire Protocol",
@@ -27,20 +28,16 @@ export const metadata: Metadata = {
 export default function WireProtocolPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Dits Wire Protocol</h1>
-      <p className="lead text-xl text-muted-foreground">
-        The Dits wire protocol handles efficient, resumable transfer of chunks and metadata
-        over QUIC, with built-in integrity verification and compression.
-      </p>
+      <DocPageHeader
+        eyebrow="API & Integration"
+        title="Dits Wire Protocol"
+        description="The Dits wire protocol handles efficient, resumable transfer of chunks and metadata over QUIC, with built-in integrity verification and compression."
+      />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Protocol Version</AlertTitle>
-        <AlertDescription>
-          Current version: <strong>v1</strong>. The protocol is designed for forward compatibility
-          with version negotiation and feature flags.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Protocol Version" className="not-prose my-6">
+        Current version: <strong>v1</strong>. The protocol is designed for forward compatibility
+        with version negotiation and feature flags.
+      </Callout>
 
       <h2>Overview</h2>
       <p>
@@ -58,7 +55,7 @@ export default function WireProtocolPage() {
 
       <h2>Transport Layer</h2>
 
-      <div className="grid gap-4 md:grid-cols-2 my-6">
+      <div className="not-prose grid gap-4 md:grid-cols-2 my-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -105,31 +102,31 @@ export default function WireProtocolPage() {
       <h2>Message Framing</h2>
       <p>All wire protocol messages follow this binary frame structure:</p>
 
-      <div className="bg-muted p-4 rounded-lg font-mono text-sm my-6">
+      <div className="not-prose bg-muted p-4 rounded-lg font-mono text-sm my-6">
         <div className="grid grid-cols-8 gap-2 text-center">
-          <div className="col-span-4 border rounded p-2">
+          <div className="col-span-4 border border-border rounded p-2">
             <div className="text-xs text-muted-foreground">Magic (4 bytes)</div>
             <div className="font-bold">DITS</div>
           </div>
-          <div className="border rounded p-2">
+          <div className="border border-border rounded p-2">
             <div className="text-xs text-muted-foreground">Version (1 byte)</div>
             <div className="font-bold">0x01</div>
           </div>
-          <div className="border rounded p-2">
+          <div className="border border-border rounded p-2">
             <div className="text-xs text-muted-foreground">Type (1 byte)</div>
             <div className="font-bold">0x01-0xFF</div>
           </div>
-          <div className="border rounded p-2">
+          <div className="border border-border rounded p-2">
             <div className="text-xs text-muted-foreground">Flags (1 byte)</div>
             <div className="font-bold">Bitfield</div>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <div className="border rounded p-2">
+          <div className="border border-border rounded p-2">
             <div className="text-xs text-muted-foreground">Length (4 bytes, big-endian)</div>
             <div className="font-bold">Payload size</div>
           </div>
-          <div className="border rounded p-2">
+          <div className="border border-border rounded p-2">
             <div className="text-xs text-muted-foreground">Payload (variable)</div>
             <div className="font-bold">Message data</div>
           </div>
@@ -269,7 +266,7 @@ export default function WireProtocolPage() {
         This avoids sending lists of thousands of chunk hashes.
       </p>
 
-      <div className="bg-muted p-4 rounded-lg my-6">
+      <div className="not-prose bg-muted p-4 rounded-lg my-6">
         <h4 className="font-semibold mb-3">Bloom Filter Sync Flow:</h4>
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2">
@@ -297,19 +294,15 @@ export default function WireProtocolPage() {
         The protocol tracks progress and can restart from any byte offset.
       </p>
 
-      <Alert className="not-prose my-6">
-        <Clock className="h-4 w-4" />
-        <AlertTitle>Transfer Resilience</AlertTitle>
-        <AlertDescription>
-          <strong>False positive rate:</strong> Bloom filters have ~1% false positive rate<br />
-          <strong>Resume capability:</strong> Transfers continue from last confirmed byte<br />
-          <strong>Integrity:</strong> Every chunk verified with BLAKE3 after transfer
-        </AlertDescription>
-      </Alert>
+      <Callout type="tip" title="Transfer Resilience" className="not-prose my-6">
+        <strong>False positive rate:</strong> Bloom filters have ~1% false positive rate<br />
+        <strong>Resume capability:</strong> Transfers continue from last confirmed byte<br />
+        <strong>Integrity:</strong> Every chunk verified with BLAKE3 after transfer
+      </Callout>
 
       <h2>Connection Management</h2>
 
-      <div className="grid gap-4 md:grid-cols-2 my-6">
+      <div className="not-prose grid gap-4 md:grid-cols-2 my-6">
         <Card>
           <CardHeader>
             <CardTitle>Connection Parameters</CardTitle>
@@ -361,15 +354,11 @@ export default function WireProtocolPage() {
 
       <h2>Implementation Considerations</h2>
 
-      <Alert className="not-prose my-6">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Protocol Evolution</AlertTitle>
-        <AlertDescription>
-          The wire protocol includes version negotiation in the HELLO handshake.
-          New message types can be added without breaking existing implementations.
-          Unknown message types should be ignored with a warning.
-        </AlertDescription>
-      </Alert>
+      <Callout type="warning" title="Protocol Evolution" className="not-prose my-6">
+        The wire protocol includes version negotiation in the HELLO handshake.
+        New message types can be added without breaking existing implementations.
+        Unknown message types should be ignored with a warning.
+      </Callout>
 
       <h3>Error Handling</h3>
       <p>All protocol errors include:</p>
@@ -388,7 +377,7 @@ export default function WireProtocolPage() {
         <li><strong>Rate limiting:</strong> Built-in protection against abuse</li>
       </ul>
 
-      <div className="bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-lg p-6 my-8">
+      <div className="not-prose bg-brand/5 border border-brand/20 rounded-lg p-6 my-8">
         <h3 className="font-semibold mb-3">Protocol Benefits Summary</h3>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
@@ -420,15 +409,15 @@ export default function WireProtocolPage() {
         <Link href="https://github.com/byronwade/dits">source code</Link> for examples.
       </p>
 
-      <Alert className="not-prose my-6">
-        <CheckCircle className="h-4 w-4" />
-        <AlertTitle>Open Protocol</AlertTitle>
-        <AlertDescription>
-          The wire protocol is fully documented and open for third-party implementations.
-          Anyone can build Dits-compatible clients and servers.
-        </AlertDescription>
-      </Alert>
+      <Callout type="tip" title="Open Protocol" className="not-prose my-6">
+        <div className="flex items-center gap-2">
+          <CheckCircle className="h-4 w-4 text-success" />
+          <span>
+            The wire protocol is fully documented and open for third-party implementations.
+            Anyone can build Dits-compatible clients and servers.
+          </span>
+        </div>
+      </Callout>
     </div>
   );
 }
-

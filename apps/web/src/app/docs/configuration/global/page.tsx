@@ -8,8 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -56,11 +56,11 @@ const coreOptions = [
 export default function GlobalConfigPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Global Configuration</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Global configuration applies to all repositories for the current user
-        and is stored in <code>~/.ditsconfig</code>.
-      </p>
+      <DocPageHeader
+        eyebrow="Configuration"
+        title="Global Configuration"
+        description="Global configuration applies to all repositories for the current user and is stored in ~/.ditsconfig."
+      />
 
       <h2>Configuration File Location</h2>
       <CodeBlock
@@ -83,15 +83,11 @@ C:\\Users\\<username>\\.ditsconfig`}
 $ dits config --global user.email "you@example.com"`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Required for Commits</AlertTitle>
-        <AlertDescription>
-          Dits requires <code>user.name</code> and <code>user.email</code> to be
-          set before you can create commits. Set them globally to avoid
-          configuring them for each repository.
-        </AlertDescription>
-      </Alert>
+      <Callout type="warning" title="Required for Commits" className="not-prose my-6">
+        Dits requires <code>user.name</code> and <code>user.email</code> to be
+        set before you can create commits. Set them globally to avoid
+        configuring them for each repository.
+      </Callout>
 
       <h2>User Settings</h2>
       <Table className="not-prose my-6">

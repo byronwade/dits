@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
 import {
   Table,
@@ -38,13 +39,13 @@ export const metadata: Metadata = {
 export default function SDKsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Official SDKs</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Integrate Dits version control into your applications with our official SDKs.
-        Available for JavaScript/TypeScript, Python, Go, and Rust.
-      </p>
+      <DocPageHeader
+        eyebrow="API & Integration"
+        title="Official SDKs"
+        description="Integrate Dits version control into your applications with our official SDKs. Available for JavaScript/TypeScript, Python, Go, and Rust."
+      />
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 my-8">
+      <div className="not-prose grid gap-6 md:grid-cols-2 lg:grid-cols-4 my-8">
         <Card className="border-info/20">
           <CardHeader>
             <div className="w-12 h-12 rounded-lg bg-info/10 flex items-center justify-center mb-2">
@@ -439,7 +440,7 @@ fn process_chunk(chunk: &[u8]) {
         </TabsContent>
       </Tabs>
 
-      <div className="bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-lg p-6 my-8">
+      <div className="not-prose bg-brand/5 border border-brand/20 rounded-lg p-6 my-8">
         <h2 className="font-semibold mb-4">SDK Comparison</h2>
         <div className="overflow-x-auto">
           <Table>
@@ -527,7 +528,7 @@ fn process_chunk(chunk: &[u8]) {
         and includes comprehensive test suites.
       </p>
 
-      <div className="grid gap-4 md:grid-cols-2 my-6">
+      <div className="not-prose grid gap-4 md:grid-cols-2 my-6">
         <Card>
           <CardHeader>
             <CardTitle>Development Setup</CardTitle>
@@ -557,7 +558,7 @@ fn process_chunk(chunk: &[u8]) {
         </Card>
       </div>
 
-      <div className="text-center my-8">
+      <div className="not-prose text-center my-8">
         <Button size="lg" render={<Link href="https://github.com/dits-io" />}>
           <GithubIcon className="mr-2 h-5 w-5" />
           View All SDKs on GitHub
@@ -566,4 +567,3 @@ fn process_chunk(chunk: &[u8]) {
     </div>
   );
 }
-

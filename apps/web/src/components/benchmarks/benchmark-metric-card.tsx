@@ -43,13 +43,13 @@ export function BenchmarkMetricCard({
         <Card
             className={cn(
                 "relative overflow-hidden transition-all hover:shadow-lg",
-                variant === "highlight" && "border-primary/50 bg-primary/5"
+                variant === "highlight" && "border-brand/50 bg-brand/5"
             )}
         >
             <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
-                        {icon && <div className="text-primary">{icon}</div>}
+                        {icon && <div className="text-brand">{icon}</div>}
                         <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
                     </div>
                     <TooltipProvider>
@@ -101,7 +101,7 @@ export function BenchmarkMetricCard({
                 className={cn(
                     "absolute bottom-0 left-0 right-0 h-1",
                     variant === "highlight"
-                        ? "bg-gradient-to-r from-primary/80 to-primary/40"
+                        ? "bg-gradient-to-r from-brand/80 to-brand/40"
                         : "bg-gradient-to-r from-muted-foreground/20 to-transparent"
                 )}
             />

@@ -7,7 +7,8 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CodeBlock } from "@/components/ui/code-block";
 import {
@@ -18,7 +19,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Users, Share2, Lock, MessageSquare, Shield, Wifi } from "lucide-react";
+import { Users, Share2, Wifi } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Team Collaboration",
@@ -28,27 +29,27 @@ export const metadata: Metadata = {
 export default function CollaborationPage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <h1>Team Collaboration</h1>
-            <p className="lead text-xl text-muted-foreground">
-                Effective strategies for teams working together on creative projects.
-                From small studios to enterprise productions, Dits scales with your team.
-            </p>
+            <DocPageHeader
+                eyebrow="Guides"
+                title="Team Collaboration"
+                description="Effective strategies for teams working together on creative projects. From small studios to enterprise productions, Dits scales with your team."
+            />
 
             <h2>Collaboration Models</h2>
 
-            <div className="grid gap-6 md:grid-cols-3 my-8">
+            <div className="not-prose grid gap-6 md:grid-cols-3 my-8">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Share2 className="h-5 w-5 text-primary" />
-                            Centralized
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Share2 className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Centralized</CardTitle>
                         <CardDescription>
                             Single server, structured workflow
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>Central Ditshub server</li>
                             <li>Branch protection rules</li>
                             <li>Code review process</li>
@@ -59,16 +60,16 @@ export default function CollaborationPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Wifi className="h-5 w-5 text-primary" />
-                            Peer-to-Peer
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Wifi className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Peer-to-Peer</CardTitle>
                         <CardDescription>
                             Direct sharing without server
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>Direct machine sync</li>
                             <li>No central dependency</li>
                             <li>Great for on-set work</li>
@@ -79,16 +80,16 @@ export default function CollaborationPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Users className="h-5 w-5 text-primary" />
-                            Hybrid
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Users className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Hybrid</CardTitle>
                         <CardDescription>
                             Best of both worlds
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>Central for main branches</li>
                             <li>P2P for daily syncs</li>
                             <li>Offline capable</li>
@@ -203,14 +204,10 @@ $ dits unlock project.prproj
 Unlocked 'project.prproj'.`}
             />
 
-            <Alert className="not-prose my-6">
-                <Lock className="h-4 w-4" />
-                <AlertTitle>Lock Best Practices</AlertTitle>
-                <AlertDescription>
-                    Lock files before starting work. Include a message explaining what you&apos;re
-                    doing. Unlock as soon as you&apos;re done, even if you haven&apos;t committed yet.
-                </AlertDescription>
-            </Alert>
+            <Callout type="note" title="Lock Best Practices" className="not-prose my-6">
+                Lock files before starting work. Include a message explaining what you&apos;re
+                doing. Unlock as soon as you&apos;re done, even if you haven&apos;t committed yet.
+            </Callout>
 
             <h2>Real-Time Sync with P2P</h2>
 
@@ -329,14 +326,10 @@ Notes from you:
                 </Table>
             </div>
 
-            <Alert className="not-prose my-6">
-                <Shield className="h-4 w-4" />
-                <AlertTitle>Path-Based Permissions</AlertTitle>
-                <AlertDescription>
-                    Restrict access to sensitive directories. For example, allow editors to
-                    modify <code>assets/</code> but not <code>config/</code>.
-                </AlertDescription>
-            </Alert>
+            <Callout type="note" title="Path-Based Permissions" className="not-prose my-6">
+                Restrict access to sensitive directories. For example, allow editors to
+                modify <code>assets/</code> but not <code>config/</code>.
+            </Callout>
 
             <h2>Related Topics</h2>
             <ul>

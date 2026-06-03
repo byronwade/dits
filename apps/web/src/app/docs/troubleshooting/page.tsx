@@ -1,10 +1,9 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, CheckCircle, Info, Terminal, HardDrive, Network } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 import { generateMetadata as genMeta, generateArticleSchema, generateHowToSchema, generateBreadcrumbSchema } from "@/lib/seo";
@@ -106,8 +105,8 @@ export default function TroubleshootingPage() {
         }}
       />
       <div className="prose dark:prose-invert max-w-none">
-      <h1>Troubleshooting Guide</h1>
-      <p className="lead text-xl text-muted-foreground">
+      <DocPageHeader eyebrow="Community" title="Troubleshooting Guide" />
+      <p>
         Common issues and their solutions. If you can't find your issue here,
         check the <Link href="https://github.com/byronwade/dits/issues">GitHub Issues</Link> or
         join our <Link href="https://github.com/byronwade/dits/discussions">community discussions</Link>.
@@ -125,10 +124,7 @@ export default function TroubleshootingPage() {
           <h2>Installation Issues</h2>
 
           <h3>Command not found after installation</h3>
-          <Alert className="not-prose my-4">
-            <Terminal className="h-4 w-4" />
-            <AlertTitle>Solution</AlertTitle>
-            <AlertDescription>
+          <Callout type="note" title="Solution" className="not-prose my-4">
               <p>Check if Dits is in your PATH:</p>
               <CodeBlock
         language="bash"
@@ -141,14 +137,10 @@ export PATH="$HOME/.dits/bin:$PATH"
 # Or move to system location (requires sudo)
 sudo cp $(which dits) /usr/local/bin/`}
       />
-            </AlertDescription>
-          </Alert>
+          </Callout>
 
           <h3>Permission denied during installation</h3>
-          <Alert className="not-prose my-4">
-            <Info className="h-4 w-4" />
-            <AlertTitle>Solution</AlertTitle>
-            <AlertDescription>
+          <Callout type="note" title="Solution" className="not-prose my-4">
               <p>Use a local installation directory:</p>
               <CodeBlock
         language="bash"
@@ -158,14 +150,10 @@ curl -fsSL https://raw.githubusercontent.com/byronwade/dits/main/install.sh | ba
 # Add to PATH
 export PATH="$HOME/.local/bin:$PATH"`}
       />
-            </AlertDescription>
-          </Alert>
+          </Callout>
 
           <h3>Rust toolchain not found</h3>
-          <Alert className="not-prose my-4">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>For building from source</AlertTitle>
-            <AlertDescription>
+          <Callout type="warning" title="For building from source" className="not-prose my-4">
               <p>Install Rust using rustup:</p>
               <CodeBlock
         language="bash"
@@ -176,18 +164,14 @@ source ~/.cargo/env
 rustc --version
 cargo --version`}
       />
-            </AlertDescription>
-          </Alert>
+          </Callout>
         </TabsContent>
 
         <TabsContent value="basic-usage" className="mt-6">
           <h2>Basic Usage Issues</h2>
 
           <h3>"Repository not found" error</h3>
-          <Alert className="not-prose my-4">
-            <Info className="h-4 w-4" />
-            <AlertTitle>Solution</AlertTitle>
-            <AlertDescription>
+          <Callout type="note" title="Solution" className="not-prose my-4">
               <p>You need to initialize a Dits repository first:</p>
               <CodeBlock
         language="bash"
@@ -197,14 +181,10 @@ dits init
 # Check if .dits directory was created
 ls -la .dits/`}
       />
-            </AlertDescription>
-          </Alert>
+          </Callout>
 
           <h3>Files not showing in status</h3>
-          <Alert className="not-prose my-4">
-            <Info className="h-4 w-4" />
-            <AlertTitle>Solution</AlertTitle>
-            <AlertDescription>
+          <Callout type="note" title="Solution" className="not-prose my-4">
               <p>Files need to be explicitly added to staging:</p>
               <CodeBlock
         language="bash"
@@ -217,14 +197,10 @@ dits add .
 # Check status
 dits status`}
       />
-            </AlertDescription>
-          </Alert>
+          </Callout>
 
           <h3>Commit fails with no changes</h3>
-          <Alert className="not-prose my-4">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Solution</AlertTitle>
-            <AlertDescription>
+          <Callout type="warning" title="Solution" className="not-prose my-4">
               <p>You need staged changes to commit:</p>
               <CodeBlock
         language="bash"
@@ -237,14 +213,10 @@ dits add .
 # Then commit
 dits commit -m "Your message"`}
       />
-            </AlertDescription>
-          </Alert>
+          </Callout>
 
           <h3>Large files causing out of memory</h3>
-          <Alert className="not-prose my-4">
-            <HardDrive className="h-4 w-4" />
-            <AlertTitle>Solution</AlertTitle>
-            <AlertDescription>
+          <Callout type="note" title="Solution" className="not-prose my-4">
               <p>Dits uses streaming chunking, but very large files may need more memory:</p>
               <CodeBlock
         language="bash"
@@ -254,18 +226,14 @@ export DITS_CHUNK_MEMORY_MB=1024
 # Or use smaller chunk sizes (trades speed for memory)
 dits config chunk.avg_size 32KB`}
       />
-            </AlertDescription>
-          </Alert>
+          </Callout>
         </TabsContent>
 
         <TabsContent value="performance" className="mt-6">
           <h2>Performance Issues</h2>
 
           <h3>Slow chunking of large files</h3>
-          <Alert className="not-prose my-4">
-            <Info className="h-4 w-4" />
-            <AlertTitle>Expected behavior</AlertTitle>
-            <AlertDescription>
+          <Callout type="note" title="Expected behavior" className="not-prose my-4">
               <p>Chunking is CPU-intensive but should be reasonable:</p>
               <ul className="mt-2 space-y-1">
                 <li><strong>10GB file:</strong> ~30-60 seconds on modern hardware</li>
@@ -281,14 +249,10 @@ top -p $(pgrep dits)
 # Disk I/O
 iostat -x 1`}
       />
-            </AlertDescription>
-          </Alert>
+          </Callout>
 
           <h3>Slow network transfers</h3>
-          <Alert className="not-prose my-4">
-            <Network className="h-4 w-4" />
-            <AlertTitle>Solution</AlertTitle>
-            <AlertDescription>
+          <Callout type="note" title="Solution" className="not-prose my-4">
               <p>Optimize network settings:</p>
               <CodeBlock
         language="bash"
@@ -301,14 +265,10 @@ dits config network.resumable_uploads true
 # Check network speed
 dits config network.bandwidth_test`}
       />
-            </AlertDescription>
-          </Alert>
+          </Callout>
 
           <h3>High memory usage</h3>
-          <Alert className="not-prose my-4">
-            <HardDrive className="h-4 w-4" />
-            <AlertTitle>Solution</AlertTitle>
-            <AlertDescription>
+          <Callout type="note" title="Solution" className="not-prose my-4">
               <p>Configure memory limits:</p>
               <CodeBlock
         language="bash"
@@ -321,18 +281,14 @@ dits config storage.use_disk_buffer true
 # Monitor memory usage
 dits config debug.memory_profile true`}
       />
-            </AlertDescription>
-          </Alert>
+          </Callout>
         </TabsContent>
 
         <TabsContent value="advanced" className="mt-6">
           <h2>Advanced Issues</h2>
 
           <h3>VFS mount not working</h3>
-          <Alert className="not-prose my-4">
-            <Terminal className="h-4 w-4" />
-            <AlertTitle>FUSE Requirements</AlertTitle>
-            <AlertDescription>
+          <Callout type="note" title="FUSE Requirements" className="not-prose my-4">
               <p>Install FUSE for your platform:</p>
               <CodeBlock
         language="bash"
@@ -348,14 +304,10 @@ sudo yum install fuse3 fuse3-devel
 # Test FUSE
 dits mount --test /tmp/test-mount`}
       />
-            </AlertDescription>
-          </Alert>
+          </Callout>
 
           <h3>Chunk verification failures</h3>
-          <Alert className="not-prose my-4">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Critical: Check data integrity</AlertTitle>
-            <AlertDescription>
+          <Callout type="important" title="Critical: Check data integrity" className="not-prose my-4">
               <p>This indicates data corruption:</p>
               <CodeBlock
         language="bash"
@@ -371,14 +323,10 @@ dits pull origin main --force`}
               <p className="mt-2 text-sm">
                 <strong>Never ignore checksum failures.</strong> They indicate data corruption that needs immediate attention.
               </p>
-            </AlertDescription>
-          </Alert>
+          </Callout>
 
           <h3>Lock conflicts with team collaboration</h3>
-          <Alert className="not-prose my-4">
-            <Info className="h-4 w-4" />
-            <AlertTitle>Solution</AlertTitle>
-            <AlertDescription>
+          <Callout type="note" title="Solution" className="not-prose my-4">
               <p>Check and resolve locks:</p>
               <CodeBlock
         language="bash"
@@ -391,14 +339,10 @@ dits unlock path/to/file.mp4
 # Force unlock (admin only)
 dits unlock path/to/file.mp4 --force`}
       />
-            </AlertDescription>
-          </Alert>
+          </Callout>
 
           <h3>Storage quota exceeded</h3>
-          <Alert className="not-prose my-4">
-            <HardDrive className="h-4 w-4" />
-            <AlertTitle>Solution</AlertTitle>
-            <AlertDescription>
+          <Callout type="note" title="Solution" className="not-prose my-4">
               <p>Manage storage usage:</p>
               <CodeBlock
         language="bash"
@@ -414,8 +358,7 @@ dits branch --list --merged | xargs dits branch -d
 # Move to cold storage
 dits storage archive --older-than 90d`}
       />
-            </AlertDescription>
-          </Alert>
+          </Callout>
         </TabsContent>
       </Tabs>
 
@@ -470,10 +413,7 @@ uname -a`}
       <h3>Telemetry Issues</h3>
 
       <h4>Check if telemetry is enabled</h4>
-      <Alert className="not-prose my-4">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Telemetry Status</AlertTitle>
-        <AlertDescription>
+      <Callout type="note" title="Telemetry Status" className="not-prose my-4">
           <p>Check your current telemetry settings:</p>
           <CodeBlock
         language="bash"
@@ -482,14 +422,10 @@ uname -a`}
           <p className="text-sm mt-2">
             This shows if telemetry is enabled, your anonymized user ID, and when data was last uploaded.
           </p>
-        </AlertDescription>
-      </Alert>
+      </Callout>
 
       <h4>Disable telemetry if needed</h4>
-      <Alert className="not-prose my-4">
-        <CheckCircle className="h-4 w-4" />
-        <AlertTitle>Disable Telemetry</AlertTitle>
-        <AlertDescription>
+      <Callout type="tip" title="Disable Telemetry" className="not-prose my-4">
           <p>To disable telemetry collection:</p>
           <CodeBlock
         language="bash"
@@ -498,34 +434,25 @@ uname -a`}
           <p className="text-sm mt-2">
             This immediately stops all telemetry collection and clears any pending data.
           </p>
-        </AlertDescription>
-      </Alert>
+      </Callout>
 
       <h4>Network connectivity issues with telemetry</h4>
-      <Alert className="not-prose my-4">
-        <Network className="h-4 w-4" />
-        <AlertTitle>Offline Mode</AlertTitle>
-        <AlertDescription>
+      <Callout type="note" title="Offline Mode" className="not-prose my-4">
           <p>If telemetry uploads are failing due to network issues:</p>
           <ul className="text-sm mt-2 space-y-1">
             <li>Telemetry data is stored locally until network is available</li>
             <li>Failed uploads are retried automatically on next use</li>
             <li>You can disable telemetry if network issues persist</li>
           </ul>
-        </AlertDescription>
-      </Alert>
+      </Callout>
 
-      <Alert className="not-prose my-6">
-        <CheckCircle className="h-4 w-4" />
-        <AlertTitle>Debug Mode</AlertTitle>
-        <AlertDescription>
+      <Callout type="tip" title="Debug Mode" className="not-prose my-6">
           For advanced troubleshooting, enable debug logging:
           <CodeBlock
         language="bash"
         code={`dits config debug.enabled true`}
       />
-        </AlertDescription>
-      </Alert>
+      </Callout>
     </div>
     </>
   );

@@ -6,7 +6,9 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { CodeBlock } from "@/components/ui/code-block";
 import { Zap, Settings, Database, Cpu, Clock, LineChart } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -17,33 +19,27 @@ export const metadata: Metadata = {
 export default function PerformancePage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <h1>Performance Tuning</h1>
-            <p className="lead text-xl text-muted-foreground">
-                Optimize Dits for maximum performance in your specific use case.
-                Learn about tuning chunking algorithms, storage backends, and network settings.
-            </p>
+            <DocPageHeader
+                eyebrow="Advanced Topics"
+                title="Performance Tuning"
+                description="Optimize Dits for maximum performance in your specific use case. Learn about tuning chunking algorithms, storage backends, and network settings."
+            />
 
-            <Alert className="not-prose my-6">
-                <Zap className="h-4 w-4" />
-                <AlertTitle>Performance First</AlertTitle>
-                <AlertDescription>
-                    Dits is designed to be fast by default. These tuning options are for
-                    advanced users who need to optimize for specific workloads.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="Performance First" className="not-prose my-6">
+                Dits is designed to be fast by default. These tuning options are for
+                advanced users who need to optimize for specific workloads.
+            </Callout>
 
             <h2>Chunking Performance</h2>
 
-            <div className="grid gap-6 md:grid-cols-2 my-8">
+            <div className="not-prose grid gap-6 md:grid-cols-2 my-8">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Cpu className="h-5 w-5 text-primary" />
-                            Chunk Size Optimization
-                        </CardTitle>
-                        <CardDescription>
-                            Balance between deduplication and overhead
-                        </CardDescription>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Cpu className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Chunk Size Optimization</CardTitle>
+                        <CardDescription>Balance between deduplication and overhead</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground mb-4">
@@ -69,13 +65,11 @@ export default function PerformancePage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Settings className="h-5 w-5 text-primary" />
-                            Algorithm Selection
-                        </CardTitle>
-                        <CardDescription>
-                            Choose the right chunking algorithm
-                        </CardDescription>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Settings className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Algorithm Selection</CardTitle>
+                        <CardDescription>Choose the right chunking algorithm</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
@@ -104,7 +98,7 @@ export default function PerformancePage() {
 
             <h2>Storage Backend Tuning</h2>
 
-            <div className="bg-muted p-6 rounded-lg my-6">
+            <div className="not-prose bg-muted p-6 rounded-lg my-6">
                 <h3 className="font-semibold mb-4">Local Storage Optimization</h3>
                 <div className="grid md:grid-cols-2 gap-6">
                     <div>
@@ -131,11 +125,13 @@ export default function PerformancePage() {
             <h2>Configuration Examples</h2>
 
             <h3>High-Performance Configuration</h3>
-            <pre className="bg-muted p-4 rounded-lg overflow-x-auto"><code>{`# dits.toml - High performance settings
+            <CodeBlock
+                language="toml"
+                code={`# dits.toml - High performance settings
 [chunks]
 algorithm = "fastcdc"
 min_size = "32KB"
-avg_size = "64KB" 
+avg_size = "64KB"
 max_size = "256KB"
 parallel_workers = 8
 
@@ -153,10 +149,13 @@ compression = "lz4"
 [cache]
 enabled = true
 size = "4GB"
-eviction = "lru"`}</code></pre>
+eviction = "lru"`}
+            />
 
             <h3>Low-Memory Configuration</h3>
-            <pre className="bg-muted p-4 rounded-lg overflow-x-auto"><code>{`# dits.toml - Memory-constrained settings
+            <CodeBlock
+                language="toml"
+                code={`# dits.toml - Memory-constrained settings
 [chunks]
 algorithm = "fixed"
 size = "64KB"
@@ -170,20 +169,21 @@ write_buffer = "32MB"
 [cache]
 enabled = true
 size = "512MB"
-aggressive_eviction = true`}</code></pre>
+aggressive_eviction = true`}
+            />
 
             <h2>Monitoring Performance</h2>
 
-            <div className="grid gap-6 md:grid-cols-3 my-8">
+            <div className="not-prose grid gap-6 md:grid-cols-3 my-8">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Clock className="h-5 w-5 text-primary" />
-                            Latency Metrics
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Clock className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Latency Metrics</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>Chunk read/write time</li>
                             <li>Hash computation time</li>
                             <li>Network round-trip</li>
@@ -194,13 +194,13 @@ aggressive_eviction = true`}</code></pre>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Database className="h-5 w-5 text-primary" />
-                            Throughput Metrics
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <Database className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Throughput Metrics</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>MB/s upload rate</li>
                             <li>MB/s download rate</li>
                             <li>Chunks processed/sec</li>
@@ -211,13 +211,13 @@ aggressive_eviction = true`}</code></pre>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <LineChart className="h-5 w-5 text-primary" />
-                            Resource Usage
-                        </CardTitle>
+                        <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            <LineChart className="size-5 text-brand" />
+                        </div>
+                        <CardTitle className="text-base">Resource Usage</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>CPU utilization</li>
                             <li>Memory consumption</li>
                             <li>Disk I/O wait</li>
@@ -231,22 +231,21 @@ aggressive_eviction = true`}</code></pre>
 
             <p>Use the built-in benchmarking tool to measure performance:</p>
 
-            <pre className="bg-muted p-4 rounded-lg overflow-x-auto"><code>{`# Run comprehensive benchmark
+            <CodeBlock
+                language="bash"
+                code={`# Run comprehensive benchmark
 dits benchmark --all
 
 # Test specific operations
 dits benchmark --chunking --file large-file.bin
 dits benchmark --network --remote origin
-dits benchmark --storage --size 10GB`}</code></pre>
+dits benchmark --storage --size 10GB`}
+            />
 
-            <Alert className="not-prose my-6">
-                <LineChart className="h-4 w-4" />
-                <AlertTitle>Performance Profiling</AlertTitle>
-                <AlertDescription>
-                    Enable the built-in profiler with <code>dits --profile</code> to identify
-                    bottlenecks in your specific workflow.
-                </AlertDescription>
-            </Alert>
+            <Callout type="note" title="Performance Profiling" className="not-prose my-6">
+                Enable the built-in profiler with <code>dits --profile</code> to identify
+                bottlenecks in your specific workflow.
+            </Callout>
         </div>
     );
 }

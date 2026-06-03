@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,26 +9,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   CheckCircle,
   Check,
-  AlertTriangle,
   Zap,
   Shield,
   Database,
   Network,
   HardDrive,
-  Cpu,
-  FileText,
-  Video,
-  Image,
-  Music,
-  Archive,
   Code,
-  Gamepad2,
-  Wrench,
   Clock,
-  Users,
-  Lock,
-  Eye,
-  Bug,
   Target,
   Layers,
   Cloud,
@@ -43,25 +31,16 @@ export const metadata: Metadata = {
 export default function TestingPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <div className="mb-8">
-        <h1 className="flex items-center gap-3 mb-4">
-          <Target className="h-8 w-8 text-primary" />
-          Testing Framework
-        </h1>
-        <p className="lead text-xl text-muted-foreground">
-          DITS implements the most comprehensive testing framework ever built for a version control system,
-          covering every conceivable aspect of distributed media asset management.
-        </p>
-      </div>
+      <DocPageHeader
+        eyebrow="Architecture"
+        title="Testing Framework"
+        description="DITS implements the most comprehensive testing framework ever built for a version control system, covering every conceivable aspect of distributed media asset management."
+      />
 
-      <Alert className="mb-8">
-        <CheckCircle className="h-4 w-4" />
-        <AlertTitle>Industry-Leading Test Coverage</AlertTitle>
-        <AlertDescription>
+      <Callout type="tip" title="Industry-Leading Test Coverage" className="not-prose my-6">
           <strong>120+ automated tests</strong> covering 80+ file formats, 50+ failure scenarios,
           and real-world workflows. Every line of code is validated through systematic testing.
-        </AlertDescription>
-      </Alert>
+      </Callout>
 
       <h2>Testing Philosophy</h2>
       <p>
@@ -304,7 +283,7 @@ export default function TestingPage() {
                       Ultimate FastCDC algorithm validation covering every edge case and scenario.
                     </CardDescription>
                     <div className="grid gap-2 text-sm">
-                      <div className="font-medium text-primary">Data Patterns:</div>
+                      <div className="font-medium text-brand">Data Patterns:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Repetitive sequences (AAAA, ABAB)</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Alternating patterns (010101)</div>
@@ -312,14 +291,14 @@ export default function TestingPage() {
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> All-zero and all-FF data</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Random entropy patterns</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">File Sizes:</div>
+                      <div className="font-medium text-brand mt-2">File Sizes:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> 1-byte to 10GB files</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Boundary conditions</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Prime-sized files</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Sparse file handling</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">Determinism:</div>
+                      <div className="font-medium text-brand mt-2">Determinism:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Identical inputs = identical chunks</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Hash collision resistance</div>
@@ -339,20 +318,20 @@ export default function TestingPage() {
                       Complete video production workflow testing from ingest to delivery.
                     </CardDescription>
                     <div className="grid gap-2 text-sm">
-                      <div className="font-medium text-primary">Formats:</div>
+                      <div className="font-medium text-brand">Formats:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> MP4, MOV, MXF, fragmented MP4</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> H.264, H.265/HEVC, ProRes, DNxHD</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> AAC, FLAC, multichannel audio</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> 4K, 8K, high frame rates (120fps+)</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">Keyframes:</div>
+                      <div className="font-medium text-brand mt-2">Keyframes:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> GOP alignment and detection</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Scene change detection</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Multi-track synchronization</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">NLE Integration:</div>
+                      <div className="font-medium text-brand mt-2">NLE Integration:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Premiere Pro workflows</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> DaVinci Resolve integration</div>
@@ -373,7 +352,7 @@ export default function TestingPage() {
                       Validation of all chunking and hashing algorithms in the system.
                     </CardDescription>
                     <div className="grid gap-2 text-sm">
-                      <div className="font-medium text-primary">Chunking Algorithms:</div>
+                      <div className="font-medium text-brand">Chunking Algorithms:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> FastCDC (primary)</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Rabin fingerprinting</div>
@@ -382,7 +361,7 @@ export default function TestingPage() {
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Parallel FastCDC</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Keyed FastCDC (privacy)</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">Hash Algorithms:</div>
+                      <div className="font-medium text-brand mt-2">Hash Algorithms:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> BLAKE3 (default)</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> SHA-256 (compliance)</div>
@@ -404,19 +383,19 @@ export default function TestingPage() {
                       20+ file formats with full fidelity preservation and optimization.
                     </CardDescription>
                     <div className="grid gap-2 text-sm">
-                      <div className="font-medium text-primary">Images:</div>
+                      <div className="font-medium text-brand">Images:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> JPEG, PNG, TIFF, BMP, GIF, WebP</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> RAW (CR2, NEF), PSD, AI</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> EXIF metadata preservation</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">Audio:</div>
+                      <div className="font-medium text-brand mt-2">Audio:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> WAV, MP3, AAC, FLAC, OGG, AIFF</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Multichannel formats</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Metadata extraction</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">Documents:</div>
+                      <div className="font-medium text-brand mt-2">Documents:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> PDF, DOC/DOCX, XLS/XLSX</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> PPT/PPTX, ODT, RTF</div>
@@ -453,7 +432,7 @@ export default function TestingPage() {
                       Every possible failure scenario and error condition validation.
                     </CardDescription>
                     <div className="grid gap-2 text-sm">
-                      <div className="font-medium text-primary">System Resources:</div>
+                      <div className="font-medium text-brand">System Resources:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Disk full (quota exceeded)</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Out of memory (address space)</div>
@@ -461,14 +440,14 @@ export default function TestingPage() {
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Permission denied scenarios</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Sparse file handling</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">Process Interruption:</div>
+                      <div className="font-medium text-brand mt-2">Process Interruption:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> SIGTERM/SIGKILL handling</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Power loss simulation</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Network disconnection</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Partial I/O operations</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">Data Corruption:</div>
+                      <div className="font-medium text-brand mt-2">Data Corruption:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Silent corruption detection</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Bit flip scenarios</div>
@@ -489,21 +468,21 @@ export default function TestingPage() {
                       Threading, synchronization, and race condition validation.
                     </CardDescription>
                     <div className="grid gap-2 text-sm">
-                      <div className="font-medium text-primary">Race Conditions:</div>
+                      <div className="font-medium text-brand">Race Conditions:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> 100+ simultaneous operations</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> File access conflicts</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Chunking synchronization</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Repository state consistency</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">Locking:</div>
+                      <div className="font-medium text-brand mt-2">Locking:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Deadlock prevention</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Starvation avoidance</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Lock escalation handling</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Timeout management</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">Memory:</div>
+                      <div className="font-medium text-brand mt-2">Memory:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Cache consistency</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Shared data structures</div>
@@ -523,20 +502,20 @@ export default function TestingPage() {
                       Bulletproof data preservation and corruption recovery validation.
                     </CardDescription>
                     <div className="grid gap-2 text-sm">
-                      <div className="font-medium text-primary">Checksums:</div>
+                      <div className="font-medium text-brand">Checksums:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> BLAKE3 validation</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> CRC verification</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Multi-hash validation</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">Corruption:</div>
+                      <div className="font-medium text-brand mt-2">Corruption:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Single/multiple bit flips</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Burst error patterns</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Partial write scenarios</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Silent corruption detection</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">Recovery:</div>
+                      <div className="font-medium text-brand mt-2">Recovery:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Automatic repair</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Backup restoration</div>
@@ -557,19 +536,19 @@ export default function TestingPage() {
                       System limits and beyond - ensuring DITS can handle extreme scenarios.
                     </CardDescription>
                     <div className="grid gap-2 text-sm">
-                      <div className="font-medium text-primary">File Sizes:</div>
+                      <div className="font-medium text-brand">File Sizes:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> 1GB, 10GB, 100GB+ files</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Individual file limits</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Memory pressure testing</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">Scale:</div>
+                      <div className="font-medium text-brand mt-2">Scale:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> 10k, 100k, 1M+ files</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Repository size limits</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Index performance</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">Concurrency:</div>
+                      <div className="font-medium text-brand mt-2">Concurrency:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> 1000+ simultaneous ops</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Queue depth saturation</div>
@@ -605,21 +584,21 @@ export default function TestingPage() {
                       Real-world production scenarios and user workflow validation.
                     </CardDescription>
                     <div className="grid gap-2 text-sm">
-                      <div className="font-medium text-primary">NLE Workflows:</div>
+                      <div className="font-medium text-brand">NLE Workflows:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Premiere Pro pipelines</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> DaVinci Resolve integration</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> After Effects workflows</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Multi-user collaboration</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">CI/CD:</div>
+                      <div className="font-medium text-brand mt-2">CI/CD:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Automated builds</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Testing pipelines</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Deployment validation</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Rollback scenarios</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">Disaster Recovery:</div>
+                      <div className="font-medium text-brand mt-2">Disaster Recovery:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Backup restoration</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Business continuity</div>
@@ -640,21 +619,21 @@ export default function TestingPage() {
                       Peer-to-peer networking and distributed system validation.
                     </CardDescription>
                     <div className="grid gap-2 text-sm">
-                      <div className="font-medium text-primary">Network Topology:</div>
+                      <div className="font-medium text-brand">Network Topology:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> NAT traversal</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Firewall penetration</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Connection stability</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Peer discovery</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">Distributed Sync:</div>
+                      <div className="font-medium text-brand mt-2">Distributed Sync:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Conflict resolution</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Eventual consistency</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Delta synchronization</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Bandwidth management</div>
                       </div>
-                      <div className="font-medium text-primary mt-2">Security:</div>
+                      <div className="font-medium text-brand mt-2">Security:</div>
                       <div className="ml-4 space-y-1">
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> End-to-end encryption</div>
                         <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Certificate validation</div>
@@ -962,21 +941,18 @@ export default function TestingPage() {
         </Card>
       </div>
 
-      <Alert>
-        <CheckCircle className="h-4 w-4" />
-        <AlertTitle>Test Coverage Statistics</AlertTitle>
-        <AlertDescription>
+      <Callout type="tip" title="Test Coverage Statistics" className="not-prose my-6">
           <div className="grid gap-4 md:grid-cols-3 my-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">120+</div>
+              <div className="text-2xl font-bold text-brand">120+</div>
               <div className="text-sm text-muted-foreground">Automated Tests</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">80+</div>
+              <div className="text-2xl font-bold text-brand">80+</div>
               <div className="text-sm text-muted-foreground">File Formats</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">50+</div>
+              <div className="text-2xl font-bold text-brand">50+</div>
               <div className="text-sm text-muted-foreground">Failure Scenarios</div>
             </div>
           </div>
@@ -984,8 +960,7 @@ export default function TestingPage() {
             Every line of code is validated through systematic testing covering
             real-world usage patterns and edge cases.
           </p>
-        </AlertDescription>
-      </Alert>
+      </Callout>
 
       <h2>Contributing to Tests</h2>
       <p>

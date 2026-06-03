@@ -8,8 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { History, Info, List, Eye, GitCompare, UserCheck, Clock, Search } from "lucide-react";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { List, Eye, GitCompare, UserCheck, Clock, Search } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -53,14 +53,11 @@ const commands = [
 export default function HistoryCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <div className="flex items-center gap-2 mb-2">
-        <History className="h-8 w-8 text-brand" />
-        <h1 className="mb-0">History Commands</h1>
-      </div>
-      <p className="lead text-xl text-muted-foreground">
-        Commands for viewing commit history, comparing versions, and understanding
-        how your project evolved.
-      </p>
+      <DocPageHeader
+        eyebrow="CLI Reference"
+        title="History Commands"
+        description="Commands for viewing commit history, comparing versions, and understanding how your project evolved."
+      />
 
       <Table className="not-prose my-6">
         <TableHeader>

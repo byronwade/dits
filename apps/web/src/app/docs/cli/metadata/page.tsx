@@ -8,8 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { FileSearch, Info, ScanSearch, Eye, List } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { ScanSearch, Eye, List } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -26,25 +27,17 @@ const commands = [
 export default function MetadataCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <div className="flex items-center gap-2 mb-2">
-        <FileSearch className="h-8 w-8 text-brand" />
-        <h1 className="mb-0">Metadata Commands</h1>
-      </div>
-      <p className="lead text-xl text-muted-foreground">
-        Extract, store, and query metadata from video and media files. Dits
-        automatically indexes technical metadata like resolution, codec, duration,
-        and timecode for efficient searching and organization.
-      </p>
+      <DocPageHeader
+        eyebrow="CLI Reference"
+        title="Metadata Commands"
+        description="Extract, store, and query metadata from video and media files. Dits automatically indexes technical metadata like resolution, codec, duration, and timecode for efficient searching and organization."
+      />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Automatic Metadata Extraction</AlertTitle>
-        <AlertDescription>
-          When you add files, Dits automatically extracts key metadata. These
-          commands let you scan existing files, view extracted metadata, and
-          search across your media library.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Automatic Metadata Extraction" className="not-prose my-6">
+        When you add files, Dits automatically extracts key metadata. These
+        commands let you scan existing files, view extracted metadata, and
+        search across your media library.
+      </Callout>
 
       <Table className="not-prose my-6">
         <TableHeader>
@@ -180,7 +173,7 @@ Rescanning all 156 files...
       <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits meta-show [OPTIONS] &lt;PATH&gt;`}
+        code={`dits meta-show [OPTIONS] <PATH>`}
       />
 
       <h3>Options</h3>

@@ -2,7 +2,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import {
   Table,
   TableBody,
@@ -11,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Webhook, Zap, Shield, Clock, CheckCircle, XCircle, Info } from "lucide-react";
+import { Webhook, Zap, Shield, Clock, CheckCircle, XCircle } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -22,15 +23,15 @@ export const metadata: Metadata = {
 export default function WebhooksPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Webhooks & Events</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Real-time notifications for repository events, enabling CI/CD pipelines,
-        Slack notifications, and automated workflows.
-      </p>
+      <DocPageHeader
+        eyebrow="API & Integration"
+        title="Webhooks & Events"
+        description="Real-time notifications for repository events, enabling CI/CD pipelines, Slack notifications, and automated workflows."
+      />
 
-      <div className="not-prose bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-6 my-8">
+      <div className="not-prose bg-brand/5 border border-brand/20 rounded-lg p-6 my-8">
         <div className="flex items-start gap-4">
-          <Webhook className="h-8 w-8 text-primary mt-1" />
+          <Webhook className="h-8 w-8 text-brand mt-1" />
           <div>
             <h2 className="text-xl font-semibold mb-2">Event-Driven Automation</h2>
             <p className="text-muted-foreground mb-4">
@@ -39,15 +40,15 @@ export default function WebhooksPage() {
             </p>
             <div className="grid gap-3 md:grid-cols-3">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">25+</div>
+                <div className="text-2xl font-bold text-brand">25+</div>
                 <div className="text-sm text-muted-foreground">Event Types</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">Real-time</div>
+                <div className="text-2xl font-bold text-brand">Real-time</div>
                 <div className="text-sm text-muted-foreground">Delivery</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">Secure</div>
+                <div className="text-2xl font-bold text-brand">Secure</div>
                 <div className="text-sm text-muted-foreground">Signatures</div>
               </div>
             </div>
@@ -57,7 +58,7 @@ export default function WebhooksPage() {
 
       <h2>Supported Events</h2>
 
-      <div className="grid gap-4 md:grid-cols-2 my-6">
+      <div className="not-prose grid gap-4 md:grid-cols-2 my-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -206,7 +207,7 @@ export default function WebhooksPage() {
 
       <h2>Security & Validation</h2>
 
-      <div className="grid gap-4 md:grid-cols-2 my-6">
+      <div className="not-prose grid gap-4 md:grid-cols-2 my-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -252,7 +253,7 @@ const expected = 'sha256=' + signature;`}
 
       <h2>Common Use Cases</h2>
 
-      <div className="grid gap-4 md:grid-cols-3 my-6">
+      <div className="not-prose grid gap-4 md:grid-cols-3 my-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">CI/CD Integration</CardTitle>
@@ -458,15 +459,10 @@ if __name__ == '__main__':
         </Table>
       </div>
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Detailed Documentation</AlertTitle>
-        <AlertDescription>
-          For complete webhook event schemas, security details, and advanced configuration options,
-          see the <Link href="/docs/api/webhooks">full webhooks documentation</Link>.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Detailed Documentation" className="not-prose my-6">
+        For complete webhook event schemas, security details, and advanced configuration options,
+        see the <Link href="/docs/api/webhooks">full webhooks documentation</Link>.
+      </Callout>
     </div>
   );
 }
-

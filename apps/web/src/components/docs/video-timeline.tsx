@@ -79,7 +79,7 @@ export function VideoTimeline({
                         className="flex flex-col items-center"
                         style={{ width: `${chunk.frames * 44 - 4}px` }}
                     >
-                        <div className="w-full border-t-2 border-l-2 border-r-2 border-primary/50 h-3 rounded-t" />
+                        <div className="w-full border-t-2 border-l-2 border-r-2 border-brand/50 h-3 rounded-t" />
                         <span className="text-xs text-muted-foreground mt-1">{chunk.label}</span>
                     </div>
                 ))}

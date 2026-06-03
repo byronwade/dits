@@ -30,7 +30,7 @@ function FlowStep({
   color = "primary",
 }: FlowStepProps) {
   const colors = {
-    primary: "border-primary/30 bg-primary/10 text-primary",
+    primary: "border-brand/30 bg-brand/10 text-brand",
     green: "border-chart-2/30 bg-chart-2/10 text-chart-2",
     amber: "border-chart-3/30 bg-chart-3/10 text-chart-3",
     purple:
@@ -45,7 +45,7 @@ function FlowStep({
   };
 
   const iconColors = {
-    primary: "text-primary",
+    primary: "text-brand",
     green: "text-chart-2",
     amber: "text-chart-3",
     purple: "text-chart-4",

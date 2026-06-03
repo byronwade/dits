@@ -8,8 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { FolderGit2, Info, Plus, Copy, Globe, BarChart } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { FolderGit2, Plus, Copy, Globe, BarChart } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 import { FileTree } from "@/components/docs/file-tree";
 
@@ -28,14 +29,11 @@ const commands = [
 export default function RepositoryCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <div className="flex items-center gap-2 mb-2">
-        <FolderGit2 className="h-8 w-8 text-info" />
-        <h1 className="mb-0">Repository Commands</h1>
-      </div>
-      <p className="lead text-xl text-muted-foreground">
-        Create, clone, and manage Dits repositories. These foundational commands
-        set up your version control environment for large binary files.
-      </p>
+      <DocPageHeader
+        eyebrow="CLI Reference"
+        title="Repository Commands"
+        description="Create, clone, and manage Dits repositories. These foundational commands set up your version control environment for large binary files."
+      />
 
       <Table className="not-prose my-6">
         <TableHeader>
@@ -206,16 +204,12 @@ Repository ready (125 TB of files available on demand)
 $ dits clone --depth 10 https://dits.example.com/team/project`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Partial Clones for Large Repositories</AlertTitle>
-        <AlertDescription>
-          For repositories with hundreds of gigabytes or terabytes of data, use
-          <code>--filter blob:none</code> to download only metadata. Files will be
-          fetched on-demand when accessed. This provides instant access without
-          waiting for full downloads.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Partial Clones for Large Repositories" className="not-prose my-6">
+        For repositories with hundreds of gigabytes or terabytes of data, use
+        <code>--filter blob:none</code> to download only metadata. Files will be
+        fetched on-demand when accessed. This provides instant access without
+        waiting for full downloads.
+      </Callout>
 
       <h2 className="flex items-center gap-2">
         <Globe className="h-5 w-5" />

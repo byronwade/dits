@@ -7,9 +7,10 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Terminal, Code, Settings, CheckCircle, Zap } from "lucide-react";
+import { Terminal, Code, CheckCircle } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Development Setup",
@@ -19,19 +20,15 @@ export const metadata: Metadata = {
 export default function DevelopmentPage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <h1>Development Setup</h1>
-            <p className="lead text-xl text-muted-foreground">
-                Set up your local development environment to contribute to Dits.
-                This guide covers everything from cloning the repo to running tests.
-            </p>
+            <DocPageHeader
+                eyebrow="Community"
+                title="Development Setup"
+                description="Set up your local development environment to contribute to Dits. This guide covers everything from cloning the repo to running tests."
+            />
 
-            <Alert className="not-prose my-6">
-                <Zap className="h-4 w-4" />
-                <AlertTitle>Quick Setup</AlertTitle>
-                <AlertDescription>
-                    Most developers can be up and running in under 10 minutes.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="Quick Setup" className="not-prose my-6">
+                Most developers can be up and running in under 10 minutes.
+            </Callout>
 
             <h2>Prerequisites</h2>
 
@@ -292,14 +289,10 @@ npm run build -w @dits/cli`}</code></pre>
                 </div>
             </div>
 
-            <Alert className="not-prose my-6">
-                <Settings className="h-4 w-4" />
-                <AlertTitle>Need Help?</AlertTitle>
-                <AlertDescription>
-                    If you encounter issues, check our <Link href="/docs/troubleshooting" className="underline">troubleshooting guide</Link> or
-                    ask in GitHub Discussions.
-                </AlertDescription>
-            </Alert>
+            <Callout type="note" title="Need Help?" className="not-prose my-6">
+                If you encounter issues, check our <Link href="/docs/troubleshooting" className="underline">troubleshooting guide</Link> or
+                ask in GitHub Discussions.
+            </Callout>
         </div>
     );
 }

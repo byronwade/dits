@@ -8,8 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Layers, Info, Zap, Eye, List, Trash2 } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { Zap, Eye, List, Trash2 } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -27,25 +28,17 @@ const commands = [
 export default function ProxyCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <div className="flex items-center gap-2 mb-2">
-        <Layers className="h-8 w-8 text-warning" />
-        <h1 className="mb-0">Proxy Commands</h1>
-      </div>
-      <p className="lead text-xl text-muted-foreground">
-        Generate lightweight proxy files for video editing workflows. Proxies enable
-        smooth editing on lower-powered machines while the original high-resolution
-        files remain in the repository.
-      </p>
+      <DocPageHeader
+        eyebrow="CLI Reference"
+        title="Proxy Commands"
+        description="Generate lightweight proxy files for video editing workflows. Proxies enable smooth editing on lower-powered machines while the original high-resolution files remain in the repository."
+      />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Offline Editing Workflow</AlertTitle>
-        <AlertDescription>
-          Proxies are low-resolution versions of your video files. Edit using proxies
-          for smooth playback, then automatically relink to full-resolution files for
-          final delivery. This is standard practice in professional video production.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Offline Editing Workflow" className="not-prose my-6">
+        Proxies are low-resolution versions of your video files. Edit using proxies
+        for smooth playback, then automatically relink to full-resolution files for
+        final delivery. This is standard practice in professional video production.
+      </Callout>
 
       <Table className="not-prose my-6">
         <TableHeader>
@@ -78,7 +71,7 @@ export default function ProxyCommandsPage() {
       <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits proxy-generate [OPTIONS] &lt;PATH&gt;...`}
+        code={`dits proxy-generate [OPTIONS] <PATH>...`}
       />
 
       <h3>Options</h3>
@@ -297,7 +290,7 @@ Proxy: footage/scene01.mov
       <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits proxy-delete [OPTIONS] &lt;PATH&gt;...`}
+        code={`dits proxy-delete [OPTIONS] <PATH>...`}
       />
 
       <h3>Options</h3>
@@ -368,16 +361,12 @@ Total: 1.8 GB would be freed`}
 5. Export at full quality from original files`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>NLE Integration</AlertTitle>
-        <AlertDescription>
-          Many NLEs (Premiere Pro, DaVinci Resolve, Final Cut Pro) have built-in
-          proxy workflows. Dits proxies are compatible with these systems - just
-          point your NLE to the <code>.dits/proxies/</code> directory as the proxy
-          location.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="NLE Integration" className="not-prose my-6">
+        Many NLEs (Premiere Pro, DaVinci Resolve, Final Cut Pro) have built-in
+        proxy workflows. Dits proxies are compatible with these systems - just
+        point your NLE to the <code>.dits/proxies/</code> directory as the proxy
+        location.
+      </Callout>
 
       <h2>Related Commands</h2>
       <ul>

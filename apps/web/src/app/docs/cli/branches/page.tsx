@@ -8,8 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { GitBranch, Info, ListTree, ArrowRightLeft, GitMerge, GitPullRequest, Cherry, Tag } from "lucide-react";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { ListTree, ArrowRightLeft, GitMerge, GitPullRequest, Cherry, Tag } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
@@ -58,13 +59,11 @@ const commands = [
 export default function BranchCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <div className="flex items-center gap-2 mb-2">
-        <GitBranch className="h-8 w-8 text-warning" />
-        <h1 className="mb-0">Branch Commands</h1>
-      </div>
-      <p className="lead text-xl text-muted-foreground">
-        Commands for creating, switching, and merging branches in your Dits repository.
-      </p>
+      <DocPageHeader
+        eyebrow="CLI Reference"
+        title="Branch Commands"
+        description="Commands for creating, switching, and merging branches in your Dits repository."
+      />
 
       <Table className="not-prose my-6">
         <TableHeader>
@@ -213,15 +212,11 @@ $ dits switch --detach a1b2c3d
 HEAD is now at a1b2c3d Add color grading`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Efficient Switching</AlertTitle>
-        <AlertDescription>
-          Dits only hydrates files that differ between branches. For branches
-          with mostly identical content, switching is nearly instant regardless
-          of repository size.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Efficient Switching" className="not-prose my-6">
+        Dits only hydrates files that differ between branches. For branches
+        with mostly identical content, switching is nearly instant regardless
+        of repository size.
+      </Callout>
 
       <h2 className="flex items-center gap-2">
         <GitMerge className="h-5 w-5" />
@@ -344,14 +339,10 @@ $ dits rebase --continue
 $ dits rebase --abort`}
       />
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Rebase Warning</AlertTitle>
-        <AlertDescription>
-          Never rebase commits that have been pushed to a shared repository.
-          Rebasing rewrites history, which causes problems for collaborators.
-        </AlertDescription>
-      </Alert>
+      <Callout type="warning" title="Rebase Warning" className="not-prose my-6">
+        Never rebase commits that have been pushed to a shared repository.
+        Rebasing rewrites history, which causes problems for collaborators.
+      </Callout>
 
       <h2 className="flex items-center gap-2">
         <Cherry className="h-5 w-5" />

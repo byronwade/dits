@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
-import { Tag, Info, CheckCircle } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Tag Commands",
@@ -12,14 +12,11 @@ export const metadata: Metadata = {
 export default function TagsPage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <div className="flex items-center gap-2 mb-2">
-                <Tag className="h-8 w-8 text-brand" />
-                <h1 className="mb-0">Tag Commands</h1>
-            </div>
-            <p className="lead text-xl text-muted-foreground">
-                Mark important points in history with tags. Use them for releases,
-                milestones, or any commit you want to easily reference later.
-            </p>
+            <DocPageHeader
+                eyebrow="CLI Reference"
+                title="Tag Commands"
+                description="Mark important points in history with tags. Use them for releases, milestones, or any commit you want to easily reference later."
+            />
 
             <h2>Quick Reference</h2>
 
@@ -35,7 +32,7 @@ dits push origin --tags         # Push all tags`}
 
             <h2>Tag Types</h2>
 
-            <div className="grid gap-6 md:grid-cols-2 my-8">
+            <div className="not-prose grid gap-6 md:grid-cols-2 my-8">
                 <div className="bg-muted p-6 rounded-lg">
                     <h3 className="font-semibold mb-3">Lightweight Tags</h3>
                     <p className="text-sm text-muted-foreground mb-3">
@@ -44,7 +41,7 @@ dits push origin --tags         # Push all tags`}
                     <pre className="bg-background p-3 rounded text-sm"><code>dits tag v1.0.0</code></pre>
                 </div>
 
-                <div className="bg-primary/5 border border-primary/20 p-6 rounded-lg">
+                <div className="bg-brand/5 border border-brand/20 p-6 rounded-lg">
                     <h3 className="font-semibold mb-3">Annotated Tags (Recommended)</h3>
                     <p className="text-sm text-muted-foreground mb-3">
                         Full object with author, date, message, and optional signature.
@@ -53,14 +50,10 @@ dits push origin --tags         # Push all tags`}
                 </div>
             </div>
 
-            <Alert className="not-prose my-6">
-                <CheckCircle className="h-4 w-4" />
-                <AlertTitle>Use Annotated Tags for Releases</AlertTitle>
-                <AlertDescription>
-                    Annotated tags store extra metadata (who, when, why) and are recommended
-                    for marking releases and milestones.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="Use Annotated Tags for Releases" className="not-prose my-6">
+                Annotated tags store extra metadata (who, when, why) and are recommended
+                for marking releases and milestones.
+            </Callout>
 
             <h2>Creating Tags</h2>
 
@@ -193,19 +186,15 @@ $ dits checkout -b hotfix/v1.0.1 v1.0.0
 $ dits diff v1.0.0`}
             />
 
-            <Alert className="not-prose my-6">
-                <Info className="h-4 w-4" />
-                <AlertTitle>Detached HEAD</AlertTitle>
-                <AlertDescription>
-                    Checking out a tag puts you in &quot;detached HEAD&quot; state. To make changes,
-                    create a new branch: <code>dits checkout -b new-branch</code>
-                </AlertDescription>
-            </Alert>
+            <Callout type="note" title="Detached HEAD" className="not-prose my-6">
+                Checking out a tag puts you in &quot;detached HEAD&quot; state. To make changes,
+                create a new branch: <code>dits checkout -b new-branch</code>
+            </Callout>
 
             <h2>Semantic Versioning</h2>
             <p>We recommend using semantic versioning for release tags:</p>
 
-            <div className="bg-muted p-6 rounded-lg my-6">
+            <div className="not-prose bg-muted p-6 rounded-lg my-6">
                 <p className="font-mono text-lg mb-4">MAJOR.MINOR.PATCH</p>
                 <ul className="text-sm space-y-2">
                     <li><strong>MAJOR</strong> - Breaking/incompatible changes</li>

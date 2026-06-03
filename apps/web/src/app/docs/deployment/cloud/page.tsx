@@ -7,9 +7,10 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Cloud, CheckCircle, Zap, Shield } from "lucide-react";
+import { Cloud, Zap, Shield } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Cloud Provider Deployment",
@@ -19,33 +20,29 @@ export const metadata: Metadata = {
 export default function CloudPage() {
     return (
         <div className="prose dark:prose-invert max-w-none">
-            <h1>Cloud Provider Deployment</h1>
-            <p className="lead text-xl text-muted-foreground">
-                Deploy Dits on major cloud providers with managed services for
-                databases, storage, and Kubernetes.
-            </p>
+            <DocPageHeader
+                eyebrow="Deployment"
+                title="Cloud Provider Deployment"
+                description="Deploy Dits on major cloud providers with managed services for databases, storage, and Kubernetes."
+            />
 
-            <Alert className="not-prose my-6">
-                <Cloud className="h-4 w-4" />
-                <AlertTitle>Cloud Native</AlertTitle>
-                <AlertDescription>
-                    Dits integrates seamlessly with cloud-native services for optimal
-                    performance and reliability.
-                </AlertDescription>
-            </Alert>
+            <Callout type="note" title="Cloud Native" className="not-prose my-6">
+                Dits integrates seamlessly with cloud-native services for optimal
+                performance and reliability.
+            </Callout>
 
             <h2>Supported Cloud Providers</h2>
 
-            <div className="grid gap-6 md:grid-cols-3 my-8">
-                <Card className="border-primary/30">
+            <div className="not-prose grid gap-6 md:grid-cols-3 my-8">
+                <Card className="border-brand/40 bg-brand/5">
                     <CardHeader>
-                        <CardTitle>Amazon Web Services</CardTitle>
+                        <CardTitle className="text-brand">Amazon Web Services</CardTitle>
                         <CardDescription>
                             Full integration with AWS services
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>EKS for Kubernetes</li>
                             <li>RDS for PostgreSQL</li>
                             <li>S3 for chunk storage</li>
@@ -63,7 +60,7 @@ export default function CloudPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>GKE for Kubernetes</li>
                             <li>Cloud SQL for PostgreSQL</li>
                             <li>Cloud Storage for chunks</li>
@@ -81,7 +78,7 @@ export default function CloudPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-1">
+                        <ul className="text-sm space-y-1 text-muted-foreground">
                             <li>AKS for Kubernetes</li>
                             <li>Azure Database for PostgreSQL</li>
                             <li>Blob Storage for chunks</li>
@@ -233,16 +230,16 @@ az storage container create \\
 
             <h2>Cost Optimization</h2>
 
-            <div className="grid gap-6 md:grid-cols-2 my-8">
+            <div className="not-prose grid gap-6 md:grid-cols-2 my-8">
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Zap className="h-5 w-5 text-primary" />
+                            <Zap className="h-5 w-5 text-brand" />
                             Compute Optimization
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-2">
+                        <ul className="text-sm space-y-2 text-muted-foreground">
                             <li>Use spot/preemptible instances for workers</li>
                             <li>Right-size your instances</li>
                             <li>Enable auto-scaling with appropriate limits</li>
@@ -254,12 +251,12 @@ az storage container create \\
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Shield className="h-5 w-5 text-primary" />
+                            <Shield className="h-5 w-5 text-brand" />
                             Storage Optimization
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ul className="text-sm space-y-2">
+                        <ul className="text-sm space-y-2 text-muted-foreground">
                             <li>Use storage tiers (hot/cold/archive)</li>
                             <li>Enable deduplication at storage level</li>
                             <li>Set lifecycle policies for old data</li>
@@ -282,7 +279,7 @@ regions:
     primary: true
     storage:
       bucket: dits-chunks-us-east
-    
+
   - name: eu-west
     primary: false
     storage:
@@ -295,14 +292,10 @@ regions:
       bucket: dits-chunks-ap-southeast
     replicate_from: us-east`}</code></pre>
 
-            <Alert className="not-prose my-6">
-                <CheckCircle className="h-4 w-4" />
-                <AlertTitle>Enterprise Support</AlertTitle>
-                <AlertDescription>
-                    For complex cloud deployments, our team can help with architecture
-                    design and implementation. <Link href="/contact" className="underline">Contact us</Link> for details.
-                </AlertDescription>
-            </Alert>
+            <Callout type="tip" title="Enterprise Support" className="not-prose my-6">
+                For complex cloud deployments, our team can help with architecture
+                design and implementation. <Link href="/contact" className="underline">Contact us</Link> for details.
+            </Callout>
         </div>
     );
 }

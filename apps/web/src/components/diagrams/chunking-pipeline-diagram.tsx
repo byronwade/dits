@@ -109,7 +109,7 @@ function PipelineStage({
 }) {
   const colors = {
     primary:
-      "border-primary/30 bg-gradient-to-b from-primary/15 to-primary/5 text-primary",
+      "border-brand/30 bg-gradient-to-b from-brand/15 to-brand/5 text-brand",
     purple:
       "border-chart-2/30 bg-gradient-to-b from-chart-2/15 to-chart-2/5 text-chart-2",
     amber:
@@ -119,7 +119,7 @@ function PipelineStage({
   };
 
   const iconColors = {
-    primary: "text-primary",
+    primary: "text-brand",
     purple: "text-chart-2",
     amber: "text-chart-3",
     green: "text-chart-4",
@@ -183,7 +183,7 @@ function ResultRow({
   return (
     <div className="grid grid-cols-4 gap-4 px-4 py-3 text-sm">
       <div className="font-medium">{operation}</div>
-      <div className="text-primary font-mono">{result}</div>
+      <div className="text-brand font-mono">{result}</div>
       <div className="text-muted-foreground">({explanation})</div>
       <div className="text-right">
         <span

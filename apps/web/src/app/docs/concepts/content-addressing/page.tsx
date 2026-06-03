@@ -7,9 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, Lock, Database, Share2 } from "lucide-react";
+import { Lock, Database, Share2, Info } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 
 export const metadata: Metadata = {
   title: "Content Addressing",
@@ -19,11 +20,11 @@ export const metadata: Metadata = {
 export default function ContentAddressingPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Content Addressing</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Dits identifies all data by its cryptographic hash, ensuring integrity
-        and enabling efficient deduplication across repositories.
-      </p>
+      <DocPageHeader
+        eyebrow="Core Concepts"
+        title="Content Addressing"
+        description="Dits identifies all data by its cryptographic hash, ensuring integrity and enabling efficient deduplication across repositories."
+      />
 
       <h2>What is Content Addressing?</h2>
       <p>
@@ -46,10 +47,10 @@ Content addressing (hash-based):
       <div className="not-prose grid gap-4 md:grid-cols-2 my-8">
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Lock className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Lock className="size-5 text-brand" />
             </div>
-            <CardTitle>Data Integrity</CardTitle>
+            <CardTitle className="text-base">Data Integrity</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -61,10 +62,10 @@ Content addressing (hash-based):
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Database className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Database className="size-5 text-brand" />
             </div>
-            <CardTitle>Automatic Deduplication</CardTitle>
+            <CardTitle className="text-base">Automatic Deduplication</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -76,10 +77,10 @@ Content addressing (hash-based):
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Share2 className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Share2 className="size-5 text-brand" />
             </div>
-            <CardTitle>Efficient Distribution</CardTitle>
+            <CardTitle className="text-base">Efficient Distribution</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -91,10 +92,10 @@ Content addressing (hash-based):
 
         <Card>
           <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Info className="h-6 w-6 text-primary" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              <Info className="size-5 text-brand" />
             </div>
-            <CardTitle>Immutability</CardTitle>
+            <CardTitle className="text-base">Immutability</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
@@ -242,15 +243,11 @@ BLAKE3 throughput: 3 GB/s per core (multi-threaded: 10+ GB/s)`}
         </li>
       </ol>
 
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Automatic Corruption Detection</AlertTitle>
-        <AlertDescription>
-          If any byte is changed - whether by hardware failure, cosmic rays, or
-          malicious tampering - the hash verification will fail and Dits will
-          alert you to the problem.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Automatic Corruption Detection" className="not-prose my-6">
+        If any byte is changed - whether by hardware failure, cosmic rays, or
+        malicious tampering - the hash verification will fail and Dits will
+        alert you to the problem.
+      </Callout>
 
       <h2>Content Addressing in Practice</h2>
 
@@ -307,15 +304,11 @@ abc123def456...  old_scene1.mov  ✓`}
       </p>
 
       <h3>Not Encryption</h3>
-      <Alert className="not-prose my-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Important</AlertTitle>
-        <AlertDescription>
-          Content addressing is <em>not</em> encryption. The hash doesn&apos;t hide the
-          content - anyone with the data can compute its hash. For confidential
-          data, use Dits&apos;s <Link href="/docs/advanced/encryption" className="underline">encryption features</Link>.
-        </AlertDescription>
-      </Alert>
+      <Callout type="important" title="Important" className="not-prose my-6">
+        Content addressing is <em>not</em> encryption. The hash doesn&apos;t hide the
+        content - anyone with the data can compute its hash. For confidential
+        data, use Dits&apos;s <Link href="/docs/advanced/encryption" className="underline">encryption features</Link>.
+      </Callout>
 
       <h2>Next Steps</h2>
       <ul>

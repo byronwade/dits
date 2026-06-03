@@ -8,7 +8,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
+import { DocPageHeader } from "@/components/doc-page-header";
 import {
   Table,
   TableBody,
@@ -22,11 +23,6 @@ import {
   Lock,
   Key,
   Database,
-  Network,
-  AlertTriangle,
-  CheckCircle,
-  Users,
-  Server
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -37,21 +33,16 @@ export const metadata: Metadata = {
 export default function SecurityPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <h1>Security Architecture</h1>
-      <p className="lead text-xl text-muted-foreground">
-        Dits implements a comprehensive security framework designed for handling
-        sensitive creative assets with end-to-end encryption, access controls,
-        and compliance features.
-      </p>
+      <DocPageHeader
+        eyebrow="Architecture"
+        title="Security Architecture"
+        description="Dits implements a comprehensive security framework designed for handling sensitive creative assets with end-to-end encryption, access controls, and compliance features."
+      />
 
-      <Alert className="not-prose my-6">
-        <Shield className="h-4 w-4" />
-        <AlertTitle>Security First Design</AlertTitle>
-        <AlertDescription>
-          Security is built into every layer of Dits, from the wire protocol
-          to data storage, ensuring your creative assets remain protected.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Security First Design" className="not-prose my-6">
+        Security is built into every layer of Dits, from the wire protocol
+        to data storage, ensuring your creative assets remain protected.
+      </Callout>
 
       <h2>Security Principles</h2>
 
@@ -193,15 +184,11 @@ export default function SecurityPage() {
                 </Table>
               </div>
 
-              <Alert className="not-prose">
-                <Key className="h-4 w-4" />
-                <AlertTitle>Convergent Encryption</AlertTitle>
-                <AlertDescription>
-                  Dits uses convergent encryption for chunks, allowing deduplication while maintaining
-                  security. The same data always produces the same ciphertext, enabling efficient storage
-                  without compromising confidentiality.
-                </AlertDescription>
-              </Alert>
+              <Callout type="note" title="Convergent Encryption" className="not-prose my-4">
+                Dits uses convergent encryption for chunks, allowing deduplication while maintaining
+                security. The same data always produces the same ciphertext, enabling efficient storage
+                without compromising confidentiality.
+              </Callout>
             </div>
           </CardContent>
         </Card>
@@ -427,14 +414,10 @@ export default function SecurityPage() {
                 </ol>
               </div>
 
-              <Alert className="not-prose">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>24/7 Security Operations</AlertTitle>
-                <AlertDescription>
-                  Enterprise deployments include dedicated security operations center (SOC)
-                  with 24/7 monitoring and incident response capabilities.
-                </AlertDescription>
-              </Alert>
+              <Callout type="note" title="24/7 Security Operations" className="not-prose my-4">
+                Enterprise deployments include dedicated security operations center (SOC)
+                with 24/7 monitoring and incident response capabilities.
+              </Callout>
             </div>
           </CardContent>
         </Card>
@@ -473,14 +456,10 @@ export default function SecurityPage() {
 
       <h2>Telemetry & Usage Analytics</h2>
 
-      <Alert className="not-prose my-6">
-        <CheckCircle className="h-4 w-4" />
-        <AlertTitle>Privacy-First Telemetry</AlertTitle>
-        <AlertDescription>
-          Dits includes optional, privacy-focused telemetry to help us improve the product.
-          Unlike Git which has no telemetry, Dits collects anonymized usage data when enabled.
-        </AlertDescription>
-      </Alert>
+      <Callout type="tip" title="Privacy-First Telemetry" className="not-prose my-6">
+        Dits includes optional, privacy-focused telemetry to help us improve the product.
+        Unlike Git which has no telemetry, Dits collects anonymized usage data when enabled.
+      </Callout>
 
       <div className="grid gap-6 md:grid-cols-2 my-8">
         <Card>
@@ -649,15 +628,11 @@ export default function SecurityPage() {
         </CardContent>
       </Card>
 
-      <Alert className="not-prose">
-        <CheckCircle className="h-4 w-4" />
-        <AlertTitle>Transparency Commitment</AlertTitle>
-        <AlertDescription>
-          We believe in transparency about data practices. Telemetry helps us build better tools
-          for creative professionals while respecting user privacy. You can always disable it,
-          and we only collect the minimum data needed to improve Dits.
-        </AlertDescription>
-      </Alert>
+      <Callout type="tip" title="Transparency Commitment" className="not-prose my-4">
+        We believe in transparency about data practices. Telemetry helps us build better tools
+        for creative professionals while respecting user privacy. You can always disable it,
+        and we only collect the minimum data needed to improve Dits.
+      </Callout>
 
       <h2>Security Best Practices</h2>
 
@@ -689,15 +664,11 @@ export default function SecurityPage() {
         </Card>
       </div>
 
-      <Alert className="not-prose my-6">
-        <Shield className="h-4 w-4" />
-        <AlertTitle>Security is Everyone's Responsibility</AlertTitle>
-        <AlertDescription>
-          While Dits provides robust security features, maintaining security requires
-          cooperation between the platform, organizations, and users. Security is not
-          a product, but a process.
-        </AlertDescription>
-      </Alert>
+      <Callout type="note" title="Security is Everyone&apos;s Responsibility" className="not-prose my-6">
+        While Dits provides robust security features, maintaining security requires
+        cooperation between the platform, organizations, and users. Security is not
+        a product, but a process.
+      </Callout>
 
       <h2>Security Resources</h2>
 
@@ -747,7 +718,7 @@ export default function SecurityPage() {
       <div className="text-center my-8">
         <p className="text-sm text-muted-foreground">
           Security concerns or questions? Contact our security team at{" "}
-          <Link href="mailto:security@dits.io" className="text-primary hover:underline">
+          <Link href="mailto:security@dits.io" className="text-brand hover:underline">
             security@dits.io
           </Link>
         </p>
