@@ -508,31 +508,35 @@ textarea {
 }
 
 .prose h1 {
-  @apply text-3xl font-bold tracking-tight mt-8 mb-4;
+  @apply scroll-mt-24 text-3xl font-bold tracking-tight text-foreground mt-8 mb-4;
 }
 
 .prose h2 {
-  @apply text-2xl font-semibold tracking-tight mt-8 mb-4 border-b pb-2;
+  @apply scroll-mt-24 text-2xl font-semibold tracking-tight text-foreground mt-12 mb-4 border-b border-border pb-2;
 }
 
 .prose h3 {
-  @apply text-xl font-semibold tracking-tight mt-6 mb-3;
+  @apply scroll-mt-24 text-xl font-semibold tracking-tight text-foreground mt-8 mb-3;
 }
 
 .prose h4 {
-  @apply text-lg font-semibold mt-4 mb-2;
+  @apply scroll-mt-24 text-lg font-semibold tracking-tight text-foreground mt-6 mb-2;
 }
 
 .prose p {
-  @apply leading-7 mb-4;
+  @apply leading-7 mb-4 text-foreground;
+}
+
+.prose .lead {
+  @apply text-xl leading-relaxed text-muted-foreground mb-6;
 }
 
 .prose ul {
-  @apply list-disc pl-6 mb-4 space-y-2;
+  @apply list-disc pl-6 mb-4 space-y-2 marker:text-muted-foreground;
 }
 
 .prose ol {
-  @apply list-decimal pl-6 mb-4 space-y-2;
+  @apply list-decimal pl-6 mb-4 space-y-2 marker:text-muted-foreground;
 }
 
 .prose li {
@@ -540,7 +544,7 @@ textarea {
 }
 
 .prose a:not(.not-prose a) {
-  @apply text-primary underline underline-offset-4 hover:text-primary/80;
+  @apply text-brand underline underline-offset-4 decoration-brand/40 hover:decoration-brand transition-colors;
 }
 
 /* Remove underlines from links inside not-prose sections (cards, etc) */
@@ -559,27 +563,31 @@ textarea {
 }
 
 .prose blockquote {
-  @apply border-l-4 border-primary pl-4 italic my-4;
+  @apply border-l-2 border-brand bg-muted/40 rounded-r-md pl-4 pr-4 py-2 my-4 text-muted-foreground;
+}
+
+.prose code:not(pre code) {
+  @apply rounded border border-border bg-muted px-1.5 py-0.5 text-[0.85em] font-mono text-foreground;
 }
 
 .prose pre {
-  @apply bg-zinc-900 dark:bg-zinc-950 text-zinc-100 rounded-lg p-4 overflow-x-auto my-4 text-sm leading-relaxed border border-zinc-800;
+  @apply rounded-lg p-4 overflow-x-auto my-4 text-sm leading-relaxed bg-[var(--code-background)] text-[var(--code-foreground)] border border-[var(--code-border)];
 }
 
 .prose pre code {
-  @apply bg-transparent p-0 text-inherit font-mono;
+  @apply bg-transparent border-0 p-0 text-inherit font-mono;
 }
 
 .prose table {
-  @apply w-full border-collapse my-4;
+  @apply w-full border-collapse my-4 text-sm;
 }
 
 .prose th {
-  @apply border-b font-semibold text-left p-2;
+  @apply border-b border-border bg-muted/50 text-left font-semibold text-xs uppercase tracking-wide text-muted-foreground p-2;
 }
 
 .prose td {
-  @apply border-b p-2;
+  @apply border-b border-border p-2 tabular-nums;
 }
 
 .prose hr {
