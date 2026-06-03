@@ -266,29 +266,42 @@ export default function AboutPage() {
       {/* AGENTS.md: main with id for skip-link */}
       <main id="main-content" className="flex-1 pt-[104px]" tabIndex={-1}>
         {/* Hero */}
-        <section className="container py-16 md:py-24" aria-labelledby="about-heading">
-          <div className="mx-auto max-w-4xl text-center">
-            <Badge variant="outline" className="mb-4">
-              Open Source • Apache 2.0 + MIT
-            </Badge>
-            <h1 id="about-heading" className="text-4xl font-bold tracking-tight md:text-6xl">
-              Version Control,{" "}
-              <span className="text-primary">Reimagined for Media</span>
-            </h1>
-            <p className="mt-6 text-xl text-muted-foreground max-w-3xl mx-auto">
-              Dits is a distributed version control system built from the ground up
-              for video production, game development, and large binary files.
-              Finally, version control that understands your workflow.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Button size="lg" render={<Link href="/download" />}>Get Started</Button>
-              <Button size="lg" variant="outline" render={<Link href="/docs/getting-started" />}>Read the Docs</Button>
+        <section
+          className="relative overflow-hidden py-20 md:py-28"
+          aria-labelledby="about-heading"
+        >
+          {/* Atmospheric background: grid texture + brand glow */}
+          <div className="pointer-events-none absolute inset-0 -z-10">
+            <div className="absolute inset-0 bg-grid opacity-60 [mask-image:radial-gradient(70%_60%_at_50%_0%,black,transparent)]" />
+            <div className="absolute inset-x-0 top-0 h-[480px] glow-brand" />
+          </div>
+          <div className="container">
+            <div className="mx-auto max-w-4xl text-center">
+              <Badge variant="outline" className="mb-6">
+                Open Source • Apache 2.0 + MIT
+              </Badge>
+              <h1 id="about-heading" className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+                Version Control,{" "}
+                <span className="text-gradient-brand">Reimagined for Media</span>
+              </h1>
+              <p className="mx-auto mt-6 max-w-3xl text-lg text-muted-foreground md:text-xl">
+                Dits is a distributed version control system built from the ground up
+                for video production, game development, and large binary files.
+                Finally, version control that understands your workflow.
+              </p>
+              <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <Button size="lg" render={<Link href="/download" />}>
+                  Get Started
+                  <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+                </Button>
+                <Button size="lg" variant="outline" render={<Link href="/docs/getting-started" />}>Read the Docs</Button>
+              </div>
             </div>
           </div>
         </section>
 
         {/* Mission Statement */}
-        <section className="border-y bg-muted/50" aria-labelledby="mission-heading">
+        <section className="border-t bg-muted/30" aria-labelledby="mission-heading">
           <div className="container py-16 md:py-24">
             <div className="mx-auto max-w-4xl">
               <h2 id="mission-heading" className="text-3xl font-bold tracking-tight text-center mb-8">
@@ -311,7 +324,8 @@ export default function AboutPage() {
         </section>
 
         {/* Origin Story */}
-        <section className="container py-16 md:py-24" aria-labelledby="story-heading">
+        <section className="border-t py-16 md:py-24" aria-labelledby="story-heading">
+          <div className="container">
           <div className="mx-auto max-w-4xl">
             <h2 id="story-heading" className="text-3xl font-bold tracking-tight text-center mb-12">
               Why We Built Dits
@@ -335,12 +349,12 @@ export default function AboutPage() {
                 </p>
               </div>
               <div className="relative">
-                <div className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl p-8 border">
+                <div className="rounded-2xl border border-brand/20 bg-brand/5 p-8 shadow-card">
                   <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    <div className="flex items-center gap-3" aria-hidden="true">
+                      <div className="h-3 w-3 rounded-full bg-destructive"></div>
+                      <div className="h-3 w-3 rounded-full bg-warning"></div>
+                      <div className="h-3 w-3 rounded-full bg-success"></div>
                     </div>
                     <pre className="text-sm font-mono text-muted-foreground">
                       {`$ dits add project.prproj
@@ -362,10 +376,11 @@ $ dits commit -m "Final cut v3"
               </div>
             </div>
           </div>
+          </div>
         </section>
 
         {/* The Problem */}
-        <section className="border-y bg-muted/50" aria-labelledby="problem-heading">
+        <section className="border-t bg-muted/30" aria-labelledby="problem-heading">
           <div className="container py-16 md:py-24">
             <div className="mx-auto max-w-3xl">
               <h2 id="problem-heading" className="text-3xl font-bold tracking-tight text-center mb-12">
@@ -384,11 +399,11 @@ $ dits commit -m "Final cut v3"
                         {item.problem}
                       </p>
                     </div>
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center" aria-hidden="true">
-                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-success/10 flex items-center justify-center" aria-hidden="true">
+                      <CheckCircle2 className="w-5 h-5 text-success" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-green-600">
+                      <p className="font-medium text-success">
                         <span className="sr-only">Solution: </span>
                         {item.solution}
                       </p>
@@ -401,7 +416,8 @@ $ dits commit -m "Final cut v3"
         </section>
 
         {/* How It Works teaser */}
-        <section className="container py-16 md:py-24" aria-labelledby="how-teaser-heading">
+        <section className="border-t py-16 md:py-24" aria-labelledby="how-teaser-heading">
+          <div className="container">
           <div className="mx-auto max-w-4xl text-center">
             <h2 id="how-teaser-heading" className="text-3xl font-bold tracking-tight mb-4">
               Chunk, hash, deduplicate
@@ -417,10 +433,11 @@ $ dits commit -m "Final cut v3"
               <ArrowRight className="size-4" aria-hidden="true" />
             </Button>
           </div>
+          </div>
         </section>
 
         {/* What we're actually building */}
-        <section className="border-y bg-muted/50" aria-labelledby="status-heading">
+        <section className="border-t bg-muted/30" aria-labelledby="status-heading">
           <div className="container py-16 md:py-24">
             <div className="mx-auto max-w-5xl">
               <h2 id="status-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
@@ -453,7 +470,7 @@ $ dits commit -m "Final cut v3"
                 <Card className="h-full">
                   <CardHeader>
                     <div className="flex items-center gap-2">
-                      <AlertTriangle className="size-5 text-amber-500" aria-hidden="true" />
+                      <AlertTriangle className="size-5 text-warning" aria-hidden="true" />
                       <CardTitle>On the roadmap</CardTitle>
                     </div>
                     <CardDescription>Designed and scaffolded — don&apos;t rely on these yet.</CardDescription>
@@ -475,7 +492,7 @@ $ dits commit -m "Final cut v3"
         </section>
 
         {/* Honest results */}
-        <section className="border-y bg-muted/50" aria-labelledby="results-heading">
+        <section className="border-t bg-muted/30" aria-labelledby="results-heading">
           <div className="container py-16 md:py-24">
             <div className="mx-auto max-w-5xl">
               <h2 id="results-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
@@ -521,7 +538,8 @@ $ dits commit -m "Final cut v3"
         </section>
 
         {/* Open core vs Ditshub */}
-        <section className="container py-16 md:py-24" aria-labelledby="opencore-heading">
+        <section className="border-t py-16 md:py-24" aria-labelledby="opencore-heading">
+          <div className="container">
           <div className="mx-auto max-w-5xl">
             <h2 id="opencore-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
               Open core, hosted convenience
@@ -535,8 +553,8 @@ $ dits commit -m "Final cut v3"
                 <Card key={col.name} className="h-full">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-                        <col.icon className="size-5 text-primary" aria-hidden="true" />
+                      <div className="flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                        <col.icon className="size-5 text-brand" aria-hidden="true" />
                       </div>
                       <CardTitle>{col.name}</CardTitle>
                     </div>
@@ -555,10 +573,12 @@ $ dits commit -m "Final cut v3"
               ))}
             </div>
           </div>
+          </div>
         </section>
 
         {/* Target Audiences */}
-        <section className="container py-16 md:py-24" aria-labelledby="audience-heading">
+        <section className="border-t py-16 md:py-24" aria-labelledby="audience-heading">
+          <div className="container">
           <div className="mx-auto max-w-6xl">
             <h2 id="audience-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
               Built for Creative Professionals
@@ -572,8 +592,8 @@ $ dits commit -m "Final cut v3"
                 <Card key={audience.title} className="h-full">
                   <CardHeader>
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                        <audience.icon className="w-6 h-6 text-primary" aria-hidden="true" />
+                      <div className="w-12 h-12 rounded-full bg-brand/10 flex items-center justify-center">
+                        <audience.icon className="w-6 h-6 text-brand" aria-hidden="true" />
                       </div>
                       <CardTitle>{audience.title}</CardTitle>
                     </div>
@@ -592,10 +612,11 @@ $ dits commit -m "Final cut v3"
               ))}
             </div>
           </div>
+          </div>
         </section>
 
         {/* Tech Stack */}
-        <section className="border-y bg-muted/50" aria-labelledby="tech-heading">
+        <section className="border-t bg-muted/30" aria-labelledby="tech-heading">
           <div className="container py-16 md:py-24">
             <div className="mx-auto max-w-5xl">
               <h2 id="tech-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
@@ -609,8 +630,8 @@ $ dits commit -m "Final cut v3"
                   <Card key={tech.name} role="listitem" className="h-full">
                     <CardHeader>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <tech.icon className="w-5 h-5 text-primary" aria-hidden="true" />
+                        <div className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center">
+                          <tech.icon className="w-5 h-5 text-brand" aria-hidden="true" />
                         </div>
                         <Badge variant="secondary" className="font-mono">
                           {tech.name}
@@ -629,7 +650,8 @@ $ dits commit -m "Final cut v3"
         </section>
 
         {/* Roadmap */}
-        <section className="container py-16 md:py-24" aria-labelledby="roadmap-heading">
+        <section className="border-t py-16 md:py-24" aria-labelledby="roadmap-heading">
+          <div className="container">
           <div className="mx-auto max-w-5xl">
             <h2 id="roadmap-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
               Roadmap
@@ -647,7 +669,7 @@ $ dits commit -m "Final cut v3"
                     {/* Timeline dot */}
                     <div className="absolute left-4 md:left-1/2 w-8 h-8 rounded-full border-4 border-background bg-background md:-translate-x-1/2 flex items-center justify-center z-10">
                       {item.status === 'current' ? (
-                        <div className="w-4 h-4 rounded-full bg-primary animate-pulse" />
+                        <div className="w-4 h-4 rounded-full bg-brand animate-pulse" />
                       ) : item.status === 'upcoming' ? (
                         <Clock className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
                       ) : (
@@ -656,7 +678,7 @@ $ dits commit -m "Final cut v3"
                     </div>
 
                     <div className={`flex-1 ml-16 md:ml-0 ${index % 2 === 0 ? 'md:pr-12' : 'md:pl-12'}`}>
-                      <Card className={item.status === 'current' ? 'border-primary' : ''}>
+                      <Card className={item.status === 'current' ? 'border-brand' : ''}>
                         <CardHeader>
                           <div className="flex items-center gap-3 flex-wrap">
                             <Badge
@@ -677,7 +699,7 @@ $ dits commit -m "Final cut v3"
                           <ul className="grid grid-cols-2 gap-2">
                             {item.features.map((feature) => (
                               <li key={feature} className="flex items-center gap-2 text-sm">
-                                <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" aria-hidden="true" />
+                                <CheckCircle2 className="w-4 h-4 text-brand flex-shrink-0" aria-hidden="true" />
                                 {feature}
                               </li>
                             ))}
@@ -693,10 +715,11 @@ $ dits commit -m "Final cut v3"
               </div>
             </div>
           </div>
+          </div>
         </section>
 
         {/* Values */}
-        <section className="border-y bg-muted/50" aria-labelledby="values-heading">
+        <section className="border-t bg-muted/30" aria-labelledby="values-heading">
           <div className="container py-16 md:py-24">
             <div className="mx-auto max-w-4xl">
               <h2 id="values-heading" className="text-3xl font-bold tracking-tight text-center mb-12">
@@ -704,9 +727,9 @@ $ dits commit -m "Final cut v3"
               </h2>
               <div className="grid md:grid-cols-3 gap-8" role="list">
                 <div className="text-center" role="listitem">
-                  <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <div className="mx-auto w-16 h-16 rounded-full bg-brand/10 flex items-center justify-center mb-4">
                     {/* AGENTS.md: Decorative icons are aria-hidden */}
-                    <Scale className="w-8 h-8 text-primary" aria-hidden="true" />
+                    <Scale className="w-8 h-8 text-brand" aria-hidden="true" />
                   </div>
                   <h3 className="font-semibold mb-2">Open Source</h3>
                   <p className="text-sm text-muted-foreground">
@@ -715,8 +738,8 @@ $ dits commit -m "Final cut v3"
                   </p>
                 </div>
                 <div className="text-center" role="listitem">
-                  <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <Users className="w-8 h-8 text-primary" aria-hidden="true" />
+                  <div className="mx-auto w-16 h-16 rounded-full bg-brand/10 flex items-center justify-center mb-4">
+                    <Users className="w-8 h-8 text-brand" aria-hidden="true" />
                   </div>
                   <h3 className="font-semibold mb-2">Community Driven</h3>
                   <p className="text-sm text-muted-foreground">
@@ -725,8 +748,8 @@ $ dits commit -m "Final cut v3"
                   </p>
                 </div>
                 <div className="text-center" role="listitem">
-                  <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <Heart className="w-8 h-8 text-primary" aria-hidden="true" />
+                  <div className="mx-auto w-16 h-16 rounded-full bg-brand/10 flex items-center justify-center mb-4">
+                    <Heart className="w-8 h-8 text-brand" aria-hidden="true" />
                   </div>
                   <h3 className="font-semibold mb-2">User First</h3>
                   <p className="text-sm text-muted-foreground">
@@ -740,7 +763,8 @@ $ dits commit -m "Final cut v3"
         </section>
 
         {/* Contributing */}
-        <section className="container py-16 md:py-24" aria-labelledby="contributing-heading">
+        <section className="border-t py-16 md:py-24" aria-labelledby="contributing-heading">
+          <div className="container">
           <div className="mx-auto max-w-5xl">
             <h2 id="contributing-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
               Join the Community
@@ -750,10 +774,10 @@ $ dits commit -m "Final cut v3"
             </p>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {contributionAreas.map((area) => (
-                <Card key={area.title} className="text-center h-full hover:border-primary transition-colors">
+                <Card key={area.title} className="text-center h-full hover:border-brand transition-colors">
                   <CardHeader>
-                    <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                      <area.icon className="w-6 h-6 text-primary" aria-hidden="true" />
+                    <div className="mx-auto w-12 h-12 rounded-full bg-brand/10 flex items-center justify-center mb-2">
+                      <area.icon className="w-6 h-6 text-brand" aria-hidden="true" />
                     </div>
                     <CardTitle className="text-lg">{area.title}</CardTitle>
                   </CardHeader>
@@ -779,11 +803,13 @@ $ dits commit -m "Final cut v3"
               </div>
             </div>
           </div>
+          </div>
         </section>
 
         {/* CTA */}
-        <section className="border-t bg-primary text-primary-foreground" aria-labelledby="cta-heading">
-          <div className="container py-16 md:py-24">
+        <section className="relative overflow-hidden border-t bg-primary text-primary-foreground" aria-labelledby="cta-heading">
+          <div className="pointer-events-none absolute inset-0 bg-grid opacity-10" />
+          <div className="container relative py-16 md:py-24">
             <div className="mx-auto max-w-3xl text-center">
               <h2 id="cta-heading" className="text-3xl md:text-4xl font-bold mb-4">
                 Ready to Take Control of Your Media?

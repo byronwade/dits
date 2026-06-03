@@ -1,7 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { loadComparative, loadLatestBenchmarks } from "@/lib/benchmarks.server";
-import { COST_ASSUMPTIONS_LABEL } from "@/lib/bench-cost";
+import { COST_ASSUMPTIONS, COST_ASSUMPTIONS_LABEL } from "@/lib/bench-cost";
+import { StatCard } from "@/components/stat-card";
+import { Callout } from "@/components/ui/callout";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { CompRecord, ComparativeDoc } from "@/lib/comparative-types";
 import {
   KeynoteSection,
@@ -103,6 +113,43 @@ export default async function BenchmarksPage() {
 
   const cumulativeEdits =
     doc?.cumulative?.find((s) => s.tool.startsWith("dits"))?.points.length ?? 15;
+
+  // ---- real-money bandwidth math (multiplication only; bytes from the figures above) ----
+  const egress = COST_ASSUMPTIONS.egress_usd_per_gb; // $0.09/GB (S3/CloudFront transfer-out)
+  const b2 = 0.01; // Backblaze B2 transfer-out, for range
+  const usd = (n: number) =>
+    n >= 1
+      ? `$${n.toLocaleString("en-US", { maximumFractionDigits: 2 })}`
+      : n >= 0.01
+        ? `$${n.toFixed(2)}`
+        : n > 0
+          ? "< $0.01"
+          : "$0.00";
+
+  // Single-edit scenario: 10 GB asset, one localized edit. Whole-file tools move 10 GB;
+  // dits moves only the changed chunks (~200 KB), matching the /docs figure.
+  const assetGb = 10;
+  const ditsDeltaGb = 200 / 1_048_576; // ~200 KB in GB
+  const singleFullCost = assetGb * egress;
+  const singleDitsCost = ditsDeltaGb * egress;
+  const singleSavedPct = Math.round((1 - ditsDeltaGb / assetGb) * 100 * 10) / 10;
+
+  // Monthly team distribution scenario. Assumptions stated inline on the page.
+  // 5 collaborators each PULL every new version (egress applies to data served out).
+  const teamSize = 5;
+  const editsPerDay = 3;
+  const days = 22; // working days/month
+  const editsPerMonth = editsPerDay * days; // 66
+  const pulls = teamSize - 1; // the editor pushes; teammates pull
+  // git-lfs / manual: each pull re-downloads the whole asset.
+  const monthlyFullGb = editsPerMonth * pulls * assetGb;
+  // dits: each pull fetches only the changed chunks.
+  const monthlyDitsGb = editsPerMonth * pulls * ditsDeltaGb;
+  const monthlyFullCost = monthlyFullGb * egress;
+  const monthlyDitsCost = monthlyDitsGb * egress;
+  const monthlySaved = monthlyFullCost - monthlyDitsCost;
+  const annualSaved = monthlySaved * 12;
+  const monthlySavedPct = Math.round((1 - monthlyDitsGb / monthlyFullGb) * 100 * 10) / 10;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -272,8 +319,140 @@ export default async function BenchmarksPage() {
         </p>
       </KeynoteSection>
 
-      {/* 08 — CUMULATIVE (measured sweep) */}
-      <KeynoteSection chapter="08" tag="A whole project over time">
+      {/* 08 — REAL-MONEY BANDWIDTH BILL */}
+      <KeynoteSection chapter="08" tag="The bandwidth bill, in dollars" id="bandwidth-cost">
+        <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
+          Every re-transfer is a line item on a cloud invoice.
+        </h2>
+        <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
+          Whole-file tools (Git&nbsp;LFS, manual copies) move the entire asset every time it
+          changes. dits&apos; content-defined chunking + delta transfer moves only the changed
+          chunks. Priced at real cloud egress rates, that gap is money.
+        </p>
+
+        {/* Headline figures */}
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <StatCard
+            label="Monthly savings"
+            value={usd(monthlySaved)}
+            hint="team distribution scenario, below"
+            className="border-brand/30 bg-brand/5"
+          />
+          <StatCard
+            label="Annual savings"
+            value={usd(annualSaved)}
+            hint="12 × monthly, same assumptions"
+            className="border-brand/30 bg-brand/5"
+          />
+          <StatCard
+            label="Bandwidth avoided"
+            value={`${monthlySavedPct}%`}
+            hint="of bytes never leave the server"
+          />
+        </div>
+
+        {/* Scenario 1 — single edit */}
+        <h3 className="mt-10 text-xl font-semibold tracking-tight">
+          One small edit to a 10&nbsp;GB asset
+        </h3>
+        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+          A localized change (re-color a few frames). Whole-file tools re-transfer the entire
+          10&nbsp;GB; dits transfers only the ~200&nbsp;KB of changed chunks — the same figure as
+          the engine&apos;s measured delta. Cost = GB&nbsp;transferred × egress rate.
+        </p>
+        <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-card">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Per edit, transferred</TableHead>
+                <TableHead className="text-right tabular-nums">Data moved</TableHead>
+                <TableHead className="text-right tabular-nums">@ $0.09/GB (S3)</TableHead>
+                <TableHead className="text-right tabular-nums">@ $0.01/GB (B2)</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell>Git&nbsp;LFS / manual</TableCell>
+                <TableCell className="text-right tabular-nums">10 GB</TableCell>
+                <TableCell className="text-right tabular-nums text-destructive">{usd(singleFullCost)}</TableCell>
+                <TableCell className="text-right tabular-nums text-muted-foreground">{usd(assetGb * b2)}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium text-brand">dits</TableCell>
+                <TableCell className="text-right tabular-nums">~200 KB</TableCell>
+                <TableCell className="text-right tabular-nums text-brand">{usd(singleDitsCost)}</TableCell>
+                <TableCell className="text-right tabular-nums text-brand">{usd(ditsDeltaGb * b2)}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          That&apos;s <strong className="text-foreground tabular-nums">{singleSavedPct}%</strong> less
+          data per edit — and the dollar gap compounds every time the asset is distributed.
+        </p>
+
+        {/* Scenario 2 — monthly team */}
+        <h3 className="mt-10 text-xl font-semibold tracking-tight">
+          A {teamSize}-person team, one month
+        </h3>
+        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+          <strong className="text-foreground">Stated assumptions:</strong> {teamSize} collaborators,{" "}
+          {editsPerDay} edits/day over {days} working days ({editsPerMonth} new versions/month) on
+          the same 10&nbsp;GB asset. Each new version is pulled by the other {pulls} teammates — and
+          egress (data-transfer-<em>out</em>) is what cloud providers bill for serving those pulls.
+          Whole-file tools download all 10&nbsp;GB each pull; dits downloads only the changed chunks.
+        </p>
+        <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-card">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Per month, served out</TableHead>
+                <TableHead className="text-right tabular-nums">Egress (GB)</TableHead>
+                <TableHead className="text-right tabular-nums">@ $0.09/GB (S3)</TableHead>
+                <TableHead className="text-right tabular-nums">Per year</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell>Git&nbsp;LFS / manual</TableCell>
+                <TableCell className="text-right tabular-nums">{monthlyFullGb.toLocaleString("en-US")} GB</TableCell>
+                <TableCell className="text-right tabular-nums text-destructive">{usd(monthlyFullCost)}</TableCell>
+                <TableCell className="text-right tabular-nums text-destructive">{usd(monthlyFullCost * 12)}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium text-brand">dits</TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {monthlyDitsGb < 1 ? `${(monthlyDitsGb * 1024).toFixed(0)} MB` : `${monthlyDitsGb.toFixed(1)} GB`}
+                </TableCell>
+                <TableCell className="text-right tabular-nums text-brand">{usd(monthlyDitsCost)}</TableCell>
+                <TableCell className="text-right tabular-nums text-brand">{usd(monthlyDitsCost * 12)}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-semibold">You save</TableCell>
+                <TableCell className="text-right tabular-nums font-semibold">
+                  {(monthlyFullGb - monthlyDitsGb).toLocaleString("en-US", { maximumFractionDigits: 0 })} GB
+                </TableCell>
+                <TableCell className="text-right tabular-nums font-semibold text-brand">{usd(monthlySaved)}/mo</TableCell>
+                <TableCell className="text-right tabular-nums font-semibold text-brand">{usd(annualSaved)}/yr</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
+
+        <Callout type="note" title="How the dollars are computed" className="mt-7">
+          The only new math here is multiplication: <strong>GB transferred × $/GB</strong>. The byte
+          figures come straight from the measured benchmarks above (10&nbsp;GB asset, ~200&nbsp;KB
+          changed-chunk delta); we do not invent throughput. Egress rate is{" "}
+          <strong className="tabular-nums">${egress.toFixed(2)}/GB</strong> (AWS&nbsp;S3 / CloudFront
+          first-tier data-transfer-out; Backblaze&nbsp;B2 ≈ ${b2.toFixed(2)}/GB shown for range).
+          Uploads (transfer-<em>in</em>) are typically free; the dollars accrue when a changed asset
+          is <em>distributed</em> — pulled by teammates or served by a CDN. Team size, edit cadence,
+          and asset size are stated estimates, not measured — change them and the ratio holds.
+        </Callout>
+      </KeynoteSection>
+
+      {/* 09 — CUMULATIVE (measured sweep) */}
+      <KeynoteSection chapter="09" tag="A whole project over time">
         <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
           Edit after edit, the storage piles up — except for dits.
         </h2>
@@ -286,15 +465,15 @@ export default async function BenchmarksPage() {
         <CumulativeChart
           series={(doc?.cumulative ?? []).some((s) => s.tool.startsWith("dits")) ? doc!.cumulative : []}
           projected={[
-            { tool: "git-lfs", label: "git-lfs (re-stores everything)", color: "#9aa0a6", endGb: 50 },
-            { tool: "restic", label: "restic (re-export defeats dedup)", color: "#3b82f6", endGb: 36 },
+            { tool: "git-lfs", label: "git-lfs (re-stores everything)", color: "var(--chart-3)", endGb: 50 },
+            { tool: "restic", label: "restic (re-export defeats dedup)", color: "var(--chart-2)", endGb: 36 },
             { tool: "dits", label: "dits (frame-addressing)", color: "var(--brand)", endGb: 1.3 },
           ]}
         />
       </KeynoteSection>
 
-      {/* 09 — SCALING (measured sweep) */}
-      <KeynoteSection chapter="09" tag="Does it hold at scale?">
+      {/* 10 — SCALING (measured sweep) */}
+      <KeynoteSection chapter="10" tag="Does it hold at scale?">
         <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
           The bigger the file, the more dits saves.
         </h2>
@@ -309,7 +488,7 @@ export default async function BenchmarksPage() {
 
       {/* 10 — MATRIX */}
       {doc && (
-        <KeynoteSection chapter="10" tag="All the data · nothing hidden">
+        <KeynoteSection chapter="11" tag="All the data · nothing hidden">
           <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
             Every tool, every test, five ways.
           </h2>
@@ -323,7 +502,7 @@ export default async function BenchmarksPage() {
 
       {/* 11 — MORE EDIT TYPES (Module E) */}
       {doc && (
-        <KeynoteSection chapter="11" tag="More edit types · incl. the magic ones">
+        <KeynoteSection chapter="12" tag="More edit types · incl. the magic ones">
           <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
             Some edits cost dits literally zero bytes.
           </h2>
@@ -337,7 +516,7 @@ export default async function BenchmarksPage() {
       )}
 
       {/* 12 — METHODOLOGY */}
-      <KeynoteSection chapter="12" tag="Can you trust these?" id="methodology">
+      <KeynoteSection chapter="13" tag="Can you trust these?" id="methodology">
         <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
           One command re-runs every number on your own machine.
         </h2>

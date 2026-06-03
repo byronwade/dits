@@ -17,7 +17,6 @@ import {
   Scissors,
   Fingerprint,
   Copy,
-  FileVideo,
   HardDrive,
   Network,
   Lock,
@@ -180,9 +179,9 @@ function StateCell({ state, note }: { state: CellState; note: string }) {
   const map: Record<CellState, { icon: typeof CheckCircle2; cls: string; label: string }> = {
     yes: { icon: CheckCircle2, cls: "text-brand", label: "Yes" },
     no: { icon: XCircle, cls: "text-muted-foreground", label: "No" },
-    partial: { icon: AlertTriangle, cls: "text-amber-500", label: "Partial" },
-    experimental: { icon: Wand2, cls: "text-amber-500", label: "Experimental" },
-    roadmap: { icon: AlertTriangle, cls: "text-amber-500", label: "Roadmap" },
+    partial: { icon: AlertTriangle, cls: "text-warning", label: "Partial" },
+    experimental: { icon: Wand2, cls: "text-warning", label: "Experimental" },
+    roadmap: { icon: AlertTriangle, cls: "text-warning", label: "Roadmap" },
   };
   const { icon: Icon, cls, label } = map[state];
   return (
@@ -202,18 +201,31 @@ export default function HowItWorksPage() {
       <Header />
       <main id="main-content" className="flex-1 pt-[104px]" tabIndex={-1}>
         {/* Hero */}
-        <section className="container py-16 md:py-24" aria-labelledby="hiw-heading">
-          <div className="mx-auto max-w-4xl text-center">
-            <Badge variant="outline" className="mb-4">How it works</Badge>
-            <h1 id="hiw-heading" className="text-4xl font-bold tracking-tight md:text-6xl">
-              From bytes to commits,{" "}
-              <span className="text-brand">explained simply</span>
-            </h1>
-            <p className="mt-6 text-xl text-muted-foreground max-w-3xl mx-auto">
-              Dits versions huge media files by storing the unique pieces of your data exactly
-              once. Here&apos;s the whole idea — in plain English first, with the technical detail
-              right behind it.
-            </p>
+        <section
+          className="relative overflow-hidden pt-20 pb-24 md:pt-32 md:pb-32"
+          aria-labelledby="hiw-heading"
+        >
+          {/* Atmospheric background: grid texture + brand glow */}
+          <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+            <div className="absolute inset-0 bg-grid opacity-60 [mask-image:radial-gradient(70%_60%_at_50%_0%,black,transparent)]" />
+            <div className="absolute inset-x-0 top-0 h-[480px] glow-brand" />
+          </div>
+          <div className="container">
+            <div className="mx-auto max-w-4xl text-center">
+              <Badge variant="outline" className="mb-6">How it works</Badge>
+              <h1
+                id="hiw-heading"
+                className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl"
+              >
+                From bytes to commits,{" "}
+                <span className="text-gradient-brand">explained simply</span>
+              </h1>
+              <p className="mx-auto mt-6 max-w-3xl text-xl text-muted-foreground">
+                Dits versions huge media files by storing the unique pieces of your data exactly
+                once. Here&apos;s the whole idea — in plain English first, with the technical detail
+                right behind it.
+              </p>
+            </div>
           </div>
         </section>
 
@@ -221,7 +233,7 @@ export default function HowItWorksPage() {
         <section className="border-y bg-muted/50" aria-labelledby="model-heading">
           <div className="container py-16 md:py-24">
             <div className="mx-auto max-w-5xl">
-              <h2 id="model-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
+              <h2 id="model-heading" className="text-3xl font-bold tracking-tight text-center sm:text-4xl mb-4">
                 The whole idea in three words
               </h2>
               <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
@@ -257,9 +269,17 @@ export default function HowItWorksPage() {
         {/* Content-defined chunking */}
         <section className="container py-16 md:py-24" aria-labelledby="chunk-heading">
           <div className="mx-auto max-w-4xl">
-            <h2 id="chunk-heading" className="text-3xl font-bold tracking-tight mb-4">
-              1. Content-defined chunking
-            </h2>
+            <div className="mb-4 flex items-center gap-4">
+              <span
+                className="flex size-11 flex-shrink-0 items-center justify-center rounded-xl bg-brand/10 font-mono text-lg font-bold text-brand"
+                aria-hidden="true"
+              >
+                1
+              </span>
+              <h2 id="chunk-heading" className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Content-defined chunking
+              </h2>
+            </div>
             <p className="text-lg text-muted-foreground mb-8">
               Most tools cut files into fixed-size blocks. That breaks the moment you insert a
               single byte near the start — every block after it shifts, so nothing lines up and
@@ -338,9 +358,17 @@ export default function HowItWorksPage() {
         <section className="border-y bg-muted/50" aria-labelledby="hash-heading">
           <div className="container py-16 md:py-24">
             <div className="mx-auto max-w-4xl">
-              <h2 id="hash-heading" className="text-3xl font-bold tracking-tight mb-4">
-                2. Content addressing with BLAKE3
-              </h2>
+              <div className="mb-4 flex items-center gap-4">
+                <span
+                  className="flex size-11 flex-shrink-0 items-center justify-center rounded-xl bg-brand/10 font-mono text-lg font-bold text-brand"
+                  aria-hidden="true"
+                >
+                  2
+                </span>
+                <h2 id="hash-heading" className="text-3xl font-bold tracking-tight sm:text-4xl">
+                  Content addressing with BLAKE3
+                </h2>
+              </div>
               <p className="text-lg text-muted-foreground mb-8">
                 Each chunk is identified by the <strong className="text-foreground">BLAKE3</strong>{" "}
                 hash of its bytes — a 32-byte fingerprint. Because the name is derived from the
@@ -366,10 +394,15 @@ chunk C  ──blake3──▶  7f3a91c2…  (same as A → store nothing, just 
         {/* Format-aware / FACR — the differentiator */}
         <section className="container py-16 md:py-24" aria-labelledby="facr-heading">
           <div className="mx-auto max-w-5xl">
-            <div className="flex items-center gap-3 mb-4">
-              <FileVideo className="size-7 text-brand" aria-hidden="true" />
-              <h2 id="facr-heading" className="text-3xl font-bold tracking-tight">
-                3. Format-aware handling &amp; FACR
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <span
+                className="flex size-11 flex-shrink-0 items-center justify-center rounded-xl bg-brand/10 font-mono text-lg font-bold text-brand"
+                aria-hidden="true"
+              >
+                3
+              </span>
+              <h2 id="facr-heading" className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Format-aware handling &amp; FACR
               </h2>
               <Badge variant="secondary" className="font-mono">the differentiator</Badge>
             </div>
@@ -425,10 +458,15 @@ chunk C  ──blake3──▶  7f3a91c2…  (same as A → store nothing, just 
         <section className="border-y bg-muted/50" aria-labelledby="storage-heading">
           <div className="container py-16 md:py-24">
             <div className="mx-auto max-w-4xl">
-              <div className="flex items-center gap-3 mb-4">
-                <HardDrive className="size-7 text-brand" aria-hidden="true" />
-                <h2 id="storage-heading" className="text-3xl font-bold tracking-tight">
-                  4. Hybrid Git + Dits storage
+              <div className="mb-4 flex items-center gap-3">
+                <span
+                  className="flex size-11 flex-shrink-0 items-center justify-center rounded-xl bg-brand/10 font-mono text-lg font-bold text-brand"
+                  aria-hidden="true"
+                >
+                  4
+                </span>
+                <h2 id="storage-heading" className="text-3xl font-bold tracking-tight sm:text-4xl">
+                  Hybrid Git + Dits storage
                 </h2>
               </div>
               <p className="text-lg text-muted-foreground">
@@ -444,9 +482,17 @@ chunk C  ──blake3──▶  7f3a91c2…  (same as A → store nothing, just 
         {/* VFS / Locking / Sync — clearly roadmap */}
         <section className="container py-16 md:py-24" aria-labelledby="future-heading">
           <div className="mx-auto max-w-5xl">
-            <h2 id="future-heading" className="text-3xl font-bold tracking-tight mb-4">
-              5. Working with terabytes: VFS, locking &amp; sync
-            </h2>
+            <div className="mb-4 flex items-center gap-4">
+              <span
+                className="flex size-11 flex-shrink-0 items-center justify-center rounded-xl bg-brand/10 font-mono text-lg font-bold text-brand"
+                aria-hidden="true"
+              >
+                5
+              </span>
+              <h2 id="future-heading" className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Working with terabytes: VFS, locking &amp; sync
+              </h2>
+            </div>
             <p className="text-lg text-muted-foreground mb-8 max-w-3xl">
               These pieces complete the picture for teams. We&apos;re being explicit about what ships
               today versus what&apos;s still on the roadmap, so you can plan honestly.
@@ -456,7 +502,7 @@ chunk C  ──blake3──▶  7f3a91c2…  (same as A → store nothing, just 
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <HardDrive className="size-5 text-muted-foreground" aria-hidden="true" />
-                    <Badge variant="outline" className="text-[10px] uppercase text-amber-500">
+                    <Badge variant="outline" className="text-[10px] uppercase text-warning">
                       <AlertTriangle className="mr-1 size-3" aria-hidden="true" /> Roadmap
                     </Badge>
                   </div>
@@ -473,7 +519,7 @@ chunk C  ──blake3──▶  7f3a91c2…  (same as A → store nothing, just 
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <Lock className="size-5 text-muted-foreground" aria-hidden="true" />
-                    <Badge variant="outline" className="text-[10px] uppercase text-amber-500">
+                    <Badge variant="outline" className="text-[10px] uppercase text-warning">
                       <AlertTriangle className="mr-1 size-3" aria-hidden="true" /> Roadmap
                     </Badge>
                   </div>
@@ -490,7 +536,7 @@ chunk C  ──blake3──▶  7f3a91c2…  (same as A → store nothing, just 
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <Network className="size-5 text-muted-foreground" aria-hidden="true" />
-                    <Badge variant="outline" className="text-[10px] uppercase text-amber-500">
+                    <Badge variant="outline" className="text-[10px] uppercase text-warning">
                       <AlertTriangle className="mr-1 size-3" aria-hidden="true" /> Roadmap
                     </Badge>
                   </div>
@@ -511,7 +557,7 @@ chunk C  ──blake3──▶  7f3a91c2…  (same as A → store nothing, just 
         <section className="border-y bg-muted/50" aria-labelledby="compare-heading">
           <div className="container py-16 md:py-24">
             <div className="mx-auto max-w-6xl">
-              <h2 id="compare-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
+              <h2 id="compare-heading" className="text-3xl font-bold tracking-tight text-center sm:text-4xl mb-4">
                 Git vs Dits, honestly
               </h2>
               <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">

@@ -82,22 +82,34 @@ export default function PlaygroundPage() {
       <Header />
       <main id="main-content" className="flex-1 pt-[104px]" tabIndex={-1}>
         {/* Hero */}
-        <section className="container py-16 md:py-24" aria-labelledby="playground-heading">
-          <div className="mx-auto max-w-4xl text-center">
-            <Badge variant="outline" className="mb-4 gap-1.5">
-              <Cpu className="size-3.5" aria-hidden="true" />
-              Coming soon
-            </Badge>
-            <h1 id="playground-heading" className="text-4xl font-bold tracking-tight md:text-6xl">
-              Run the Dits engine{" "}
-              <span className="text-brand">in your browser</span>
-            </h1>
-            <p className="mt-6 text-xl text-muted-foreground max-w-3xl mx-auto">
-              We&apos;re compiling the real Dits core to WebAssembly so the exact chunking and
-              hashing the CLI runs executes on your file, live, with nothing uploaded. Drop a
-              file, watch it chunk and deduplicate, edit it, and see how little actually changes.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
+        <section
+          className="relative overflow-hidden pt-20 pb-24 md:pt-32 md:pb-32"
+          aria-labelledby="playground-heading"
+        >
+          {/* Atmospheric background: grid texture + brand glow */}
+          <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+            <div className="absolute inset-0 bg-grid opacity-60 [mask-image:radial-gradient(70%_60%_at_50%_0%,black,transparent)]" />
+            <div className="absolute inset-x-0 top-0 h-[480px] glow-brand" />
+          </div>
+          <div className="container">
+            <div className="mx-auto max-w-4xl text-center">
+              <Badge variant="outline" className="mb-6 gap-1.5">
+                <Cpu className="size-3.5" aria-hidden="true" />
+                Coming soon
+              </Badge>
+              <h1
+                id="playground-heading"
+                className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl"
+              >
+                Run the Dits engine{" "}
+                <span className="text-gradient-brand">in your browser</span>
+              </h1>
+              <p className="mx-auto mt-6 max-w-3xl text-xl text-muted-foreground">
+                We&apos;re compiling the real Dits core to WebAssembly so the exact chunking and
+                hashing the CLI runs executes on your file, live, with nothing uploaded. Drop a
+                file, watch it chunk and deduplicate, edit it, and see how little actually changes.
+              </p>
+              <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Button size="lg" render={<Link href="/how-it-works" />}>See how it works</Button>
               <Button
                 size="lg"
@@ -113,6 +125,7 @@ export default function PlaygroundPage() {
                 <GithubIcon className="size-4" />
                 Follow on GitHub
               </Button>
+              </div>
             </div>
           </div>
         </section>
@@ -121,7 +134,7 @@ export default function PlaygroundPage() {
         <section className="border-y bg-muted/50" aria-labelledby="preview-heading">
           <div className="container py-16 md:py-24">
             <div className="mx-auto max-w-5xl">
-              <h2 id="preview-heading" className="text-3xl font-bold tracking-tight text-center mb-4">
+              <h2 id="preview-heading" className="text-3xl font-bold tracking-tight text-center sm:text-4xl mb-4">
                 What you&apos;ll be able to do
               </h2>
               <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
