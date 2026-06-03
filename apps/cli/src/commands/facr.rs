@@ -318,9 +318,21 @@ pub fn photo_render(manifest: &str, output: &str, store: Option<&str>) -> Result
 }
 
 /// Reconstruct a playable video from a FACR manifest.
-pub fn facr_checkout(manifest: &str, output: &str, store: Option<&str>) -> Result<()> {
+pub fn facr_checkout(
+    manifest: &str,
+    output: &str,
+    store: Option<&str>,
+    codec: Option<&str>,
+) -> Result<()> {
     let manifest_path = Path::new(manifest);
     anyhow::ensure!(manifest_path.exists(), "manifest not found: {}", manifest);
+
+    // Output codec: H.264 by default; ProRes/DNxHR for an editor-ready mezzanine deliverable.
+    let out_codec = match codec {
+        Some(name) => crate::facr::OutputCodec::from_name(name)
+            .with_context(|| format!("unknown output codec '{name}' (use: h264, prores, dnxhr)"))?,
+        None => crate::facr::OutputCodec::H264,
+    };
 
     let json = std::fs::read_to_string(manifest_path).context("read manifest")?;
     let manifest = ClipManifest::from_json(&json).context("parse manifest")?;
@@ -333,7 +345,7 @@ pub fn facr_checkout(manifest: &str, output: &str, store: Option<&str>) -> Resul
         manifest.frames.len(),
         style(output).cyan()
     );
-    reconstruct_video(&manifest, &frame_store, output_path)?;
+    reconstruct_video(&manifest, &frame_store, output_path, out_codec)?;
     println!("{} {}", style("✓ Wrote").green(), output);
     Ok(())
 }
