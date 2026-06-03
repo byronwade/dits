@@ -3,29 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { docsNavigation, type DocLink } from "@/components/docs-sidebar";
+import { getDocsNav, flattenDocsNav, type DocLink } from "@/lib/docs-nav";
 import { cn } from "@/lib/utils";
-
-/**
- * Flatten the docs navigation into a single ordered list of pages,
- * de-duplicating repeated hrefs (section landing pages can appear both
- * as a section `href` and as the first item). Single source of truth:
- * the array lives in docs-sidebar.tsx and is imported here.
- */
-export function flattenDocsNav(): DocLink[] {
-  const flat: DocLink[] = [];
-  const seen = new Set<string>();
-
-  for (const section of docsNavigation) {
-    for (const item of section.items) {
-      if (seen.has(item.href)) continue;
-      seen.add(item.href);
-      flat.push(item);
-    }
-  }
-
-  return flat;
-}
 
 function PagerCard({
   item,
@@ -55,9 +34,13 @@ function PagerCard({
   );
 }
 
+/**
+ * Prev/next pager — product-aware: flattens the active surface's docs nav
+ * (`/docs/*` or `/ai/docs/*`) so pagination stays within the correct tree.
+ */
 export function DocsPager() {
   const pathname = usePathname();
-  const pages = flattenDocsNav();
+  const pages = flattenDocsNav(getDocsNav(pathname));
   const index = pages.findIndex((p) => p.href === pathname);
 
   // Unknown route — render nothing rather than a broken pager.

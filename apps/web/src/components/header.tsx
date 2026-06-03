@@ -19,17 +19,10 @@ import {
 } from "@/components/ui/sheet";
 import { AlphaBanner } from "@/components/alpha-banner";
 import { SkipLink } from "@/components/skip-link";
+import { ProductLauncher } from "@/components/product-launcher";
+import { getProduct, type NavItem } from "@/lib/products";
 
-const navItems = [
-  { title: "Docs", href: "/docs" },
-  { title: "How it works", href: "/how-it-works" },
-  { title: "Benchmarks", href: "/benchmarks" },
-  { title: "Playground", href: "/playground" },
-  { title: "About", href: "/about" },
-  { title: "Community", href: "/community" },
-];
-
-function activeIndex(pathname: string | null): number {
+function activeIndex(navItems: NavItem[], pathname: string | null): number {
   if (!pathname) return -1;
   return navItems.findIndex(
     (item) => pathname === item.href || pathname.startsWith(item.href + "/"),
@@ -43,7 +36,13 @@ function activeIndex(pathname: string | null): number {
  * active item on leave). Professional and scannable; the morph is the motion,
  * not an icon dock.
  */
-function DockNav({ active }: { active: number }) {
+function DockNav({
+  navItems,
+  active,
+}: {
+  navItems: NavItem[];
+  active: number;
+}) {
   const listRef = React.useRef<HTMLDivElement>(null);
   const itemRefs = React.useRef<Array<HTMLAnchorElement | null>>([]);
   const [hovered, setHovered] = React.useState<number | null>(null);
@@ -135,8 +134,11 @@ function DockNav({ active }: { active: number }) {
 
 /**
  * Global site header — refined, professional top bar on byronwade/ui tokens.
- * Logo left, a light morphing "surface" dock of text links centered, and the
- * theme toggle + primary CTA trailing. Mobile collapses to a Sheet.
+ * The top-left pairs the logo with a product launcher ([ Dits | AI ]) so you
+ * can switch between the media site and the AI site; the active product drives
+ * the centered morphing dock of text links. Theme toggle + primary CTA trail.
+ * Mobile collapses to a Sheet. The active product is derived from the path, so
+ * this component stays prop-less across both surfaces.
  *
  * AGENTS.md compliance:
  * - MUST: "Skip to content" link
@@ -147,7 +149,9 @@ function DockNav({ active }: { active: number }) {
  */
 export function Header() {
   const pathname = usePathname();
-  const active = activeIndex(pathname);
+  const product = getProduct(pathname);
+  const navItems = product.nav;
+  const active = activeIndex(navItems, pathname);
 
   return (
     <>
@@ -156,28 +160,28 @@ export function Header() {
 
       <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-border/60 bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/55">
         <div className="container grid h-16 grid-cols-[1fr_auto] items-center gap-4 md:grid-cols-[1fr_auto_1fr]">
-          {/* Logo wordmark */}
-          <Link
-            href="/"
-            aria-label="Dits — Go to homepage"
-            className="group flex w-fit items-center gap-2.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
-            <Image
-              src="/dits.png"
-              alt="Dits Logo"
-              width={32}
-              height={32}
-              className="h-8 w-8 object-contain transition-transform duration-300 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-105"
-              priority
-            />
-            <span className="text-lg font-bold tracking-tight text-foreground">
-              Dits
-            </span>
-          </Link>
+          {/* Logo + product launcher */}
+          <div className="flex items-center gap-2.5">
+            <Link
+              href={product.home}
+              aria-label={`${product.name} — Go to homepage`}
+              className="group hidden w-fit items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:flex"
+            >
+              <Image
+                src="/dits.png"
+                alt="Dits Logo"
+                width={32}
+                height={32}
+                className="h-8 w-8 object-contain transition-transform duration-300 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-105"
+                priority
+              />
+            </Link>
+            <ProductLauncher />
+          </div>
 
           {/* Centered morphing dock (desktop) */}
           <div className="hidden justify-center md:flex">
-            <DockNav active={active} />
+            <DockNav navItems={navItems} active={active} />
           </div>
 
           {/* Trailing actions */}
@@ -230,7 +234,7 @@ export function Header() {
               </SheetTrigger>
               <SheetContent side="right" className="overscroll-contain">
                 <SheetHeader>
-                  <SheetTitle>Navigation</SheetTitle>
+                  <SheetTitle>{product.name}</SheetTitle>
                 </SheetHeader>
                 <nav
                   className="mt-6 flex flex-col gap-1"
