@@ -28,6 +28,8 @@ pub async fn stream_demo(
     push: bool,
     vmaf: Option<f64>,
     edit: Option<String>,
+    otio: bool,
+    import: Option<String>,
     port: u16,
 ) -> Result<()> {
     check_ffmpeg().context("FFmpeg is required for stream-demo")?;
@@ -65,6 +67,10 @@ pub async fn stream_demo(
     // P4 #2: content-defined boundaries make reuse survive trim/insert edits. Objective report only.
     if let Some(kind) = edit.as_deref() {
         return cdc_edit_demo(kind, &v1m, &store, &origin, layout.fps).await;
+    }
+    // P4 #3: reconstruct an edit from an OpenTimelineIO timeline (generated, or a real --import file).
+    if otio || import.is_some() {
+        return otio_demo(&v1m, import.as_deref(), &work).await;
     }
 
     let frame_bytes = dir_size(&frames_dir);
@@ -184,6 +190,75 @@ pub async fn stream_demo(
     };
     serve(state, port).await?;
     Ok(())
+}
+
+/// OTIO import demo: reconstruct an edit from an OpenTimelineIO timeline (a generated trim+reorder,
+/// or a real `--import` file) and show it costs 0 new frames, with CDC segment reuse.
+async fn otio_demo(
+    source: &crate::facr::manifest::ClipManifest,
+    import: Option<&str>,
+    work: &std::path::Path,
+) -> Result<()> {
+    use crate::stream::cdc::{plan_cdc, CdcParams};
+    use crate::stream::otio::{parse_otio, timeline_to_manifest};
+    use std::collections::HashMap;
+
+    // Get an OTIO document: a real file, or a generated trim+reorder of the ingested source.
+    let doc = match import {
+        Some(p) => std::fs::read_to_string(p).with_context(|| format!("read OTIO file {p}"))?,
+        None => {
+            let n = source.frames.len();
+            let rate = crate::stream::layout::parse_fps(&source.frame_rate);
+            let mid = n / 2;
+            let tail_trim = 5.min(n.saturating_sub(mid));
+            // Reorder: second half (trimmed) first, then the front half.
+            let doc = generate_otio("source", rate, &[(mid, n - mid - tail_trim), (0, mid)]);
+            let path = work.join("edit.otio");
+            std::fs::write(&path, &doc)?;
+            println!("generated OTIO timeline -> {}", path.display());
+            doc
+        }
+    };
+
+    let clips = parse_otio(&doc).context("parse OTIO")?;
+    // Map every referenced source name onto the single ingested source (demo uses one source).
+    let mut sources: HashMap<String, &crate::facr::manifest::ClipManifest> = HashMap::new();
+    for c in &clips {
+        sources.insert(c.source.clone(), source);
+    }
+    let edited = timeline_to_manifest(&clips, &sources)?;
+
+    // Zero new content: how many output frame hashes are absent from the source?
+    let src_hashes: std::collections::HashSet<_> = source.frames.iter().map(|f| f.hash).collect();
+    let new_frames = edited.frames.iter().filter(|f| !src_hashes.contains(&f.hash)).count();
+
+    let plan = plan_cdc(source, &edited, &CdcParams::default());
+    let total = plan.reused.len() + plan.reencoded.len();
+    let reuse_pct = if total == 0 { 0.0 } else { plan.reused.len() as f64 / total as f64 * 100.0 };
+
+    println!("\n  -- FACR OTIO import --");
+    println!("  clips imported        : {}", clips.len());
+    println!("  frames reconstructed  : {}  (source had {})", edited.frames.len(), source.frames.len());
+    println!("  NEW frames stored     : {new_frames}  (the whole edit is a re-arrangement of existing frames)");
+    println!("  CDC segments reused   : {}/{}  ({reuse_pct:.1}%)", plan.reused.len(), total);
+    println!("  => importing an external edit costs ~0 new frames; interior segments reuse by content.");
+    Ok(())
+}
+
+/// Build a minimal one-track OTIO JSON document from `(start, count)` source ranges (in frames).
+fn generate_otio(source: &str, rate: f64, ranges: &[(usize, usize)]) -> String {
+    let clips: Vec<String> = ranges
+        .iter()
+        .map(|(start, count)| {
+            format!(
+                r#"{{ "OTIO_SCHEMA": "Clip.1", "media_reference": {{ "OTIO_SCHEMA": "ExternalReference.1", "target_url": "{source}" }}, "source_range": {{ "OTIO_SCHEMA": "TimeRange.1", "start_time": {{ "OTIO_SCHEMA": "RationalTime.1", "value": {start}, "rate": {rate} }}, "duration": {{ "OTIO_SCHEMA": "RationalTime.1", "value": {count}, "rate": {rate} }} }} }}"#
+            )
+        })
+        .collect();
+    format!(
+        r#"{{ "OTIO_SCHEMA": "Timeline.1", "tracks": {{ "OTIO_SCHEMA": "Stack.1", "children": [ {{ "OTIO_SCHEMA": "Track.1", "children": [ {} ] }} ] }} }}"#,
+        clips.join(", ")
+    )
 }
 
 /// CDC edit demo: build v1 with content-defined segments, apply a trim/insert, rebuild v2 reusing

@@ -9,6 +9,7 @@ pub mod incremental;
 pub mod ladder;
 pub mod layout;
 pub mod origin;
+pub mod otio;
 pub mod playlist;
 pub mod quic_origin;
 pub mod serve;

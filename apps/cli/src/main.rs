@@ -426,6 +426,12 @@ enum Commands {
         /// Demonstrate edit-resilient reuse with content-defined boundaries: "insert" or "trim"
         #[arg(long)]
         edit: Option<String>,
+        /// Reconstruct an edit from a generated OpenTimelineIO timeline (0 new frames)
+        #[arg(long)]
+        otio: bool,
+        /// Reconstruct an edit from a real OTIO (.otio) file
+        #[arg(long)]
+        import: Option<String>,
         /// HTTP port for the player
         #[arg(long, default_value = "8088")]
         port: u16,
@@ -1232,8 +1238,8 @@ async fn main() {
         Commands::Unmount { mount_point } => commands::unmount(&mount_point),
         Commands::CacheStats => commands::cache_stats(),
         Commands::FacrDemo { frames, regrade } => commands::facr_demo(frames, regrade),
-        Commands::StreamDemo { input, grade_start, grade_end, segment_seconds, lossless, push, vmaf, edit, port } => {
-            commands::stream_demo(input, grade_start, grade_end, segment_seconds, lossless, push, vmaf, edit, port).await
+        Commands::StreamDemo { input, grade_start, grade_end, segment_seconds, lossless, push, vmaf, edit, otio, import, port } => {
+            commands::stream_demo(input, grade_start, grade_end, segment_seconds, lossless, push, vmaf, edit, otio, import, port).await
         }
         Commands::FacrAdd { input, store, manifest } => {
             commands::facr_add(&input, store.as_deref(), manifest.as_deref())
