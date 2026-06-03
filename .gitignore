@@ -47,3 +47,5 @@ Cargo.lock
 debug/
 *.pdb
 tmp/corpus/
+
+.superpowers/

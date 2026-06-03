@@ -5,6 +5,7 @@
 pub mod edit;
 pub mod encode;
 pub mod incremental;
+pub mod ladder;
 pub mod layout;
 pub mod origin;
 pub mod playlist;

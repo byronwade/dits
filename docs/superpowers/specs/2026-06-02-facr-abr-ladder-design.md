@@ -110,3 +110,21 @@ master playlist (per version) -> rung media playlists -> content-addressed segme
 ## Module layout
 New: `apps/cli/src/stream/ladder.rs`. Edits: `apps/cli/src/stream/{encode,incremental,playlist,serve}.rs`
 + `apps/cli/src/commands/stream_demo.rs`. No new dependencies.
+
+## Implementation status & verification (2026-06-02)
+
+**Built and committed.** 21 stream tests green, including: `default_ladder` caps to source height
+(720→3 rungs, 360→1, 120→single fallback); `EncodeProfile{height:24}` downscales correctly;
+`EncodeProfile::source()` unchanged; `master_playlist` emits one STREAM-INF per rung.
+
+**Verified end to end** (`dits stream-demo`, 1280×720 source, 100 frames):
+- Master playlist lists 3 rungs (720p@2.5M / 480p@1.2M / 240p@500k) with `RESOLUTION` matching the
+  bytes ffmpeg produces (`output_dims` uses ffmpeg's `scale=-2` rule: `round(w·h/H/2)·2`).
+- Each rung's media playlist decodes to the full 100 frames at the correct resolution
+  (1280×720, 854×480, 426×240).
+- `plan()` computed once; **15 segments across 3 rungs, 3 re-encoded (the changed segment in each
+  rung), 12 reused → 80% reuse**; **782 KB re-delivered vs 3436 KB** naive full re-encode.
+
+**Open verification (same as prior phases):** pixel-level hls.js ABR switching not observed
+in-session (automation tab `visibility:hidden` blocks MediaSource); the master + rung playlists and
+all segments are validated at the container level via ffprobe/ffmpeg.
