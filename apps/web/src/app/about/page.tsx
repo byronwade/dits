@@ -28,7 +28,7 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  Github,
+  CodeXml,
   MessageSquare,
   BookOpen,
   Code2,
@@ -768,7 +768,7 @@ $ dits commit -m "Final cut v3"
             </div>
             <div className="mt-12 text-center">
               <div className="inline-flex items-center gap-4 p-4 rounded-lg border bg-muted/50">
-                <Github className="w-6 h-6" aria-hidden="true" />
+                <CodeXml className="w-6 h-6" aria-hidden="true" />
                 <div className="text-left">
                   <p className="font-medium">Star us on GitHub</p>
                   <p className="text-sm text-muted-foreground">

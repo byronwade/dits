@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Github,
+  CodeXml,
   MessageCircle,
   Bug,
   BookOpen,
@@ -69,7 +69,7 @@ const communityLinks = [
   {
     title: "Source Code",
     description: "Browse the source, fork, and contribute",
-    icon: Github,
+    icon: CodeXml,
     href: "https://github.com/byronwade/dits",
     action: "View Code",
   },
@@ -238,7 +238,7 @@ export default function CommunityPage() {
                         href="https://github.com/byronwade/dits"
                         target="_blank"
                       >
-                        <Github className="mr-2 h-4 w-4" />
+                        <CodeXml className="mr-2 h-4 w-4" />
                         Fork on GitHub
                       </Link>
                     </Button>

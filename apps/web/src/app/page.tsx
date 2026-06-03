@@ -21,7 +21,7 @@ import {
   Gauge,
   FileVideo,
   Users,
-  Github,
+  CodeXml,
   Rocket,
   Clipboard,
   Globe,
@@ -212,7 +212,7 @@ export default function Home() {
                   No account required
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Github className="h-3.5 w-3.5" />
+                  <CodeXml className="h-3.5 w-3.5" />
                   MIT Licensed
                 </span>
               </div>
@@ -622,7 +622,7 @@ export default function Home() {
 
               <Button variant="outline" asChild>
                 <Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer">
-                  <Github className="mr-2 h-4 w-4" />
+                  <CodeXml className="mr-2 h-4 w-4" />
                   Follow on GitHub
                 </Link>
               </Button>
@@ -656,7 +656,7 @@ export default function Home() {
                   asChild
                 >
                   <Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer">
-                    <Github className="mr-2 h-5 w-5" />
+                    <CodeXml className="mr-2 h-5 w-5" />
                     Star on GitHub
                   </Link>
                 </Button>

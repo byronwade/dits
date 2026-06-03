@@ -23,7 +23,7 @@ import {
   Code,
   Download,
   Book,
-  Github,
+  CodeXml,
   CheckCircle,
   Star,
   Package,
@@ -576,7 +576,7 @@ fn process_chunk(chunk: &[u8]) {
       <div className="text-center my-8">
         <Button size="lg" asChild>
           <Link href="https://github.com/dits-io">
-            <Github className="mr-2 h-5 w-5" />
+            <CodeXml className="mr-2 h-5 w-5" />
             View All SDKs on GitHub
           </Link>
         </Button>

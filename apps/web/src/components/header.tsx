@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Github, Heart, Menu, Sparkles } from "lucide-react";
+import { CodeXml, Heart, Menu, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
@@ -130,7 +130,7 @@ export function Header() {
                   rel="noopener noreferrer"
                   aria-label="View Dits on GitHub (opens in new tab)"
                 >
-                  <Github className="h-[18px] w-[18px]" aria-hidden="true" />
+                  <CodeXml className="h-[18px] w-[18px]" aria-hidden="true" />
                 </Link>
               </Button>
 
@@ -164,7 +164,7 @@ export function Header() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Github className="h-4 w-4" aria-hidden="true" />
+                  <CodeXml className="h-4 w-4" aria-hidden="true" />
                   Star on GitHub
                 </Link>
               </Button>

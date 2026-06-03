@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Github, MessageCircle, Bug } from "lucide-react";
+import { CodeXml, MessageCircle, Bug } from "lucide-react";
 
 const footerLinks = {
   documentation: [
@@ -19,7 +19,7 @@ const footerLinks = {
     {
       title: "GitHub",
       href: "https://github.com/byronwade/dits",
-      icon: Github,
+      icon: CodeXml,
       label: "View Dits on GitHub",
     },
     {
