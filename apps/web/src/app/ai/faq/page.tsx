@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Script from "next/script";
 import {
   Boxes,
   Scale,
@@ -377,13 +376,11 @@ export default function AiFaqPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <Script
-        id="ai-faq-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <Script
-        id="ai-faq-breadcrumb"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
