@@ -1,0 +1,24 @@
+{
+  "files": [
+    {
+      "name": "v1.mov",
+      "sha256": "b8a4772d1e39064e5f98d1ffdf76b35db0d602fbac05a5caf320d483092651a6",
+      "bytes": 35930608
+    },
+    {
+      "name": "v1.mp4",
+      "sha256": "214d6202a383cbedf496c0db4a0a782d6fe71b7bca71ad8cec85e377324bebc4",
+      "bytes": 3178999
+    },
+    {
+      "name": "v2_reexport.mov",
+      "sha256": "5a8e45064fb91aebcc658fe6a9fa29f595dfdf749cf56409e492a36d02e1be9c",
+      "bytes": 35991573
+    },
+    {
+      "name": "v2_meta.mp4",
+      "sha256": "634afcd18dc3e496b47f4ea398b52f70f552df746ff938e1314a5fe3c885ba0a",
+      "bytes": 3179035
+    }
+  ]
+}
