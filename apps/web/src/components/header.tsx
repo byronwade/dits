@@ -19,6 +19,7 @@ import { SkipLink } from "@/components/skip-link";
 
 const navItems = [
   { title: "Docs", href: "/docs" },
+  { title: "Playground", href: "/playground" },
   { title: "About", href: "/about" },
   { title: "Community", href: "/community" },
 ];
