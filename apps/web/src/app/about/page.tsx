@@ -142,6 +142,8 @@ const workingToday = [
   "Hybrid Git (libgit2) text + Dits binary storage",
   "Local commit / add / status / diff / log / branch / merge / checkout",
   "Local-filesystem clone & push",
+  "FUSE/WinFSP virtual filesystem mounts (dits mount)",
+  "Local file locking (dits lock / unlock / locks)",
   "FACR frame-addressable video (experimental — try dits facr-demo)",
 ];
 
@@ -149,8 +151,7 @@ const onRoadmap = [
   "QUIC delta sync (network push / pull / fetch is scaffolding today)",
   "P2P rendezvous & NAT traversal",
   "Bi-directional sync over a network remote",
-  "FUSE/WinFSP virtual filesystem mounts",
-  "Distributed file locking for teams",
+  "Server-coordinated distributed locking for teams",
 ];
 
 // Honest results — real numbers from the benchmark spike (one machine, one run).

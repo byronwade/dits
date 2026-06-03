@@ -155,7 +155,7 @@ const comparison = [
   },
   {
     feature: "On-demand file hydration (VFS)",
-    dits: { state: "roadmap", note: "FUSE/WinFSP — designed, not shipped" },
+    dits: { state: "partial", note: "FUSE/WinFSP mount works locally; remote hydration is roadmap" },
     git: { state: "no", note: "Full checkout" },
     gitlfs: { state: "partial", note: "Manual selection" },
   },
