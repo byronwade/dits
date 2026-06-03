@@ -29,6 +29,7 @@ pub fn add(files: &[String]) -> Result<()> {
             Ok(result) => {
                 total_result.files_staged += result.files_staged;
                 total_result.files_ignored += result.files_ignored;
+                total_result.symlinks_skipped += result.symlinks_skipped;
                 total_result.new_chunks += result.new_chunks;
                 total_result.new_bytes += result.new_bytes;
                 total_result.dedup_chunks += result.dedup_chunks;
@@ -63,6 +64,15 @@ pub fn add(files: &[String]) -> Result<()> {
     }
 
     progress.finish_and_clear();
+
+    // Symlinks are not versioned yet — warn so they are never silently dropped.
+    if total_result.symlinks_skipped > 0 {
+        println!(
+            "{} Skipped {} symbolic link(s): symlink versioning is not supported yet.",
+            style("⚠").yellow().bold(),
+            total_result.symlinks_skipped
+        );
+    }
 
     // Print summary
     if total_result.files_staged > 0 {
