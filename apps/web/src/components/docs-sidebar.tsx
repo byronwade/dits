@@ -4,18 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-interface DocLink {
+export interface DocLink {
   title: string;
   href: string;
 }
 
-interface DocSection {
+export interface DocSection {
   title: string;
   href?: string;
   items: DocLink[];
 }
 
-const docsNavigation: DocSection[] = [
+export const docsNavigation: DocSection[] = [
   {
     title: "Getting Started",
     href: "/docs",

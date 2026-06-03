@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { DocsSidebar } from "@/components/docs-sidebar";
+import { DocsToc } from "@/components/docs-toc";
+import { DocsPager } from "@/components/docs-pager";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
@@ -40,7 +42,7 @@ export default function DocsLayout({
 
       <div className="container-wrapper flex flex-1 flex-col px-2">
         <div
-          className="flex w-full min-h-min flex-1 items-start px-0 lg:grid lg:grid-cols-[240px_minmax(0,1fr)]"
+          className="flex w-full min-h-min flex-1 items-start px-0 lg:grid lg:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[240px_minmax(0,1fr)_224px]"
           style={
             {
               "--sidebar-width": "240px",
@@ -54,10 +56,19 @@ export default function DocsLayout({
 
           {/* Main Content */}
           <main className="flex-1 min-w-0 w-full">
-            <div className="mx-auto flex w-full max-w-5xl min-w-0 flex-1 flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8 md:px-10 lg:py-10">
+            <div
+              id="doc-content"
+              className="mx-auto flex w-full max-w-5xl min-w-0 flex-1 flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8 md:px-10 lg:py-10"
+            >
               {children}
+              <DocsPager />
             </div>
           </main>
+
+          {/* Right "On this page" rail - xl and up only */}
+          <aside className="hidden w-56 shrink-0 xl:block xl:self-stretch">
+            <DocsToc />
+          </aside>
         </div>
       </div>
       <Footer />
