@@ -4,56 +4,29 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   Download,
-  GitBranch,
   HardDrive,
-  Zap,
   Film,
-  Shield,
   ArrowRight,
   Check,
-  Layers,
-  Clock,
-  Database,
   Copy,
   CheckCircle2,
-  Terminal,
-  Sparkles,
-  Gauge,
-  FileVideo,
-  Users,
   CodeXml,
-  Rocket,
-  Clipboard,
-  Globe,
-  Link as LinkIcon,
-  Folder,
-  ChevronDown,
-  Play,
-  Box,
-  Gamepad2,
-  Camera,
-  Lock,
-  Cpu,
-  Wifi,
 } from "lucide-react";
 import { GithubIcon } from "@/components/icons/github-icon";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { StatCard } from "@/components/stat-card";
+import { StatusPill } from "@/components/status-pill";
+import type { StatusTone } from "@/components/ui/status-dot";
 import { cn } from "@/lib/utils";
 import { BenchmarksHighlights } from "@/components/benchmarks-highlights";
 
@@ -101,7 +74,7 @@ const faqs = [
   },
 ];
 
-const phases = [
+const phases: { name: string; status: "complete" | "active" | "planned" }[] = [
   { name: "Engine", status: "complete" },
   { name: "Atom Exploder", status: "complete" },
   { name: "VFS", status: "complete" },
@@ -113,6 +86,12 @@ const phases = [
   { name: "Hologram", status: "planned" },
   { name: "Deep Freeze", status: "planned" },
 ];
+
+const phaseTone: Record<(typeof phases)[number]["status"], StatusTone> = {
+  complete: "success",
+  active: "info",
+  planned: "neutral",
+};
 
 // ============================================================================
 // COMPONENTS
@@ -131,13 +110,37 @@ function CopyButton({ text }: { text: string }) {
     <Button
       variant="ghost"
       size="icon"
-      className="h-8 w-8 text-zinc-400 hover:text-zinc-100"
+      className="text-muted-foreground hover:text-foreground"
       onClick={copy}
       aria-label={copied ? "Copied" : "Copy to clipboard"}
       type="button"
     >
       {copied ? <CheckCircle2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
     </Button>
+  );
+}
+
+/** Marketing section header: centered eyebrow-less title with optional gradient subtitle. */
+function SectionHeading({
+  title,
+  subtitle,
+  className,
+}: {
+  title: string;
+  subtitle?: string;
+  className?: string;
+}) {
+  return (
+    <div className={cn("text-center", className)}>
+      <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+        {title}
+      </h2>
+      {subtitle && (
+        <p className="mt-2 text-2xl font-normal text-muted-foreground sm:text-3xl">
+          {subtitle}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -153,12 +156,13 @@ export default function Home() {
       <Header />
       <main id="main-content" className="flex-1 pt-[104px]">
         {/* ================================================================ */}
-        {/* HERO - Clean, minimal, visitors.now inspired */}
+        {/* HERO */}
         {/* ================================================================ */}
-        <section className="relative pt-20 pb-24 md:pt-32 md:pb-32">
-          {/* Very subtle background */}
-          <div className="absolute inset-0 -z-10">
-            <div className="absolute inset-0 bg-gradient-to-b from-muted/30 via-transparent to-transparent" />
+        <section className="relative overflow-hidden pt-20 pb-24 md:pt-32 md:pb-32">
+          {/* Atmospheric background: grid texture + brand glow */}
+          <div className="pointer-events-none absolute inset-0 -z-10">
+            <div className="absolute inset-0 bg-grid opacity-60 [mask-image:radial-gradient(70%_60%_at_50%_0%,black,transparent)]" />
+            <div className="absolute inset-x-0 top-0 h-[480px] glow-brand" />
           </div>
 
           <div className="container">
@@ -167,28 +171,28 @@ export default function Home() {
               <div className="mb-8">
                 <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
                   An alternative to
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted border text-foreground font-medium text-xs">
+                  <span className="inline-flex items-center gap-1.5 rounded-md border bg-muted px-2.5 py-1 text-xs font-medium text-foreground">
                     <HardDrive className="h-3 w-3" />
                     Git LFS
                   </span>
                 </span>
               </div>
 
-              {/* Main headline - clean, bold */}
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-6">
+              {/* Main headline */}
+              <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
                 Git for{" "}
-                <span className="text-primary">video and photos</span>
+                <span className="text-gradient-brand">video and photos</span>
               </h1>
 
               {/* Subheadline */}
-              <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto mb-10">
+              <p className="mx-auto mb-10 max-w-xl text-lg text-muted-foreground md:text-xl">
                 Git changed how the world ships code. Dits does the same for the files Git
                 can&apos;t handle&mdash;video, RAW photos, and huge creative projects. Edit a 4&nbsp;GB
                 file and store only what changed, not another copy.
               </p>
 
               {/* CTAs */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10">
+              <div className="mb-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Button size="lg" render={<Link href="/docs/getting-started" />}>
                   Get Started
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -201,11 +205,11 @@ export default function Home() {
               {/* Trust signals */}
               <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5">
-                  <Check className="h-3.5 w-3.5 text-primary" />
-                  Free & Open Source
+                  <Check className="h-3.5 w-3.5 text-brand" />
+                  Free &amp; Open Source
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Check className="h-3.5 w-3.5 text-primary" />
+                  <Check className="h-3.5 w-3.5 text-brand" />
                   No account required
                 </span>
                 <span className="flex items-center gap-1.5">
@@ -220,26 +224,22 @@ export default function Home() {
         </section>
 
         {/* ================================================================ */}
-        {/* WHY DOES THIS EXIST - the one-screen answer */}
+        {/* WHY DOES THIS EXIST */}
         {/* ================================================================ */}
-        <section className="py-24 md:py-32 border-t bg-muted/30">
+        <section className="border-t bg-muted/30 py-24 md:py-32">
           <div className="container">
             <div className="mx-auto max-w-5xl">
-              <div className="text-center mb-14">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4">
-                  Why does this exist?
-                </h2>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                  Because version control never got solved for the big stuff. Here&apos;s the whole
-                  story in three steps.
-                </p>
-              </div>
+              <SectionHeading title="Why does this exist?" className="mb-14" />
+              <p className="mx-auto -mt-10 mb-14 max-w-2xl text-center text-lg text-muted-foreground">
+                Because version control never got solved for the big stuff. Here&apos;s the whole
+                story in three steps.
+              </p>
 
-              <div className="grid md:grid-cols-3 gap-6">
+              <div className="grid gap-6 md:grid-cols-3">
                 {/* The problem */}
-                <div className="rounded-2xl bg-card border p-6">
-                  <div className="text-sm font-semibold text-red-500 mb-3">The problem</div>
-                  <div className="font-mono text-sm text-muted-foreground space-y-1 mb-4">
+                <Card className="rounded-2xl border bg-card p-6">
+                  <div className="mb-3 text-sm font-semibold text-destructive">The problem</div>
+                  <div className="mb-4 space-y-1 font-mono text-sm text-muted-foreground">
                     <div>final.mp4</div>
                     <div>final_v2.mp4</div>
                     <div>final_FINAL.mp4</div>
@@ -249,12 +249,12 @@ export default function Home() {
                     Every change is a new multi-gigabyte copy. You re-upload the whole file to
                     change five seconds. No history, no diff, no idea what shipped.
                   </p>
-                </div>
+                </Card>
 
                 {/* Why Git can't help */}
-                <div className="rounded-2xl bg-card border p-6">
-                  <div className="text-sm font-semibold text-amber-500 mb-3">Why Git can&apos;t help</div>
-                  <p className="text-muted-foreground mb-4">
+                <Card className="rounded-2xl border bg-card p-6">
+                  <div className="mb-3 text-sm font-semibold text-warning">Why Git can&apos;t help</div>
+                  <p className="mb-4 text-muted-foreground">
                     Git was built for text. A one-line code edit is tiny&mdash;but a one-second
                     video trim rewrites the entire file.
                   </p>
@@ -262,12 +262,12 @@ export default function Home() {
                     Git and Git&nbsp;LFS just store another full copy every time. They were never
                     designed for gigabytes of binary media.
                   </p>
-                </div>
+                </Card>
 
                 {/* What Dits does */}
-                <div className="rounded-2xl bg-emerald-500/5 border border-emerald-500/20 p-6">
-                  <div className="text-sm font-semibold text-emerald-500 mb-3">What Dits does</div>
-                  <p className="text-muted-foreground mb-4">
+                <Card className="rounded-2xl border border-brand/20 bg-brand/5 p-6">
+                  <div className="mb-3 text-sm font-semibold text-brand">What Dits does</div>
+                  <p className="mb-4 text-muted-foreground">
                     Real version control for big binary media. Edit a video or photo and Dits
                     stores only the difference&mdash;kilobytes, not gigabytes.
                   </p>
@@ -275,46 +275,39 @@ export default function Home() {
                     See exactly which frames changed. Keep a full, honest history. No more
                     <span className="font-mono"> _FINAL_v27</span>.
                   </p>
-                </div>
+                </Card>
               </div>
 
               {/* The one-liner */}
-              <div className="mt-10 rounded-2xl border bg-card p-8 text-center">
-                <p className="text-xl md:text-2xl font-medium">
+              <Card className="mt-10 rounded-2xl border bg-card p-8 text-center">
+                <p className="text-xl font-medium md:text-2xl">
                   &ldquo;Git lets developers version their code and only save what changed.{" "}
-                  <span className="text-primary">Dits does that for video and photos.</span>&rdquo;
+                  <span className="text-gradient-brand">Dits does that for video and photos.</span>&rdquo;
                 </p>
-                <p className="text-sm text-muted-foreground mt-3">
+                <p className="mt-3 text-sm text-muted-foreground">
                   That&apos;s the whole pitch. Everything below is how.
                 </p>
-              </div>
+              </Card>
             </div>
           </div>
         </section>
 
         {/* ================================================================ */}
-        {/* UNDERSTAND YOUR FILES - visitors.now section pattern */}
+        {/* UNDERSTAND YOUR FILES */}
         {/* ================================================================ */}
-        <section className="py-24 md:py-32 border-t bg-muted/30">
+        <section className="border-t bg-muted/30 py-24 md:py-32">
           <div className="container">
             <div className="mx-auto max-w-5xl">
-              {/* Section header - visitors.now style */}
-              <div className="text-center mb-16">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4">
-                  Understand your files.
-                  <span className="block text-muted-foreground font-normal text-2xl sm:text-3xl mt-2">
-                    They&apos;re more than blobs on a hard drive.
-                  </span>
-                </h2>
-              </div>
+              <SectionHeading
+                title="Understand your files."
+                subtitle="They're more than blobs on a hard drive."
+                className="mb-16"
+              />
 
-              {/* Feature card with visual */}
-              <div className="grid lg:grid-cols-2 gap-8 items-center">
+              <div className="grid items-center gap-8 lg:grid-cols-2">
                 <div>
-                  <h3 className="text-2xl font-bold mb-4">
-                    See exactly what changed
-                  </h3>
-                  <p className="text-lg text-muted-foreground mb-6">
+                  <h3 className="mb-4 text-2xl font-bold">See exactly what changed</h3>
+                  <p className="mb-6 text-lg text-muted-foreground">
                     Dits splits files into content-defined chunks. When you edit a 10GB video,
                     only the changed chunks are stored. View diffs, track history, and understand
                     your storage at a glance.
@@ -326,8 +319,8 @@ export default function Home() {
                       "60-80% typical storage reduction",
                     ].map((item, i) => (
                       <li key={i} className="flex items-center gap-3 text-muted-foreground">
-                        <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                          <Check className="h-3 w-3 text-emerald-500" />
+                        <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-brand/10">
+                          <Check className="h-3 w-3 text-brand" />
                         </div>
                         {item}
                       </li>
@@ -336,9 +329,9 @@ export default function Home() {
                 </div>
 
                 {/* Visual demo - chunk visualization */}
-                <div className="rounded-2xl bg-card border p-6 lg:p-8">
+                <Card className="rounded-2xl border bg-card p-6 lg:p-8">
                   <div className="space-y-4">
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground mb-4">
+                    <div className="mb-4 flex items-center gap-3 text-sm text-muted-foreground">
                       <Film className="h-5 w-5" />
                       <span className="font-mono">project_v3.mp4</span>
                       <Badge variant="secondary" className="ml-auto">10.2 GB</Badge>
@@ -351,72 +344,77 @@ export default function Home() {
                           key={i}
                           className={cn(
                             "h-6 rounded-sm transition-colors",
-                            i < 35 ? "bg-primary/20" : "bg-emerald-500"
+                            i < 35 ? "bg-brand/20" : "bg-brand"
                           )}
                         />
                       ))}
                     </div>
 
-                    <div className="flex items-center justify-between text-sm pt-2">
+                    <div className="flex items-center justify-between pt-2 text-sm">
                       <span className="text-muted-foreground">
-                        <span className="text-foreground font-medium">35</span> chunks reused
+                        <span className="font-medium text-foreground">35</span> chunks reused
                       </span>
-                      <span className="text-emerald-500 font-medium">
-                        5 new chunks (512 MB)
-                      </span>
+                      <span className="font-medium text-brand">5 new chunks (512 MB)</span>
                     </div>
                   </div>
-                </div>
+                </Card>
               </div>
             </div>
           </div>
         </section>
 
         {/* ================================================================ */}
-        {/* SYNC SMARTER - visitors.now pattern */}
+        {/* SYNC SMARTER */}
         {/* ================================================================ */}
-        <section className="py-24 md:py-32 border-t">
+        <section className="border-t py-24 md:py-32">
           <div className="container">
             <div className="mx-auto max-w-5xl">
-              <div className="text-center mb-16">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4">
-                  Sync smarter.
-                  <span className="block text-muted-foreground font-normal text-2xl sm:text-3xl mt-2">
-                    Stop re-uploading the same data.
-                  </span>
-                </h2>
-              </div>
+              <SectionHeading
+                title="Sync smarter."
+                subtitle="Stop re-uploading the same data."
+                className="mb-16"
+              />
 
-              <div className="grid lg:grid-cols-2 gap-8 items-center">
+              <div className="grid items-center gap-8 lg:grid-cols-2">
                 {/* Terminal demo */}
-                <div className="order-2 lg:order-1 rounded-2xl bg-zinc-950 overflow-hidden shadow-2xl">
-                  <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800">
+                <div
+                  className="order-2 overflow-hidden rounded-2xl shadow-float lg:order-1"
+                  style={{
+                    backgroundColor: "var(--code-background)",
+                    border: "1px solid var(--code-border)",
+                  }}
+                >
+                  <div
+                    className="flex items-center gap-2 px-4 py-3"
+                    style={{ borderBottom: "1px solid var(--code-border)" }}
+                  >
                     <div className="flex gap-1.5">
-                      <div className="w-3 h-3 rounded-full bg-red-500" />
-                      <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                      <div className="w-3 h-3 rounded-full bg-green-500" />
+                      <div className="h-3 w-3 rounded-full bg-destructive" />
+                      <div className="h-3 w-3 rounded-full bg-warning" />
+                      <div className="h-3 w-3 rounded-full bg-success" />
                     </div>
-                    <span className="text-zinc-500 text-xs ml-2 font-mono">terminal</span>
+                    <span className="ml-2 font-mono text-xs text-muted-foreground">terminal</span>
                   </div>
-                  <div className="p-5 font-mono text-sm space-y-2 text-zinc-300">
-                    <div><span className="text-emerald-400">$</span> dits push origin main</div>
-                    <div className="text-zinc-500 pl-2">
+                  <div
+                    className="space-y-2 p-5 font-mono text-sm"
+                    style={{ color: "var(--code-foreground)" }}
+                  >
+                    <div><span className="text-brand">$</span> dits push origin main</div>
+                    <div className="pl-2 text-muted-foreground">
                       Analyzing changes...<br />
-                      <span className="text-zinc-400">→ 3 files modified (10.2 GB logical)</span><br />
-                      <span className="text-zinc-400">→ 47 new chunks identified</span><br />
-                      <span className="text-emerald-400">→ Uploading 512 MB (95% deduplicated)</span><br />
+                      <span>&rarr; 3 files modified (10.2 GB logical)</span><br />
+                      <span>&rarr; 47 new chunks identified</span><br />
+                      <span className="text-brand">&rarr; Uploading 512 MB (95% deduplicated)</span><br />
                       <br />
-                      <span className="text-emerald-400">✓ Pushed in 4.2s</span>
+                      <span className="text-brand">&check; Pushed in 4.2s</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="order-1 lg:order-2">
                   <Badge variant="outline" className="mb-4">Sync engine on the roadmap</Badge>
-                  <h3 className="text-2xl font-bold mb-4">
-                    Delta sync, not full re-upload
-                  </h3>
-                  <p className="text-lg text-muted-foreground mb-6">
+                  <h3 className="mb-4 text-2xl font-bold">Delta sync, not full re-upload</h3>
+                  <p className="mb-6 text-lg text-muted-foreground">
                     Traditional tools re-upload entire files on every change. Because Dits content-
                     addresses every chunk and frame, sync only needs to transfer what&apos;s
                     different&mdash;and a dropped transfer resumes where it left off instead of
@@ -427,12 +425,12 @@ export default function Home() {
                   {/* Before/after comparison */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="rounded-xl bg-muted/50 p-4 text-center">
-                      <p className="text-sm text-muted-foreground mb-1">Traditional</p>
-                      <p className="text-2xl font-bold text-red-500 line-through tabular-nums">10.2 GB</p>
+                      <p className="mb-1 text-sm text-muted-foreground">Traditional</p>
+                      <p className="text-2xl font-bold tabular-nums text-destructive line-through">10.2 GB</p>
                     </div>
-                    <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-4 text-center">
-                      <p className="text-sm text-emerald-600 dark:text-emerald-400 mb-1">With Dits</p>
-                      <p className="text-2xl font-bold text-emerald-500 tabular-nums">512 MB</p>
+                    <div className="rounded-xl border border-brand/20 bg-brand/10 p-4 text-center">
+                      <p className="mb-1 text-sm text-brand">With Dits</p>
+                      <p className="text-2xl font-bold tabular-nums text-brand">512 MB</p>
                     </div>
                   </div>
                 </div>
@@ -442,27 +440,22 @@ export default function Home() {
         </section>
 
         {/* ================================================================ */}
-        {/* P2P SHARING - visitors.now pattern */}
+        {/* P2P SHARING */}
         {/* ================================================================ */}
-        <section className="py-24 md:py-32 border-t bg-muted/30">
+        <section className="border-t bg-muted/30 py-24 md:py-32">
           <div className="container">
             <div className="mx-auto max-w-5xl">
-              <div className="text-center mb-16">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4">
-                  Share directly.
-                  <span className="block text-muted-foreground font-normal text-2xl sm:text-3xl mt-2">
-                    No cloud upload required.
-                  </span>
-                </h2>
-              </div>
+              <SectionHeading
+                title="Share directly."
+                subtitle="No cloud upload required."
+                className="mb-16"
+              />
 
-              <div className="grid lg:grid-cols-2 gap-8 items-center">
+              <div className="grid items-center gap-8 lg:grid-cols-2">
                 <div>
                   <Badge variant="outline" className="mb-4">On the roadmap</Badge>
-                  <h3 className="text-2xl font-bold mb-4">
-                    Peer-to-peer collaboration
-                  </h3>
-                  <p className="text-lg text-muted-foreground mb-6">
+                  <h3 className="mb-4 text-2xl font-bold">Peer-to-peer collaboration</h3>
+                  <p className="mb-6 text-lg text-muted-foreground">
                     The plan: share repositories directly between computers with a join code&mdash;
                     end-to-end encrypted, no file-size limits. Because frames are content-addressed,
                     transfers will resume where they drop and never re-send footage you both already
@@ -475,8 +468,8 @@ export default function Home() {
                       "No bandwidth caps or limits",
                     ].map((item, i) => (
                       <li key={i} className="flex items-center gap-3 text-muted-foreground">
-                        <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <Check className="h-3 w-3 text-primary" />
+                        <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-brand/10">
+                          <Check className="h-3 w-3 text-brand" />
                         </div>
                         {item}
                       </li>
@@ -485,18 +478,17 @@ export default function Home() {
                 </div>
 
                 {/* Join code visual */}
-                <div className="rounded-2xl bg-card border p-8 text-center">
-                  <div className="inline-flex items-center gap-2 mb-4">
-                    <div className="w-3 h-3 rounded-full bg-muted-foreground/40" />
-                    <span className="text-sm text-muted-foreground font-medium">Coming soon</span>
+                <Card className="rounded-2xl border bg-card p-8 text-center">
+                  <div className="mb-4 inline-flex">
+                    <StatusPill tone="neutral">Coming soon</StatusPill>
                   </div>
-                  <div className="text-4xl font-mono font-bold tracking-widest mb-4 text-muted-foreground/50">
+                  <div className="mb-4 font-mono text-4xl font-bold tracking-widest text-muted-foreground/50">
                     7KJM-XBCD
                   </div>
                   <p className="text-sm text-muted-foreground">
                     The planned flow: send a join code, your collaborator connects directly
                   </p>
-                </div>
+                </Card>
               </div>
             </div>
           </div>
@@ -505,18 +497,28 @@ export default function Home() {
         {/* ================================================================ */}
         {/* INSTALL */}
         {/* ================================================================ */}
-        <section className="py-24 md:py-32 border-t">
+        <section className="border-t py-24 md:py-32">
           <div className="container">
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+              <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
                 Get started in seconds
               </h2>
-              <p className="text-lg text-muted-foreground mb-8">
+              <p className="mb-8 text-lg text-muted-foreground">
                 Install with your preferred package manager
               </p>
 
-              <div className="rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden text-left shadow-lg">
-                <div className="flex border-b border-zinc-700/50" role="tablist">
+              <div
+                className="overflow-hidden rounded-2xl text-left shadow-card"
+                style={{
+                  backgroundColor: "var(--code-background)",
+                  border: "1px solid var(--code-border)",
+                }}
+              >
+                <div
+                  className="flex"
+                  role="tablist"
+                  style={{ borderBottom: "1px solid var(--code-border)" }}
+                >
                   {(Object.keys(installCommands) as Array<keyof typeof installCommands>).map((key) => (
                     <button
                       key={key}
@@ -526,8 +528,8 @@ export default function Home() {
                       className={cn(
                         "flex-1 px-4 py-3 text-sm font-medium transition-colors",
                         activeInstall === key
-                          ? "bg-zinc-800 text-white border-b-2 border-emerald-500"
-                          : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
+                          ? "border-b-2 border-brand bg-muted/20 text-foreground"
+                          : "text-muted-foreground hover:bg-muted/10 hover:text-foreground"
                       )}
                       type="button"
                     >
@@ -535,40 +537,43 @@ export default function Home() {
                     </button>
                   ))}
                 </div>
-                <div className="p-5 flex items-center justify-between bg-zinc-950">
-                  <pre className="m-0 p-0 bg-transparent border-0">
-                    <code className="text-white font-mono text-sm bg-transparent p-0">
-                      <span className="text-emerald-400">$</span> {installCommands[activeInstall]}
+                <div className="flex items-center justify-between p-5">
+                  <pre className="m-0 border-0 bg-transparent p-0">
+                    <code
+                      className="bg-transparent p-0 font-mono text-sm"
+                      style={{ color: "var(--code-foreground)" }}
+                    >
+                      <span className="text-brand">$</span> {installCommands[activeInstall]}
                     </code>
                   </pre>
                   <CopyButton text={installCommands[activeInstall]} />
                 </div>
               </div>
 
-              <p className="text-sm text-muted-foreground mt-6">
-                Then run <code className="bg-muted px-2 py-1 rounded font-mono">dits init</code> to start
+              <p className="mt-6 text-sm text-muted-foreground">
+                Then run <code className="rounded bg-muted px-2 py-1 font-mono">dits init</code> to start
               </p>
             </div>
           </div>
         </section>
 
         {/* ================================================================ */}
-        {/* FAQ - visitors.now pattern */}
+        {/* FAQ */}
         {/* ================================================================ */}
-        <section className="py-24 md:py-32 border-t bg-muted/30">
+        <section className="border-t bg-muted/30 py-24 md:py-32">
           <div className="container">
             <div className="mx-auto max-w-2xl">
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-center mb-12">
+              <h2 className="mb-12 text-center text-3xl font-bold tracking-tight sm:text-4xl">
                 Frequently asked questions
               </h2>
 
               <Accordion multiple={false} className="w-full">
                 {faqs.map((faq, i) => (
                   <AccordionItem key={i} value={`faq-${i}`} className="border-b">
-                    <AccordionTrigger className="text-left text-base font-medium py-5 hover:no-underline">
+                    <AccordionTrigger className="py-5 text-left text-base font-medium hover:no-underline">
                       {faq.question}
                     </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground pb-5">
+                    <AccordionContent className="pb-5 text-muted-foreground">
                       {faq.answer}
                     </AccordionContent>
                   </AccordionItem>
@@ -579,41 +584,42 @@ export default function Home() {
         </section>
 
         {/* ================================================================ */}
-        {/* ROADMAP - simplified */}
+        {/* ROADMAP */}
         {/* ================================================================ */}
-        <section className="py-24 md:py-32 border-t">
+        <section className="border-t py-24 md:py-32">
           <div className="container">
             <div className="mx-auto max-w-4xl text-center">
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+              <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
                 Actively developed
               </h2>
-              <p className="text-lg text-muted-foreground mb-10">
-                <span className="text-primary font-semibold">4 of 10</span> phases complete &mdash; the
+              <p className="mb-10 text-lg text-muted-foreground">
+                <span className="font-semibold text-brand">4 of 10</span> phases complete &mdash; the
                 local engine works today; networked sync is on the roadmap.
               </p>
 
+              {/* Progress as metric tiles */}
+              <div className="mx-auto mb-10 grid max-w-xl grid-cols-3 gap-4">
+                <StatCard label="Complete" value="4" hint="of 10 phases" />
+                <StatCard label="In progress" value="2" hint="active now" />
+                <StatCard label="Planned" value="4" hint="on the roadmap" />
+              </div>
+
               {/* Progress bar */}
-              <div className="h-2 bg-muted rounded-full overflow-hidden mb-10 max-w-xl mx-auto">
-                <div className="h-full w-[40%] bg-gradient-to-r from-primary to-emerald-500 rounded-full" />
+              <div className="mx-auto mb-10 h-2 max-w-xl overflow-hidden rounded-full bg-muted">
+                <div className="h-full w-[40%] rounded-full bg-brand" />
               </div>
 
               {/* Phase pills */}
-              <div className="flex flex-wrap justify-center gap-2 mb-10">
+              <div className="mb-10 flex flex-wrap justify-center gap-2">
                 {phases.map((phase) => (
-                  <Badge
+                  <StatusPill
                     key={phase.name}
-                    variant={phase.status === "complete" ? "default" : phase.status === "active" ? "secondary" : "outline"}
-                    className={cn(
-                      "px-3 py-1",
-                      phase.status === "complete" && "bg-primary/10 text-primary border-primary/20",
-                      phase.status === "active" && "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-                      phase.status === "planned" && "text-muted-foreground"
-                    )}
+                    tone={phaseTone[phase.status]}
+                    pulse={phase.status === "active"}
+                    className="px-3 py-1"
                   >
-                    {phase.status === "complete" && <Check className="h-3 w-3 mr-1" />}
-                    {phase.status === "active" && <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse" />}
                     {phase.name}
-                  </Badge>
+                  </StatusPill>
                 ))}
               </div>
 
@@ -626,26 +632,27 @@ export default function Home() {
         </section>
 
         {/* ================================================================ */}
-        {/* FINAL CTA - visitors.now style */}
+        {/* FINAL CTA */}
         {/* ================================================================ */}
-        <section className="py-24 md:py-32 border-t bg-primary text-primary-foreground">
-          <div className="container">
+        <section className="relative overflow-hidden border-t bg-primary py-24 text-primary-foreground md:py-32">
+          <div className="pointer-events-none absolute inset-0 bg-grid opacity-10" />
+          <div className="container relative">
             <div className="mx-auto max-w-3xl text-center">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-6">
+              <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
                 A new era of version control
               </h2>
-              <p className="text-xl text-primary-foreground/80 mb-10 max-w-xl mx-auto">
+              <p className="mx-auto mb-10 max-w-xl text-xl text-primary-foreground/80">
                 Start versioning your large files today. Free, open source, and built for creative workflows.
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button size="lg" variant="secondary" className="h-14 px-10 text-lg rounded-xl" render={<Link href="/download" />}>
+              <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+                <Button size="lg" variant="secondary" className="h-14 rounded-xl px-10 text-lg" render={<Link href="/download" />}>
                   <Download className="mr-2 h-5 w-5" />
                   Download Dits
                 </Button>
                 <Button
                   size="lg"
                   variant="outline"
-                  className="h-14 px-10 text-lg rounded-xl bg-transparent border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
+                  className="h-14 rounded-xl border-primary-foreground/30 bg-transparent px-10 text-lg text-primary-foreground hover:bg-primary-foreground/10"
                   render={<Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer" />}
                 >
                   <GithubIcon className="mr-2 h-5 w-5" />
