@@ -118,5 +118,28 @@ playlist: EXT-X-MAP(init) + per-segment EXT-X-DISCONTINUITY
   ladder / VMAF (those keep fixed boundaries); merge of timelines.
 
 ## Module layout
-New: `apps/cli/src/stream/cdc.rs`. Edits: `apps/cli/src/stream/{edit,incremental,playlist}.rs`,
+New: `apps/cli/src/stream/cdc.rs`. Edits: `apps/cli/src/stream/{edit}.rs`,
 `apps/cli/src/commands/stream_demo.rs`, `apps/cli/src/main.rs` (`--edit` flag). No new dependencies.
+
+## Implementation status & verification (2026-06-03)
+
+**Built and committed.** 30 stream tests green (incl. 7 new: CDC determinism/cover/min-max,
+shift-resilience, fixed-boundary contrast, trim/insert ops).
+
+**Design refinement during build:** the gear *rolling* hash had biased low bits (content cuts never
+fired at avg=8 → effectively fixed-size). Replaced with a **pure per-frame predicate**: since frame
+hashes are already uniformly random (BLAKE3), `boundary = (first 8 bytes of hash) & mask == 0`. No
+rolling hash needed; every unchanged frame keeps its boundary status regardless of position →
+**perfect resync** after a shift. (`plan_cdc` lives in `cdc.rs`; the `build_cdc`/discontinuous-serve
+plumbing from the sketch was folded into the demo path, which encodes `bMDT=0` segments directly via
+`encode_cmaf_segment`.)
+
+**Verified end to end** (`dits stream-demo --edit insert|trim`, 320×240 / 80-frame source):
+- **insert 5 frames @ frame 40** → 11 content-defined segments, **9 reused (81.8%)**, 2 re-encoded
+  (19.6 KB); fixed-boundary baseline reuses only 2/5 (collapses after the edit).
+- **trim 5 frames @ frame 40** → 9 segments, **8 reused (88.9%)**, 1 re-encoded (12.6 KB);
+  fixed-boundary 2/4.
+
+**Deferred (as designed):** the discontinuous-playlist browser serving for `--edit` (objective
+byte/segment report stands as the proof; playback uses the existing `bMDT=0` + discontinuity path
+validated in P1); the serve-time continuous-timeline refinement (Approach C); reorder edits.
