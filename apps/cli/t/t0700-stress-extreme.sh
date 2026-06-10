@@ -16,6 +16,7 @@ This test covers extreme scenarios including:
 '
 
 . ./test-lib.sh
+. "$TEST_DIRECTORY/lib-chunking.sh"
 
 # ============================================================================
 # EXTREME FILE SIZE TESTING
