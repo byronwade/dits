@@ -72,7 +72,7 @@ then
 fi
 
 # Find test scripts
-test_scripts=$(find . -name "t[0-9][0-9][0-9][0-9]*.sh" -type f | sort)
+test_scripts=$(find . -maxdepth 1 -name "t[0-9][0-9][0-9][0-9]*.sh" -type f | sort)
 
 # Filter by run list if specified
 if test -n "$run_list"

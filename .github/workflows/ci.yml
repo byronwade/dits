@@ -166,6 +166,7 @@ jobs:
   test-integration:
     name: Test Integration
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
 
