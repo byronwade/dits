@@ -11,7 +11,7 @@
 //! overwrites — so it can never corrupt or lose data in the destination.
 
 use std::io;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
 /// Result of an object transfer.
@@ -38,6 +38,11 @@ pub fn transfer_objects(src_dits: &Path, dst_dits: &Path) -> io::Result<Transfer
     }
 
     let mut stats = TransferStats::default();
+    // WalkDir does not follow symlinks by default (`follow_links` is false), so a symlink
+    // inside the source object store is yielded as a symlink entry — `is_file()` is false
+    // for it and it is skipped here, never copied or dereferenced. That keeps the walk from
+    // escaping `src_objects` via a symlink, and every `rel` below is a real relative path
+    // under `src_objects` (no `..`), so the destination join stays inside `dst_objects`.
     for entry in WalkDir::new(&src_objects).into_iter().filter_map(|e| e.ok()) {
         if !entry.file_type().is_file() {
             continue;
@@ -65,9 +70,78 @@ pub fn transfer_objects(src_dits: &Path, dst_dits: &Path) -> io::Result<Transfer
     Ok(stats)
 }
 
+/// Validate a single `object-list` entry returned by an **untrusted** remote.
+///
+/// Object-list entries are *logical* object-store paths a remote Dits server (`dits serve`)
+/// hands us over HTTP. We must never assume they are well-formed: a malicious or compromised
+/// remote can return traversal sequences (`../../poc.txt`), absolute paths (`/etc/cron.d/x`),
+/// Windows drive prefixes (`C:\…`), verbatim/device or UNC prefixes (`\\?\C:\…`, `\\srv\share`),
+/// or mixed-separator tricks — any of which, if joined onto `.dits/objects` and trusted to the
+/// OS to normalize, would let the remote write files outside the object store (path traversal).
+///
+/// So we normalize by **policy, not by trusting OS path normalization**. The only legal entry
+/// is a relative path of one or more `/`-separated *normal* components. `/` is the sole
+/// permitted separator: it is portable and predictable, and rejecting `\` outright means a
+/// Windows host can't be tricked by `..\..\` even though backslash isn't a Unix separator.
+/// Anything that doesn't fit is rejected up front, before the value ever reaches the
+/// filesystem. Returns a safe relative path that can be joined under `.dits/objects`.
+fn validate_remote_object_path(rel: &str) -> anyhow::Result<PathBuf> {
+    use anyhow::bail;
+    use std::path::Component;
+
+    let entry = rel.trim();
+    if entry.is_empty() {
+        bail!("remote object-list contained an empty entry");
+    }
+    // A NUL byte can truncate a path mid-syscall, hiding a different real target.
+    if entry.contains('\0') {
+        bail!("remote object path contains a NUL byte");
+    }
+    // Backslash is a separator on Windows but not Unix. The remote protocol allows only `/`,
+    // so reject `\` entirely — this also kills `C:\…`, `\\?\…`, and `\\server\share` forms.
+    if entry.contains('\\') {
+        bail!("remote object path contains a backslash: {entry:?}");
+    }
+    // A leading `/` is an absolute path (and, with `\` already excluded, the only absolute form).
+    if entry.starts_with('/') {
+        bail!("remote object path is absolute: {entry:?}");
+    }
+
+    let mut safe = PathBuf::new();
+    for seg in entry.split('/') {
+        if seg.is_empty() {
+            // Empty segment ⇒ a leading/trailing/double slash like `a//b` or `a/`.
+            bail!("remote object path has an empty segment: {entry:?}");
+        }
+        if seg == "." || seg == ".." {
+            bail!("remote object path has a relative segment: {entry:?}");
+        }
+        // A colon catches a Windows drive letter (`C:`) appearing as a segment.
+        if seg.contains(':') {
+            bail!("remote object path segment looks like a drive/scheme prefix: {entry:?}");
+        }
+        // Defense in depth: confirm the OS itself sees this segment as exactly one *normal*
+        // path component (catches any platform-specific form we didn't anticipate, e.g. a
+        // Windows `Prefix`/`RootDir` component sneaking through).
+        let mut comps = Path::new(seg).components();
+        match (comps.next(), comps.next()) {
+            (Some(Component::Normal(c)), None) if c == std::ffi::OsStr::new(seg) => {}
+            _ => bail!("remote object path has a non-normal segment: {entry:?}"),
+        }
+        safe.push(seg);
+    }
+    Ok(safe)
+}
+
 /// Same incremental, additive transfer as [`transfer_objects`], but pulling from a remote
 /// Dits HTTP server (`dits serve`). `base_url` is `http://host:port/repos/<name>`. Fetches
 /// the remote object list, then downloads only the objects the destination lacks.
+///
+/// **Security:** every line of the remote object list is *untrusted input*. We validate each
+/// entry with [`validate_remote_object_path`] before it touches the filesystem, and enforce
+/// that the resolved write target stays inside `.dits/objects`. A single unsafe entry fails
+/// the whole fetch (see requirement: never silently skip a malicious entry — a remote that
+/// proves it is hostile is not to be trusted for the rest of the transfer).
 pub async fn transfer_objects_http(base_url: &str, dst_dits: &Path) -> anyhow::Result<TransferStats> {
     use anyhow::Context;
     let base = base_url.trim_end_matches('/');
@@ -84,24 +158,66 @@ pub async fn transfer_objects_http(base_url: &str, dst_dits: &Path) -> anyhow::R
         .await?;
 
     let dst_objects = dst_dits.join("objects");
+    // Ensure the object store root exists so we can canonicalize it as the containment anchor.
+    std::fs::create_dir_all(&dst_objects).context("creating local object store")?;
+    let object_root = std::fs::canonicalize(&dst_objects).context("resolving local object store")?;
+
     let mut stats = TransferStats::default();
-    for rel in list.lines().map(|l| l.trim()).filter(|l| !l.is_empty()) {
-        let dst_path = dst_objects.join(rel);
+    for line in list.lines() {
+        // Blank lines are formatting, not entries — skip them (matches prior behavior). Any
+        // non-empty line, however, must pass validation or the whole fetch fails.
+        if line.trim().is_empty() {
+            continue;
+        }
+        let safe_rel = validate_remote_object_path(line)?;
+        let dst_path = dst_objects.join(&safe_rel);
         if dst_path.exists() {
             stats.skipped += 1;
             continue;
         }
+
+        // Build the request URL by pushing each validated segment as a *percent-encoded* path
+        // segment via the `url` crate — never by interpolating the raw remote string into the
+        // URL. This preserves the base path (`/repos/<name>`) and encodes anything unusual.
+        let mut object_url = url::Url::parse(base)
+            .with_context(|| format!("invalid remote base URL: {base}"))?;
+        {
+            let mut segs = object_url
+                .path_segments_mut()
+                .map_err(|_| anyhow::anyhow!("remote base URL cannot be a base"))?;
+            segs.push("object");
+            for comp in safe_rel.components() {
+                if let std::path::Component::Normal(seg) = comp {
+                    let seg = seg
+                        .to_str()
+                        .context("validated object path segment was not valid UTF-8")?;
+                    segs.push(seg);
+                }
+            }
+        }
+
         let bytes = client
-            .get(format!("{base}/object/{rel}"))
+            .get(object_url.as_str())
             .send()
             .await
-            .with_context(|| format!("requesting object {rel}"))?
+            .with_context(|| format!("requesting object {}", safe_rel.display()))?
             .error_for_status()
-            .with_context(|| format!("remote error for object {rel}"))?
+            .with_context(|| format!("remote error for object {}", safe_rel.display()))?
             .bytes()
             .await?;
+
+        // The destination parent is derived only from validated, normal components, so it is
+        // lexically inside `dst_objects`. We still create it and then canonicalize, verifying
+        // it resolves to a path under the canonical object root — this catches a pre-existing
+        // symlink inside the store that points elsewhere. `create_dir_all` only ever runs on
+        // this validated path, never on raw remote input.
         if let Some(parent) = dst_path.parent() {
-            std::fs::create_dir_all(parent)?;
+            std::fs::create_dir_all(parent).context("creating object parent directory")?;
+            let resolved_parent = std::fs::canonicalize(parent)
+                .context("resolving object parent directory")?;
+            if !resolved_parent.starts_with(&object_root) {
+                anyhow::bail!("remote object path escapes the local object store");
+            }
         }
         let tmp = dst_path.with_extension("tmp-incoming");
         std::fs::write(&tmp, &bytes)?;
@@ -172,5 +288,134 @@ mod tests {
         transfer_objects(src.path(), dst.path()).unwrap();
         // Existing object is left untouched (content-addressed ⇒ same path means same bytes).
         assert_eq!(fs::read_to_string(&p).unwrap(), "EXISTING");
+    }
+
+    // --- Path validation: the security boundary for untrusted remote object-list entries. ---
+
+    #[test]
+    fn validate_accepts_normal_object_paths() {
+        // The real store layout: sharded chunk paths and the test-helper `chunks/aa/aabb01` form.
+        for ok in ["chunks/cc/ccdd03", "chunks/aa/aabb01", "manifests/de/ad/beef", "single"] {
+            let got = validate_remote_object_path(ok).expect(ok);
+            assert_eq!(got, PathBuf::from(ok), "should round-trip to a clean relative path");
+            assert!(got.is_relative());
+        }
+    }
+
+    #[test]
+    fn validate_rejects_traversal_and_unsafe_paths() {
+        // Each of these is a way a hostile remote could try to escape `.dits/objects`. They must
+        // ALL be rejected, on every platform — note the Windows forms are rejected here on Unix.
+        let bad = [
+            "",                                    // empty
+            "   ",                                 // whitespace-only
+            "../../poc-created-from-object-list.txt", // the reported PoC
+            "..",                                  // bare parent
+            ".",                                   // bare current
+            "a/../../b",                           // traversal mid-path
+            "a/./b",                               // `.` segment
+            "/etc/passwd",                         // absolute (Unix)
+            "/",                                   // root
+            "a//b",                                // empty segment
+            "a/b/",                                // trailing slash ⇒ empty segment
+            "C:\\Windows\\System32",               // Windows drive + backslashes
+            "C:/Windows/System32",                 // Windows drive with forward slashes
+            "\\\\?\\C:\\secret",                    // verbatim/device prefix
+            "\\\\server\\share\\x",                 // UNC path
+            "a\\b",                                // backslash as separator
+            "..\\..\\x",                            // Windows-style traversal
+            "foo\0bar",                            // NUL byte
+        ];
+        for b in bad {
+            assert!(
+                validate_remote_object_path(b).is_err(),
+                "expected rejection of {b:?}",
+            );
+        }
+    }
+
+    /// Spin up a throwaway HTTP server that returns `list` for `/object-list` and `body` for any
+    /// `/object/*` request. Returns the base URL. The server task is detached (dropped with the
+    /// runtime at test end).
+    async fn spawn_fake_remote(list: &'static str, body: &'static [u8]) -> String {
+        use axum::{routing::get, Router};
+        let app = Router::new()
+            .route("/object-list", get(move || async move { list }))
+            .route("/object/*path", get(move || async move { body.to_vec() }));
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        tokio::spawn(async move {
+            axum::serve(listener, app).await.unwrap();
+        });
+        format!("http://{addr}")
+    }
+
+    #[tokio::test]
+    async fn http_rejects_malicious_object_list_entry_and_creates_nothing_outside_store() {
+        // Repo root with a `.dits` dir; the object store lives at `.dits/objects`.
+        let repo = TempDir::new().unwrap();
+        let dits = repo.path().join(".dits");
+        fs::create_dir_all(&dits).unwrap();
+
+        let base = spawn_fake_remote("../../poc-created-from-object-list.txt\n", b"pwned").await;
+        let result = transfer_objects_http(&base, &dits).await;
+
+        // The fetch must fail outright — not silently skip the entry.
+        assert!(result.is_err(), "malicious object-list entry must fail the fetch");
+
+        // `.dits/objects/../../poc.txt` would have landed in the repo root — and one level up,
+        // outside the repo entirely. Neither must exist, and no stray parent dirs either.
+        assert!(
+            !repo.path().join("poc-created-from-object-list.txt").exists(),
+            "no file may be created in the repo root",
+        );
+        let outside = repo.path().parent().unwrap().join("poc-created-from-object-list.txt");
+        assert!(!outside.exists(), "no file may be created outside the repo");
+        // Only the object store (which we pre-create) should exist under `.dits`; the traversal
+        // must not have produced any escaping directory.
+        assert!(!dits.join("objects").join("tmp-incoming").exists());
+    }
+
+    #[tokio::test]
+    async fn http_rejects_absolute_object_path() {
+        let repo = TempDir::new().unwrap();
+        let dits = repo.path().join(".dits");
+        fs::create_dir_all(&dits).unwrap();
+
+        let base = spawn_fake_remote("/etc/cron.d/evil\n", b"pwned").await;
+        assert!(transfer_objects_http(&base, &dits).await.is_err());
+        assert!(!Path::new("/etc/cron.d/evil").exists());
+    }
+
+    #[tokio::test]
+    async fn http_rejects_windows_style_object_path_on_unix() {
+        let repo = TempDir::new().unwrap();
+        let dits = repo.path().join(".dits");
+        fs::create_dir_all(&dits).unwrap();
+
+        // Backslash separators / drive prefixes must be rejected even though `\` is not a
+        // separator on Unix — the remote protocol forbids them entirely.
+        let base = spawn_fake_remote("..\\..\\poc.txt\n", b"pwned").await;
+        assert!(transfer_objects_http(&base, &dits).await.is_err());
+        assert!(!repo.path().join("poc.txt").exists());
+    }
+
+    #[tokio::test]
+    async fn http_transfers_valid_object_path() {
+        let repo = TempDir::new().unwrap();
+        let dits = repo.path().join(".dits");
+        fs::create_dir_all(&dits).unwrap();
+
+        let base = spawn_fake_remote("chunks/aa/aabb01\n", b"valid-content").await;
+        let stats = transfer_objects_http(&base, &dits).await.unwrap();
+        assert_eq!(stats.copied, 1, "the one valid object is transferred");
+
+        let written = dits.join("objects/chunks/aa/aabb01");
+        assert_eq!(fs::read(&written).unwrap(), b"valid-content");
+
+        // Re-fetch is free: the object is already present.
+        let stats2 = transfer_objects_http(&base, &dits).await.unwrap();
+        assert_eq!(stats2.copied, 0);
+        assert_eq!(stats2.skipped, 1);
     }
 }
