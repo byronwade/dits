@@ -10,7 +10,7 @@ import {
 import { Callout } from "@/components/ui/callout";
 import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
-import { Shield, Download, Upload, RotateCcw, Clock, HardDrive } from "lucide-react";
+import { Download, Upload, Clock, HardDrive } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Backup & Recovery",

@@ -1,12 +1,15 @@
 //! Roundtrip test command - deconstruct and reconstruct an MP4.
 
-use crate::mp4::deconstructor::Deconstructor;
-use crate::mp4::reconstructor::Reconstructor;
+use std::{
+    fs::File,
+    io::{Cursor, Read, Seek, SeekFrom, Write},
+    path::Path,
+};
+
 use anyhow::{Context, Result};
 use console::style;
-use std::fs::File;
-use std::io::{Cursor, Read, Seek, SeekFrom, Write};
-use std::path::Path;
+
+use crate::mp4::{deconstructor::Deconstructor, reconstructor::Reconstructor};
 
 /// Perform a full roundtrip test: deconstruct -> reconstruct -> verify.
 pub fn roundtrip(input: &str, output: &str) -> Result<()> {
@@ -27,8 +30,8 @@ pub fn roundtrip(input: &str, output: &str) -> Result<()> {
 
     // Deconstruct
     println!("  Deconstructing...");
-    let deconstructed = Deconstructor::deconstruct(input_path)
-        .context("Failed to deconstruct MP4")?;
+    let deconstructed =
+        Deconstructor::deconstruct(input_path).context("Failed to deconstruct MP4")?;
 
     println!("    ftyp:  {} bytes", deconstructed.ftyp_data.len());
     println!("    moov:  {} bytes (normalized)", deconstructed.moov_data.len());
@@ -53,7 +56,8 @@ pub fn roundtrip(input: &str, output: &str) -> Result<()> {
         &deconstructed,
         &mut mdat_cursor,
         deconstructed.mdat_data_size,
-    ).context("Failed to reconstruct MP4")?;
+    )
+    .context("Failed to reconstruct MP4")?;
     output_file.flush()?;
 
     println!("    Wrote {} bytes", bytes_written);
@@ -75,29 +79,21 @@ pub fn roundtrip(input: &str, output: &str) -> Result<()> {
         Ok(output) => {
             if output.status.success() {
                 let duration = String::from_utf8_lossy(&output.stdout);
-                println!(
-                    "    {} Duration: {}s",
-                    style("✓").green().bold(),
-                    duration.trim()
-                );
+                println!("    {} Duration: {}s", style("✓").green().bold(), duration.trim());
             } else {
                 let error = String::from_utf8_lossy(&output.stderr);
-                println!(
-                    "    {} ffprobe error: {}",
-                    style("✗").red().bold(),
-                    error.trim()
-                );
+                println!("    {} ffprobe error: {}", style("✗").red().bold(), error.trim());
             }
-        }
+        },
         Err(e) => {
             println!("    {} ffprobe not available: {}", style("!").yellow(), e);
-        }
+        },
     }
 
-    // Report byte-level fidelity honestly: the deconstructor normalizes `moov`, so the
-    // reconstruction is structurally faithful but not necessarily a byte-for-byte copy.
-    // (Normal `dits` storage keeps media byte-exact via chunking; this is the
-    // structure-aware path.)
+    // Report byte-level fidelity honestly: the deconstructor normalizes `moov`, so
+    // the reconstruction is structurally faithful but not necessarily a
+    // byte-for-byte copy. (Normal `dits` storage keeps media byte-exact via
+    // chunking; this is the structure-aware path.)
     println!();
     println!("  Byte fidelity...");
     match (std::fs::read(input_path), std::fs::read(output_path)) {
@@ -107,23 +103,20 @@ pub fn roundtrip(input: &str, output: &str) -> Result<()> {
             } else {
                 let diff = (orig.len() as i64 - rebuilt.len() as i64).abs();
                 println!(
-                    "    {} structurally valid, NOT byte-identical ({} vs {} bytes; moov is normalized)",
+                    "    {} structurally valid, NOT byte-identical ({} vs {} bytes; moov is \
+                     normalized)",
                     style("~").yellow().bold(),
                     orig.len(),
                     rebuilt.len()
                 );
                 let _ = diff;
             }
-        }
+        },
         _ => println!("    {} could not compare files", style("!").yellow()),
     }
 
     println!();
-    println!(
-        "{} Roundtrip complete! Output: {}",
-        style("✓").green().bold(),
-        output_path.display()
-    );
+    println!("{} Roundtrip complete! Output: {}", style("✓").green().bold(), output_path.display());
 
     Ok(())
 }

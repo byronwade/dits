@@ -3,39 +3,35 @@
 //! This module implements the client side of DITS P2P functionality,
 //! allowing connection to shared repositories using join codes.
 
-use std::path::PathBuf;
-use std::time::Duration;
+use std::{path::PathBuf, time::Duration};
+
 use anyhow::{Context, Result};
 use tokio::time::timeout;
 use tracing::{info, warn};
 
-use crate::p2p::types::ShareId;
-use crate::p2p::crypto::parse_join_code;
+use crate::p2p::{crypto::parse_join_code, types::ShareId};
 
 /// Configuration for the P2P client
 #[derive(Debug, Clone)]
 pub struct ClientConfig {
     /// Join code or direct address to connect to
-    pub target: String,
+    pub target:     String,
     /// Local mount path
     pub mount_path: PathBuf,
     /// Connection timeout in seconds
-    pub timeout: Duration,
+    pub timeout:    Duration,
 }
 
 /// P2P Client
 pub struct P2pClient {
-    config: ClientConfig,
+    config:   ClientConfig,
     share_id: Option<ShareId>,
 }
 
 impl P2pClient {
     /// Create a new P2P client
     pub fn new(config: ClientConfig) -> Self {
-        Self {
-            config,
-            share_id: None,
-        }
+        Self { config, share_id: None }
     }
 
     /// Connect to a P2P shared repository

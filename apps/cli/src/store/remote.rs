@@ -2,19 +2,22 @@
 //!
 //! Handles remote URLs and configuration for push/pull/clone operations.
 
+use std::{
+    collections::HashMap,
+    fs::File,
+    io::{BufReader, BufWriter},
+    path::{Path, PathBuf},
+};
+
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::{BufReader, BufWriter};
-use std::path::{Path, PathBuf};
 
 /// A remote repository configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Remote {
     /// Remote name (e.g., "origin").
-    pub name: String,
+    pub name:     String,
     /// Fetch URL.
-    pub url: String,
+    pub url:      String,
     /// Push URL (defaults to fetch URL if not set).
     pub push_url: Option<String>,
 }
@@ -22,11 +25,7 @@ pub struct Remote {
 impl Remote {
     /// Create a new remote with the given name and URL.
     pub fn new(name: impl Into<String>, url: impl Into<String>) -> Self {
-        Self {
-            name: name.into(),
-            url: url.into(),
-            push_url: None,
-        }
+        Self { name: name.into(), url: url.into(), push_url: None }
     }
 
     /// Get the URL to use for pushing.
@@ -47,7 +46,7 @@ pub struct RemoteStore {
     /// Path to the remotes config file.
     config_path: PathBuf,
     /// Cached remotes.
-    remotes: HashMap<String, Remote>,
+    remotes:     HashMap<String, Remote>,
 }
 
 impl RemoteStore {
@@ -55,10 +54,7 @@ impl RemoteStore {
     pub fn new(dits_dir: &Path) -> Self {
         let config_path = dits_dir.join("remotes");
         let remotes = Self::load(&config_path).unwrap_or_default();
-        Self {
-            config_path,
-            remotes,
-        }
+        Self { config_path, remotes }
     }
 
     /// Load remotes from disk.
@@ -91,7 +87,9 @@ impl RemoteStore {
 
     /// Remove a remote by name.
     pub fn remove(&mut self, name: &str) -> Result<Remote, RemoteError> {
-        let remote = self.remotes.remove(name)
+        let remote = self
+            .remotes
+            .remove(name)
             .ok_or_else(|| RemoteError::NotFound(name.to_string()))?;
         self.save()?;
         Ok(remote)
@@ -135,7 +133,9 @@ impl RemoteStore {
 
     /// Set the URL for a remote.
     pub fn set_url(&mut self, name: &str, url: &str) -> Result<(), RemoteError> {
-        let remote = self.remotes.get_mut(name)
+        let remote = self
+            .remotes
+            .get_mut(name)
             .ok_or_else(|| RemoteError::NotFound(name.to_string()))?;
         remote.url = url.to_string();
         self.save()?;
@@ -206,8 +206,9 @@ impl RemoteType {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use tempfile::tempdir;
+
+    use super::*;
 
     #[test]
     fn test_remote_store_add_remove() {
@@ -231,7 +232,9 @@ mod tests {
         let dir = tempdir().unwrap();
         let mut store = RemoteStore::new(dir.path());
 
-        store.add(Remote::new("old-name", "https://example.com/repo")).unwrap();
+        store
+            .add(Remote::new("old-name", "https://example.com/repo"))
+            .unwrap();
         store.rename("old-name", "new-name").unwrap();
 
         assert!(!store.exists("old-name"));
@@ -240,26 +243,11 @@ mod tests {
 
     #[test]
     fn test_remote_type_parse() {
-        assert!(matches!(
-            RemoteType::parse("https://example.com/repo"),
-            RemoteType::Http(_)
-        ));
-        assert!(matches!(
-            RemoteType::parse("dits://example.com/repo"),
-            RemoteType::Dits(_)
-        ));
-        assert!(matches!(
-            RemoteType::parse("git@github.com:user/repo"),
-            RemoteType::Ssh(_)
-        ));
-        assert!(matches!(
-            RemoteType::parse("/path/to/repo"),
-            RemoteType::Local(_)
-        ));
-        assert!(matches!(
-            RemoteType::parse("../relative/path"),
-            RemoteType::Local(_)
-        ));
+        assert!(matches!(RemoteType::parse("https://example.com/repo"), RemoteType::Http(_)));
+        assert!(matches!(RemoteType::parse("dits://example.com/repo"), RemoteType::Dits(_)));
+        assert!(matches!(RemoteType::parse("git@github.com:user/repo"), RemoteType::Ssh(_)));
+        assert!(matches!(RemoteType::parse("/path/to/repo"), RemoteType::Local(_)));
+        assert!(matches!(RemoteType::parse("../relative/path"), RemoteType::Local(_)));
     }
 
     #[test]
@@ -269,7 +257,9 @@ mod tests {
         // Create and save
         {
             let mut store = RemoteStore::new(dir.path());
-            store.add(Remote::new("origin", "https://example.com/repo")).unwrap();
+            store
+                .add(Remote::new("origin", "https://example.com/repo"))
+                .unwrap();
         }
 
         // Load and verify

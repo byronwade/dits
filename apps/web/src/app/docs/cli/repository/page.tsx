@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Callout } from "@/components/ui/callout";
 import { DocPageHeader } from "@/components/doc-page-header";
-import { FolderGit2, Plus, Copy, Globe, BarChart } from "lucide-react";
+import { Plus, Copy, Globe, BarChart } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 import { FileTree } from "@/components/docs/file-tree";
 

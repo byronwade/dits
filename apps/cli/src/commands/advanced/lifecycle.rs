@@ -2,12 +2,12 @@
 //!
 //! Commands for storage tiering, freeze/thaw operations.
 
-use dits::lifecycle::{
-    LifecycleManager, LifecyclePolicy, StorageTier, AccessStats,
-};
-use dits::store::Repository;
-use anyhow::{Context, Result, bail};
+use anyhow::{bail, Context, Result};
 use console::style;
+use dits::{
+    lifecycle::{AccessStats, LifecycleManager, LifecyclePolicy, StorageTier},
+    store::Repository,
+};
 
 /// Initialize lifecycle tracking for existing chunks.
 pub fn freeze_init() -> Result<()> {
@@ -48,16 +48,10 @@ pub fn freeze_status() -> Result<()> {
     if !transitions.is_empty() {
         println!();
         println!("{}", style("Pending Transitions:").bold());
-        println!(
-            "  {} chunk(s) eligible for tier transition",
-            style(transitions.len()).yellow()
-        );
+        println!("  {} chunk(s) eligible for tier transition", style(transitions.len()).yellow());
 
         let total_size: u64 = transitions.iter().map(|t| t.size).sum();
-        println!(
-            "  Total size: {}",
-            AccessStats::format_size(total_size)
-        );
+        println!("  Total size: {}", AccessStats::format_size(total_size));
         println!();
         println!(
             "{} Run {} to apply policy transitions",
@@ -84,11 +78,7 @@ pub fn freeze(
     // Initialize tracking if needed
     let init_count = manager.initialize_tracking()?;
     if init_count > 0 {
-        println!(
-            "{} Initialized tracking for {} chunk(s)",
-            style("→").blue(),
-            init_count
-        );
+        println!("{} Initialized tracking for {} chunk(s)", style("→").blue(), init_count);
     }
 
     if apply_policy {
@@ -116,8 +106,8 @@ pub fn freeze(
         }
     } else if all_cold {
         // Freeze all non-protected chunks to archive
-        let target = StorageTier::from_str(tier.unwrap_or("archive"))
-            .unwrap_or(StorageTier::Archive);
+        let target =
+            StorageTier::from_str(tier.unwrap_or("archive")).unwrap_or(StorageTier::Archive);
 
         println!(
             "{} Freezing all eligible chunks to {} tier...",
@@ -155,8 +145,7 @@ pub fn freeze(
         }
     } else if !files.is_empty() {
         // Freeze specific files
-        let target = StorageTier::from_str(tier.unwrap_or("cold"))
-            .unwrap_or(StorageTier::Cold);
+        let target = StorageTier::from_str(tier.unwrap_or("cold")).unwrap_or(StorageTier::Cold);
 
         println!(
             "{} Freezing {} file(s) to {} tier...",
@@ -268,11 +257,7 @@ pub fn thaw(files: &[String], all: bool) -> Result<()> {
             );
             for status in &statuses {
                 if let Some(eta) = status.eta_seconds {
-                    println!(
-                        "  {} ETA: {} seconds",
-                        style(status.hash.short()).dim(),
-                        eta
-                    );
+                    println!("  {} ETA: {} seconds", style(status.hash.short()).dim(), eta);
                 }
             }
             println!();
@@ -314,9 +299,18 @@ pub fn freeze_policy(policy_name: Option<&str>, list: bool) -> Result<()> {
     if list {
         println!("{}", style("Available Policies:").bold().underlined());
         println!();
-        println!("  {} - Move to warm after 30d, cold after 6mo, archive after 2yr", style("default").cyan());
-        println!("  {} - Move to warm after 7d, cold after 30d, archive after 90d", style("aggressive").cyan());
-        println!("  {} - Move to warm after 90d, cold after 1yr, archive after 3yr", style("conservative").cyan());
+        println!(
+            "  {} - Move to warm after 30d, cold after 6mo, archive after 2yr",
+            style("default").cyan()
+        );
+        println!(
+            "  {} - Move to warm after 7d, cold after 30d, archive after 90d",
+            style("aggressive").cyan()
+        );
+        println!(
+            "  {} - Move to warm after 90d, cold after 1yr, archive after 3yr",
+            style("conservative").cyan()
+        );
         return Ok(());
     }
 
@@ -331,11 +325,7 @@ pub fn freeze_policy(policy_name: Option<&str>, list: bool) -> Result<()> {
         manager.set_policy(policy);
         manager.save_policy()?;
 
-        println!(
-            "{} Set lifecycle policy to '{}'",
-            style("✓").green(),
-            style(name).cyan()
-        );
+        println!("{} Set lifecycle policy to '{}'", style("✓").green(), style(name).cyan());
     } else {
         println!("{}", style("Current policy rules:").bold());
         // Would show current policy rules here
@@ -353,38 +343,40 @@ pub fn freeze_policy(policy_name: Option<&str>, list: bool) -> Result<()> {
 // Helper functions
 
 fn print_stats(stats: &AccessStats) {
-    println!("  {} {} chunk(s) ({})",
+    println!(
+        "  {} {} chunk(s) ({})",
         style("Hot:").green().bold(),
         stats.hot_chunks,
         AccessStats::format_size(stats.hot_size)
     );
-    println!("  {} {} chunk(s) ({})",
+    println!(
+        "  {} {} chunk(s) ({})",
         style("Warm:").yellow().bold(),
         stats.warm_chunks,
         AccessStats::format_size(stats.warm_size)
     );
-    println!("  {} {} chunk(s) ({})",
+    println!(
+        "  {} {} chunk(s) ({})",
         style("Cold:").blue().bold(),
         stats.cold_chunks,
         AccessStats::format_size(stats.cold_size)
     );
-    println!("  {} {} chunk(s) ({})",
+    println!(
+        "  {} {} chunk(s) ({})",
         style("Archive:").magenta().bold(),
         stats.archive_chunks,
         AccessStats::format_size(stats.archive_size)
     );
     println!();
-    println!("  Total: {} chunk(s) ({})",
+    println!(
+        "  Total: {} chunk(s) ({})",
         stats.total_chunks,
         AccessStats::format_size(stats.total_size)
     );
 
     if stats.proxy_chunks > 0 {
         println!();
-        println!("  {} {} proxy chunk(s) (protected)",
-            style("Proxies:").dim(),
-            stats.proxy_chunks
-        );
+        println!("  {} {} proxy chunk(s) (protected)", style("Proxies:").dim(), stats.proxy_chunks);
     }
 }
 

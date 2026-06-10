@@ -1,9 +1,7 @@
 //! Security CLI commands (Phase 9).
 
-use anyhow::{Context, Result, bail};
-use dits::security::{
-    KeyStore, KeyStoreError, AuditLog, AuditEventType, AuditOutcome,
-};
+use anyhow::{bail, Context, Result};
+use dits::security::{AuditEventType, AuditLog, AuditOutcome, KeyStore, KeyStoreError};
 
 /// Initialize encryption for a repository.
 ///
@@ -31,7 +29,7 @@ pub fn encrypt_init(password: Option<&str>) -> Result<()> {
                 bail!("Passwords do not match");
             }
             pass
-        }
+        },
     };
 
     if password.len() < 8 {
@@ -42,7 +40,8 @@ pub fn encrypt_init(password: Option<&str>) -> Result<()> {
     println!("Deriving encryption keys (this may take a moment)...");
 
     // Use default params (secure but slow)
-    let _bundle = keystore.create(&password, None)
+    let _bundle = keystore
+        .create(&password, None)
         .context("Failed to create keystore")?;
 
     audit.log_success(AuditEventType::KeystoreCreated, None)?;
@@ -95,8 +94,9 @@ pub fn login(password: Option<&str>) -> Result<()> {
 
     let password = match password {
         Some(p) => p.to_string(),
-        None => rpassword::prompt_password("Enter password: ")
-            .context("Failed to read password")?,
+        None => {
+            rpassword::prompt_password("Enter password: ").context("Failed to read password")?
+        },
     };
 
     println!("Verifying password...");
@@ -111,15 +111,15 @@ pub fn login(password: Option<&str>) -> Result<()> {
             println!("Encryption keys cached for this session.");
             println!("Run 'dits logout' to clear cached keys.");
             Ok(())
-        }
+        },
         Err(KeyStoreError::WrongPassword) => {
             audit.log_failure(AuditEventType::LoginFailed, "Wrong password", None)?;
             bail!("Incorrect password");
-        }
+        },
         Err(e) => {
             audit.log_failure(AuditEventType::LoginFailed, &e.to_string(), None)?;
             bail!("Login failed: {}", e);
-        }
+        },
     }
 }
 
@@ -166,7 +166,7 @@ pub fn change_password(old: Option<&str>, new: Option<&str>) -> Result<()> {
                 bail!("Passwords do not match");
             }
             pass
-        }
+        },
     };
 
     if new_password.len() < 8 {
@@ -175,7 +175,8 @@ pub fn change_password(old: Option<&str>, new: Option<&str>) -> Result<()> {
 
     println!("Changing password (this may take a moment)...");
 
-    keystore.change_password(&old_password, &new_password, None)
+    keystore
+        .change_password(&old_password, &new_password, None)
         .context("Failed to change password")?;
 
     audit.log_success(AuditEventType::PasswordChanged, None)?;
@@ -214,7 +215,8 @@ pub fn audit_show(last: usize, event_type: Option<&str>) -> Result<()> {
 
         let resource = event.resource.as_deref().unwrap_or("-");
 
-        println!("{} | {:20} | {:10} | {}",
+        println!(
+            "{} | {:20} | {:10} | {}",
             event.timestamp_str,
             event.event_type.name(),
             outcome_str,
@@ -267,10 +269,10 @@ pub fn audit_export(output: Option<&str>) -> Result<()> {
         Some(path) => {
             std::fs::write(path, &json)?;
             println!("Audit log exported to: {}", path);
-        }
+        },
         None => {
             println!("{}", json);
-        }
+        },
     }
 
     Ok(())
@@ -317,8 +319,9 @@ fn parse_event_type(s: &str) -> Result<AuditEventType> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use tempfile::tempdir;
+
+    use super::*;
 
     #[test]
     fn test_find_dits_dir_not_found() {

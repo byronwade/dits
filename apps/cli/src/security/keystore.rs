@@ -1,12 +1,20 @@
 //! Secure key storage with encrypted keystore.
 
-use serde::{Deserialize, Serialize};
-use std::fs::{self, File};
-use std::io::{BufReader, BufWriter};
-use std::path::{Path, PathBuf};
+use std::{
+    fs::{self, File},
+    io::{BufReader, BufWriter},
+    path::{Path, PathBuf},
+};
 
-use super::keys::{KeyBundle, SerializableKeyBundle, Argon2Params, derive_keys, generate_salt, generate_random_bytes};
-use super::encryption::{encrypt_with_key, decrypt_with_key};
+use serde::{Deserialize, Serialize};
+
+use super::{
+    encryption::{decrypt_with_key, encrypt_with_key},
+    keys::{
+        derive_keys, generate_random_bytes, generate_salt, Argon2Params, KeyBundle,
+        SerializableKeyBundle,
+    },
+};
 
 /// Cached encryption keys for session use.
 #[derive(Debug, Serialize, Deserialize)]
@@ -14,26 +22,26 @@ struct CachedKeys {
     /// Encrypted key bundle.
     encrypted_bundle: Vec<u8>,
     /// Nonce for bundle encryption.
-    bundle_nonce: [u8; 12],
+    bundle_nonce:     [u8; 12],
     /// Session key used for encryption.
-    session_key: [u8; 32],
+    session_key:      [u8; 32],
 }
 
 /// Encrypted keystore stored on disk.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EncryptedKeyStore {
     /// Version for future compatibility.
-    pub version: u32,
+    pub version:             u32,
     /// Argon2 salt for key derivation.
-    pub salt: [u8; 32],
+    pub salt:                [u8; 32],
     /// Argon2 parameters used.
-    pub argon2_params: SerializableArgon2Params,
+    pub argon2_params:       SerializableArgon2Params,
     /// Encrypted key bundle (contains user_secret, metadata_key, recovery_key).
-    pub encrypted_bundle: Vec<u8>,
+    pub encrypted_bundle:    Vec<u8>,
     /// Nonce used for bundle encryption.
-    pub bundle_nonce: [u8; 12],
+    pub bundle_nonce:        [u8; 12],
     /// When the keystore was created (Unix timestamp).
-    pub created_at: u64,
+    pub created_at:          u64,
     /// When the password was last changed (Unix timestamp).
     pub password_changed_at: u64,
 }
@@ -42,7 +50,7 @@ pub struct EncryptedKeyStore {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SerializableArgon2Params {
     pub memory_cost: u32,
-    pub time_cost: u32,
+    pub time_cost:   u32,
     pub parallelism: u32,
 }
 
@@ -50,7 +58,7 @@ impl From<&Argon2Params> for SerializableArgon2Params {
     fn from(params: &Argon2Params) -> Self {
         Self {
             memory_cost: params.memory_cost,
-            time_cost: params.time_cost,
+            time_cost:   params.time_cost,
             parallelism: params.parallelism,
         }
     }
@@ -60,7 +68,7 @@ impl From<&SerializableArgon2Params> for Argon2Params {
     fn from(params: &SerializableArgon2Params) -> Self {
         Self {
             memory_cost: params.memory_cost,
-            time_cost: params.time_cost,
+            time_cost:   params.time_cost,
             parallelism: params.parallelism,
         }
     }
@@ -69,7 +77,7 @@ impl From<&SerializableArgon2Params> for Argon2Params {
 /// Key bundle data for serialization.
 #[derive(Debug, Serialize, Deserialize)]
 struct KeyBundleData {
-    user_secret: [u8; 32],
+    user_secret:  [u8; 32],
     metadata_key: [u8; 32],
     recovery_key: [u8; 32],
 }
@@ -83,9 +91,7 @@ pub struct KeyStore {
 impl KeyStore {
     /// Create a new keystore manager.
     pub fn new(dits_dir: &Path) -> Self {
-        Self {
-            path: dits_dir.join("keystore.enc"),
-        }
+        Self { path: dits_dir.join("keystore.enc") }
     }
 
     /// Create a new keystore at a specific path.
@@ -107,7 +113,11 @@ impl KeyStore {
     ///
     /// This generates a new salt and derives keys from the password,
     /// then encrypts and stores the key bundle.
-    pub fn create(&self, password: &str, params: Option<&Argon2Params>) -> Result<KeyBundle, KeyStoreError> {
+    pub fn create(
+        &self,
+        password: &str,
+        params: Option<&Argon2Params>,
+    ) -> Result<KeyBundle, KeyStoreError> {
         if self.exists() {
             return Err(KeyStoreError::AlreadyExists);
         }
@@ -121,30 +131,25 @@ impl KeyStore {
 
         // Serialize the bundle
         let bundle_data = KeyBundleData {
-            user_secret: *bundle.user_secret.as_bytes(),
+            user_secret:  *bundle.user_secret.as_bytes(),
             metadata_key: bundle.metadata_key,
             recovery_key: bundle.recovery_key,
         };
         let plaintext = serde_json::to_vec(&bundle_data)
             .map_err(|e| KeyStoreError::Serialization(e.to_string()))?;
 
-        // Derive encryption key from root key (using the salt again with different info)
+        // Derive encryption key from root key (using the salt again with different
+        // info)
         let mut enc_key = [0u8; 32];
         let argon2 = argon2::Argon2::new(
             argon2::Algorithm::Argon2id,
             argon2::Version::V0x13,
-            argon2::Params::new(
-                params.memory_cost,
-                params.time_cost,
-                params.parallelism,
-                Some(32),
-            ).map_err(|e| KeyStoreError::KeyDerivation(e.to_string()))?,
+            argon2::Params::new(params.memory_cost, params.time_cost, params.parallelism, Some(32))
+                .map_err(|e| KeyStoreError::KeyDerivation(e.to_string()))?,
         );
-        argon2.hash_password_into(
-            format!("{}:keystore", password).as_bytes(),
-            &salt,
-            &mut enc_key,
-        ).map_err(|e| KeyStoreError::KeyDerivation(e.to_string()))?;
+        argon2
+            .hash_password_into(format!("{}:keystore", password).as_bytes(), &salt, &mut enc_key)
+            .map_err(|e| KeyStoreError::KeyDerivation(e.to_string()))?;
 
         // Encrypt the bundle
         let (encrypted_bundle, nonce) = encrypt_with_key(&plaintext, &enc_key)
@@ -183,18 +188,16 @@ impl KeyStore {
         let argon2 = argon2::Argon2::new(
             argon2::Algorithm::Argon2id,
             argon2::Version::V0x13,
-            argon2::Params::new(
-                params.memory_cost,
-                params.time_cost,
-                params.parallelism,
-                Some(32),
-            ).map_err(|e| KeyStoreError::KeyDerivation(e.to_string()))?,
+            argon2::Params::new(params.memory_cost, params.time_cost, params.parallelism, Some(32))
+                .map_err(|e| KeyStoreError::KeyDerivation(e.to_string()))?,
         );
-        argon2.hash_password_into(
-            format!("{}:keystore", password).as_bytes(),
-            &store.salt,
-            &mut enc_key,
-        ).map_err(|e| KeyStoreError::KeyDerivation(e.to_string()))?;
+        argon2
+            .hash_password_into(
+                format!("{}:keystore", password).as_bytes(),
+                &store.salt,
+                &mut enc_key,
+            )
+            .map_err(|e| KeyStoreError::KeyDerivation(e.to_string()))?;
 
         // Decrypt the bundle
         let plaintext = decrypt_with_key(&store.encrypted_bundle, &enc_key, &store.bundle_nonce)
@@ -205,7 +208,7 @@ impl KeyStore {
             .map_err(|e| KeyStoreError::Serialization(e.to_string()))?;
 
         Ok(KeyBundle {
-            user_secret: super::keys::UserSecret::from_bytes(bundle_data.user_secret),
+            user_secret:  super::keys::UserSecret::from_bytes(bundle_data.user_secret),
             metadata_key: bundle_data.metadata_key,
             recovery_key: bundle_data.recovery_key,
         })
@@ -222,15 +225,14 @@ impl KeyStore {
         let bundle = self.load(old_password)?;
 
         // Delete old keystore
-        fs::remove_file(&self.path)
-            .map_err(|e| KeyStoreError::Io(e.to_string()))?;
+        fs::remove_file(&self.path).map_err(|e| KeyStoreError::Io(e.to_string()))?;
 
         // Create new keystore with new password
         let params = new_params.cloned().unwrap_or_default();
         let salt = generate_salt();
 
         let bundle_data = KeyBundleData {
-            user_secret: *bundle.user_secret.as_bytes(),
+            user_secret:  *bundle.user_secret.as_bytes(),
             metadata_key: bundle.metadata_key,
             recovery_key: bundle.recovery_key,
         };
@@ -242,18 +244,16 @@ impl KeyStore {
         let argon2 = argon2::Argon2::new(
             argon2::Algorithm::Argon2id,
             argon2::Version::V0x13,
-            argon2::Params::new(
-                params.memory_cost,
-                params.time_cost,
-                params.parallelism,
-                Some(32),
-            ).map_err(|e| KeyStoreError::KeyDerivation(e.to_string()))?,
+            argon2::Params::new(params.memory_cost, params.time_cost, params.parallelism, Some(32))
+                .map_err(|e| KeyStoreError::KeyDerivation(e.to_string()))?,
         );
-        argon2.hash_password_into(
-            format!("{}:keystore", new_password).as_bytes(),
-            &salt,
-            &mut enc_key,
-        ).map_err(|e| KeyStoreError::KeyDerivation(e.to_string()))?;
+        argon2
+            .hash_password_into(
+                format!("{}:keystore", new_password).as_bytes(),
+                &salt,
+                &mut enc_key,
+            )
+            .map_err(|e| KeyStoreError::KeyDerivation(e.to_string()))?;
 
         // Encrypt with new key
         let (encrypted_bundle, nonce) = encrypt_with_key(&plaintext, &enc_key)
@@ -286,22 +286,18 @@ impl KeyStore {
             return Err(KeyStoreError::NotFound);
         }
 
-        let file = File::open(&self.path)
-            .map_err(|e| KeyStoreError::Io(e.to_string()))?;
+        let file = File::open(&self.path).map_err(|e| KeyStoreError::Io(e.to_string()))?;
         let reader = BufReader::new(file);
-        serde_json::from_reader(reader)
-            .map_err(|e| KeyStoreError::Serialization(e.to_string()))
+        serde_json::from_reader(reader).map_err(|e| KeyStoreError::Serialization(e.to_string()))
     }
 
     /// Save the encrypted keystore to disk.
     fn save(&self, store: &EncryptedKeyStore) -> Result<(), KeyStoreError> {
         if let Some(parent) = self.path.parent() {
-            fs::create_dir_all(parent)
-                .map_err(|e| KeyStoreError::Io(e.to_string()))?;
+            fs::create_dir_all(parent).map_err(|e| KeyStoreError::Io(e.to_string()))?;
         }
 
-        let file = File::create(&self.path)
-            .map_err(|e| KeyStoreError::Io(e.to_string()))?;
+        let file = File::create(&self.path).map_err(|e| KeyStoreError::Io(e.to_string()))?;
         let writer = BufWriter::new(file);
         serde_json::to_writer_pretty(writer, store)
             .map_err(|e| KeyStoreError::Serialization(e.to_string()))
@@ -313,14 +309,17 @@ impl KeyStore {
             return Err(KeyStoreError::NotFound);
         }
 
-        fs::remove_file(&self.path)
-            .map_err(|e| KeyStoreError::Io(e.to_string()))
+        fs::remove_file(&self.path).map_err(|e| KeyStoreError::Io(e.to_string()))
     }
 
     /// Cache loaded keys for the current session.
-    /// This is a temporary implementation - production should use secure keyring.
+    /// This is a temporary implementation - production should use secure
+    /// keyring.
     pub fn cache_keys(&self, bundle: &KeyBundle) -> Result<(), KeyStoreError> {
-        let dits_dir = self.path.parent().ok_or(KeyStoreError::Io("Invalid keystore path".to_string()))?;
+        let dits_dir = self
+            .path
+            .parent()
+            .ok_or(KeyStoreError::Io("Invalid keystore path".to_string()))?;
         let cache_path = dits_dir.join("keys.cache");
 
         // Convert to serializable form
@@ -333,16 +332,12 @@ impl KeyStore {
             &serde_json::to_vec(&serializable_bundle)
                 .map_err(|e| KeyStoreError::Serialization(e.to_string()))?,
             &session_key,
-        ).map_err(|e| KeyStoreError::Encryption(e.to_string()))?;
+        )
+        .map_err(|e| KeyStoreError::Encryption(e.to_string()))?;
 
-        let cache_data = CachedKeys {
-            encrypted_bundle,
-            bundle_nonce: nonce,
-            session_key,
-        };
+        let cache_data = CachedKeys { encrypted_bundle, bundle_nonce: nonce, session_key };
 
-        let cache_file = File::create(&cache_path)
-            .map_err(|e| KeyStoreError::Io(e.to_string()))?;
+        let cache_file = File::create(&cache_path).map_err(|e| KeyStoreError::Io(e.to_string()))?;
         let writer = BufWriter::new(cache_file);
         serde_json::to_writer(writer, &cache_data)
             .map_err(|e| KeyStoreError::Serialization(e.to_string()))?;
@@ -352,15 +347,17 @@ impl KeyStore {
 
     /// Load cached keys for the current session.
     pub fn load_cached(&self) -> Result<KeyBundle, KeyStoreError> {
-        let dits_dir = self.path.parent().ok_or(KeyStoreError::Io("Invalid keystore path".to_string()))?;
+        let dits_dir = self
+            .path
+            .parent()
+            .ok_or(KeyStoreError::Io("Invalid keystore path".to_string()))?;
         let cache_path = dits_dir.join("keys.cache");
 
         if !cache_path.exists() {
             return Err(KeyStoreError::NotFound);
         }
 
-        let cache_file = File::open(&cache_path)
-            .map_err(|e| KeyStoreError::Io(e.to_string()))?;
+        let cache_file = File::open(&cache_path).map_err(|e| KeyStoreError::Io(e.to_string()))?;
         let reader = BufReader::new(cache_file);
         let cache_data: CachedKeys = serde_json::from_reader(reader)
             .map_err(|e| KeyStoreError::Serialization(e.to_string()))?;
@@ -369,7 +366,8 @@ impl KeyStore {
             &cache_data.encrypted_bundle,
             &cache_data.session_key,
             &cache_data.bundle_nonce,
-        ).map_err(|e| KeyStoreError::Decryption(e.to_string()))?;
+        )
+        .map_err(|e| KeyStoreError::Decryption(e.to_string()))?;
 
         let serializable_bundle: SerializableKeyBundle = serde_json::from_slice(&plaintext)
             .map_err(|e| KeyStoreError::Serialization(e.to_string()))?;
@@ -379,11 +377,13 @@ impl KeyStore {
 
     /// Clear cached keys.
     pub fn clear_cache(&self) -> Result<(), KeyStoreError> {
-        let dits_dir = self.path.parent().ok_or(KeyStoreError::Io("Invalid keystore path".to_string()))?;
+        let dits_dir = self
+            .path
+            .parent()
+            .ok_or(KeyStoreError::Io("Invalid keystore path".to_string()))?;
         let cache_path = dits_dir.join("keys.cache");
         if cache_path.exists() {
-            fs::remove_file(&cache_path)
-                .map_err(|e| KeyStoreError::Io(e.to_string()))?;
+            fs::remove_file(&cache_path).map_err(|e| KeyStoreError::Io(e.to_string()))?;
         }
         Ok(())
     }
@@ -419,8 +419,9 @@ pub enum KeyStoreError {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use tempfile::tempdir;
+
+    use super::*;
 
     #[test]
     fn test_create_and_load() {
@@ -428,7 +429,9 @@ mod tests {
         let keystore = KeyStore::new(dir.path());
 
         // Create keystore
-        let bundle1 = keystore.create("test-password", Some(&Argon2Params::fast())).unwrap();
+        let bundle1 = keystore
+            .create("test-password", Some(&Argon2Params::fast()))
+            .unwrap();
 
         // Load keystore
         let bundle2 = keystore.load("test-password").unwrap();
@@ -444,7 +447,9 @@ mod tests {
         let dir = tempdir().unwrap();
         let keystore = KeyStore::new(dir.path());
 
-        keystore.create("correct-password", Some(&Argon2Params::fast())).unwrap();
+        keystore
+            .create("correct-password", Some(&Argon2Params::fast()))
+            .unwrap();
 
         let result = keystore.load("wrong-password");
         assert!(matches!(result, Err(KeyStoreError::WrongPassword)));
@@ -455,7 +460,9 @@ mod tests {
         let dir = tempdir().unwrap();
         let keystore = KeyStore::new(dir.path());
 
-        keystore.create("password", Some(&Argon2Params::fast())).unwrap();
+        keystore
+            .create("password", Some(&Argon2Params::fast()))
+            .unwrap();
 
         let result = keystore.create("password", Some(&Argon2Params::fast()));
         assert!(matches!(result, Err(KeyStoreError::AlreadyExists)));
@@ -466,9 +473,13 @@ mod tests {
         let dir = tempdir().unwrap();
         let keystore = KeyStore::new(dir.path());
 
-        let bundle1 = keystore.create("old-password", Some(&Argon2Params::fast())).unwrap();
+        let bundle1 = keystore
+            .create("old-password", Some(&Argon2Params::fast()))
+            .unwrap();
 
-        keystore.change_password("old-password", "new-password", Some(&Argon2Params::fast())).unwrap();
+        keystore
+            .change_password("old-password", "new-password", Some(&Argon2Params::fast()))
+            .unwrap();
 
         // Old password should fail
         let result = keystore.load("old-password");
@@ -484,7 +495,9 @@ mod tests {
         let dir = tempdir().unwrap();
         let keystore = KeyStore::new(dir.path());
 
-        keystore.create("password", Some(&Argon2Params::fast())).unwrap();
+        keystore
+            .create("password", Some(&Argon2Params::fast()))
+            .unwrap();
         assert!(keystore.exists());
 
         keystore.delete().unwrap();

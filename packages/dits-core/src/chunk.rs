@@ -33,9 +33,9 @@ impl Default for ChunkerConfig {
     fn default() -> Self {
         // Default: 64KB avg - good balance for most files
         Self {
-            min_size: 16 * 1024,        // 16 KB
-            avg_size: 64 * 1024,        // 64 KB
-            max_size: 256 * 1024,       // 256 KB
+            min_size: 16 * 1024,  // 16 KB
+            avg_size: 64 * 1024,  // 64 KB
+            max_size: 256 * 1024, // 256 KB
         }
     }
 }
@@ -47,9 +47,9 @@ impl ChunkerConfig {
     /// on smaller test data.
     pub fn small() -> Self {
         Self {
-            min_size: 1024,             // 1 KB
-            avg_size: 4 * 1024,         // 4 KB
-            max_size: 16 * 1024,        // 16 KB
+            min_size: 1024,      // 1 KB
+            avg_size: 4 * 1024,  // 4 KB
+            max_size: 16 * 1024, // 16 KB
         }
     }
 
@@ -59,9 +59,9 @@ impl ChunkerConfig {
     /// while still providing good dedup on partial changes.
     pub fn media() -> Self {
         Self {
-            min_size: 64 * 1024,        // 64 KB
-            avg_size: 256 * 1024,       // 256 KB
-            max_size: 1024 * 1024,      // 1 MB
+            min_size: 64 * 1024,   // 64 KB
+            avg_size: 256 * 1024,  // 256 KB
+            max_size: 1024 * 1024, // 1 MB
         }
     }
 
@@ -71,9 +71,9 @@ impl ChunkerConfig {
     /// common in project files and configs.
     pub fn project() -> Self {
         Self {
-            min_size: 4 * 1024,         // 4 KB
-            avg_size: 16 * 1024,        // 16 KB
-            max_size: 64 * 1024,        // 64 KB
+            min_size: 4 * 1024,  // 4 KB
+            avg_size: 16 * 1024, // 16 KB
+            max_size: 64 * 1024, // 64 KB
         }
     }
 
@@ -83,9 +83,9 @@ impl ChunkerConfig {
     /// Use for files with lots of small repeated patterns.
     pub fn max_dedup() -> Self {
         Self {
-            min_size: 2 * 1024,         // 2 KB
-            avg_size: 8 * 1024,         // 8 KB
-            max_size: 32 * 1024,        // 32 KB
+            min_size: 2 * 1024,  // 2 KB
+            avg_size: 8 * 1024,  // 8 KB
+            max_size: 32 * 1024, // 32 KB
         }
     }
 
@@ -95,18 +95,18 @@ impl ChunkerConfig {
     /// Use when throughput matters more than storage efficiency.
     pub fn fast() -> Self {
         Self {
-            min_size: 256 * 1024,       // 256 KB
-            avg_size: 1024 * 1024,      // 1 MB
-            max_size: 4 * 1024 * 1024,  // 4 MB
+            min_size: 256 * 1024,      // 256 KB
+            avg_size: 1024 * 1024,     // 1 MB
+            max_size: 4 * 1024 * 1024, // 4 MB
         }
     }
 
     /// Select optimal config based on file size.
     pub fn for_size(size: u64) -> Self {
         match size {
-            0..=65_536 => Self::project(),           // < 64KB: small file
-            65_537..=10_485_760 => Self::default(),  // 64KB - 10MB: default
-            _ => Self::media(),                       // > 10MB: media config
+            0..=65_536 => Self::project(),          // < 64KB: small file
+            65_537..=10_485_760 => Self::default(), // 64KB - 10MB: default
+            _ => Self::media(),                     // > 10MB: media config
         }
     }
 }
@@ -171,16 +171,13 @@ pub fn chunk_data(data: &[u8], config: &ChunkerConfig) -> Vec<Chunk> {
         return vec![Chunk::new(data.to_vec())];
     }
 
-    let chunker = fastcdc::v2020::FastCDC::new(
-        data,
-        config.min_size,
-        config.avg_size,
-        config.max_size,
-    );
+    let chunker =
+        fastcdc::v2020::FastCDC::new(data, config.min_size, config.avg_size, config.max_size);
 
     chunker
         .map(|chunk_info| {
-            let chunk_data = data[chunk_info.offset..chunk_info.offset + chunk_info.length].to_vec();
+            let chunk_data =
+                data[chunk_info.offset..chunk_info.offset + chunk_info.length].to_vec();
             Chunk::new(chunk_data)
         })
         .collect()
@@ -198,12 +195,8 @@ pub fn chunk_data_with_refs(data: &[u8], config: &ChunkerConfig) -> (Vec<Chunk>,
         return (vec![chunk], vec![chunk_ref]);
     }
 
-    let chunker = fastcdc::v2020::FastCDC::new(
-        data,
-        config.min_size,
-        config.avg_size,
-        config.max_size,
-    );
+    let chunker =
+        fastcdc::v2020::FastCDC::new(data, config.min_size, config.avg_size, config.max_size);
 
     let mut chunks = Vec::new();
     let mut refs = Vec::new();
@@ -211,7 +204,11 @@ pub fn chunk_data_with_refs(data: &[u8], config: &ChunkerConfig) -> (Vec<Chunk>,
     for chunk_info in chunker {
         let chunk_data = data[chunk_info.offset..chunk_info.offset + chunk_info.length].to_vec();
         let chunk = Chunk::new(chunk_data);
-        let chunk_ref = ChunkRef::new(chunk.hash, chunk_info.offset as u64, chunk_info.length as u64);
+        let chunk_ref = ChunkRef::new(
+            chunk.hash,
+            chunk_info.offset as u64,
+            chunk_info.length as u64,
+        );
         chunks.push(chunk);
         refs.push(chunk_ref);
     }
@@ -236,12 +233,8 @@ pub fn chunk_data_parallel(data: &[u8], config: &ChunkerConfig) -> Vec<Chunk> {
         return vec![Chunk::new(data.to_vec())];
     }
 
-    let chunker = fastcdc::v2020::FastCDC::new(
-        data,
-        config.min_size,
-        config.avg_size,
-        config.max_size,
-    );
+    let chunker =
+        fastcdc::v2020::FastCDC::new(data, config.min_size, config.avg_size, config.max_size);
 
     // Collect chunk boundaries first (sequential - FastCDC requirement)
     let boundaries: Vec<_> = chunker
@@ -262,7 +255,10 @@ pub fn chunk_data_parallel(data: &[u8], config: &ChunkerConfig) -> Vec<Chunk> {
 ///
 /// Returns both chunks and references, with hashing done in parallel.
 #[cfg(feature = "parallel")]
-pub fn chunk_data_with_refs_parallel(data: &[u8], config: &ChunkerConfig) -> (Vec<Chunk>, Vec<ChunkRef>) {
+pub fn chunk_data_with_refs_parallel(
+    data: &[u8],
+    config: &ChunkerConfig,
+) -> (Vec<Chunk>, Vec<ChunkRef>) {
     if data.is_empty() {
         return (Vec::new(), Vec::new());
     }
@@ -273,12 +269,8 @@ pub fn chunk_data_with_refs_parallel(data: &[u8], config: &ChunkerConfig) -> (Ve
         return (vec![chunk], vec![chunk_ref]);
     }
 
-    let chunker = fastcdc::v2020::FastCDC::new(
-        data,
-        config.min_size,
-        config.avg_size,
-        config.max_size,
-    );
+    let chunker =
+        fastcdc::v2020::FastCDC::new(data, config.min_size, config.avg_size, config.max_size);
 
     // Collect chunk boundaries first (sequential - FastCDC requirement)
     let boundaries: Vec<_> = chunker
@@ -326,10 +318,7 @@ mod tests {
         let chunks = chunk_data(&data, &config);
 
         // Reconstruct
-        let reconstructed: Vec<u8> = chunks
-            .iter()
-            .flat_map(|c| c.data.iter().copied())
-            .collect();
+        let reconstructed: Vec<u8> = chunks.iter().flat_map(|c| c.data.iter().copied()).collect();
 
         assert_eq!(data, reconstructed);
     }
@@ -367,7 +356,11 @@ mod tests {
         }
 
         // Should have some dedup (fewer unique than total)
-        println!("Total chunks: {}, Unique: {}", chunks.len(), unique_hashes.len());
+        println!(
+            "Total chunks: {}, Unique: {}",
+            chunks.len(),
+            unique_hashes.len()
+        );
         // With repeated data, we should see deduplication
         assert!(unique_hashes.len() <= chunks.len());
     }
@@ -446,10 +439,7 @@ mod tests {
         let chunks = chunk_data_parallel(&data, &config);
 
         // Reconstruct
-        let reconstructed: Vec<u8> = chunks
-            .iter()
-            .flat_map(|c| c.data.iter().copied())
-            .collect();
+        let reconstructed: Vec<u8> = chunks.iter().flat_map(|c| c.data.iter().copied()).collect();
 
         assert_eq!(data, reconstructed);
     }

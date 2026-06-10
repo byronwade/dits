@@ -31,7 +31,7 @@ fn emit_mb_per_s(suite: &str, name: &str, bytes_per_iter: usize, iters: u64, ms_
     let mb = (bytes_per_iter as f64 * iters as f64) / (MIB as f64);
     let value = mb / (ms_total / 1000.0);
     println!(
-        "DITS_BENCH: {{\"suite\":\"{suite}\",\"name\":\"{name}\",\"metric\":\"throughput\",\"unit\":\"mb_per_s\",\"value\":{value},\"iterations\":{iters},\"bytes_per_iter\":{bytes_per_iter},\"elapsed_ms_total\":{ms_total}}}"
+        r#"DITS_BENCH: {{"suite":"{suite}","name":"{name}","metric":"throughput","unit":"mb_per_s","value":{value},"iterations":{iters},"bytes_per_iter":{bytes_per_iter},"elapsed_ms_total":{ms_total}}}"#
     );
 }
 

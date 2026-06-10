@@ -3,12 +3,16 @@
 //! Parses ISO Base Media File Format (ISOBMFF) files to extract
 //! structural information without loading entire file into memory.
 
-use super::atoms::{Atom, AtomType};
+use std::{
+    fs::File,
+    io::{self, Read, Seek, SeekFrom},
+    path::Path,
+};
+
 use byteorder::{BigEndian, ReadBytesExt};
-use std::fs::File;
-use std::io::{self, Read, Seek, SeekFrom};
-use std::path::Path;
 use thiserror::Error;
+
+use super::atoms::{Atom, AtomType};
 
 /// Errors that can occur during MP4 parsing.
 #[derive(Error, Debug)]
@@ -36,17 +40,17 @@ pub enum ParseError {
 #[derive(Debug)]
 pub struct Mp4Structure {
     /// File type atom (always first).
-    pub ftyp: Atom,
+    pub ftyp:           Atom,
     /// Movie metadata atom.
-    pub moov: Atom,
+    pub moov:           Atom,
     /// Media data atom.
-    pub mdat: Atom,
+    pub mdat:           Atom,
     /// All top-level atoms in order.
-    pub atoms: Vec<Atom>,
+    pub atoms:          Vec<Atom>,
     /// Total file size.
-    pub file_size: u64,
+    pub file_size:      u64,
     /// Whether moov comes before mdat (fast-start).
-    pub is_fast_start: bool,
+    pub is_fast_start:  bool,
     /// Locations of stco atoms (32-bit chunk offsets).
     pub stco_locations: Vec<StcoLocation>,
     /// Locations of co64 atoms (64-bit chunk offsets).
@@ -115,8 +119,7 @@ impl Mp4Parser {
         let is_fast_start = moov.start < mdat.start;
 
         // Find all stco and co64 atoms within moov
-        let (stco_locations, co64_locations) =
-            Self::find_offset_tables(&mut file, &moov)?;
+        let (stco_locations, co64_locations) = Self::find_offset_tables(&mut file, &moov)?;
 
         Ok(Mp4Structure {
             ftyp,
@@ -131,11 +134,7 @@ impl Mp4Parser {
     }
 
     /// Parse atoms within a range of the file.
-    fn parse_atoms(
-        file: &mut File,
-        start: u64,
-        end: u64,
-    ) -> Result<Vec<Atom>, ParseError> {
+    fn parse_atoms(file: &mut File, start: u64, end: u64) -> Result<Vec<Atom>, ParseError> {
         let mut atoms = Vec::new();
         let mut pos = start;
 
@@ -165,10 +164,7 @@ impl Mp4Parser {
 
             // Validate size
             if actual_size < header_size as u64 || pos + actual_size > end {
-                return Err(ParseError::InvalidAtomSize {
-                    offset: pos,
-                    size: actual_size,
-                });
+                return Err(ParseError::InvalidAtomSize { offset: pos, size: actual_size });
             }
 
             let atom_type = AtomType::from_tag(&tag);
@@ -277,20 +273,15 @@ impl Mp4Structure {
             } else {
                 "standard"
             },
-            if self.is_fast_start { "before" } else { "after" }
+            if self.is_fast_start {
+                "before"
+            } else {
+                "after"
+            }
         ));
-        s.push_str(&format!(
-            "ftyp: {} bytes at offset {}\n",
-            self.ftyp.length, self.ftyp.start
-        ));
-        s.push_str(&format!(
-            "moov: {} bytes at offset {}\n",
-            self.moov.length, self.moov.start
-        ));
-        s.push_str(&format!(
-            "mdat: {} bytes at offset {}\n",
-            self.mdat.length, self.mdat.start
-        ));
+        s.push_str(&format!("ftyp: {} bytes at offset {}\n", self.ftyp.length, self.ftyp.start));
+        s.push_str(&format!("moov: {} bytes at offset {}\n", self.moov.length, self.moov.start));
+        s.push_str(&format!("mdat: {} bytes at offset {}\n", self.mdat.length, self.mdat.start));
         s.push_str(&format!("stco tables: {}\n", self.stco_locations.len()));
         s.push_str(&format!("co64 tables: {}\n", self.co64_locations.len()));
         s

@@ -6,12 +6,12 @@
 //! - Secure key storage
 //! - Audit logging
 
-mod keys;
-mod encryption;
-mod keystore;
 mod audit;
+mod encryption;
+mod keys;
+mod keystore;
 
-pub use keys::{RootKey, UserSecret, KeyBundle, derive_keys, Argon2Params};
-pub use encryption::{encrypt_chunk, decrypt_chunk, EncryptedChunk};
+pub use audit::{AuditEvent, AuditEventType, AuditLog, AuditOutcome};
+pub use encryption::{decrypt_chunk, encrypt_chunk, EncryptedChunk};
+pub use keys::{derive_keys, Argon2Params, KeyBundle, RootKey, UserSecret};
 pub use keystore::{KeyStore, KeyStoreError};
-pub use audit::{AuditLog, AuditEvent, AuditEventType, AuditOutcome};

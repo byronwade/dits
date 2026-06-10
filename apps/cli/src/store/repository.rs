@@ -9,23 +9,29 @@
 //!
 //! Files are automatically classified by the `FileClassifier`.
 
-use crate::config::Config;
-use crate::core::{
-    chunk_data_with_refs, chunk_data_with_refs_parallel, Author, ChunkerConfig, Commit,
-    FileClassifier, FileMode, FileStatus, FileType, Hash, Hasher, Index, IndexEntry, IgnoreMatcher, Manifest,
-    ManifestEntry, Mp4Metadata, StorageStrategy, StoredAtom,
+use std::{
+    fs::{self, File},
+    io::{self, BufWriter, Read, Seek, SeekFrom, Write},
+    os::unix::fs::PermissionsExt,
+    path::{Path, PathBuf},
+    sync::Mutex,
 };
-use crate::mp4::{Deconstructor, Mp4Parser};
-use crate::security::KeyStore;
-use crate::store::{GitTextEngine, ObjectStore, RefStore};
+
 use bincode;
-use std::fs::{self, File};
-use std::io::{self, BufWriter, Read, Seek, SeekFrom, Write};
-use std::os::unix::fs::PermissionsExt;
-use std::path::{Path, PathBuf};
-use std::sync::Mutex;
 use thiserror::Error;
 use walkdir::WalkDir;
+
+use crate::{
+    config::Config,
+    core::{
+        chunk_data_with_refs, chunk_data_with_refs_parallel, Author, ChunkerConfig, Commit,
+        FileClassifier, FileMode, FileStatus, FileType, Hash, Hasher, IgnoreMatcher, Index,
+        IndexEntry, Manifest, ManifestEntry, Mp4Metadata, StorageStrategy, StoredAtom,
+    },
+    mp4::{Deconstructor, Mp4Parser},
+    security::KeyStore,
+    store::{GitTextEngine, ObjectStore, RefStore},
+};
 
 /// Minimum file size to use parallel chunking (1 MB).
 /// Below this threshold, sequential chunking is faster due to lower overhead.
@@ -80,25 +86,25 @@ struct CachedIndex {
 /// A Dits repository.
 pub struct Repository {
     /// Working directory (where files are).
-    work_dir: PathBuf,
+    work_dir:        PathBuf,
     /// .dits directory.
-    dits_dir: PathBuf,
+    dits_dir:        PathBuf,
     /// Object store (for binary/chunked files).
-    objects: ObjectStore,
+    objects:         ObjectStore,
     /// Reference store.
-    refs: RefStore,
+    refs:            RefStore,
     /// Chunker configuration.
-    chunker_config: ChunkerConfig,
+    chunker_config:  ChunkerConfig,
     /// Ignore pattern matcher.
-    ignore: IgnoreMatcher,
+    ignore:          IgnoreMatcher,
     /// Repository configuration.
-    config: Config,
+    config:          Config,
     /// Git text engine for text files (Phase 3.6).
-    git_engine: Option<GitTextEngine>,
+    git_engine:      Option<GitTextEngine>,
     /// File classifier for storage strategy selection (Phase 3.6).
     file_classifier: FileClassifier,
     /// Cached index for performance (Phase 6 optimization).
-    index_cache: Mutex<Option<CachedIndex>>,
+    index_cache:     Mutex<Option<CachedIndex>>,
 }
 
 impl Repository {
@@ -130,7 +136,8 @@ impl Repository {
 
         // Load config (or default)
         let config = Self::load_config(&dits_dir);
-        // Create chunker config from config values (avoid type mismatch between binary/lib crates)
+        // Create chunker config from config values (avoid type mismatch between
+        // binary/lib crates)
         let chunker_config = ChunkerConfig {
             min_size: config.chunking.min_size as u32,
             avg_size: config.chunking.target_size as u32,
@@ -171,7 +178,8 @@ impl Repository {
 
         // Load config (local first, then global, then defaults)
         let config = Self::load_config(&dits_dir);
-        // Create chunker config from config values (avoid type mismatch between binary/lib crates)
+        // Create chunker config from config values (avoid type mismatch between
+        // binary/lib crates)
         let chunker_config = ChunkerConfig {
             min_size: config.chunking.min_size as u32,
             avg_size: config.chunking.target_size as u32,
@@ -199,7 +207,8 @@ impl Repository {
             if let Ok(bundle) = keystore.load_cached() {
                 objects.enable_encryption(bundle.user_secret.clone());
             }
-            // If keystore exists but no cached keys, encryption is disabled until login
+            // If keystore exists but no cached keys, encryption is disabled
+            // until login
         }
 
         Ok(Self {
@@ -375,7 +384,8 @@ impl Repository {
         Ok(self.refs.resolve_head()?)
     }
 
-    /// Resolve a reference (branch name, commit prefix, or "HEAD") to a commit hash.
+    /// Resolve a reference (branch name, commit prefix, or "HEAD") to a commit
+    /// hash.
     pub fn resolve_ref(&self, ref_str: &str) -> Result<Option<Hash>, RepoError> {
         // Try as branch name first
         if let Some(hash) = self.refs.get_branch(ref_str)? {
@@ -442,7 +452,8 @@ impl Repository {
     // ========== Index Operations ==========
 
     /// Load the index with caching for performance optimization.
-    /// Supports both binary format (Phase 6+) and legacy JSON format for backwards compatibility.
+    /// Supports both binary format (Phase 6+) and legacy JSON format for
+    /// backwards compatibility.
     pub fn load_index(&self) -> Result<Index, RepoError> {
         let index_path = self.dits_dir.join("index");
 
@@ -478,7 +489,8 @@ impl Repository {
         let data = fs::read(&index_path)?;
         let mtime = index_path.metadata()?.modified()?;
 
-        // Try binary format first (Phase 6+), fall back to JSON for backwards compatibility
+        // Try binary format first (Phase 6+), fall back to JSON for backwards
+        // compatibility
         let index = match bincode::deserialize::<Index>(&data) {
             Ok(index) => index,
             Err(bincode_err) => {
@@ -487,38 +499,49 @@ impl Repository {
                     Ok(json) => match Index::from_json(&json) {
                         Ok(index) => index,
                         Err(json_err) => {
-                            eprintln!("Warning: Index file appears to be corrupted (bincode error: {}, JSON error: {}). Creating new empty index.", bincode_err, json_err);
+                            eprintln!(
+                                "Warning: Index file appears to be corrupted (bincode error: {}, \
+                                 JSON error: {}). Creating new empty index.",
+                                bincode_err, json_err
+                            );
                             // Backup the corrupted index file
                             let backup_path = index_path.with_extension("index.corrupted");
                             if let Err(e) = fs::rename(&index_path, &backup_path) {
                                 eprintln!("Warning: Could not backup corrupted index file: {}", e);
                             } else {
-                                eprintln!("Corrupted index file backed up to: {}", backup_path.display());
+                                eprintln!(
+                                    "Corrupted index file backed up to: {}",
+                                    backup_path.display()
+                                );
                             }
                             Index::new()
-                        }
+                        },
                     },
                     Err(utf8_err) => {
-                        eprintln!("Warning: Index file contains invalid UTF-8 data (bincode error: {}, UTF-8 error: {}). Creating new empty index.", bincode_err, utf8_err);
+                        eprintln!(
+                            "Warning: Index file contains invalid UTF-8 data (bincode error: {}, \
+                             UTF-8 error: {}). Creating new empty index.",
+                            bincode_err, utf8_err
+                        );
                         // Backup the corrupted index file
                         let backup_path = index_path.with_extension("index.corrupted");
                         if let Err(e) = fs::rename(&index_path, &backup_path) {
                             eprintln!("Warning: Could not backup corrupted index file: {}", e);
                         } else {
-                            eprintln!("Corrupted index file backed up to: {}", backup_path.display());
+                            eprintln!(
+                                "Corrupted index file backed up to: {}",
+                                backup_path.display()
+                            );
                         }
                         Index::new()
-                    }
+                    },
                 }
-            }
+            },
         };
 
         // Cache the loaded index
         if let Ok(mut cache_guard) = self.index_cache.lock() {
-            *cache_guard = Some(CachedIndex {
-                index: index.clone(),
-                mtime,
-            });
+            *cache_guard = Some(CachedIndex { index: index.clone(), mtime });
         }
 
         Ok(index)
@@ -532,10 +555,7 @@ impl Repository {
         // Update cache with new mtime
         let mtime = index_path.metadata()?.modified()?;
         if let Ok(mut cache_guard) = self.index_cache.lock() {
-            *cache_guard = Some(CachedIndex {
-                index: index.clone(),
-                mtime,
-            });
+            *cache_guard = Some(CachedIndex { index: index.clone(), mtime });
         }
 
         Ok(())
@@ -632,15 +652,15 @@ impl Repository {
         match strategy {
             StorageStrategy::GitText => {
                 self.add_text_file(index, rel_path, full_path, &data, content_hash, result)
-            }
+            },
             StorageStrategy::DitsChunk => {
                 self.add_binary_file(index, rel_path, full_path, &data, content_hash, result)
-            }
+            },
             StorageStrategy::Hybrid => {
                 // For now, treat hybrid files as binary
                 // Full hybrid support will parse metadata vs payload
                 self.add_binary_file(index, rel_path, full_path, &data, content_hash, result)
-            }
+            },
         }
     }
 
@@ -835,13 +855,24 @@ impl Repository {
     }
 
     /// Check if a file is an ISO Base Media File Format (MP4/MOV family).
-    /// These formats share the same atom-based structure and can use MP4-aware versioning.
+    /// These formats share the same atom-based structure and can use MP4-aware
+    /// versioning.
     fn is_mp4_file(path: &Path) -> bool {
         if let Some(ext) = path.extension() {
             let ext = ext.to_string_lossy().to_lowercase();
             matches!(
                 ext.as_str(),
-                "mp4" | "m4v" | "mov" | "m4a" | "m4b" | "m4p" | "3gp" | "3g2" | "mj2" | "mqv" | "f4v"
+                "mp4"
+                    | "m4v"
+                    | "mov"
+                    | "m4a"
+                    | "m4b"
+                    | "m4p"
+                    | "3gp"
+                    | "3g2"
+                    | "mj2"
+                    | "mqv"
+                    | "f4v"
             )
         } else {
             false
@@ -862,7 +893,7 @@ impl Repository {
             Err(_) => {
                 // If parsing fails, fall back to regular file handling
                 return self.add_regular_file(index, rel_path, full_path, result);
-            }
+            },
         };
 
         // Deconstruct the MP4
@@ -871,7 +902,7 @@ impl Repository {
             Err(_) => {
                 // Fall back to regular file handling
                 return self.add_regular_file(index, rel_path, full_path, result);
-            }
+            },
         };
 
         // Compute content hash of the full file for change detection
@@ -909,8 +940,8 @@ impl Repository {
             // For small atoms (< 64 bytes), store inline; otherwise store as blob
             if atom_data.len() < 64 {
                 stored_other_atoms.push(StoredAtom {
-                    atom_type: atom_type_str.to_string(),
-                    hash: None,
+                    atom_type:   atom_type_str.to_string(),
+                    hash:        None,
                     inline_data: Some(atom_data.clone()),
                 });
             } else {
@@ -921,15 +952,17 @@ impl Repository {
                     result.dedup_bytes += atom_data.len() as u64;
                 }
                 stored_other_atoms.push(StoredAtom {
-                    atom_type: atom_type_str.to_string(),
-                    hash: Some(hash),
+                    atom_type:   atom_type_str.to_string(),
+                    hash:        Some(hash),
                     inline_data: None,
                 });
             }
         }
 
         // Build atom order from structure.atoms
-        let atom_order: Vec<String> = structure.atoms.iter()
+        let atom_order: Vec<String> = structure
+            .atoms
+            .iter()
             .map(|a| a.atom_type.as_fourcc().to_string())
             .collect();
 
@@ -960,7 +993,9 @@ impl Repository {
 
         // Calculate the reconstructed file size for MP4
         // Structure: all atoms in original order
-        let other_atoms_size: u64 = deconstructed.other_atoms.iter()
+        let other_atoms_size: u64 = deconstructed
+            .other_atoms
+            .iter()
             .map(|(_, data)| data.len() as u64)
             .sum();
         let _reconstructed_size = (deconstructed.ftyp_data.len() as u64)
@@ -1023,7 +1058,7 @@ impl Repository {
         let mut entry = IndexEntry::new_mp4(
             rel_path.to_string(),
             content_hash,
-            actual_file_size,  // Use actual file size for consistency
+            actual_file_size, // Use actual file size for consistency
             mtime,
             mode,
             file_type,
@@ -1101,9 +1136,7 @@ impl Repository {
             FileType::Regular
         };
         let symlink_target = if file_type == FileType::Symlink {
-            fs::read_link(full_path)?
-                .to_string_lossy()
-                .to_string()
+            fs::read_link(full_path)?.to_string_lossy().to_string()
         } else {
             String::new()
         };
@@ -1149,10 +1182,10 @@ impl Repository {
                 FileStatus::Modified => status.staged_modified.push(path.clone()),
                 FileStatus::Deleted => {
                     status.staged_deleted.push(path.clone());
-                }
+                },
                 FileStatus::TypeChanged => status.staged_type_changed.push(path.clone()),
                 FileStatus::ModeChanged => status.staged_mode_changed.push(path.clone()),
-                _ => {}
+                _ => {},
             }
         }
 
@@ -1265,9 +1298,9 @@ impl Repository {
                         let content_changed = manifest_entry.content_hash != hash;
 
                         // Check for type changes (only for files that exist in both)
-                        let type_changed = !matches!(manifest_entry.mp4_metadata, Some(_)) &&
-                                         (current_file_type != FileType::Regular ||
-                                          manifest_entry.file_type != current_file_type);
+                        let type_changed = !matches!(manifest_entry.mp4_metadata, Some(_))
+                            && (current_file_type != FileType::Regular
+                                || manifest_entry.file_type != current_file_type);
 
                         // Check for mode changes - convert FileMode to comparable u32
                         let manifest_mode_u32 = match manifest_entry.mode {
@@ -1317,7 +1350,9 @@ impl Repository {
                         let new_hash = Hasher::hash(&data);
                         if new_hash == *old_hash {
                             // Found an unstaged rename!
-                            status.unstaged_renamed.push((old_path.clone(), new_path.clone()));
+                            status
+                                .unstaged_renamed
+                                .push((old_path.clone(), new_path.clone()));
                             // Remove from untracked since it's a rename
                             status.untracked.retain(|p| p != new_path);
                             break;
@@ -1458,13 +1493,14 @@ impl Repository {
 
     /// Checkout a commit, restoring all files.
     pub fn checkout(&self, hash: &Hash) -> Result<CheckoutResult, RepoError> {
-        // Capture the current HEAD manifest (if any) so we can remove files that no longer exist
-        // in the target commit (branch switches should not leave tracked leftovers behind).
+        // Capture the current HEAD manifest (if any) so we can remove files that no
+        // longer exist in the target commit (branch switches should not leave
+        // tracked leftovers behind).
         let previous_manifest = match self.head()? {
             Some(prev_hash) => {
                 let prev_commit = self.objects.load_commit(&prev_hash)?;
                 Some(self.objects.load_manifest(&prev_commit.manifest)?)
-            }
+            },
             None => None,
         };
 
@@ -1473,7 +1509,8 @@ impl Repository {
 
         let mut result = CheckoutResult::default();
 
-        // Remove files that were tracked in the previous commit but do not exist in the target.
+        // Remove files that were tracked in the previous commit but do not exist in the
+        // target.
         if let Some(prev_manifest) = previous_manifest {
             for (old_path, old_entry) in prev_manifest.iter() {
                 if manifest.contains(old_path) {
@@ -1485,8 +1522,8 @@ impl Repository {
                     continue;
                 }
 
-                // Best-effort safety: only remove if the working tree matches the previous commit
-                // (otherwise leave it in place).
+                // Best-effort safety: only remove if the working tree matches the previous
+                // commit (otherwise leave it in place).
                 let should_remove = match old_entry.file_type {
                     FileType::Symlink => fs::read_link(&full_old_path)
                         .ok()
@@ -1500,7 +1537,8 @@ impl Repository {
                 };
 
                 if should_remove {
-                    // If this was a file or symlink, remove it. (We don't expect directories in manifests.)
+                    // If this was a file or symlink, remove it. (We don't expect directories in
+                    // manifests.)
                     let _ = fs::remove_file(&full_old_path);
                 }
             }
@@ -1556,8 +1594,9 @@ impl Repository {
                 (0o644, FileType::Regular, String::new())
             };
 
-            // Recreate index entries from the manifest. These are tracked files, so mark them
-            // unchanged (not staged), and preserve storage strategy metadata.
+            // Recreate index entries from the manifest. These are tracked files, so mark
+            // them unchanged (not staged), and preserve storage strategy
+            // metadata.
             let mut idx_entry = if let Some(ref mp4_meta) = entry.mp4_metadata {
                 IndexEntry::new_mp4(
                     path.clone(),
@@ -1627,7 +1666,8 @@ impl Repository {
         };
 
         // Load other atoms
-        let mut other_atoms_data: std::collections::HashMap<String, Vec<u8>> = std::collections::HashMap::new();
+        let mut other_atoms_data: std::collections::HashMap<String, Vec<u8>> =
+            std::collections::HashMap::new();
         for stored_atom in &mp4_meta.other_atoms {
             let data = if let Some(ref inline_data) = stored_atom.inline_data {
                 inline_data.clone()
@@ -1650,7 +1690,8 @@ impl Repository {
         let mdat_header = crate::mp4::create_mdat_header(mdat_data.len() as u64);
 
         // Determine atom order and calculate positions
-        // If we have a saved atom_order, use it; otherwise use default: ftyp, moov, mdat
+        // If we have a saved atom_order, use it; otherwise use default: ftyp, moov,
+        // mdat
         let atom_order = if mp4_meta.atom_order.is_empty() {
             vec!["ftyp".to_string(), "moov".to_string(), "mdat".to_string()]
         } else {
@@ -1664,19 +1705,19 @@ impl Repository {
             match atom_type.as_str() {
                 "ftyp" => {
                     current_offset += ftyp_data.len() as u64;
-                }
+                },
                 "moov" => {
                     current_offset += moov_data.len() as u64;
-                }
+                },
                 "mdat" => {
                     mdat_data_start = current_offset + mdat_header.len() as u64;
                     current_offset += mdat_header.len() as u64 + mdat_data.len() as u64;
-                }
+                },
                 other => {
                     if let Some(data) = other_atoms_data.get(other) {
                         current_offset += data.len() as u64;
                     }
-                }
+                },
             }
         }
 
@@ -1698,19 +1739,19 @@ impl Repository {
             match atom_type.as_str() {
                 "ftyp" => {
                     writer.write_all(&ftyp_data)?;
-                }
+                },
                 "moov" => {
                     writer.write_all(&moov_data)?;
-                }
+                },
                 "mdat" => {
                     writer.write_all(&mdat_header)?;
                     writer.write_all(&mdat_data)?;
-                }
+                },
                 other => {
                     if let Some(data) = other_atoms_data.get(other) {
                         writer.write_all(data)?;
                     }
-                }
+                },
             }
         }
 
@@ -1762,7 +1803,8 @@ impl Repository {
         Ok(())
     }
 
-    /// Checkout a regular (non-MP4) file by reassembling chunks or loading from Git.
+    /// Checkout a regular (non-MP4) file by reassembling chunks or loading from
+    /// Git.
     fn checkout_regular_file(
         &self,
         full_path: &Path,
@@ -1797,16 +1839,18 @@ impl Repository {
         Ok(())
     }
 
-    /// Reconstruct a manifest entry's full byte content, honoring its storage strategy
-    /// (GitText files read from the git engine; others reassemble from Dits chunks).
-    /// Use this anywhere you need a tracked file's committed bytes (e.g. stash reset).
+    /// Reconstruct a manifest entry's full byte content, honoring its storage
+    /// strategy (GitText files read from the git engine; others reassemble
+    /// from Dits chunks). Use this anywhere you need a tracked file's
+    /// committed bytes (e.g. stash reset).
     pub fn reconstruct_entry_bytes(&self, entry: &ManifestEntry) -> Result<Vec<u8>, RepoError> {
         if entry.is_git_text() {
             if let (Some(ref git_oid), Some(ref engine)) = (&entry.git_oid, &self.git_engine) {
                 let oid = GitTextEngine::parse_oid(git_oid)?;
                 return Ok(engine.read_blob(oid)?);
             }
-            // Fall through to chunk reassembly if the git engine is unavailable.
+            // Fall through to chunk reassembly if the git engine is
+            // unavailable.
         }
         let mut data = Vec::with_capacity(entry.size as usize);
         for chunk_ref in &entry.chunks {
@@ -1843,11 +1887,11 @@ impl Repository {
             Some(hash) => {
                 self.refs.set_branch(name, &hash)?;
                 Ok(())
-            }
+            },
             None => {
                 // No commits yet - can still create branch, it just won't point anywhere
                 Err(RepoError::NothingToCommit)
-            }
+            },
         }
     }
 
@@ -1889,10 +1933,10 @@ impl Repository {
         let storage_size = self.objects.total_size()?;
 
         Ok(RepoStats {
-            chunk_count: chunks,
+            chunk_count:    chunks,
             manifest_count: manifests,
-            commit_count: commits,
-            storage_bytes: storage_size,
+            commit_count:   commits,
+            storage_bytes:  storage_size,
         })
     }
 
@@ -1922,8 +1966,12 @@ impl Repository {
         Ok(result)
     }
 
-    /// Compute comprehensive repo stats for a commit including deduplication metrics.
-    pub fn compute_repo_dedup_stats(&self, commit_hash: &Hash) -> Result<RepoDedupStats, RepoError> {
+    /// Compute comprehensive repo stats for a commit including deduplication
+    /// metrics.
+    pub fn compute_repo_dedup_stats(
+        &self,
+        commit_hash: &Hash,
+    ) -> Result<RepoDedupStats, RepoError> {
         let commit = self.objects.load_commit(commit_hash)?;
         let manifest = self.objects.load_manifest(&commit.manifest)?;
 
@@ -1946,7 +1994,7 @@ impl Repository {
                 Ok(size) => physical_size += size,
                 Err(_) => {
                     // Chunk might not exist yet (during add), skip
-                }
+                },
             }
         }
 
@@ -1956,7 +2004,8 @@ impl Repository {
         } else {
             1.0
         };
-        // Use saturating_sub to avoid underflow panic if physical > logical (shouldn't happen but be safe)
+        // Use saturating_sub to avoid underflow panic if physical > logical (shouldn't
+        // happen but be safe)
         let savings_percentage = if logical_size > 0 {
             (saved_bytes as f64 / logical_size as f64) * 100.0
         } else {
@@ -1985,7 +2034,8 @@ impl Repository {
         let manifest = self.objects.load_manifest(&commit.manifest)?;
 
         // Build a map of chunk -> usage count across all files
-        let mut all_chunk_counts: std::collections::HashMap<Hash, u64> = std::collections::HashMap::new();
+        let mut all_chunk_counts: std::collections::HashMap<Hash, u64> =
+            std::collections::HashMap::new();
         for (_path, entry) in manifest.iter() {
             for chunk_ref in &entry.chunks {
                 *all_chunk_counts.entry(chunk_ref.hash).or_insert(0) += 1;
@@ -2040,7 +2090,7 @@ impl Repository {
                 let commit = self.objects.load_commit(&hash)?;
                 let manifest = self.objects.load_manifest(&commit.manifest)?;
                 Ok(manifest.iter().map(|(path, _)| path.clone()).collect())
-            }
+            },
             None => Ok(Vec::new()),
         }
     }
@@ -2049,15 +2099,16 @@ impl Repository {
 /// Result of an add operation.
 #[derive(Debug, Default)]
 pub struct AddResult {
-    pub files_staged: usize,
-    pub files_ignored: usize,
-    /// Symbolic links encountered during a directory add. Symlink versioning is not
-    /// supported yet, so these are skipped — but reported so it is never silent.
+    pub files_staged:     usize,
+    pub files_ignored:    usize,
+    /// Symbolic links encountered during a directory add. Symlink versioning is
+    /// not supported yet, so these are skipped — but reported so it is
+    /// never silent.
     pub symlinks_skipped: usize,
-    pub new_chunks: usize,
-    pub new_bytes: u64,
-    pub dedup_chunks: usize,
-    pub dedup_bytes: u64,
+    pub new_chunks:       usize,
+    pub new_bytes:        u64,
+    pub dedup_chunks:     usize,
+    pub dedup_bytes:      u64,
 }
 
 impl AddResult {
@@ -2075,16 +2126,16 @@ impl AddResult {
 /// Repository status.
 #[derive(Debug, Default)]
 pub struct Status {
-    pub branch: Option<String>,
-    pub staged_new: Vec<String>,
-    pub staged_modified: Vec<String>,
-    pub staged_deleted: Vec<String>,
-    pub staged_renamed: Vec<(String, String)>, // (old_path, new_path)
+    pub branch:              Option<String>,
+    pub staged_new:          Vec<String>,
+    pub staged_modified:     Vec<String>,
+    pub staged_deleted:      Vec<String>,
+    pub staged_renamed:      Vec<(String, String)>, // (old_path, new_path)
     pub staged_type_changed: Vec<String>,
     pub staged_mode_changed: Vec<String>,
-    pub modified: Vec<String>,
-    pub untracked: Vec<String>,
-    pub unstaged_renamed: Vec<(String, String)>, // (old_path, new_path)
+    pub modified:            Vec<String>,
+    pub untracked:           Vec<String>,
+    pub unstaged_renamed:    Vec<(String, String)>, // (old_path, new_path)
 }
 
 impl Status {
@@ -2121,10 +2172,10 @@ pub struct CheckoutResult {
 /// Repository statistics.
 #[derive(Debug, Default)]
 pub struct RepoStats {
-    pub chunk_count: usize,
+    pub chunk_count:    usize,
     pub manifest_count: usize,
-    pub commit_count: usize,
-    pub storage_bytes: u64,
+    pub commit_count:   usize,
+    pub storage_bytes:  u64,
 }
 
 // ========== Phase 4: Advanced Stats Structures ==========
@@ -2133,38 +2184,38 @@ pub struct RepoStats {
 #[derive(Debug, Clone)]
 pub struct FileStats {
     /// File path relative to repo root.
-    pub path: String,
+    pub path:          String,
     /// Hash of the manifest containing this file.
     pub manifest_hash: Hash,
     /// Content hash of the file.
-    pub content_hash: Hash,
+    pub content_hash:  Hash,
     /// Logical file size in bytes.
-    pub file_size: u64,
+    pub file_size:     u64,
     /// Number of chunks.
-    pub chunk_count: usize,
+    pub chunk_count:   usize,
     /// List of chunk hashes.
-    pub chunk_hashes: Vec<Hash>,
+    pub chunk_hashes:  Vec<Hash>,
     /// Whether this is an MP4 file with special handling.
-    pub is_mp4: bool,
+    pub is_mp4:        bool,
 }
 
 /// Comprehensive repository deduplication statistics.
 #[derive(Debug, Clone)]
 pub struct RepoDedupStats {
     /// Commit hash these stats are for.
-    pub commit_hash: Hash,
+    pub commit_hash:        Hash,
     /// Number of files in the commit.
-    pub file_count: usize,
+    pub file_count:         usize,
     /// Total logical size of all files (sum of file sizes).
-    pub logical_size: u64,
+    pub logical_size:       u64,
     /// Number of unique chunks.
     pub unique_chunk_count: usize,
     /// Physical storage size (sum of unique chunk sizes).
-    pub physical_size: u64,
+    pub physical_size:      u64,
     /// Bytes saved through deduplication.
-    pub saved_bytes: u64,
+    pub saved_bytes:        u64,
     /// Deduplication ratio (physical / logical). Lower is better.
-    pub dedup_ratio: f64,
+    pub dedup_ratio:        f64,
     /// Percentage of storage saved. Higher is better.
     pub savings_percentage: f64,
 }
@@ -2173,25 +2224,25 @@ pub struct RepoDedupStats {
 #[derive(Debug, Clone)]
 pub struct FileDedupStats {
     /// File path.
-    pub path: String,
+    pub path:                   String,
     /// Manifest hash.
-    pub manifest_hash: Hash,
+    pub manifest_hash:          Hash,
     /// Content hash.
-    pub content_hash: Hash,
+    pub content_hash:           Hash,
     /// Logical file size.
-    pub logical_size: u64,
+    pub logical_size:           u64,
     /// Total number of chunks.
-    pub chunk_count: usize,
+    pub chunk_count:            usize,
     /// Chunks shared with other files in the repo.
-    pub shared_chunk_count: usize,
+    pub shared_chunk_count:     usize,
     /// Chunks unique to this file.
-    pub unique_chunk_count: usize,
+    pub unique_chunk_count:     usize,
     /// Estimated unique physical size (size of unique chunks).
     pub estimated_unique_bytes: u64,
     /// List of all chunk hashes for this file.
-    pub chunk_hashes: Vec<Hash>,
+    pub chunk_hashes:           Vec<Hash>,
     /// Whether this is an MP4 file.
-    pub is_mp4: bool,
+    pub is_mp4:                 bool,
 }
 
 impl FileDedupStats {
@@ -2216,8 +2267,9 @@ impl FileDedupStats {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use tempfile::tempdir;
+
+    use super::*;
 
     #[test]
     fn test_init_repository() {
@@ -2363,7 +2415,7 @@ mod tests {
 
         assert_eq!(stats.file_count, 2);
         assert_eq!(stats.logical_size, 200_000); // 2 * 100KB
-        // Physical size should be ~100KB due to dedup
+                                                 // Physical size should be ~100KB due to dedup
         assert!(stats.physical_size < stats.logical_size);
         assert!(stats.savings_percentage > 40.0); // Should save at least 40%
         assert!(stats.dedup_ratio < 0.6); // Ratio should be less than 0.6
@@ -2384,7 +2436,9 @@ mod tests {
         let commit = repo.commit("Test commit").unwrap();
 
         // Get file dedup stats for file1
-        let stats = repo.compute_file_dedup_stats(&commit.hash, "file1.bin").unwrap();
+        let stats = repo
+            .compute_file_dedup_stats(&commit.hash, "file1.bin")
+            .unwrap();
 
         assert_eq!(stats.path, "file1.bin");
         assert_eq!(stats.logical_size, 100_000);
@@ -2411,7 +2465,9 @@ mod tests {
         let commit = repo.commit("Test commit").unwrap();
 
         // Get file dedup stats for file1
-        let stats = repo.compute_file_dedup_stats(&commit.hash, "file1.bin").unwrap();
+        let stats = repo
+            .compute_file_dedup_stats(&commit.hash, "file1.bin")
+            .unwrap();
 
         // All chunks should be unique (no sharing)
         assert_eq!(stats.shared_chunk_count, 0);

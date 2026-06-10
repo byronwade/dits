@@ -1,24 +1,25 @@
 //! Frame codec abstraction.
 //!
-//! `FrameCodec` is the seam between FACR and a concrete intra-frame encoding. Every
-//! frame must be *independently decodable* (no inter-frame prediction) so it can be
-//! content-addressed and shared across versions. The shipped v1 codec is a
-//! deflate-backed raw codec — fully testable without external tools; production codecs
-//! (ProRes/DNxHR via ffmpeg, intra-AV1, JPEG-XL) implement the same trait.
+//! `FrameCodec` is the seam between FACR and a concrete intra-frame encoding.
+//! Every frame must be *independently decodable* (no inter-frame prediction) so
+//! it can be content-addressed and shared across versions. The shipped v1 codec
+//! is a deflate-backed raw codec — fully testable without external tools;
+//! production codecs (ProRes/DNxHR via ffmpeg, intra-AV1, JPEG-XL) implement
+//! the same trait.
+
+use std::io::{Read, Write};
 
 use anyhow::{Context, Result};
-use flate2::read::ZlibDecoder;
-use flate2::write::ZlibEncoder;
-use flate2::Compression;
-use std::io::{Read, Write};
+use flate2::{read::ZlibDecoder, write::ZlibEncoder, Compression};
 
 /// An uncompressed frame: raw interleaved pixel bytes plus dimensions.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RawFrame {
-    pub width: u32,
+    pub width:  u32,
     pub height: u32,
-    /// Interleaved pixel data (e.g. RGBA8); length should be `width*height*channels`.
-    pub data: Vec<u8>,
+    /// Interleaved pixel data (e.g. RGBA8); length should be
+    /// `width*height*channels`.
+    pub data:   Vec<u8>,
 }
 
 /// A codec that encodes/decodes individual frames independently.
@@ -26,8 +27,9 @@ pub trait FrameCodec {
     /// Stable codec name, recorded in the clip manifest.
     fn name(&self) -> &'static str;
 
-    /// Encode a frame to its stored representation. MUST be deterministic: the same
-    /// `RawFrame` must always produce identical bytes, or content addressing breaks.
+    /// Encode a frame to its stored representation. MUST be deterministic: the
+    /// same `RawFrame` must always produce identical bytes, or content
+    /// addressing breaks.
     fn encode_frame(&self, frame: &RawFrame) -> Result<Vec<u8>>;
 
     /// Decode a stored frame back to pixels.
@@ -48,7 +50,8 @@ impl FrameCodec for DeflateRawCodec {
         let mut out = Vec::with_capacity(8 + frame.data.len() / 2);
         out.extend_from_slice(&frame.width.to_le_bytes());
         out.extend_from_slice(&frame.height.to_le_bytes());
-        // Fixed compression level keeps the output deterministic for content addressing.
+        // Fixed compression level keeps the output deterministic for content
+        // addressing.
         let mut enc = ZlibEncoder::new(Vec::new(), Compression::new(6));
         enc.write_all(&frame.data).context("zlib write")?;
         let compressed = enc.finish().context("zlib finish")?;
@@ -64,11 +67,7 @@ impl FrameCodec for DeflateRawCodec {
         ZlibDecoder::new(&bytes[8..])
             .read_to_end(&mut data)
             .context("zlib decode")?;
-        Ok(RawFrame {
-            width,
-            height,
-            data,
-        })
+        Ok(RawFrame { width, height, data })
     }
 }
 
@@ -79,11 +78,9 @@ mod tests {
     fn sample_frame() -> RawFrame {
         // 2x2 RGBA gradient.
         RawFrame {
-            width: 2,
+            width:  2,
             height: 2,
-            data: vec![
-                0, 0, 0, 255, 64, 64, 64, 255, 128, 128, 128, 255, 255, 255, 255, 255,
-            ],
+            data:   vec![0, 0, 0, 255, 64, 64, 64, 255, 128, 128, 128, 255, 255, 255, 255, 255],
         }
     }
 

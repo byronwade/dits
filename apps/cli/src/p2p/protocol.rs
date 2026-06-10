@@ -5,8 +5,10 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::p2p::types::{ChunkId, ContentHash, DirEntry, FileAttr, ShareId, ShareInfo};
-use crate::p2p::MAX_MESSAGE_SIZE;
+use crate::p2p::{
+    types::{ChunkId, ContentHash, DirEntry, FileAttr, ShareId, ShareInfo},
+    MAX_MESSAGE_SIZE,
+};
 
 /// Protocol error types
 #[derive(Debug, Clone)]
@@ -22,7 +24,7 @@ impl std::fmt::Display for ProtocolError {
         match self {
             ProtocolError::MessageTooLarge { size, max } => {
                 write!(f, "Message too large: {} bytes (max: {})", size, max)
-            }
+            },
             ProtocolError::Serialization(e) => write!(f, "Serialization error: {}", e),
             ProtocolError::Deserialization(e) => write!(f, "Deserialization error: {}", e),
             ProtocolError::InvalidMessage(e) => write!(f, "Invalid message: {}", e),
@@ -73,31 +75,31 @@ pub enum NetMessage {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct HelloMessage {
     pub protocol_version: u32,
-    pub client_id: [u8; 16],
-    pub capabilities: Vec<String>,
+    pub client_id:        [u8; 16],
+    pub capabilities:     Vec<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct HelloAckMessage {
     pub protocol_version: u32,
-    pub session_id: [u8; 16],
-    pub host_name: String,
-    pub capabilities: Vec<String>,
+    pub session_id:       [u8; 16],
+    pub host_name:        String,
+    pub capabilities:     Vec<String>,
 }
 
 // === Metadata Messages ===
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ListDirRequest {
-    pub path: String,
+    pub path:   String,
     pub offset: u64,
-    pub limit: u32,
+    pub limit:  u32,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ListDirResponse {
-    pub entries: Vec<DirEntry>,
-    pub has_more: bool,
+    pub entries:     Vec<DirEntry>,
+    pub has_more:    bool,
     pub next_offset: u64,
 }
 
@@ -122,7 +124,7 @@ pub struct ReadChunkRequest {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ReadChunkResponse {
     pub chunk_id: ChunkId,
-    pub data: Vec<u8>,
+    pub data:     Vec<u8>,
     pub checksum: [u8; 32],
     pub is_final: bool,
 }
@@ -130,14 +132,14 @@ pub struct ReadChunkResponse {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WriteChunkRequest {
     pub chunk_id: ChunkId,
-    pub data: Vec<u8>,
+    pub data:     Vec<u8>,
     pub checksum: [u8; 32],
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WriteChunkResponse {
     pub chunk_id: ChunkId,
-    pub success: bool,
+    pub success:  bool,
 }
 
 // === File Transfer Messages (DITS-specific) ===
@@ -145,28 +147,28 @@ pub struct WriteChunkResponse {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TransferOfferMessage {
     pub transfer_id: u64,
-    pub file_path: String,
-    pub file_size: u64,
-    pub file_hash: ContentHash,
+    pub file_path:   String,
+    pub file_size:   u64,
+    pub file_hash:   ContentHash,
     pub chunk_count: u32,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TransferAcceptMessage {
-    pub transfer_id: u64,
+    pub transfer_id:    u64,
     pub missing_chunks: Vec<u32>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TransferRejectMessage {
     pub transfer_id: u64,
-    pub reason: String,
+    pub reason:      String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TransferCompleteMessage {
-    pub transfer_id: u64,
-    pub success: bool,
+    pub transfer_id:       u64,
+    pub success:           bool,
     pub bytes_transferred: u64,
 }
 
@@ -175,19 +177,19 @@ pub struct TransferCompleteMessage {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PingMessage {
     pub timestamp: u64,
-    pub payload: [u8; 8],
+    pub payload:   [u8; 8],
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PongMessage {
     pub client_timestamp: u64,
     pub server_timestamp: u64,
-    pub payload: [u8; 8],
+    pub payload:          [u8; 8],
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ErrorMessage {
-    pub code: u32,
+    pub code:    u32,
     pub message: String,
 }
 
@@ -235,10 +237,7 @@ pub fn serialize_message(msg: &NetMessage) -> Result<Vec<u8>, ProtocolError> {
 /// Deserialize a message (without length prefix)
 pub fn deserialize_message(data: &[u8]) -> Result<NetMessage, ProtocolError> {
     if data.len() > MAX_MESSAGE_SIZE {
-        return Err(ProtocolError::MessageTooLarge {
-            size: data.len(),
-            max: MAX_MESSAGE_SIZE,
-        });
+        return Err(ProtocolError::MessageTooLarge { size: data.len(), max: MAX_MESSAGE_SIZE });
     }
     bincode::deserialize(data).map_err(|e| ProtocolError::Deserialization(e.to_string()))
 }
@@ -251,8 +250,8 @@ mod tests {
     fn test_roundtrip_hello() {
         let msg = NetMessage::Hello(HelloMessage {
             protocol_version: 1,
-            client_id: [1; 16],
-            capabilities: vec!["read".into()],
+            client_id:        [1; 16],
+            capabilities:     vec!["read".into()],
         });
 
         let bytes = serialize_message(&msg).unwrap();
@@ -266,7 +265,7 @@ mod tests {
             NetMessage::Hello(h) => {
                 assert_eq!(h.protocol_version, 1);
                 assert_eq!(h.client_id, [1; 16]);
-            }
+            },
             _ => panic!("wrong message type"),
         }
     }

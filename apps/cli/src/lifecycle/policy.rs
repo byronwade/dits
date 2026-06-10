@@ -1,16 +1,16 @@
 //! Lifecycle policies for automatic tier transitions.
 
-use super::tier::StorageTier;
-use super::tracker::AccessRecord;
 use serde::{Deserialize, Serialize};
+
+use super::{tier::StorageTier, tracker::AccessRecord};
 
 /// A lifecycle policy defining tier transition rules.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LifecyclePolicy {
     /// Policy name.
-    pub name: String,
+    pub name:    String,
     /// Policy rules (evaluated in order).
-    pub rules: Vec<PolicyRule>,
+    pub rules:   Vec<PolicyRule>,
     /// Whether this policy is enabled.
     pub enabled: bool,
 }
@@ -18,11 +18,7 @@ pub struct LifecyclePolicy {
 impl LifecyclePolicy {
     /// Create a new lifecycle policy.
     pub fn new(name: impl Into<String>) -> Self {
-        Self {
-            name: name.into(),
-            rules: Vec::new(),
-            enabled: true,
-        }
+        Self { name: name.into(), rules: Vec::new(), enabled: true }
     }
 
     /// Add a rule to the policy.
@@ -64,24 +60,24 @@ impl LifecyclePolicy {
     pub fn aggressive_policy() -> Self {
         Self::new("aggressive")
             .with_rule(PolicyRule {
-                name: "hot-to-warm".to_string(),
-                from_tier: StorageTier::Hot,
-                to_tier: StorageTier::Warm,
-                condition: TransitionCondition::InactiveDays(7),
+                name:              "hot-to-warm".to_string(),
+                from_tier:         StorageTier::Hot,
+                to_tier:           StorageTier::Warm,
+                condition:         TransitionCondition::InactiveDays(7),
                 exclude_protected: true,
             })
             .with_rule(PolicyRule {
-                name: "warm-to-cold".to_string(),
-                from_tier: StorageTier::Warm,
-                to_tier: StorageTier::Cold,
-                condition: TransitionCondition::InactiveDays(30),
+                name:              "warm-to-cold".to_string(),
+                from_tier:         StorageTier::Warm,
+                to_tier:           StorageTier::Cold,
+                condition:         TransitionCondition::InactiveDays(30),
                 exclude_protected: true,
             })
             .with_rule(PolicyRule {
-                name: "cold-to-archive".to_string(),
-                from_tier: StorageTier::Cold,
-                to_tier: StorageTier::Archive,
-                condition: TransitionCondition::InactiveDays(90),
+                name:              "cold-to-archive".to_string(),
+                from_tier:         StorageTier::Cold,
+                to_tier:           StorageTier::Archive,
+                condition:         TransitionCondition::InactiveDays(90),
                 exclude_protected: true,
             })
     }
@@ -90,24 +86,24 @@ impl LifecyclePolicy {
     pub fn conservative_policy() -> Self {
         Self::new("conservative")
             .with_rule(PolicyRule {
-                name: "hot-to-warm".to_string(),
-                from_tier: StorageTier::Hot,
-                to_tier: StorageTier::Warm,
-                condition: TransitionCondition::InactiveDays(90),
+                name:              "hot-to-warm".to_string(),
+                from_tier:         StorageTier::Hot,
+                to_tier:           StorageTier::Warm,
+                condition:         TransitionCondition::InactiveDays(90),
                 exclude_protected: true,
             })
             .with_rule(PolicyRule {
-                name: "warm-to-cold".to_string(),
-                from_tier: StorageTier::Warm,
-                to_tier: StorageTier::Cold,
-                condition: TransitionCondition::InactiveDays(365),
+                name:              "warm-to-cold".to_string(),
+                from_tier:         StorageTier::Warm,
+                to_tier:           StorageTier::Cold,
+                condition:         TransitionCondition::InactiveDays(365),
                 exclude_protected: true,
             })
             .with_rule(PolicyRule {
-                name: "cold-to-archive".to_string(),
-                from_tier: StorageTier::Cold,
-                to_tier: StorageTier::Archive,
-                condition: TransitionCondition::InactiveDays(1095), // 3 years
+                name:              "cold-to-archive".to_string(),
+                from_tier:         StorageTier::Cold,
+                to_tier:           StorageTier::Archive,
+                condition:         TransitionCondition::InactiveDays(1095), // 3 years
                 exclude_protected: true,
             })
     }
@@ -128,10 +124,11 @@ impl LifecyclePolicy {
     }
 
     /// Get all transitions recommended by this policy.
-    pub fn evaluate_all<'a>(&self, records: impl Iterator<Item = &'a AccessRecord>) -> Vec<TierTransition> {
-        records
-            .filter_map(|r| self.evaluate(r))
-            .collect()
+    pub fn evaluate_all<'a>(
+        &self,
+        records: impl Iterator<Item = &'a AccessRecord>,
+    ) -> Vec<TierTransition> {
+        records.filter_map(|r| self.evaluate(r)).collect()
     }
 }
 
@@ -145,13 +142,13 @@ impl Default for LifecyclePolicy {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PolicyRule {
     /// Rule name for logging/display.
-    pub name: String,
+    pub name:              String,
     /// Source tier.
-    pub from_tier: StorageTier,
+    pub from_tier:         StorageTier,
     /// Destination tier.
-    pub to_tier: StorageTier,
+    pub to_tier:           StorageTier,
     /// Condition for transition.
-    pub condition: TransitionCondition,
+    pub condition:         TransitionCondition,
     /// Whether to exclude protected chunks (proxies, manifests).
     pub exclude_protected: bool,
 }
@@ -175,11 +172,11 @@ impl PolicyRule {
         }
 
         Some(TierTransition {
-            hash: record.hash,
+            hash:      record.hash,
             from_tier: self.from_tier,
-            to_tier: self.to_tier,
-            reason: self.name.clone(),
-            size: record.size,
+            to_tier:   self.to_tier,
+            reason:    self.name.clone(),
+            size:      record.size,
         })
     }
 }
@@ -224,15 +221,15 @@ impl TransitionCondition {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TierTransition {
     /// Chunk hash.
-    pub hash: crate::core::Hash,
+    pub hash:      crate::core::Hash,
     /// Current tier.
     pub from_tier: StorageTier,
     /// Target tier.
-    pub to_tier: StorageTier,
+    pub to_tier:   StorageTier,
     /// Reason/rule name.
-    pub reason: String,
+    pub reason:    String,
     /// Chunk size in bytes.
-    pub size: u64,
+    pub size:      u64,
 }
 
 impl TierTransition {

@@ -5,11 +5,11 @@
 mod runner;
 mod templates;
 
+use std::path::Path;
+
 #[allow(unused_imports)]
 pub use runner::{run_hook, HookResult};
 pub use templates::get_sample_hook;
-
-use std::path::Path;
 
 /// Available hook types
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -58,7 +58,7 @@ impl HookType {
             HookType::PostRewrite => "post-rewrite",
         }
     }
-    
+
     /// Get description for this hook
     pub fn description(&self) -> &'static str {
         match self {
@@ -76,7 +76,7 @@ impl HookType {
             HookType::PostRewrite => "Run after history is rewritten",
         }
     }
-    
+
     /// Get all hook types
     pub fn all() -> &'static [HookType] {
         &[
@@ -94,7 +94,7 @@ impl HookType {
             HookType::PostRewrite,
         ]
     }
-    
+
     /// Parse from string
     pub fn from_str(s: &str) -> Option<HookType> {
         match s {

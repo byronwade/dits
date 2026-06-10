@@ -1,11 +1,12 @@
 //! Checkout commits or branches.
 
-use crate::core::Hash;
-use crate::store::Repository;
+use std::path::Path;
+
 use anyhow::{Context, Result};
 use console::style;
 use dits::proxy::{ProxyStore, VariantType};
-use std::path::Path;
+
+use crate::{core::Hash, store::Repository};
 
 /// Checkout mode.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -155,8 +156,8 @@ pub fn checkout(target: &str, mode: CheckoutMode) -> Result<()> {
     anyhow::bail!("pathspec '{}' did not match any branch or commit", target);
 }
 
-/// Apply proxy checkout - replace video files with their proxies where available.
-/// Returns (files_replaced, bytes_saved).
+/// Apply proxy checkout - replace video files with their proxies where
+/// available. Returns (files_replaced, bytes_saved).
 fn apply_proxy_checkout(repo: &Repository) -> Result<(usize, u64)> {
     use dits::core::Hash as DitsHash;
 

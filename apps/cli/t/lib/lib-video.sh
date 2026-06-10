@@ -211,9 +211,3 @@ test_video_workflow() {
 }
 
 # Export all functions
-export -f test_create_minimal_mp4 test_mp4_inspect test_mp4_roundtrip
-export -f test_video_segment test_video_assemble test_video_segment_assemble_roundtrip
-export -f test_proxy_generate test_proxy_status test_proxy_list
-export -f test_video_timeline_init test_video_timeline_add_clip test_video_timeline_show
-export -f test_video_dependencies test_video_dependency_graph test_video_metadata
-export -f test_video_workflow

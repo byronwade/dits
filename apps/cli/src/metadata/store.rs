@@ -1,10 +1,12 @@
 //! Metadata storage layer.
 
+use std::{
+    fs, io,
+    path::{Path, PathBuf},
+};
+
 use super::FileMetadata;
 use crate::core::Hash;
-use std::fs;
-use std::io;
-use std::path::{Path, PathBuf};
 
 /// Metadata storage under `.dits/meta/`.
 pub struct MetadataStore {
@@ -15,9 +17,7 @@ pub struct MetadataStore {
 impl MetadataStore {
     /// Create a new metadata store.
     pub fn new(dits_dir: &Path) -> Self {
-        Self {
-            base_path: dits_dir.join("meta").join("manifest"),
-        }
+        Self { base_path: dits_dir.join("meta").join("manifest") }
     }
 
     /// Initialize the metadata store (create directories).
@@ -124,8 +124,9 @@ impl MetadataStore {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use tempfile::tempdir;
+
+    use super::*;
 
     #[test]
     fn test_store_and_load() {
@@ -133,7 +134,9 @@ mod tests {
         let store = MetadataStore::new(temp.path());
         store.init().unwrap();
 
-        let hash = Hash::from_hex("abcd1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab").unwrap();
+        let hash =
+            Hash::from_hex("abcd1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab")
+                .unwrap();
         let metadata = FileMetadata::new("video", "video/mp4");
 
         // Store
@@ -154,7 +157,9 @@ mod tests {
         let store = MetadataStore::new(temp.path());
         store.init().unwrap();
 
-        let hash = Hash::from_hex("abcd1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab").unwrap();
+        let hash =
+            Hash::from_hex("abcd1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab")
+                .unwrap();
         let loaded = store.load(&hash).unwrap();
         assert!(loaded.is_none());
     }
@@ -166,11 +171,19 @@ mod tests {
         store.init().unwrap();
 
         // Store a few entries
-        let hash1 = Hash::from_hex("aaaa1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab").unwrap();
-        let hash2 = Hash::from_hex("bbbb1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab").unwrap();
+        let hash1 =
+            Hash::from_hex("aaaa1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab")
+                .unwrap();
+        let hash2 =
+            Hash::from_hex("bbbb1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab")
+                .unwrap();
 
-        store.store(&hash1, &FileMetadata::new("video", "video/mp4")).unwrap();
-        store.store(&hash2, &FileMetadata::new("photo", "image/jpeg")).unwrap();
+        store
+            .store(&hash1, &FileMetadata::new("video", "video/mp4"))
+            .unwrap();
+        store
+            .store(&hash2, &FileMetadata::new("photo", "image/jpeg"))
+            .unwrap();
 
         let list = store.list().unwrap();
         assert_eq!(list.len(), 2);

@@ -2,10 +2,12 @@
 //!
 //! Commands for extracting and viewing file metadata.
 
-use dits::metadata::{MetadataRegistry, MetadataStore};
-use dits::store::Repository;
 use anyhow::{Context, Result};
 use console::style;
+use dits::{
+    metadata::{MetadataRegistry, MetadataStore},
+    store::Repository,
+};
 
 /// Scan files in HEAD and extract metadata.
 pub fn meta_scan(verbose: bool) -> Result<()> {
@@ -78,13 +80,13 @@ pub fn meta_scan(verbose: bool) -> Result<()> {
                     }
                     extracted += 1;
                 }
-            }
+            },
             Err(e) => {
                 if verbose {
                     println!("  {} {} ({})", style("✗").red(), path, e);
                 }
                 errors += 1;
-            }
+            },
         }
     }
 
@@ -124,18 +126,14 @@ pub fn meta_show(path: &str) -> Result<()> {
             println!();
 
             // Pretty print JSON
-            let json = serde_json::to_string_pretty(&metadata)
-                .context("Failed to serialize metadata")?;
+            let json =
+                serde_json::to_string_pretty(&metadata).context("Failed to serialize metadata")?;
             println!("{}", json);
-        }
+        },
         None => {
-            println!(
-                "{} No metadata found for {}",
-                style("!").yellow(),
-                path
-            );
+            println!("{} No metadata found for {}", style("!").yellow(), path);
             println!("Run `dits meta scan` to extract metadata.");
-        }
+        },
     }
 
     Ok(())

@@ -1,9 +1,10 @@
 //! Summarize commit history grouped by author (`dits shortlog`).
 
-use crate::store::Repository;
+use std::{collections::HashMap, path::Path};
+
 use anyhow::{Context, Result};
-use std::collections::HashMap;
-use std::path::Path;
+
+use crate::store::Repository;
 
 /// Options controlling `shortlog`.
 #[derive(Clone, Debug, Default)]
@@ -11,18 +12,18 @@ pub struct ShortlogOptions {
     /// Sort authors by descending commit count.
     pub numbered: bool,
     /// Show only per-author counts, not individual messages.
-    pub summary: bool,
+    pub summary:  bool,
     /// Include author email addresses in the heading.
-    pub email: bool,
+    pub email:    bool,
     /// Maximum commits to process (0 = all).
-    pub limit: usize,
+    pub limit:    usize,
 }
 
 /// Per-author aggregation.
 #[derive(Clone, Debug)]
 pub struct ShortlogEntry {
-    pub author: String,
-    pub email: String,
+    pub author:  String,
+    pub email:   String,
     pub commits: Vec<String>,
 }
 
@@ -54,28 +55,27 @@ pub fn shortlog(options: &ShortlogOptions) -> Result<Vec<ShortlogEntry>> {
         } else {
             commit.author.name.clone()
         };
-        let subject = commit
-            .message
-            .lines()
-            .next()
-            .unwrap_or("")
-            .to_string();
+        let subject = commit.message.lines().next().unwrap_or("").to_string();
 
         match index.get(&key) {
             Some(&i) => entries[i].commits.push(subject),
             None => {
                 index.insert(key, entries.len());
                 entries.push(ShortlogEntry {
-                    author: commit.author.name,
-                    email: commit.author.email,
+                    author:  commit.author.name,
+                    email:   commit.author.email,
                     commits: vec![subject],
                 });
-            }
+            },
         }
     }
 
     if options.numbered {
-        entries.sort_by(|a, b| b.count().cmp(&a.count()).then_with(|| a.author.cmp(&b.author)));
+        entries.sort_by(|a, b| {
+            b.count()
+                .cmp(&a.count())
+                .then_with(|| a.author.cmp(&b.author))
+        });
     } else {
         entries.sort_by(|a, b| a.author.cmp(&b.author));
     }

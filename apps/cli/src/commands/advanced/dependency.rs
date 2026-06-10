@@ -2,13 +2,14 @@
 //!
 //! Commands for checking and visualizing project file dependencies.
 
-use dits::dependency::{
-    DependencyValidator, is_project_file, ProjectType,
-};
-use dits::store::Repository;
-use anyhow::{Context, Result, bail};
-use console::style;
 use std::path::{Path, PathBuf};
+
+use anyhow::{bail, Context, Result};
+use console::style;
+use dits::{
+    dependency::{is_project_file, DependencyValidator, ProjectType},
+    store::Repository,
+};
 
 /// Check dependencies for project files.
 pub fn dep_check(files: &[String], all: bool, strict: bool) -> Result<()> {
@@ -19,8 +20,7 @@ pub fn dep_check(files: &[String], all: bool, strict: bool) -> Result<()> {
     let tracked_files = get_tracked_files(&repo)?;
 
     // Build validator
-    let validator = DependencyValidator::new(&cwd)
-        .with_tracked_files(tracked_files.clone());
+    let validator = DependencyValidator::new(&cwd).with_tracked_files(tracked_files.clone());
 
     // Get project files to check
     let project_files = if all {
@@ -29,7 +29,8 @@ pub fn dep_check(files: &[String], all: bool, strict: bool) -> Result<()> {
         // Check staged project files
         find_staged_project_files(&repo)?
     } else {
-        files.iter()
+        files
+            .iter()
             .map(|f| cwd.join(f))
             .filter(|p| is_project_file(p))
             .collect()
@@ -55,11 +56,7 @@ pub fn dep_check(files: &[String], all: bool, strict: bool) -> Result<()> {
 
         let project_type = ProjectType::from_path(project_path);
 
-        print!(
-            "  {} ({})... ",
-            style(&display_name).cyan(),
-            project_type.name()
-        );
+        print!("  {} ({})... ", style(&display_name).cyan(), project_type.name());
 
         match validator.validate_project(project_path) {
             Ok(result) => {
@@ -99,26 +96,37 @@ pub fn dep_check(files: &[String], all: bool, strict: bool) -> Result<()> {
 
                     total_satisfied += result.satisfied.len();
                 }
-            }
+            },
             Err(e) => {
                 println!("{} ({})", style("ERROR").red(), e);
-            }
+            },
         }
     }
 
     println!();
     println!("{}", style("Summary:").bold());
     println!("  Satisfied:  {}", style(total_satisfied).green());
-    println!("  Missing:    {}", if total_missing > 0 { style(total_missing).red() } else { style(total_missing).green() });
-    println!("  External:   {}", if total_external > 0 { style(total_external).red() } else { style(total_external).green() });
+    println!(
+        "  Missing:    {}",
+        if total_missing > 0 {
+            style(total_missing).red()
+        } else {
+            style(total_missing).green()
+        }
+    );
+    println!(
+        "  External:   {}",
+        if total_external > 0 {
+            style(total_external).red()
+        } else {
+            style(total_external).green()
+        }
+    );
 
     if total_missing > 0 || total_external > 0 {
         println!();
         if total_missing > 0 {
-            println!(
-                "{} Add missing files with: dits add <file>",
-                style("Hint:").cyan()
-            );
+            println!("{} Add missing files with: dits add <file>", style("Hint:").cyan());
         }
         if total_external > 0 {
             println!(
@@ -128,7 +136,11 @@ pub fn dep_check(files: &[String], all: bool, strict: bool) -> Result<()> {
         }
 
         if strict {
-            bail!("Dependency check failed: {} missing, {} external", total_missing, total_external);
+            bail!(
+                "Dependency check failed: {} missing, {} external",
+                total_missing,
+                total_external
+            );
         }
     } else {
         println!();
@@ -172,8 +184,7 @@ pub fn dep_graph(file: &str, format: Option<&str>) -> Result<()> {
 
     // Get tracked files
     let tracked_files = get_tracked_files(&repo)?;
-    let validator = DependencyValidator::new(&cwd)
-        .with_tracked_files(tracked_files);
+    let validator = DependencyValidator::new(&cwd).with_tracked_files(tracked_files);
 
     // Validate and build graph
     let result = validator.validate_project(&project_path)?;
@@ -190,12 +201,12 @@ pub fn dep_graph(file: &str, format: Option<&str>) -> Result<()> {
                 .to_string_lossy()
                 .replace('\\', "/");
             println!("{}", result.graph.render_tree(&rel_path));
-        }
+        },
         "json" => {
-            let json = serde_json::to_string_pretty(&result.graph)
-                .context("Failed to serialize graph")?;
+            let json =
+                serde_json::to_string_pretty(&result.graph).context("Failed to serialize graph")?;
             println!("{}", json);
-        }
+        },
         "stats" => {
             let stats = result.graph.stats();
             println!("{}", style("Graph Statistics:").bold().underlined());
@@ -204,10 +215,24 @@ pub fn dep_graph(file: &str, format: Option<&str>) -> Result<()> {
             println!("  Project files:  {}", stats.project_files);
             println!("  Media files:    {}", stats.media_files);
             println!("  Tracked:        {}", stats.tracked_files);
-            println!("  Untracked:      {}", if stats.untracked_files > 0 { style(stats.untracked_files).red() } else { style(stats.untracked_files).green() });
-            println!("  Missing:        {}", if stats.missing_files > 0 { style(stats.missing_files).red() } else { style(stats.missing_files).green() });
+            println!(
+                "  Untracked:      {}",
+                if stats.untracked_files > 0 {
+                    style(stats.untracked_files).red()
+                } else {
+                    style(stats.untracked_files).green()
+                }
+            );
+            println!(
+                "  Missing:        {}",
+                if stats.missing_files > 0 {
+                    style(stats.missing_files).red()
+                } else {
+                    style(stats.missing_files).green()
+                }
+            );
             println!("  Total edges:    {}", stats.total_edges);
-        }
+        },
         "list" => {
             println!("{}", style("Dependencies:").bold().underlined());
             println!();
@@ -227,10 +252,10 @@ pub fn dep_graph(file: &str, format: Option<&str>) -> Result<()> {
                 };
                 println!("  {}{}", dep.path, status);
             }
-        }
+        },
         _ => {
             bail!("Unknown format: {}. Use: tree, json, stats, list", format);
-        }
+        },
     }
 
     Ok(())
@@ -253,18 +278,11 @@ pub fn dep_list() -> Result<()> {
     println!();
 
     for path in &project_files {
-        let rel_path = path
-            .strip_prefix(&cwd)
-            .unwrap_or(path)
-            .to_string_lossy();
+        let rel_path = path.strip_prefix(&cwd).unwrap_or(path).to_string_lossy();
 
         let project_type = ProjectType::from_path(path);
 
-        println!(
-            "  {} ({})",
-            style(rel_path).cyan(),
-            project_type.name()
-        );
+        println!("  {} ({})", style(rel_path).cyan(), project_type.name());
     }
 
     println!();

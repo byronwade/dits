@@ -1,15 +1,23 @@
 //! Sync command - bi-directional synchronization with remote repository.
 //!
-//! This command performs intelligent bi-directional sync between local and remote repositories,
-//! handling conflicts and ensuring both repositories end up with the same state.
+//! This command performs intelligent bi-directional sync between local and
+//! remote repositories, handling conflicts and ensuring both repositories end
+//! up with the same state.
 
 use anyhow::Result;
-use crate::core::Hash;
-use crate::store::{Repository, remote::{RemoteStore, RemoteType}};
 
-/// Returns true if `ancestor` is reachable from `descendant` by following parent
-/// links. A commit is considered its own ancestor. Used to decide whether a sync can
-/// fast-forward safely or whether the branches have diverged.
+use crate::{
+    core::Hash,
+    store::{
+        remote::{RemoteStore, RemoteType},
+        Repository,
+    },
+};
+
+/// Returns true if `ancestor` is reachable from `descendant` by following
+/// parent links. A commit is considered its own ancestor. Used to decide
+/// whether a sync can fast-forward safely or whether the branches have
+/// diverged.
 fn is_ancestor(repo: &Repository, ancestor: &Hash, descendant: &Hash) -> Result<bool> {
     let mut stack = vec![*descendant];
     let mut seen = std::collections::HashSet::new();
@@ -47,7 +55,8 @@ pub async fn sync(
     let remotes = RemoteStore::new(&dits_dir);
 
     // Get the remote
-    let remote = remotes.get(remote_name)
+    let remote = remotes
+        .get(remote_name)
         .ok_or_else(|| anyhow::anyhow!("Remote '{}' not found", remote_name))?;
 
     let remote_type = RemoteType::parse(&remote.url);
@@ -55,10 +64,10 @@ pub async fn sync(
     match remote_type {
         RemoteType::Local(remote_path) => {
             sync_local(&repo, remote_name, &remote_path, branch, force, dry_run).await
-        }
+        },
         RemoteType::Http(url) | RemoteType::Dits(url) | RemoteType::Ssh(url) => {
             sync_network(&repo, remote_name, &url, branch, force, dry_run).await
-        }
+        },
     }
 }
 
@@ -92,7 +101,12 @@ async fn sync_local(
 
     // Step 1: Fetch from remote
     println!("Fetching from remote...");
-    crate::commands::repo::fetch::fetch_from_remote(remote_name, &remote_path.to_string_lossy(), false).await?;
+    crate::commands::repo::fetch::fetch_from_remote(
+        remote_name,
+        &remote_path.to_string_lossy(),
+        false,
+    )
+    .await?;
 
     // Step 2: Check for conflicts and merge
     let remote_ref = format!("remotes/{}/{}", remote_name, branch_name);
@@ -117,9 +131,9 @@ async fn sync_local(
                 } else {
                     // Diverged without --force: refuse rather than silently lose local work.
                     anyhow::bail!(
-                        "Local and remote branch '{}' have diverged.\n  \
-                         Refusing to overwrite local commits (this would lose local work).\n  \
-                         Re-run with --force to discard local changes, or merge manually first.",
+                        "Local and remote branch '{}' have diverged.\n  Refusing to overwrite \
+                         local commits (this would lose local work).\n  Re-run with --force to \
+                         discard local changes, or merge manually first.",
                         branch_name
                     );
                 }
@@ -143,9 +157,11 @@ async fn sync_local(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::fs;
+
     use tempfile::tempdir;
+
+    use super::*;
 
     #[test]
     fn is_ancestor_follows_parent_chain() {
@@ -216,4 +232,3 @@ async fn sync_network(
 
     Ok(())
 }
-

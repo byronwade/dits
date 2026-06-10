@@ -1,11 +1,14 @@
 //! Cherry-pick command - apply specific commits.
 
-use crate::core::{Author, Commit, Index, IndexEntry};
-use crate::store::Repository;
-use anyhow::{Context, Result, bail};
+use std::{fs, path::Path};
+
+use anyhow::{bail, Context, Result};
 use console::style;
-use std::fs;
-use std::path::Path;
+
+use crate::{
+    core::{Author, Commit, Index, IndexEntry},
+    store::Repository,
+};
 
 /// Apply specific commits to the current branch.
 pub fn cherry_pick(commits: &[String], no_commit: bool) -> Result<()> {
@@ -16,7 +19,8 @@ pub fn cherry_pick(commits: &[String], no_commit: bool) -> Result<()> {
         bail!("No commits specified");
     }
 
-    let _head = repo.head()?
+    let _head = repo
+        .head()?
         .context("No commits yet - nothing to cherry-pick onto")?;
 
     for commit_ref in commits {
@@ -29,7 +33,8 @@ pub fn cherry_pick(commits: &[String], no_commit: bool) -> Result<()> {
 /// Cherry-pick a single commit.
 fn cherry_pick_single(repo: &Repository, commit_ref: &str, no_commit: bool) -> Result<()> {
     // Resolve the commit
-    let commit_hash = repo.resolve_ref_or_prefix(commit_ref)?
+    let commit_hash = repo
+        .resolve_ref_or_prefix(commit_ref)?
         .with_context(|| format!("Could not resolve '{}' to a commit", commit_ref))?;
 
     let commit = repo.load_commit(&commit_hash)?;
@@ -48,11 +53,7 @@ fn cherry_pick_single(repo: &Repository, commit_ref: &str, no_commit: bool) -> R
     let head_commit = repo.load_commit(&head_hash)?;
     let head_manifest = repo.load_manifest(&head_commit.manifest)?;
 
-    println!(
-        "{} Applying commit {}...",
-        style("→").blue(),
-        &commit_hash.to_hex()[..7]
-    );
+    println!("{} Applying commit {}...", style("→").blue(), &commit_hash.to_hex()[..7]);
 
     // Find files that changed in the cherry-picked commit
     let mut applied_files = Vec::new();
@@ -65,9 +66,7 @@ fn cherry_pick_single(repo: &Repository, commit_ref: &str, no_commit: bool) -> R
 
     // Apply changes from the commit
     for (path, entry) in commit_manifest.iter() {
-        let was_in_parent = parent_manifest.as_ref()
-            .map(|m| m.get(path))
-            .flatten();
+        let was_in_parent = parent_manifest.as_ref().map(|m| m.get(path)).flatten();
 
         let is_new = was_in_parent.is_none();
         let is_modified = was_in_parent
@@ -81,7 +80,8 @@ fn cherry_pick_single(repo: &Repository, commit_ref: &str, no_commit: bool) -> R
                     // Check if there's a common base
                     if let Some(parent_entry) = was_in_parent {
                         if head_entry.content_hash == parent_entry.content_hash {
-                            // HEAD has the same as parent - we can apply cleanly
+                            // HEAD has the same as parent - we can apply
+                            // cleanly
                         } else {
                             // Both HEAD and commit changed from parent - conflict
                             conflict_files.push(path.clone());
@@ -119,7 +119,11 @@ fn cherry_pick_single(repo: &Repository, commit_ref: &str, no_commit: bool) -> R
             applied_files.push(path.clone());
             println!(
                 "  {} {}",
-                if is_new { style("A").green() } else { style("M").yellow() },
+                if is_new {
+                    style("A").green()
+                } else {
+                    style("M").yellow()
+                },
                 style(path).cyan()
             );
         }
@@ -146,7 +150,12 @@ fn cherry_pick_single(repo: &Repository, commit_ref: &str, no_commit: bool) -> R
 
     if !conflict_files.is_empty() {
         println!();
-        println!("{}", style("CONFLICT: The following files have conflicts:").red().bold());
+        println!(
+            "{}",
+            style("CONFLICT: The following files have conflicts:")
+                .red()
+                .bold()
+        );
         for path in &conflict_files {
             println!("  {}", style(path).yellow());
         }
@@ -172,11 +181,8 @@ fn cherry_pick_single(repo: &Repository, commit_ref: &str, no_commit: bool) -> R
         println!("Run 'dits commit' to create the commit.");
     } else {
         // Create a new commit
-        let new_message = format!(
-            "{}\n\n(cherry picked from commit {})",
-            commit.message,
-            commit_hash.to_hex()
-        );
+        let new_message =
+            format!("{}\n\n(cherry picked from commit {})", commit.message, commit_hash.to_hex());
 
         let author = Author::from_env();
         let new_commit = Commit::new(Some(head_hash), commit.manifest, &new_message, author);

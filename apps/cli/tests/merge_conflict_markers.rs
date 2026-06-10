@@ -1,9 +1,10 @@
-//! Regression/feature test: a conflicting `dits merge` must write git-style conflict
-//! markers into the working file so the user can resolve them — not just report and bail.
+//! Regression/feature test: a conflicting `dits merge` must write git-style
+//! conflict markers into the working file so the user can resolve them — not
+//! just report and bail.
+
+use std::{fs, path::Path};
 
 use assert_cmd::Command;
-use std::fs;
-use std::path::Path;
 use tempfile::TempDir;
 
 fn dits(dir: &Path) -> Command {
@@ -43,7 +44,13 @@ fn conflicting_merge_writes_conflict_markers() {
     assert!(merged.contains("======="), "missing ======= marker:\n{merged}");
     assert!(merged.contains(">>>>>>>"), "missing >>>>>>> marker:\n{merged}");
     // Both sides' content should be present for the user to choose between.
-    assert!(merged.contains("FROM_B1") && merged.contains("FROM_MAIN"), "both versions should appear:\n{merged}");
+    assert!(
+        merged.contains("FROM_B1") && merged.contains("FROM_MAIN"),
+        "both versions should appear:\n{merged}"
+    );
     // Unconflicted lines should survive unmarked.
-    assert!(merged.contains("line one") && merged.contains("line three"), "context lines lost:\n{merged}");
+    assert!(
+        merged.contains("line one") && merged.contains("line three"),
+        "context lines lost:\n{merged}"
+    );
 }

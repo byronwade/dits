@@ -1,9 +1,11 @@
 //! Branch management commands.
 
-use crate::store::Repository;
+use std::path::Path;
+
 use anyhow::{Context, Result};
 use console::style;
-use std::path::Path;
+
+use crate::store::Repository;
 
 /// List, create, or delete branches.
 pub fn branch(name: Option<&str>, delete: bool) -> Result<()> {
@@ -50,11 +52,7 @@ fn list_branches(repo: &Repository) -> Result<()> {
 /// Create a new branch at HEAD.
 fn create_branch(repo: &Repository, name: &str) -> Result<()> {
     repo.create_branch(name)?;
-    println!(
-        "{} Created branch '{}'",
-        style("✓").green().bold(),
-        style(name).cyan()
-    );
+    println!("{} Created branch '{}'", style("✓").green().bold(), style(name).cyan());
     Ok(())
 }
 
@@ -67,17 +65,9 @@ fn delete_branch(repo: &Repository, name: &str) -> Result<()> {
     }
 
     if repo.delete_branch(name)? {
-        println!(
-            "{} Deleted branch '{}'",
-            style("✓").green().bold(),
-            style(name).cyan()
-        );
+        println!("{} Deleted branch '{}'", style("✓").green().bold(), style(name).cyan());
     } else {
-        println!(
-            "{} Branch '{}' not found",
-            style("!").yellow().bold(),
-            name
-        );
+        println!("{} Branch '{}' not found", style("!").yellow().bold(), name);
     }
 
     Ok(())
@@ -91,11 +81,7 @@ pub fn switch(branch: &str) -> Result<()> {
     // Check if it's a branch
     if repo.branch_exists(branch)? {
         let result = repo.checkout_branch(branch)?;
-        println!(
-            "{} Switched to branch '{}'",
-            style("✓").green().bold(),
-            style(branch).cyan()
-        );
+        println!("{} Switched to branch '{}'", style("✓").green().bold(), style(branch).cyan());
         if result.files_restored > 0 {
             println!("  {} file(s) updated", result.files_restored);
         }

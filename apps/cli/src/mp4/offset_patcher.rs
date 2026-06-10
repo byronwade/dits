@@ -4,10 +4,12 @@
 //! all chunk offsets in stco (32-bit) and co64 (64-bit) tables
 //! need to be adjusted by the size delta.
 
-use super::parser::{Mp4Structure};
-use byteorder::{BigEndian, ByteOrder};
 use std::io::{self, Read, Seek, SeekFrom, Write};
+
+use byteorder::{BigEndian, ByteOrder};
 use thiserror::Error;
+
+use super::parser::Mp4Structure;
 
 /// Errors that can occur during offset patching.
 #[derive(Error, Debug)]

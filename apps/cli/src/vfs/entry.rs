@@ -3,10 +3,13 @@
 //! This module defines the in-memory tree structure that represents
 //! the virtual filesystem view of a repository commit.
 
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    time::SystemTime,
+};
+
 use crate::core::{ChunkRef, Hash, Manifest, ManifestEntry, Mp4Metadata};
-use std::collections::HashMap;
-use std::path::{Path, PathBuf};
-use std::time::SystemTime;
 
 /// Type of VFS entry.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -23,31 +26,31 @@ pub enum VfsEntryType {
 #[derive(Clone, Debug)]
 pub struct VfsEntry {
     /// Entry name (filename, not full path).
-    pub name: String,
+    pub name:         String,
     /// Entry type.
-    pub entry_type: VfsEntryType,
+    pub entry_type:   VfsEntryType,
     /// Full file size (for files).
-    pub size: u64,
+    pub size:         u64,
     /// Modification time.
-    pub mtime: SystemTime,
+    pub mtime:        SystemTime,
     /// Access time.
-    pub atime: SystemTime,
+    pub atime:        SystemTime,
     /// Creation time.
-    pub ctime: SystemTime,
+    pub ctime:        SystemTime,
     /// Unix permissions mode.
-    pub mode: u32,
+    pub mode:         u32,
     /// FUSE inode number (assigned during tree construction).
-    pub inode: u64,
+    pub inode:        u64,
     /// Parent inode (0 for root).
     pub parent_inode: u64,
     /// For files: ordered chunk references for content reconstruction.
-    pub chunks: Vec<ChunkRef>,
+    pub chunks:       Vec<ChunkRef>,
     /// Content hash (for files).
     pub content_hash: Option<Hash>,
     /// MP4 metadata (for MP4 files only).
     pub mp4_metadata: Option<Mp4Metadata>,
     /// Child entries (for directories).
-    pub children: HashMap<String, u64>, // name -> inode
+    pub children:     HashMap<String, u64>, // name -> inode
 }
 
 impl VfsEntry {
@@ -72,7 +75,12 @@ impl VfsEntry {
     }
 
     /// Create a new file entry from a manifest entry.
-    pub fn file(name: String, inode: u64, parent_inode: u64, manifest_entry: &ManifestEntry) -> Self {
+    pub fn file(
+        name: String,
+        inode: u64,
+        parent_inode: u64,
+        manifest_entry: &ManifestEntry,
+    ) -> Self {
         let now = SystemTime::now();
         Self {
             name,
@@ -152,9 +160,9 @@ impl VfsEntry {
 /// The complete virtual filesystem tree.
 pub struct VfsTree {
     /// All entries by inode.
-    entries: HashMap<u64, VfsEntry>,
+    entries:        HashMap<u64, VfsEntry>,
     /// Next available inode.
-    next_inode: u64,
+    next_inode:     u64,
     /// Root inode (always 1 in FUSE).
     pub root_inode: u64,
 }
@@ -163,7 +171,7 @@ impl VfsTree {
     /// Create a new empty VFS tree.
     pub fn new() -> Self {
         let mut tree = Self {
-            entries: HashMap::new(),
+            entries:    HashMap::new(),
             next_inode: 2, // 1 is reserved for root
             root_inode: 1,
         };
@@ -222,7 +230,10 @@ impl VfsTree {
                 };
 
                 // Add to parent's children
-                self.entries.get_mut(&current_inode).unwrap().add_child(component.to_string(), new_inode);
+                self.entries
+                    .get_mut(&current_inode)
+                    .unwrap()
+                    .add_child(component.to_string(), new_inode);
 
                 // Insert new entry
                 self.entries.insert(new_inode, new_entry);

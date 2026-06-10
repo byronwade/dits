@@ -1,22 +1,25 @@
 //! Minimal CMX3600 EDL import — the "Case A" unlock.
 //!
-//! An EDL (Edit Decision List) is a cut list referencing source clips by reel and
-//! source-timecode in/out. Importing one builds a [`ClipManifest`] that references the
-//! *already-stored* frames of the source clips — so an external edit becomes a
-//! Dits-owned manifest at **zero new storage cost**.
+//! An EDL (Edit Decision List) is a cut list referencing source clips by reel
+//! and source-timecode in/out. Importing one builds a [`ClipManifest`] that
+//! references the *already-stored* frames of the source clips — so an external
+//! edit becomes a Dits-owned manifest at **zero new storage cost**.
 //!
-//! Scope (v1): cuts only (transition `C`), the video channel, non-drop-frame timecodes,
-//! one event per line. Transitions/effects/multiple tracks are ignored.
+//! Scope (v1): cuts only (transition `C`), the video channel, non-drop-frame
+//! timecodes, one event per line. Transitions/effects/multiple tracks are
+//! ignored.
+
+use std::collections::HashMap;
+
+use anyhow::{bail, Result};
 
 use super::manifest::{ClipManifest, FrameRef};
-use anyhow::{bail, Result};
-use std::collections::HashMap;
 
 /// One cut event: take frames `[src_in, src_out)` of `reel`.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EdlEvent {
-    pub reel: String,
-    pub src_in: u64,
+    pub reel:    String,
+    pub src_in:  u64,
     pub src_out: u64,
 }
 
@@ -35,10 +38,13 @@ fn timecode_to_frames(tc: &str, fps: u32) -> Option<u64> {
 
 fn is_timecode(tok: &str) -> bool {
     let p: Vec<&str> = tok.split(':').collect();
-    p.len() == 4 && p.iter().all(|x| x.len() == 2 && x.chars().all(|c| c.is_ascii_digit()))
+    p.len() == 4
+        && p.iter()
+            .all(|x| x.len() == 2 && x.chars().all(|c| c.is_ascii_digit()))
 }
 
-/// Parse a CMX3600 EDL. `fps` is the rounded frame rate used to convert timecodes.
+/// Parse a CMX3600 EDL. `fps` is the rounded frame rate used to convert
+/// timecodes.
 pub fn parse_cmx3600(text: &str, fps: u32) -> Result<Vec<EdlEvent>> {
     if fps == 0 {
         bail!("fps must be non-zero");
@@ -67,8 +73,9 @@ pub fn parse_cmx3600(text: &str, fps: u32) -> Result<Vec<EdlEvent>> {
     Ok(events)
 }
 
-/// Build an output manifest by slicing the referenced frame ranges from source manifests.
-/// Frames are referenced by hash (no copy), so the result costs zero new storage.
+/// Build an output manifest by slicing the referenced frame ranges from source
+/// manifests. Frames are referenced by hash (no copy), so the result costs zero
+/// new storage.
 pub fn build_manifest_from_edl(
     events: &[EdlEvent],
     sources: &HashMap<String, ClipManifest>,
@@ -88,11 +95,7 @@ pub fn build_manifest_from_edl(
         let end = (ev.src_out as usize).min(src.frames.len());
         let start = (ev.src_in as usize).min(end);
         for f in &src.frames[start..end] {
-            manifest.push_frame(FrameRef {
-                hash: f.hash,
-                pts,
-                duration: f.duration,
-            });
+            manifest.push_frame(FrameRef { hash: f.hash, pts, duration: f.duration });
             pts += 1;
         }
     }
@@ -109,8 +112,8 @@ mod tests {
         let mut m = ClipManifest::new(1920, 1080, "webp", 1);
         for i in 0..n {
             m.push_frame(FrameRef {
-                hash: Hasher::hash(format!("frame-{i}").as_bytes()),
-                pts: i as i64,
+                hash:     Hasher::hash(format!("frame-{i}").as_bytes()),
+                pts:      i as i64,
                 duration: 1,
             });
         }

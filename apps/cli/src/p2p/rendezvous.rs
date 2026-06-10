@@ -2,8 +2,7 @@
 //!
 //! Handles peer discovery and NAT traversal via a signal server.
 
-use std::net::SocketAddr;
-use std::time::Duration;
+use std::{net::SocketAddr, time::Duration};
 
 use futures_util::{SinkExt, StreamExt};
 use serde::{Deserialize, Serialize};
@@ -11,9 +10,7 @@ use tokio::time::timeout;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 use tracing::{debug, info};
 
-use crate::p2p::crypto::normalize_join_code;
-use crate::p2p::types::CertFingerprint;
-use crate::p2p::DEFAULT_SIGNAL_SERVER;
+use crate::p2p::{crypto::normalize_join_code, types::CertFingerprint, DEFAULT_SIGNAL_SERVER};
 
 /// Rendezvous error types
 #[derive(Debug, Clone)]
@@ -42,9 +39,9 @@ impl std::error::Error for RendezvousError {}
 /// Result of a successful rendezvous
 #[derive(Debug, Clone)]
 pub struct RendezvousResult {
-    pub peer_addr: SocketAddr,
+    pub peer_addr:        SocketAddr,
     pub cert_fingerprint: Option<CertFingerprint>,
-    pub is_local: bool,
+    pub is_local:         bool,
 }
 
 /// Signal server messages
@@ -54,8 +51,8 @@ pub enum SignalMessage {
     /// Register as a host with a join code
     #[serde(rename = "register")]
     Register {
-        code: String,
-        port: u16,
+        code:             String,
+        port:             u16,
         #[serde(skip_serializing_if = "Option::is_none")]
         cert_fingerprint: Option<String>,
     },
@@ -67,11 +64,11 @@ pub enum SignalMessage {
     /// Response with peer address
     #[serde(rename = "peer_found")]
     PeerFound {
-        addr: String,
+        addr:             String,
         #[serde(skip_serializing_if = "Option::is_none")]
         cert_fingerprint: Option<String>,
         #[serde(default)]
-        is_local: bool,
+        is_local:         bool,
     },
 
     /// Error response
@@ -94,7 +91,7 @@ pub enum SignalMessage {
 /// Rendezvous client for peer discovery
 pub struct RendezvousClient {
     server_url: String,
-    timeout: Duration,
+    timeout:    Duration,
 }
 
 impl RendezvousClient {
@@ -102,7 +99,7 @@ impl RendezvousClient {
     pub fn new(server_url: Option<String>) -> Self {
         Self {
             server_url: server_url.unwrap_or_else(|| DEFAULT_SIGNAL_SERVER.to_string()),
-            timeout: Duration::from_secs(30),
+            timeout:    Duration::from_secs(30),
         }
     }
 
@@ -133,8 +130,8 @@ impl RendezvousClient {
 
         // Send register message
         let msg = SignalMessage::Register {
-            code: code.clone(),
-            port: crate::p2p::DEFAULT_P2P_PORT,
+            code:             code.clone(),
+            port:             crate::p2p::DEFAULT_P2P_PORT,
             cert_fingerprint: cert_fingerprint.map(|f| hex::encode(f)),
         };
 
@@ -152,19 +149,19 @@ impl RendezvousClient {
         let text = response
             .to_text()
             .map_err(|e| RendezvousError::InvalidResponse(e.to_string()))?;
-        let signal_msg: SignalMessage =
-            serde_json::from_str(text).map_err(|e| RendezvousError::InvalidResponse(e.to_string()))?;
+        let signal_msg: SignalMessage = serde_json::from_str(text)
+            .map_err(|e| RendezvousError::InvalidResponse(e.to_string()))?;
 
         match signal_msg {
             SignalMessage::Registered { code: _ } => {
                 info!("Registered with signal server, waiting for peers...");
-            }
+            },
             SignalMessage::Error { message } => {
                 return Err(RendezvousError::ServerError(message));
-            }
+            },
             _ => {
                 return Err(RendezvousError::InvalidResponse("Unexpected message".into()));
-            }
+            },
         }
 
         // Wait for peer connection
@@ -189,14 +186,10 @@ impl RendezvousClient {
                 .map_err(|e| RendezvousError::InvalidResponse(e.to_string()))?;
 
             match signal_msg {
-                SignalMessage::PeerFound {
-                    addr,
-                    cert_fingerprint,
-                    is_local,
-                } => {
-                    let peer_addr: SocketAddr = addr
-                        .parse()
-                        .map_err(|e| RendezvousError::InvalidResponse(format!("Invalid addr: {}", e)))?;
+                SignalMessage::PeerFound { addr, cert_fingerprint, is_local } => {
+                    let peer_addr: SocketAddr = addr.parse().map_err(|e| {
+                        RendezvousError::InvalidResponse(format!("Invalid addr: {}", e))
+                    })?;
 
                     let fp = cert_fingerprint.and_then(|s| {
                         let bytes = hex::decode(s).ok()?;
@@ -209,21 +202,17 @@ impl RendezvousClient {
                         }
                     });
 
-                    return Ok(RendezvousResult {
-                        peer_addr,
-                        cert_fingerprint: fp,
-                        is_local,
-                    });
-                }
+                    return Ok(RendezvousResult { peer_addr, cert_fingerprint: fp, is_local });
+                },
                 SignalMessage::Ping => {
                     ws.send(Message::Text(serde_json::to_string(&SignalMessage::Pong).unwrap()))
                         .await
                         .map_err(|e| RendezvousError::ConnectionFailed(e.to_string()))?;
-                }
+                },
                 SignalMessage::Error { message } => {
                     return Err(RendezvousError::ServerError(message));
-                }
-                _ => {}
+                },
+                _ => {},
             }
         }
     }
@@ -267,14 +256,10 @@ impl RendezvousClient {
                 .map_err(|e| RendezvousError::InvalidResponse(e.to_string()))?;
 
             match signal_msg {
-                SignalMessage::PeerFound {
-                    addr,
-                    cert_fingerprint,
-                    is_local,
-                } => {
-                    let peer_addr: SocketAddr = addr
-                        .parse()
-                        .map_err(|e| RendezvousError::InvalidResponse(format!("Invalid addr: {}", e)))?;
+                SignalMessage::PeerFound { addr, cert_fingerprint, is_local } => {
+                    let peer_addr: SocketAddr = addr.parse().map_err(|e| {
+                        RendezvousError::InvalidResponse(format!("Invalid addr: {}", e))
+                    })?;
 
                     let fp = cert_fingerprint.and_then(|s| {
                         let bytes = hex::decode(s).ok()?;
@@ -288,24 +273,20 @@ impl RendezvousClient {
                     });
 
                     info!("Found peer at {}", peer_addr);
-                    return Ok(RendezvousResult {
-                        peer_addr,
-                        cert_fingerprint: fp,
-                        is_local,
-                    });
-                }
+                    return Ok(RendezvousResult { peer_addr, cert_fingerprint: fp, is_local });
+                },
                 SignalMessage::Error { message } => {
                     if message.contains("not found") {
                         return Err(RendezvousError::PeerNotFound);
                     }
                     return Err(RendezvousError::ServerError(message));
-                }
+                },
                 SignalMessage::Ping => {
                     ws.send(Message::Text(serde_json::to_string(&SignalMessage::Pong).unwrap()))
                         .await
                         .map_err(|e| RendezvousError::ConnectionFailed(e.to_string()))?;
-                }
-                _ => {}
+                },
+                _ => {},
             }
         }
     }

@@ -170,6 +170,5 @@ export function useChromeMorph({
       el.addEventListener("transitionend", onEnd);
       return () => el.removeEventListener("transitionend", onEnd);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, growHeight, ...deps]);
 }

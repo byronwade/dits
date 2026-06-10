@@ -3,33 +3,36 @@
 //! This module provides configuration management for Dits repositories,
 //! supporting both global and repository-local configuration files.
 
+use std::{
+    collections::BTreeMap,
+    fs,
+    path::{Path, PathBuf},
+};
+
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
-use std::fs;
-use std::path::{Path, PathBuf};
 
 /// Dits configuration.
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct Config {
     /// User settings.
     #[serde(default)]
-    pub user: UserConfig,
+    pub user:     UserConfig,
     /// Core settings.
     #[serde(default)]
-    pub core: CoreConfig,
+    pub core:     CoreConfig,
     /// Chunking settings.
     #[serde(default)]
     pub chunking: ChunkingConfig,
     /// Additional settings (for extensibility).
     #[serde(default, flatten)]
-    pub extra: BTreeMap<String, toml::Value>,
+    pub extra:    BTreeMap<String, toml::Value>,
 }
 
 /// User configuration.
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct UserConfig {
     /// User name for commits.
-    pub name: Option<String>,
+    pub name:  Option<String>,
     /// User email for commits.
     pub email: Option<String>,
 }
@@ -42,15 +45,12 @@ pub struct CoreConfig {
     pub default_branch: String,
     /// Enable verbose output.
     #[serde(default)]
-    pub verbose: bool,
+    pub verbose:        bool,
 }
 
 impl Default for CoreConfig {
     fn default() -> Self {
-        Self {
-            default_branch: default_branch(),
-            verbose: false,
-        }
+        Self { default_branch: default_branch(), verbose: false }
     }
 }
 
@@ -66,18 +66,18 @@ pub struct ChunkingConfig {
     pub target_size: u64,
     /// Minimum chunk size in bytes.
     #[serde(default = "default_min_chunk")]
-    pub min_size: u64,
+    pub min_size:    u64,
     /// Maximum chunk size in bytes.
     #[serde(default = "default_max_chunk")]
-    pub max_size: u64,
+    pub max_size:    u64,
 }
 
 impl Default for ChunkingConfig {
     fn default() -> Self {
         Self {
             target_size: default_chunk_size(),
-            min_size: default_min_chunk(),
-            max_size: default_max_chunk(),
+            min_size:    default_min_chunk(),
+            max_size:    default_max_chunk(),
         }
     }
 }
@@ -147,20 +147,14 @@ impl Config {
             ["core", "default_branch"] => self.core.default_branch = value.to_string(),
             ["core", "verbose"] => {
                 self.core.verbose = value.parse().map_err(|_| ConfigError::InvalidValue {
-                    key: key.to_string(),
-                    value: value.to_string(),
+                    key:    key.to_string(),
+                    value:  value.to_string(),
                     reason: "expected boolean".to_string(),
                 })?
-            }
-            ["chunking", "target_size"] => {
-                self.chunking.target_size = parse_size(value)?
-            }
-            ["chunking", "min_size"] => {
-                self.chunking.min_size = parse_size(value)?
-            }
-            ["chunking", "max_size"] => {
-                self.chunking.max_size = parse_size(value)?
-            }
+            },
+            ["chunking", "target_size"] => self.chunking.target_size = parse_size(value)?,
+            ["chunking", "min_size"] => self.chunking.min_size = parse_size(value)?,
+            ["chunking", "max_size"] => self.chunking.max_size = parse_size(value)?,
             _ => return Err(ConfigError::UnknownKey(key.to_string())),
         }
         Ok(())
@@ -174,12 +168,12 @@ impl Config {
                 let had_value = self.user.name.is_some();
                 self.user.name = None;
                 Ok(had_value)
-            }
+            },
             ["user", "email"] => {
                 let had_value = self.user.email.is_some();
                 self.user.email = None;
                 Ok(had_value)
-            }
+            },
             _ => Err(ConfigError::CannotUnset(key.to_string())),
         }
     }
@@ -223,11 +217,7 @@ pub enum ConfigError {
     CannotUnset(String),
 
     #[error("Invalid value for '{key}': {value} ({reason})")]
-    InvalidValue {
-        key: String,
-        value: String,
-        reason: String,
-    },
+    InvalidValue { key: String, value: String, reason: String },
 
     #[error("Invalid size format: {0}")]
     InvalidSize(String),
@@ -253,7 +243,10 @@ pub fn parse_size(s: &str) -> Result<u64, ConfigError> {
         return Err(ConfigError::InvalidSize(s));
     };
 
-    let n: f64 = num_str.trim().parse().map_err(|_| ConfigError::InvalidSize(s.clone()))?;
+    let n: f64 = num_str
+        .trim()
+        .parse()
+        .map_err(|_| ConfigError::InvalidSize(s.clone()))?;
     Ok((n * multiplier as f64) as u64)
 }
 

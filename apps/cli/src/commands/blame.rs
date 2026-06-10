@@ -1,11 +1,11 @@
 //! Blame command - show who changed what in a file.
 
-use crate::core::Hash;
-use crate::store::Repository;
-use anyhow::{Context, Result, bail};
+use std::{collections::HashMap, path::Path};
+
+use anyhow::{bail, Context, Result};
 use console::style;
-use std::collections::HashMap;
-use std::path::Path;
+
+use crate::{core::Hash, store::Repository};
 
 /// Show who last modified each part of a file.
 pub fn blame(file: &str, lines: Option<&str>) -> Result<()> {
@@ -13,8 +13,7 @@ pub fn blame(file: &str, lines: Option<&str>) -> Result<()> {
         .context("Not a Dits repository (or any parent directory)")?;
 
     // Check if file exists in HEAD
-    let head = repo.head()?
-        .context("No commits yet")?;
+    let head = repo.head()?.context("No commits yet")?;
 
     let commit = repo.load_commit(&head)?;
     let manifest = repo.load_manifest(&commit.manifest)?;
@@ -52,10 +51,9 @@ fn parse_line_range(range: &str) -> Result<(Option<usize>, Option<usize>)> {
     let parts: Vec<&str> = range.split(',').collect();
     match parts.len() {
         1 => {
-            let line = parts[0].parse::<usize>()
-                .context("Invalid line number")?;
+            let line = parts[0].parse::<usize>().context("Invalid line number")?;
             Ok((Some(line), Some(line)))
-        }
+        },
         2 => {
             let start = if parts[0].is_empty() {
                 None
@@ -68,7 +66,7 @@ fn parse_line_range(range: &str) -> Result<(Option<usize>, Option<usize>)> {
                 Some(parts[1].parse::<usize>().context("Invalid end line")?)
             };
             Ok((start, end))
-        }
+        },
         _ => bail!("Invalid line range format. Use: LINE or START,END"),
     }
 }
@@ -80,13 +78,42 @@ fn is_likely_binary(path: &str, size: u64) -> bool {
         let ext = ext.to_string_lossy().to_lowercase();
         matches!(
             ext.as_str(),
-            "mp4" | "mov" | "mkv" | "avi" | "mxf" | "m4v" | "webm" |
-            "mp3" | "wav" | "aac" | "flac" | "ogg" |
-            "jpg" | "jpeg" | "png" | "gif" | "bmp" | "tiff" | "psd" |
-            "zip" | "tar" | "gz" | "7z" | "rar" |
-            "pdf" | "doc" | "docx" | "xls" | "xlsx" |
-            "exe" | "dll" | "so" | "dylib" |
-            "bin" | "dat" | "db"
+            "mp4"
+                | "mov"
+                | "mkv"
+                | "avi"
+                | "mxf"
+                | "m4v"
+                | "webm"
+                | "mp3"
+                | "wav"
+                | "aac"
+                | "flac"
+                | "ogg"
+                | "jpg"
+                | "jpeg"
+                | "png"
+                | "gif"
+                | "bmp"
+                | "tiff"
+                | "psd"
+                | "zip"
+                | "tar"
+                | "gz"
+                | "7z"
+                | "rar"
+                | "pdf"
+                | "doc"
+                | "docx"
+                | "xls"
+                | "xlsx"
+                | "exe"
+                | "dll"
+                | "so"
+                | "dylib"
+                | "bin"
+                | "dat"
+                | "db"
         )
     } else {
         // If no extension and large, assume binary
@@ -145,7 +172,9 @@ fn show_chunk_blame(
         let (commit_hash, author, date) = chunk_origins
             .get(&chunk_ref.hash)
             .map(|(h, a, d)| (h.to_hex()[..7].to_string(), a.clone(), d.clone()))
-            .unwrap_or_else(|| ("???????".to_string(), "unknown".to_string(), "????-??-??".to_string()));
+            .unwrap_or_else(|| {
+                ("???????".to_string(), "unknown".to_string(), "????-??-??".to_string())
+            });
 
         let size_str = if size >= 1024 * 1024 {
             format!("{:.1} MB", size as f64 / (1024.0 * 1024.0))
@@ -212,13 +241,13 @@ fn show_line_blame(
 
     let entry = manifest.get(file).context("File not found")?;
 
-    // Reconstruct file content (strategy-aware: GitText -> git engine, else chunks).
-    // Chunk-only reconstruction blanked git-text files, so blame showed nothing.
+    // Reconstruct file content (strategy-aware: GitText -> git engine, else
+    // chunks). Chunk-only reconstruction blanked git-text files, so blame
+    // showed nothing.
     let content = repo.reconstruct_entry_bytes(entry)?;
 
     // Try to decode as UTF-8
-    let text = String::from_utf8(content)
-        .context("File is not valid UTF-8 text")?;
+    let text = String::from_utf8(content).context("File is not valid UTF-8 text")?;
 
     let lines: Vec<&str> = text.lines().collect();
 

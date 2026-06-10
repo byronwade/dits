@@ -15,7 +15,7 @@
 pub mod chunk;
 pub mod hash;
 
-pub use chunk::{Chunk, ChunkRef, ChunkerConfig, chunk_data, chunk_data_with_refs};
+pub use chunk::{chunk_data, chunk_data_with_refs, Chunk, ChunkRef, ChunkerConfig};
 pub use hash::{Hash, Hasher};
 
 #[cfg(feature = "parallel")]

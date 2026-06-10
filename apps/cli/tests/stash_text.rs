@@ -1,9 +1,11 @@
-//! Regression test: `dits stash` must reset a text (git-stored) file to its committed
-//! content, not blank it. Previously stash reconstructed only from Dits chunks, so
-//! GitText files (which keep content in the git engine, not chunks) became empty.
+//! Regression test: `dits stash` must reset a text (git-stored) file to its
+//! committed content, not blank it. Previously stash reconstructed only from
+//! Dits chunks, so GitText files (which keep content in the git engine, not
+//! chunks) became empty.
+
+use std::fs;
 
 use assert_cmd::Command;
-use std::fs;
 use tempfile::TempDir;
 
 fn dits(dir: &std::path::Path) -> Command {
@@ -29,7 +31,8 @@ fn stash_resets_text_file_to_committed_content() {
     // After stash, the working file must hold the committed content — not be empty.
     let after = fs::read(dir.join("f.txt")).unwrap();
     assert_eq!(
-        after, b"one\n",
+        after,
+        b"one\n",
         "stash should restore committed content, got {:?}",
         String::from_utf8_lossy(&after)
     );

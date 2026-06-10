@@ -2,16 +2,12 @@
 //!
 //! Provides commands for locking/unlocking files (primarily for binary files).
 
-use anyhow::{Context, Result, bail};
+use anyhow::{bail, Context, Result};
+
 use crate::store::locks::{Lock, LockStore};
 
 /// Lock a file.
-pub fn lock(
-    path: &str,
-    reason: Option<&str>,
-    ttl_hours: Option<u64>,
-    force: bool,
-) -> Result<()> {
+pub fn lock(path: &str, reason: Option<&str>, ttl_hours: Option<u64>, force: bool) -> Result<()> {
     let dits_dir = find_dits_dir()?;
     let mut store = LockStore::new(&dits_dir);
 
@@ -30,10 +26,10 @@ pub fn lock(
             }
             println!("  Expires in: {}", lock.expires_in_human());
             Ok(())
-        }
+        },
         Err(e) => {
             bail!("{}", e)
-        }
+        },
     }
 }
 
@@ -52,10 +48,10 @@ pub fn unlock(path: &str, force: bool) -> Result<()> {
                 println!("Unlocked '{}'", path);
             }
             Ok(())
-        }
+        },
         Err(e) => {
             bail!("{}", e)
-        }
+        },
     }
 }
 
@@ -86,7 +82,11 @@ pub fn locks(owner_filter: Option<&str>, verbose: bool) -> Result<()> {
         if verbose {
             println!("  Path:    {}", lock.path);
             println!("  Owner:   {}", lock.owner);
-            println!("  Expires: {} ({})", lock.expires_in_human(), format_timestamp(lock.expires_at));
+            println!(
+                "  Expires: {} ({})",
+                lock.expires_in_human(),
+                format_timestamp(lock.expires_at)
+            );
             if let Some(reason) = &lock.reason {
                 println!("  Reason:  {}", reason);
             }
@@ -98,7 +98,11 @@ pub fn locks(owner_filter: Option<&str>, verbose: bool) -> Result<()> {
                 lock.path,
                 lock.owner,
                 lock.expires_in_human(),
-                if reason_str.is_empty() { String::new() } else { format!(" - {}", reason_str) }
+                if reason_str.is_empty() {
+                    String::new()
+                } else {
+                    format!(" - {}", reason_str)
+                }
             );
         }
     }
@@ -124,7 +128,10 @@ fn get_current_user() -> Result<String> {
     // Fall back to system username
     std::env::var("USER")
         .or_else(|_| std::env::var("USERNAME"))
-        .context("Could not determine current user. Set USER environment variable or configure git user.email")
+        .context(
+            "Could not determine current user. Set USER environment variable or configure git \
+             user.email",
+        )
 }
 
 /// Format a Unix timestamp as a human-readable string.

@@ -1,12 +1,18 @@
 //! Restore command implementation.
 
-use crate::core::{FileStatus, Index, IndexEntry};
-use crate::store::Repository;
+use std::{
+    fs,
+    io::{BufWriter, Write},
+    path::Path,
+};
+
 use anyhow::{Context, Result};
 use console::style;
-use std::fs;
-use std::io::{BufWriter, Write};
-use std::path::Path;
+
+use crate::{
+    core::{FileStatus, Index, IndexEntry},
+    store::Repository,
+};
 
 /// Restore source determines where to restore from.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -41,8 +47,10 @@ pub fn restore(
 
     // Resolve source commit if specified
     let source_hash = if let Some(ref_str) = source {
-        Some(repo.resolve_ref_or_prefix(ref_str)?
-            .with_context(|| format!("Could not resolve '{}' to a commit", ref_str))?)
+        Some(
+            repo.resolve_ref_or_prefix(ref_str)?
+                .with_context(|| format!("Could not resolve '{}' to a commit", ref_str))?,
+        )
     } else {
         repo.head()?
     };
@@ -61,7 +69,8 @@ pub fn restore(
     Ok(())
 }
 
-/// Restore files from a specific version (ours or theirs) during merge conflict.
+/// Restore files from a specific version (ours or theirs) during merge
+/// conflict.
 fn restore_conflict_version(_repo: &Repository, paths: &[String], use_ours: bool) -> Result<()> {
     // For now, this is a simplified implementation
     // In a full implementation, we'd track conflict state
@@ -94,11 +103,7 @@ fn restore_staged_files(repo: &Repository, paths: &[String]) -> Result<()> {
             if entry.status != FileStatus::Unchanged {
                 entry.status = FileStatus::Unchanged;
                 unstaged += 1;
-                println!(
-                    "{} Unstaged '{}'",
-                    style("U").yellow().bold(),
-                    style(path).cyan()
-                );
+                println!("{} Unstaged '{}'", style("U").yellow().bold(), style(path).cyan());
             }
         } else {
             // Check if file exists in HEAD and add to index as unchanged
@@ -125,11 +130,7 @@ fn restore_staged_files(repo: &Repository, paths: &[String]) -> Result<()> {
                         style(path).cyan()
                     );
                 } else {
-                    println!(
-                        "{} Path '{}' not in index or HEAD",
-                        style("!").yellow().bold(),
-                        path
-                    );
+                    println!("{} Path '{}' not in index or HEAD", style("!").yellow().bold(), path);
                 }
             }
         }
@@ -183,11 +184,7 @@ fn restore_worktree_files(
             }
 
             restored += 1;
-            println!(
-                "{} Restored '{}'",
-                style("R").green().bold(),
-                style(path).cyan()
-            );
+            println!("{} Restored '{}'", style("R").green().bold(), style(path).cyan());
         } else {
             // File not in source - check if we should delete it
             let full_path = repo.root().join(path);
@@ -226,8 +223,10 @@ fn restore_mp4_file(
     entry: &crate::core::ManifestEntry,
     mp4_meta: &crate::core::Mp4Metadata,
 ) -> Result<()> {
-    use crate::mp4::{Atom, AtomType, Mp4Structure, Reconstructor};
-    use crate::mp4::parser::{StcoLocation, Co64Location};
+    use crate::mp4::{
+        parser::{Co64Location, StcoLocation},
+        Atom, AtomType, Mp4Structure, Reconstructor,
+    };
 
     // Load ftyp data
     let ftyp_data = if let Some(ref ftyp_hash) = mp4_meta.ftyp_hash {
@@ -252,48 +251,42 @@ fn restore_mp4_file(
 
     // Build structure for reconstruction
     let structure = Mp4Structure {
-        ftyp: Atom {
-            atom_type: AtomType::Ftyp,
-            start: 0,
-            length: ftyp_data.len() as u64,
-            data_start: 8,
+        ftyp:           Atom {
+            atom_type:   AtomType::Ftyp,
+            start:       0,
+            length:      ftyp_data.len() as u64,
+            data_start:  8,
             data_length: ftyp_data.len() as u64 - 8,
-            children: Vec::new(),
+            children:    Vec::new(),
         },
-        moov: Atom {
-            atom_type: AtomType::Moov,
-            start: 0,
-            length: moov_data.len() as u64,
-            data_start: 8,
+        moov:           Atom {
+            atom_type:   AtomType::Moov,
+            start:       0,
+            length:      moov_data.len() as u64,
+            data_start:  8,
             data_length: moov_data.len() as u64 - 8,
-            children: Vec::new(),
+            children:    Vec::new(),
         },
-        mdat: Atom {
-            atom_type: AtomType::Mdat,
-            start: 0,
-            length: mdat_data.len() as u64 + 8,
-            data_start: 8,
+        mdat:           Atom {
+            atom_type:   AtomType::Mdat,
+            start:       0,
+            length:      mdat_data.len() as u64 + 8,
+            data_start:  8,
             data_length: mdat_data.len() as u64,
-            children: Vec::new(),
+            children:    Vec::new(),
         },
-        atoms: Vec::new(),
-        file_size: 0,
-        is_fast_start: true,
+        atoms:          Vec::new(),
+        file_size:      0,
+        is_fast_start:  true,
         stco_locations: mp4_meta
             .stco_offsets
             .iter()
-            .map(|(offset, count)| StcoLocation {
-                data_offset: *offset,
-                entry_count: *count,
-            })
+            .map(|(offset, count)| StcoLocation { data_offset: *offset, entry_count: *count })
             .collect(),
         co64_locations: mp4_meta
             .co64_offsets
             .iter()
-            .map(|(offset, count)| Co64Location {
-                data_offset: *offset,
-                entry_count: *count,
-            })
+            .map(|(offset, count)| Co64Location { data_offset: *offset, entry_count: *count })
             .collect(),
     };
 

@@ -1,10 +1,13 @@
 //! Mount command - mount repository as a virtual filesystem.
 
-use crate::store::Repository;
-use crate::vfs::{CacheConfig, mount as fuse_mount};
+use std::{path::Path, sync::Arc};
+
 use anyhow::{bail, Result};
-use std::path::Path;
-use std::sync::Arc;
+
+use crate::{
+    store::Repository,
+    vfs::{mount as fuse_mount, CacheConfig},
+};
 
 /// Mount a repository commit as a FUSE filesystem.
 pub fn mount(mount_point: &str, commit: Option<&str>, cache_mb: u64) -> Result<()> {
@@ -12,14 +15,12 @@ pub fn mount(mount_point: &str, commit: Option<&str>, cache_mb: u64) -> Result<(
 
     // Resolve commit
     let commit_hash = match commit {
-        Some(ref_str) => {
-            repo.resolve_ref(ref_str)?
-                .ok_or_else(|| anyhow::anyhow!("Cannot resolve: {}", ref_str))?
-        }
-        None => {
-            repo.head()?
-                .ok_or_else(|| anyhow::anyhow!("No HEAD commit. Create a commit first."))?
-        }
+        Some(ref_str) => repo
+            .resolve_ref(ref_str)?
+            .ok_or_else(|| anyhow::anyhow!("Cannot resolve: {}", ref_str))?,
+        None => repo
+            .head()?
+            .ok_or_else(|| anyhow::anyhow!("No HEAD commit. Create a commit first."))?,
     };
 
     // Load commit and manifest

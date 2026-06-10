@@ -1,10 +1,11 @@
 //! Show commit history.
 
-use crate::store::Repository;
+use std::{collections::HashSet, path::Path};
+
 use anyhow::{Context, Result};
 use console::style;
-use std::collections::HashSet;
-use std::path::Path;
+
+use crate::store::Repository;
 
 /// Show commit history.
 pub fn log(limit: usize, oneline: bool, graph: bool, all: bool) -> Result<()> {
@@ -143,8 +144,17 @@ fn log_with_graph(repo: &Repository, limit: usize, oneline: bool, all: bool) -> 
                 style(commit.hash.to_hex()).yellow(),
                 style(&dec_str).cyan()
             );
-            println!("{} Author: {} <{}>", style(connector).yellow(), commit.author.name, commit.author.email);
-            println!("{} Date:   {}", style(connector).yellow(), commit.timestamp.format("%a %b %d %H:%M:%S %Y %z"));
+            println!(
+                "{} Author: {} <{}>",
+                style(connector).yellow(),
+                commit.author.name,
+                commit.author.email
+            );
+            println!(
+                "{} Date:   {}",
+                style(connector).yellow(),
+                commit.timestamp.format("%a %b %d %H:%M:%S %Y %z")
+            );
             println!("{}", style(connector).yellow());
             println!("{}     {}", style(connector).yellow(), commit.message);
             println!("{}", style(connector).yellow());

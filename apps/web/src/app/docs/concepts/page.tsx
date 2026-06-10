@@ -3,7 +3,6 @@ import Link from "next/link";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -172,7 +171,7 @@ export default function ConceptsPage() {
         </p>
 
         <h4>FastCDC (Default)</h4>
-        <p>FastCDC (Fast Content-Defined Chunking) is Dits' primary algorithm, providing excellent performance and deduplication ratios.</p>
+        <p>FastCDC (Fast Content-Defined Chunking) is Dits&apos; primary algorithm, providing excellent performance and deduplication ratios.</p>
 
         <h4>Additional Chunking Algorithms</h4>
         <p>Beyond FastCDC, Dits implements several specialized chunking algorithms for different performance and security requirements:</p>
@@ -279,7 +278,7 @@ normalization: 2   // Size distribution control`}
         />
 
         <h4>Rolling Hash Implementation</h4>
-        <p>FastCDC uses a "gear hash" - a precomputed table of random 64-bit values:</p>
+        <p>FastCDC uses a &quot;gear hash&quot; - a precomputed table of random 64-bit values:</p>
         <CodeBlock
           language="bash"
           code={`// Rolling hash state
@@ -449,7 +448,7 @@ dits config core.hashAlgorithm sha256
         <h2>Hybrid Storage Architecture</h2>
         <p>
           Dits uses a <strong>hybrid storage system</strong> that intelligently chooses the optimal storage method
-          for different types of files. This combines the best of Git's text handling with Dits' binary optimizations.
+          for different types of files. This combines the best of Git&apos;s text handling with Dits&apos; binary optimizations.
         </p>
 
         <div className="not-prose my-6 grid gap-4 md:grid-cols-2">
@@ -488,7 +487,7 @@ dits config core.hashAlgorithm sha256
         </p>
 
         <Callout type="tip" title="Best of Both Worlds" className="not-prose my-4">
-          Use Git's powerful text operations for code while benefiting from Dits' binary optimizations for creative assets.
+          Use Git&apos;s powerful text operations for code while benefiting from Dits&apos; binary optimizations for creative assets.
           All files coexist in the same repository with unified version control.
         </Callout>
 

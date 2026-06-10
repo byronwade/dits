@@ -142,6 +142,3 @@ test_large_file_chunking() {
 }
 
 # Export all functions
-export -f test_create_chunking_file test_verify_chunking test_deduplication
-export -f test_chunk_reconstruction test_chunking_sizes test_chunking_determinism
-export -f test_binary_chunking test_chunking_performance test_large_file_chunking

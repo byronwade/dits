@@ -3,10 +3,10 @@
 //! This module provides ISO Base Media File Format (ISOBMFF) parsing,
 //! enabling structure-aware versioning that separates metadata from media data.
 
-pub mod parser;
 pub mod atoms;
-pub mod offset_patcher;
 pub mod deconstructor;
+pub mod offset_patcher;
+pub mod parser;
 pub mod reconstructor;
 
 #[allow(unused_imports)]

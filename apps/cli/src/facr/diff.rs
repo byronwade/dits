@@ -1,43 +1,53 @@
 //! Diff two clip manifests at frame granularity.
 //!
-//! Because frames are content-addressed, comparing two versions of a clip reduces to
-//! comparing the sets of frame hashes. `added` frames are the only new bytes a commit
-//! must store; everything in `shared` is deduplicated against the prior version. This
-//! is what makes a re-grade of 150 frames cost 150 frames, not the whole clip.
+//! Because frames are content-addressed, comparing two versions of a clip
+//! reduces to comparing the sets of frame hashes. `added` frames are the only
+//! new bytes a commit must store; everything in `shared` is deduplicated
+//! against the prior version. This is what makes a re-grade of 150 frames cost
+//! 150 frames, not the whole clip.
+
+use std::collections::HashSet;
 
 use super::manifest::{ClipManifest, FrameRef};
 use crate::core::Hash;
-use std::collections::HashSet;
 
 /// The frame-level difference between two clip manifests.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ClipDiff {
-    /// Frames in `new` whose content is not present in `old` (the new bytes to store).
-    pub added: Vec<FrameRef>,
+    /// Frames in `new` whose content is not present in `old` (the new bytes to
+    /// store).
+    pub added:   Vec<FrameRef>,
     /// Frames in `old` whose content is no longer present in `new`.
     pub removed: Vec<FrameRef>,
-    /// Number of `new` frames whose content already exists in `old` (deduplicated).
-    pub shared: usize,
+    /// Number of `new` frames whose content already exists in `old`
+    /// (deduplicated).
+    pub shared:  usize,
 }
 
 impl ClipDiff {
-    /// Number of new frame *references* in `new` not present in `old`. Note: if the
-    /// new clip repeats an identical frame (held shots, black frames, slates), each
-    /// occurrence is counted here, so this can exceed the number of *distinct* objects
-    /// the store actually persists (the store dedups by hash). Use
-    /// [`Self::distinct_new_frame_count`] for the storage-accurate figure.
+    /// Number of new frame *references* in `new` not present in `old`. Note: if
+    /// the new clip repeats an identical frame (held shots, black frames,
+    /// slates), each occurrence is counted here, so this can exceed the
+    /// number of *distinct* objects the store actually persists (the store
+    /// dedups by hash). Use [`Self::distinct_new_frame_count`] for the
+    /// storage-accurate figure.
     pub fn new_frame_count(&self) -> usize {
         self.added.len()
     }
 
-    /// Number of *distinct* new frames (deduped by content hash) — matches how many
-    /// objects the store actually gains for this version.
+    /// Number of *distinct* new frames (deduped by content hash) — matches how
+    /// many objects the store actually gains for this version.
     pub fn distinct_new_frame_count(&self) -> usize {
-        self.added.iter().map(|f| f.hash).collect::<HashSet<_>>().len()
+        self.added
+            .iter()
+            .map(|f| f.hash)
+            .collect::<HashSet<_>>()
+            .len()
     }
 
-    /// Fraction of the new version's frames that were deduplicated against the old
-    /// version (0.0 = nothing shared, 1.0 = identical content). Empty new clip -> 1.0.
+    /// Fraction of the new version's frames that were deduplicated against the
+    /// old version (0.0 = nothing shared, 1.0 = identical content). Empty
+    /// new clip -> 1.0.
     pub fn dedup_fraction(&self) -> f64 {
         let total = self.shared + self.added.len();
         if total == 0 {
@@ -70,11 +80,7 @@ pub fn diff_manifests(old: &ClipManifest, new: &ClipManifest) -> ClipDiff {
         .copied()
         .collect();
 
-    ClipDiff {
-        added,
-        removed,
-        shared,
-    }
+    ClipDiff { added, removed, shared }
 }
 
 #[cfg(test)]
@@ -82,8 +88,8 @@ mod tests {
     use super::*;
     use crate::core::Hasher;
 
-    /// Build a manifest of `n` frames; frames whose index is in `regraded` get a
-    /// different hash (simulating a color grade on just those frames).
+    /// Build a manifest of `n` frames; frames whose index is in `regraded` get
+    /// a different hash (simulating a color grade on just those frames).
     fn manifest_with_grade(n: usize, regraded: &[usize]) -> ClipManifest {
         let mut m = ClipManifest::new(1920, 1080, "prores_hq", 24);
         for i in 0..n {
@@ -93,8 +99,8 @@ mod tests {
                 format!("frame-{}", i)
             };
             m.push_frame(FrameRef {
-                hash: Hasher::hash(seed.as_bytes()),
-                pts: i as i64,
+                hash:     Hasher::hash(seed.as_bytes()),
+                pts:      i as i64,
                 duration: 1,
             });
         }

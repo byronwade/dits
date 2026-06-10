@@ -1,33 +1,37 @@
 //! Chunk access tracking for intelligent tiering.
 
-use crate::core::Hash;
-use super::tier::StorageTier;
+use std::{
+    collections::HashMap,
+    fs::{self, File},
+    io::{BufReader, BufWriter},
+    path::{Path, PathBuf},
+    time::{SystemTime, UNIX_EPOCH},
+};
+
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::fs::{self, File};
-use std::io::{BufReader, BufWriter};
-use std::path::{Path, PathBuf};
-use std::time::{SystemTime, UNIX_EPOCH};
+
+use super::tier::StorageTier;
+use crate::core::Hash;
 
 /// Access record for a chunk.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccessRecord {
     /// Chunk hash.
-    pub hash: Hash,
+    pub hash:          Hash,
     /// Size in bytes.
-    pub size: u64,
+    pub size:          u64,
     /// Current storage tier.
-    pub tier: StorageTier,
+    pub tier:          StorageTier,
     /// Unix timestamp of first access.
-    pub created_at: u64,
+    pub created_at:    u64,
     /// Unix timestamp of last access.
     pub last_accessed: u64,
     /// Total number of accesses.
-    pub access_count: u64,
+    pub access_count:  u64,
     /// Whether this chunk is referenced by a proxy (never freeze proxies).
-    pub is_proxy: bool,
+    pub is_proxy:      bool,
     /// Whether this chunk is part of a manifest (keep hot for browsing).
-    pub is_manifest: bool,
+    pub is_manifest:   bool,
 }
 
 impl AccessRecord {
@@ -80,7 +84,7 @@ pub struct AccessTracker {
     /// In-memory access records.
     records: HashMap<Hash, AccessRecord>,
     /// Whether there are unsaved changes.
-    dirty: bool,
+    dirty:   bool,
 }
 
 impl AccessTracker {
@@ -97,11 +101,7 @@ impl AccessTracker {
             HashMap::new()
         };
 
-        Ok(Self {
-            db_path,
-            records,
-            dirty: false,
-        })
+        Ok(Self { db_path, records, dirty: false })
     }
 
     /// Record a chunk access.
@@ -155,18 +155,19 @@ impl AccessTracker {
 
     /// Get chunks in a specific tier.
     pub fn chunks_in_tier(&self, tier: StorageTier) -> Vec<&AccessRecord> {
-        self.records.values()
-            .filter(|r| r.tier == tier)
-            .collect()
+        self.records.values().filter(|r| r.tier == tier).collect()
     }
 
     /// Get chunks eligible for tier transition.
-    pub fn transition_candidates(&self, from_tier: StorageTier, days_threshold: u32) -> Vec<&AccessRecord> {
-        self.records.values()
+    pub fn transition_candidates(
+        &self,
+        from_tier: StorageTier,
+        days_threshold: u32,
+    ) -> Vec<&AccessRecord> {
+        self.records
+            .values()
             .filter(|r| {
-                r.tier == from_tier &&
-                !r.is_protected() &&
-                r.days_since_access() >= days_threshold
+                r.tier == from_tier && !r.is_protected() && r.days_since_access() >= days_threshold
             })
             .collect()
     }
@@ -191,19 +192,19 @@ impl AccessTracker {
                 StorageTier::Hot => {
                     stats.hot_chunks += 1;
                     stats.hot_size += record.size;
-                }
+                },
                 StorageTier::Warm => {
                     stats.warm_chunks += 1;
                     stats.warm_size += record.size;
-                }
+                },
                 StorageTier::Cold => {
                     stats.cold_chunks += 1;
                     stats.cold_size += record.size;
-                }
+                },
                 StorageTier::Archive => {
                     stats.archive_chunks += 1;
                     stats.archive_size += record.size;
-                }
+                },
             }
 
             if record.is_proxy {
@@ -288,7 +289,8 @@ impl AccessTracker {
                 if let Some(filename) = chunk_path.file_name() {
                     if let Some(hash_str) = filename.to_str() {
                         // Get prefix from parent directory name
-                        let prefix = prefix_path.file_name()
+                        let prefix = prefix_path
+                            .file_name()
                             .and_then(|p| p.to_str())
                             .unwrap_or("");
                         let full_hash = format!("{}{}", prefix, hash_str);
@@ -333,18 +335,18 @@ impl Drop for AccessTracker {
 /// Overall access statistics.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct AccessStats {
-    pub total_chunks: u64,
-    pub total_size: u64,
-    pub hot_chunks: u64,
-    pub hot_size: u64,
-    pub warm_chunks: u64,
-    pub warm_size: u64,
-    pub cold_chunks: u64,
-    pub cold_size: u64,
-    pub archive_chunks: u64,
-    pub archive_size: u64,
-    pub proxy_chunks: u64,
-    pub proxy_size: u64,
+    pub total_chunks:    u64,
+    pub total_size:      u64,
+    pub hot_chunks:      u64,
+    pub hot_size:        u64,
+    pub warm_chunks:     u64,
+    pub warm_size:       u64,
+    pub cold_chunks:     u64,
+    pub cold_size:       u64,
+    pub archive_chunks:  u64,
+    pub archive_size:    u64,
+    pub proxy_chunks:    u64,
+    pub proxy_size:      u64,
     pub manifest_chunks: u64,
 }
 
@@ -392,8 +394,9 @@ fn current_timestamp() -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use tempfile::tempdir;
+
+    use super::*;
 
     #[test]
     fn test_access_record() {

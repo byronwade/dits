@@ -1,19 +1,24 @@
 //! The brain: from two manifests, decide which segments to reuse vs re-encode,
 //! then build both StreamVersions, reusing v1 segment bytes byte-for-byte.
 
-use crate::core::Hash;
-use crate::facr::manifest::ClipManifest;
-use crate::facr::store::FrameStore;
-use crate::stream::encode::{encode_cmaf_segment, EncodeProfile};
-use crate::stream::layout::{parse_fps, SegmentLayout};
-use crate::stream::origin::SegmentOrigin;
-use crate::stream::playlist::{SegmentRef, StreamVersion};
-use anyhow::{Context, Result};
 use std::collections::BTreeSet;
+
+use anyhow::{Context, Result};
+
+use crate::{
+    core::Hash,
+    facr::{manifest::ClipManifest, store::FrameStore},
+    stream::{
+        encode::{encode_cmaf_segment, EncodeProfile},
+        layout::{parse_fps, SegmentLayout},
+        origin::SegmentOrigin,
+        playlist::{SegmentRef, StreamVersion},
+    },
+};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct IncrementalPlan {
-    pub reused: Vec<usize>,
+    pub reused:    Vec<usize>,
     pub reencoded: Vec<usize>,
 }
 
@@ -47,7 +52,8 @@ pub fn plan(v1: &ClipManifest, v2: &ClipManifest, layout: &SegmentLayout) -> Inc
     IncrementalPlan { reused, reencoded }
 }
 
-/// Encode every segment of `manifest` fresh (the v1 build, and the naive baseline).
+/// Encode every segment of `manifest` fresh (the v1 build, and the naive
+/// baseline).
 pub fn build_full(
     manifest: &ClipManifest,
     store: &FrameStore,
@@ -62,7 +68,8 @@ pub fn build_full(
     let mut init_hash = Hash::default();
     for s in 0..seg_count {
         let range = layout.frame_range(s, n);
-        let (media_hash, seg_init, dur) = encode_and_store(manifest, store, &range, origin, profile, vmaf_target)?;
+        let (media_hash, seg_init, dur) =
+            encode_and_store(manifest, store, &range, origin, profile, vmaf_target)?;
         init_hash = seg_init; // shared, constant across same-resolution encodes
         segments.push(SegmentRef { index: s, hash: media_hash, duration_ms: dur });
     }
@@ -70,22 +77,22 @@ pub fn build_full(
     Ok(StreamVersion { width, height, init_hash, segments })
 }
 
-/// Output (width, height) for a profile: source dims, or scaled to the rung height. Width uses
-/// ffmpeg's `scale=-2` rule — `round(w * h / H / 2) * 2` — so the advertised RESOLUTION matches
-/// the bytes ffmpeg actually produces.
+/// Output (width, height) for a profile: source dims, or scaled to the rung
+/// height. Width uses ffmpeg's `scale=-2` rule — `round(w * h / H / 2) * 2` —
+/// so the advertised RESOLUTION matches the bytes ffmpeg actually produces.
 fn output_dims(manifest: &ClipManifest, profile: &EncodeProfile) -> (u32, u32) {
     match profile.height {
         Some(h) if manifest.height > 0 => {
             let exact = manifest.width as f64 * h as f64 / manifest.height as f64;
             let w = ((exact / 2.0).round() as u32) * 2;
             (w, h)
-        }
+        },
         _ => (manifest.width, manifest.height),
     }
 }
 
-/// Build v2 incrementally: reuse v1's SegmentRefs for unchanged segments (bytes already
-/// in `origin`); encode only the changed segments from v2's frames.
+/// Build v2 incrementally: reuse v1's SegmentRefs for unchanged segments (bytes
+/// already in `origin`); encode only the changed segments from v2's frames.
 pub fn build_incremental(
     v1_version: &StreamVersion,
     v2_manifest: &ClipManifest,
@@ -110,12 +117,13 @@ pub fn build_incremental(
             segments.push(reused.clone());
         } else {
             let range = layout.frame_range(s, n);
-            let (media_hash, _init, dur) = encode_and_store(v2_manifest, store, &range, origin, profile, vmaf_target)?;
+            let (media_hash, _init, dur) =
+                encode_and_store(v2_manifest, store, &range, origin, profile, vmaf_target)?;
             segments.push(SegmentRef { index: s, hash: media_hash, duration_ms: dur });
         }
     }
-    // The init is shared and constant across same-resolution encodes within this rung, so v2
-    // reuses v1's (already in the origin from the v1 build).
+    // The init is shared and constant across same-resolution encodes within this
+    // rung, so v2 reuses v1's (already in the origin from the v1 build).
     Ok(StreamVersion {
         width: v1_version.width,
         height: v1_version.height,
@@ -124,8 +132,9 @@ pub fn build_incremental(
     })
 }
 
-/// Encode a frame range into a CMAF segment, store both the media fragment and the shared
-/// init in `origin` (init put is idempotent), and return `(media_hash, init_hash, duration_ms)`.
+/// Encode a frame range into a CMAF segment, store both the media fragment and
+/// the shared init in `origin` (init put is idempotent), and return
+/// `(media_hash, init_hash, duration_ms)`.
 fn encode_and_store(
     manifest: &ClipManifest,
     store: &FrameStore,
@@ -144,28 +153,34 @@ fn encode_and_store(
     }
     let fps = parse_fps(&manifest.frame_rate);
     let ext = crate::facr::video::frame_ext(&manifest.codec);
-    // VMAF mode: pick this segment's CRF to hit the quality target (deterministic -> hash-stable).
+    // VMAF mode: pick this segment's CRF to hit the quality target (deterministic
+    // -> hash-stable).
     let used_profile = match vmaf_target {
         Some(t) => {
             let (crf, _vmaf) =
                 crate::stream::vmaf::optimize_crf(&pngs, &manifest.frame_rate, ext, t)?;
             EncodeProfile { crf: Some(crf), ..*profile }
-        }
+        },
         None => *profile,
     };
     let mut seg = encode_cmaf_segment(&pngs, &manifest.frame_rate, ext, &used_profile)?;
     // Place this fragment at its true position on a continuous timeline by patching
-    // tfdt.baseMediaDecodeTime = (frames before this segment) * per-frame ticks. The position
-    // is the segment INDEX (range.start), which is identical for an unchanged segment across
-    // versions, so the patched bytes stay hash-stable and reuse is preserved.
+    // tfdt.baseMediaDecodeTime = (frames before this segment) * per-frame ticks.
+    // The position is the segment INDEX (range.start), which is identical for
+    // an unchanged segment across versions, so the patched bytes stay
+    // hash-stable and reuse is preserved.
     let per_frame = crate::stream::encode::frame_duration_ticks(&seg.media)
         .context("media fragment has no default_sample_duration")?;
     let bmdt = range.start as u64 * per_frame as u64;
     crate::stream::encode::set_base_media_decode_time(&mut seg.media, bmdt)?;
     let media_hash = Hash::from_slice(blake3::hash(&seg.media).as_bytes());
     let init_hash = Hash::from_slice(blake3::hash(&seg.init).as_bytes());
-    origin.put(&media_hash, &seg.media).context("put media fragment to origin")?;
-    origin.put(&init_hash, &seg.init).context("put init segment to origin")?;
+    origin
+        .put(&media_hash, &seg.media)
+        .context("put media fragment to origin")?;
+    origin
+        .put(&init_hash, &seg.init)
+        .context("put init segment to origin")?;
     let dur_ms = ((range.len() as f64 / fps) * 1000.0).round() as u64;
     Ok((media_hash, init_hash, dur_ms))
 }
@@ -180,8 +195,8 @@ mod tests {
         m.frame_rate = "10/1".to_string();
         for (i, b) in hashes.iter().enumerate() {
             m.push_frame(FrameRef {
-                hash: Hash::from_slice(blake3::hash(b).as_bytes()),
-                pts: i as i64,
+                hash:     Hash::from_slice(blake3::hash(b).as_bytes()),
+                pts:      i as i64,
                 duration: 1,
             });
         }

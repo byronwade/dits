@@ -17,7 +17,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Server, Shield, Database, Settings } from "lucide-react";
+import { Shield, Database, Settings } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Self-Hosting Guide",

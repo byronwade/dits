@@ -1,10 +1,11 @@
-//! Give a commit a human-readable name based on the nearest tag (`dits describe`).
+//! Give a commit a human-readable name based on the nearest tag (`dits
+//! describe`).
 
-use crate::core::Hash;
-use crate::store::Repository;
+use std::{collections::HashMap, path::Path};
+
 use anyhow::{Context, Result};
-use std::collections::HashMap;
-use std::path::Path;
+
+use crate::{core::Hash, store::Repository};
 
 /// Options controlling `describe`.
 #[derive(Clone, Debug)]
@@ -12,27 +13,21 @@ pub struct DescribeOptions {
     /// Commit to describe (defaults to HEAD).
     pub commit: Option<String>,
     /// Use any tag (placeholder: all tags are treated equally here).
-    pub tags: bool,
-    /// Use any ref (placeholder: branches are not yet used as describe anchors).
-    pub all: bool,
+    pub tags:   bool,
+    /// Use any ref (placeholder: branches are not yet used as describe
+    /// anchors).
+    pub all:    bool,
     /// Always use the long `tag-N-gHASH` format even for an exact match.
-    pub long: bool,
+    pub long:   bool,
     /// Append `-dirty` if the working tree has uncommitted changes.
-    pub dirty: bool,
+    pub dirty:  bool,
     /// Number of hex characters in the abbreviated hash.
     pub abbrev: usize,
 }
 
 impl Default for DescribeOptions {
     fn default() -> Self {
-        Self {
-            commit: None,
-            tags: false,
-            all: false,
-            long: false,
-            dirty: false,
-            abbrev: 7,
-        }
+        Self { commit: None, tags: false, all: false, long: false, dirty: false, abbrev: 7 }
     }
 }
 
@@ -87,7 +82,7 @@ pub fn describe(options: &DescribeOptions) -> Result<DescribeResult> {
             Some(parent) => {
                 current = parent;
                 distance += 1;
-            }
+            },
             None => break,
         }
     }

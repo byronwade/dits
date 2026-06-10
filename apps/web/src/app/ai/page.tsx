@@ -1,12 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
   Check,
-  Copy,
-  CheckCircle2,
   Boxes,
   Fingerprint,
   Sparkles,
@@ -27,7 +24,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { StatCard } from "@/components/stat-card";
 import { StatusPill } from "@/components/status-pill";
 import type { StatusTone } from "@/components/ui/status-dot";
 import { cn } from "@/lib/utils";
@@ -128,26 +124,6 @@ const phasePct = Math.round((phaseComplete / phases.length) * 100);
 // COMPONENTS
 // ============================================================================
 
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  const copy = () => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      className="text-muted-foreground hover:text-foreground"
-      onClick={copy}
-      aria-label={copied ? "Copied" : "Copy to clipboard"}
-      type="button"
-    >
-      {copied ? <CheckCircle2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-    </Button>
-  );
-}
 
 function SectionHeading({
   title,

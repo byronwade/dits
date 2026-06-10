@@ -6,13 +6,15 @@
 //! - Final Cut Pro (.fcpxml) - Plain XML
 //! - After Effects (.aep) - Binary with embedded paths
 
-use std::collections::HashSet;
-use std::fs::File;
-use std::io::{BufReader, Read};
-use std::path::{Path, PathBuf};
+use std::{
+    collections::HashSet,
+    fs::File,
+    io::{BufReader, Read},
+    path::{Path, PathBuf},
+};
+
 use flate2::read::GzDecoder;
-use quick_xml::events::Event;
-use quick_xml::Reader;
+use quick_xml::{events::Event, Reader};
 use regex::Regex;
 use thiserror::Error;
 use zip::ZipArchive;
@@ -54,7 +56,12 @@ pub enum ProjectType {
 impl ProjectType {
     /// Detect project type from file extension.
     pub fn from_path(path: &Path) -> Self {
-        match path.extension().and_then(|e| e.to_str()).map(|e| e.to_lowercase()).as_deref() {
+        match path
+            .extension()
+            .and_then(|e| e.to_str())
+            .map(|e| e.to_lowercase())
+            .as_deref()
+        {
             Some("prproj") => Self::PremierePro,
             Some("drp") => Self::DaVinciResolve,
             Some("fcpxml") => Self::FinalCutPro,
@@ -79,15 +86,15 @@ impl ProjectType {
 #[derive(Debug, Clone)]
 pub struct MediaReference {
     /// Original path as stored in project file.
-    pub original_path: String,
+    pub original_path:   String,
     /// Normalized path (resolved relative to project location).
     pub normalized_path: PathBuf,
     /// Whether the path is absolute.
-    pub is_absolute: bool,
+    pub is_absolute:     bool,
     /// Whether the file exists on disk.
-    pub exists: bool,
+    pub exists:          bool,
     /// Media type hint (video, audio, image, project).
-    pub media_type: MediaType,
+    pub media_type:      MediaType,
 }
 
 /// Type of media reference.
@@ -103,10 +110,19 @@ pub enum MediaType {
 impl MediaType {
     /// Detect media type from file extension.
     pub fn from_path(path: &Path) -> Self {
-        match path.extension().and_then(|e| e.to_str()).map(|e| e.to_lowercase()).as_deref() {
-            Some("mp4" | "mov" | "avi" | "mkv" | "mxf" | "m4v" | "webm" | "r3d" | "braw" | "arw") => Self::Video,
+        match path
+            .extension()
+            .and_then(|e| e.to_str())
+            .map(|e| e.to_lowercase())
+            .as_deref()
+        {
+            Some(
+                "mp4" | "mov" | "avi" | "mkv" | "mxf" | "m4v" | "webm" | "r3d" | "braw" | "arw",
+            ) => Self::Video,
             Some("wav" | "mp3" | "aac" | "aiff" | "flac" | "ogg" | "m4a") => Self::Audio,
-            Some("jpg" | "jpeg" | "png" | "tiff" | "tif" | "psd" | "exr" | "dpx" | "gif" | "bmp") => Self::Image,
+            Some(
+                "jpg" | "jpeg" | "png" | "tiff" | "tif" | "psd" | "exr" | "dpx" | "gif" | "bmp",
+            ) => Self::Image,
             Some("prproj" | "drp" | "fcpxml" | "aep") => Self::Project,
             _ => Self::Other,
         }
@@ -117,11 +133,11 @@ impl MediaType {
 #[derive(Debug)]
 pub struct ParsedProject {
     /// Path to the project file.
-    pub project_path: PathBuf,
+    pub project_path:    PathBuf,
     /// Type of project.
-    pub project_type: ProjectType,
+    pub project_type:    ProjectType,
     /// Media references found.
-    pub references: Vec<MediaReference>,
+    pub references:      Vec<MediaReference>,
     /// Nested project references (for recursive dependency resolution).
     pub nested_projects: Vec<MediaReference>,
 }
@@ -139,9 +155,10 @@ impl ParsedProject {
 
     /// Get paths outside a given root directory.
     pub fn paths_outside_root(&self, root: &Path) -> Vec<&MediaReference> {
-        self.references.iter().filter(|r| {
-            !r.normalized_path.starts_with(root)
-        }).collect()
+        self.references
+            .iter()
+            .filter(|r| !r.normalized_path.starts_with(root))
+            .collect()
     }
 }
 
@@ -167,7 +184,7 @@ pub fn parse_project(path: &Path) -> Result<ParsedProject, ParseError> {
             path.extension()
                 .and_then(|e| e.to_str())
                 .unwrap_or("unknown")
-                .to_string()
+                .to_string(),
         )),
     }
 }
@@ -198,9 +215,9 @@ impl ProjectParser for PremiereParser {
             .partition(|r| r.media_type == MediaType::Project);
 
         Ok(ParsedProject {
-            project_path: path.to_path_buf(),
-            project_type: ProjectType::PremierePro,
-            references: media,
+            project_path:    path.to_path_buf(),
+            project_type:    ProjectType::PremierePro,
+            references:      media,
             nested_projects: nested,
         })
     }
@@ -229,7 +246,7 @@ fn parse_premiere_xml(xml: &str, project_dir: &Path) -> Result<Vec<MediaReferenc
                     in_file_path = local_name == "FilePath";
                     in_actual_media_file_path = local_name == "ActualMediaFilePath";
                 }
-            }
+            },
             Ok(Event::Text(e)) => {
                 if in_file_path || in_actual_media_file_path {
                     let path_str = e.unescape().map_err(|e| ParseError::Xml(e.to_string()))?;
@@ -238,7 +255,7 @@ fn parse_premiere_xml(xml: &str, project_dir: &Path) -> Result<Vec<MediaReferenc
                         references.insert(path_str.to_string());
                     }
                 }
-            }
+            },
             Ok(Event::End(ref e)) => {
                 let name = e.name();
                 let local_name = std::str::from_utf8(name.as_ref()).unwrap_or("");
@@ -248,10 +265,16 @@ fn parse_premiere_xml(xml: &str, project_dir: &Path) -> Result<Vec<MediaReferenc
                 if local_name == "ActualMediaFilePath" {
                     in_actual_media_file_path = false;
                 }
-            }
+            },
             Ok(Event::Eof) => break,
-            Err(e) => return Err(ParseError::Xml(format!("Error at position {}: {:?}", reader.error_position(), e))),
-            _ => {}
+            Err(e) => {
+                return Err(ParseError::Xml(format!(
+                    "Error at position {}: {:?}",
+                    reader.error_position(),
+                    e
+                )))
+            },
+            _ => {},
         }
         buf.clear();
     }
@@ -287,9 +310,9 @@ impl ProjectParser for ResolveParser {
             .partition(|r| r.media_type == MediaType::Project);
 
         Ok(ParsedProject {
-            project_path: path.to_path_buf(),
-            project_type: ProjectType::DaVinciResolve,
-            references: media,
+            project_path:    path.to_path_buf(),
+            project_type:    ProjectType::DaVinciResolve,
+            references:      media,
             nested_projects: nested,
         })
     }
@@ -300,7 +323,9 @@ impl ProjectParser for ResolveParser {
 }
 
 /// Find and read XML content from a Resolve .drp zip file.
-fn find_and_read_xml_in_zip(archive: &mut ZipArchive<BufReader<File>>) -> Result<String, ParseError> {
+fn find_and_read_xml_in_zip(
+    archive: &mut ZipArchive<BufReader<File>>,
+) -> Result<String, ParseError> {
     // Try common XML file names in Resolve projects
     let xml_names = ["project.xml", "Project.xml", "timeline.xml"];
 
@@ -360,7 +385,7 @@ fn parse_resolve_xml(xml: &str, project_dir: &Path) -> Result<Vec<MediaReference
                         }
                     }
                 }
-            }
+            },
             Ok(Event::Text(e)) => {
                 if capture_text {
                     let text = e.unescape().map_err(|e| ParseError::Xml(e.to_string()))?;
@@ -369,7 +394,7 @@ fn parse_resolve_xml(xml: &str, project_dir: &Path) -> Result<Vec<MediaReference
                         references.insert(text.to_string());
                     }
                 }
-            }
+            },
             Ok(Event::End(ref e)) => {
                 let name = e.name();
                 let local_name = std::str::from_utf8(name.as_ref()).unwrap_or("");
@@ -377,10 +402,16 @@ fn parse_resolve_xml(xml: &str, project_dir: &Path) -> Result<Vec<MediaReference
                     capture_text = false;
                     current_element.clear();
                 }
-            }
+            },
             Ok(Event::Eof) => break,
-            Err(e) => return Err(ParseError::Xml(format!("Error at position {}: {:?}", reader.error_position(), e))),
-            _ => {}
+            Err(e) => {
+                return Err(ParseError::Xml(format!(
+                    "Error at position {}: {:?}",
+                    reader.error_position(),
+                    e
+                )))
+            },
+            _ => {},
         }
         buf.clear();
     }
@@ -413,9 +444,9 @@ impl ProjectParser for FcpParser {
             .partition(|r| r.media_type == MediaType::Project);
 
         Ok(ParsedProject {
-            project_path: path.to_path_buf(),
-            project_type: ProjectType::FinalCutPro,
-            references: media,
+            project_path:    path.to_path_buf(),
+            project_type:    ProjectType::FinalCutPro,
+            references:      media,
             nested_projects: nested,
         })
     }
@@ -454,10 +485,16 @@ fn parse_fcpxml(xml: &str, project_dir: &Path) -> Result<Vec<MediaReference>, Pa
                         }
                     }
                 }
-            }
+            },
             Ok(Event::Eof) => break,
-            Err(e) => return Err(ParseError::Xml(format!("Error at position {}: {:?}", reader.error_position(), e))),
-            _ => {}
+            Err(e) => {
+                return Err(ParseError::Xml(format!(
+                    "Error at position {}: {:?}",
+                    reader.error_position(),
+                    e
+                )))
+            },
+            _ => {},
         }
         buf.clear();
     }
@@ -490,9 +527,9 @@ impl ProjectParser for AfterEffectsParser {
             .partition(|r| r.media_type == MediaType::Project);
 
         Ok(ParsedProject {
-            project_path: path.to_path_buf(),
-            project_type: ProjectType::AfterEffects,
-            references: media,
+            project_path:    path.to_path_buf(),
+            project_type:    ProjectType::AfterEffects,
+            references:      media,
             nested_projects: nested,
         })
     }
@@ -541,9 +578,9 @@ fn parse_aep_binary(data: &[u8], project_dir: &Path) -> Result<Vec<MediaReferenc
 /// Create a MediaReference from a path string.
 fn create_media_reference(path_str: &str, project_dir: &Path) -> MediaReference {
     let normalized = normalize_path(path_str, project_dir);
-    let is_absolute = Path::new(path_str).is_absolute() ||
-                      path_str.starts_with('/') ||
-                      (path_str.len() > 2 && &path_str[1..2] == ":");
+    let is_absolute = Path::new(path_str).is_absolute()
+        || path_str.starts_with('/')
+        || (path_str.len() > 2 && &path_str[1..2] == ":");
     let exists = normalized.exists();
     let media_type = MediaType::from_path(&normalized);
 
@@ -610,20 +647,20 @@ fn looks_like_path(s: &str) -> bool {
     // Check for common path patterns
     let has_separator = s.contains('/') || s.contains('\\');
     let has_extension = s.contains('.') && s.rfind('.').map(|i| i < s.len() - 1).unwrap_or(false);
-    let starts_like_path = s.starts_with('/') ||
-                           s.starts_with("./") ||
-                           s.starts_with("../") ||
-                           (s.len() > 2 && &s[1..2] == ":") ||
-                           s.starts_with("file://") ||
-                           s.starts_with("Volumes/") ||
-                           s.starts_with("Users/");
+    let starts_like_path = s.starts_with('/')
+        || s.starts_with("./")
+        || s.starts_with("../")
+        || (s.len() > 2 && &s[1..2] == ":")
+        || s.starts_with("file://")
+        || s.starts_with("Volumes/")
+        || s.starts_with("Users/");
 
     // Exclude things that are clearly not paths
-    let excluded = s.starts_with("http://") ||
-                   s.starts_with("https://") ||
-                   s.starts_with("data:") ||
-                   s.contains('\n') ||
-                   s.contains('\t');
+    let excluded = s.starts_with("http://")
+        || s.starts_with("https://")
+        || s.starts_with("data:")
+        || s.contains('\n')
+        || s.contains('\t');
 
     (has_separator || starts_like_path) && has_extension && !excluded
 }

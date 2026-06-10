@@ -10,7 +10,7 @@ import {
 import { DocPageHeader } from "@/components/doc-page-header";
 import { Database, Layers, GitBranch, Globe } from "lucide-react";
 import { ArchitectureDiagram } from "@/components/diagrams/architecture-diagram";
-import { FileClassifierDiagram, FileClassifierCompact } from "@/components/diagrams/file-classifier-diagram";
+import { FileClassifierDiagram } from "@/components/diagrams/file-classifier-diagram";
 import { DataFlowDiagram } from "@/components/diagrams/data-flow-diagram";
 import { ChunkingPipelineDiagram } from "@/components/diagrams/chunking-pipeline-diagram";
 

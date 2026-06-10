@@ -446,12 +446,6 @@ test_expect_fast() {
 start_test_output
 
 # Export all functions for use in test scripts
-export -f say debug error warning remove_trash
-export -f start_test_output start_test_case_output finalize_test_case_output finalize_test_output
-export -f test_ok_ test_failure_ test_expect_success test_expect_failure test_skip
-export -f test_create_repo test_write_file test_write_binary test_write_large_file
-export -f test_cmp test_file_not_empty test_file_exists test_dir_exists test_line_count test_match test_wait_for
-export -f test_time_ms test_expect_fast
 
 # Set up environment variables for tests
 export DITS_TEST_MODE=1
@@ -493,4 +487,3 @@ test_done() {
 }
 
 # Export test_done function
-export -f test_done

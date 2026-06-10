@@ -2,12 +2,15 @@
 //!
 //! Provides file-level locks to prevent concurrent edits to binary files.
 
+use std::{
+    collections::HashMap,
+    fs::File,
+    io::{BufReader, BufWriter},
+    path::{Path, PathBuf},
+    time::{Duration, SystemTime, UNIX_EPOCH},
+};
+
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::{BufReader, BufWriter};
-use std::path::{Path, PathBuf};
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 /// Default lock TTL (8 hours).
 const DEFAULT_TTL_SECS: u64 = 8 * 60 * 60;
@@ -16,15 +19,15 @@ const DEFAULT_TTL_SECS: u64 = 8 * 60 * 60;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Lock {
     /// Path being locked (relative to repo root).
-    pub path: String,
+    pub path:        String,
     /// Owner (user identifier).
-    pub owner: String,
+    pub owner:       String,
     /// When the lock was acquired (Unix timestamp).
     pub acquired_at: u64,
     /// When the lock expires (Unix timestamp).
-    pub expires_at: u64,
+    pub expires_at:  u64,
     /// Optional reason for locking.
-    pub reason: Option<String>,
+    pub reason:      Option<String>,
 }
 
 impl Lock {
@@ -32,11 +35,11 @@ impl Lock {
     pub fn new(path: impl Into<String>, owner: impl Into<String>, ttl_secs: u64) -> Self {
         let now = current_timestamp();
         Self {
-            path: path.into(),
-            owner: owner.into(),
+            path:        path.into(),
+            owner:       owner.into(),
             acquired_at: now,
-            expires_at: now + ttl_secs,
-            reason: None,
+            expires_at:  now + ttl_secs,
+            reason:      None,
         }
     }
 
@@ -84,7 +87,7 @@ pub struct LockStore {
     /// Path to the locks file.
     locks_path: PathBuf,
     /// Cached locks.
-    locks: HashMap<String, Lock>,
+    locks:      HashMap<String, Lock>,
 }
 
 impl LockStore {
@@ -129,8 +132,8 @@ impl LockStore {
         if let Some(existing) = self.locks.get(path) {
             if !existing.is_expired() && !force {
                 return Err(LockError::AlreadyLocked {
-                    path: path.to_string(),
-                    owner: existing.owner.clone(),
+                    path:       path.to_string(),
+                    owner:      existing.owner.clone(),
                     expires_in: existing.expires_in_human(),
                 });
             }
@@ -150,15 +153,14 @@ impl LockStore {
 
     /// Release a lock.
     pub fn release(&mut self, path: &str, owner: &str, force: bool) -> Result<(), LockError> {
-        let lock = self.locks.get(path)
+        let lock = self
+            .locks
+            .get(path)
             .ok_or_else(|| LockError::NotLocked(path.to_string()))?;
 
         // Check ownership
         if lock.owner != owner && !force {
-            return Err(LockError::NotOwner {
-                path: path.to_string(),
-                owner: lock.owner.clone(),
-            });
+            return Err(LockError::NotOwner { path: path.to_string(), owner: lock.owner.clone() });
         }
 
         self.locks.remove(path);
@@ -174,14 +176,13 @@ impl LockStore {
 
     /// List all active (non-expired) locks.
     pub fn list(&self) -> Vec<&Lock> {
-        self.locks.values()
-            .filter(|l| !l.is_expired())
-            .collect()
+        self.locks.values().filter(|l| !l.is_expired()).collect()
     }
 
     /// List locks owned by a specific user.
     pub fn list_by_owner(&self, owner: &str) -> Vec<&Lock> {
-        self.locks.values()
+        self.locks
+            .values()
             .filter(|l| !l.is_expired() && l.owner == owner)
             .collect()
     }
@@ -193,7 +194,9 @@ impl LockStore {
 
     /// Clean up expired locks.
     pub fn cleanup_expired(&mut self) {
-        let expired: Vec<String> = self.locks.iter()
+        let expired: Vec<String> = self
+            .locks
+            .iter()
             .filter(|(_, l)| l.is_expired())
             .map(|(p, _)| p.clone())
             .collect();
@@ -209,7 +212,9 @@ impl LockStore {
 
     /// Release all locks owned by a user.
     pub fn release_all_by_owner(&mut self, owner: &str) -> Result<usize, LockError> {
-        let to_remove: Vec<String> = self.locks.iter()
+        let to_remove: Vec<String> = self
+            .locks
+            .iter()
             .filter(|(_, l)| l.owner == owner)
             .map(|(p, _)| p.clone())
             .collect();
@@ -228,11 +233,7 @@ impl LockStore {
 #[derive(Debug, thiserror::Error)]
 pub enum LockError {
     #[error("File '{path}' is already locked by {owner} (expires in {expires_in})")]
-    AlreadyLocked {
-        path: String,
-        owner: String,
-        expires_in: String,
-    },
+    AlreadyLocked { path: String, owner: String, expires_in: String },
 
     #[error("File '{0}' is not locked")]
     NotLocked(String),
@@ -254,8 +255,9 @@ fn current_timestamp() -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use tempfile::tempdir;
+
+    use super::*;
 
     #[test]
     fn test_acquire_release() {
@@ -263,12 +265,16 @@ mod tests {
         let mut store = LockStore::new(dir.path());
 
         // Acquire lock
-        let lock = store.acquire("test.mov", "user@example.com", None, None, false).unwrap();
+        let lock = store
+            .acquire("test.mov", "user@example.com", None, None, false)
+            .unwrap();
         assert_eq!(lock.path, "test.mov");
         assert!(store.is_locked("test.mov"));
 
         // Release lock
-        store.release("test.mov", "user@example.com", false).unwrap();
+        store
+            .release("test.mov", "user@example.com", false)
+            .unwrap();
         assert!(!store.is_locked("test.mov"));
     }
 
@@ -277,7 +283,9 @@ mod tests {
         let dir = tempdir().unwrap();
         let mut store = LockStore::new(dir.path());
 
-        store.acquire("test.mov", "user1@example.com", None, None, false).unwrap();
+        store
+            .acquire("test.mov", "user1@example.com", None, None, false)
+            .unwrap();
 
         // Another user tries to lock
         let result = store.acquire("test.mov", "user2@example.com", None, None, false);
@@ -289,10 +297,14 @@ mod tests {
         let dir = tempdir().unwrap();
         let mut store = LockStore::new(dir.path());
 
-        store.acquire("test.mov", "user1@example.com", None, None, false).unwrap();
+        store
+            .acquire("test.mov", "user1@example.com", None, None, false)
+            .unwrap();
 
         // Force acquire
-        let lock = store.acquire("test.mov", "user2@example.com", None, None, true).unwrap();
+        let lock = store
+            .acquire("test.mov", "user2@example.com", None, None, true)
+            .unwrap();
         assert_eq!(lock.owner, "user2@example.com");
     }
 
@@ -301,9 +313,15 @@ mod tests {
         let dir = tempdir().unwrap();
         let mut store = LockStore::new(dir.path());
 
-        store.acquire("a.mov", "user1@example.com", None, None, false).unwrap();
-        store.acquire("b.mov", "user1@example.com", None, None, false).unwrap();
-        store.acquire("c.mov", "user2@example.com", None, None, false).unwrap();
+        store
+            .acquire("a.mov", "user1@example.com", None, None, false)
+            .unwrap();
+        store
+            .acquire("b.mov", "user1@example.com", None, None, false)
+            .unwrap();
+        store
+            .acquire("c.mov", "user2@example.com", None, None, false)
+            .unwrap();
 
         let user1_locks = store.list_by_owner("user1@example.com");
         assert_eq!(user1_locks.len(), 2);
@@ -316,7 +334,9 @@ mod tests {
         // Acquire and save
         {
             let mut store = LockStore::new(dir.path());
-            store.acquire("test.mov", "user@example.com", Some(3600), Some("Editing"), false).unwrap();
+            store
+                .acquire("test.mov", "user@example.com", Some(3600), Some("Editing"), false)
+                .unwrap();
         }
 
         // Load and verify

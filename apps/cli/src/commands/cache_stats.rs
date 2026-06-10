@@ -1,8 +1,10 @@
 //! Cache statistics command.
 
-use crate::store::Repository;
-use anyhow::Result;
 use std::path::Path;
+
+use anyhow::Result;
+
+use crate::store::Repository;
 
 /// Show cache statistics.
 pub fn cache_stats() -> Result<()> {

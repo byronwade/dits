@@ -1,12 +1,11 @@
 //! Video segmenter - splits videos into GOP-aligned chunks.
 
+use std::{fs, io, path::Path, process::Command};
+
+use thiserror::Error;
+
 use super::manifest::{Segment, VideoManifest};
 use crate::core::{Hash, Hasher};
-use std::fs;
-use std::io;
-use std::path::Path;
-use std::process::Command;
-use thiserror::Error;
 
 /// Errors during segmentation.
 #[derive(Error, Debug)]
@@ -36,18 +35,14 @@ pub struct SegmentConfig {
     /// Target segment duration in seconds.
     pub segment_duration: f64,
     /// Output format for segments (mp4, ts).
-    pub segment_format: String,
+    pub segment_format:   String,
     /// Force keyframes at segment boundaries.
-    pub force_keyframes: bool,
+    pub force_keyframes:  bool,
 }
 
 impl Default for SegmentConfig {
     fn default() -> Self {
-        Self {
-            segment_duration: 2.0,
-            segment_format: "mp4".to_string(),
-            force_keyframes: true,
-        }
+        Self { segment_duration: 2.0, segment_format: "mp4".to_string(), force_keyframes: true }
     }
 }
 
@@ -59,9 +54,7 @@ pub struct Segmenter {
 impl Segmenter {
     /// Create a new segmenter with default config.
     pub fn new() -> Self {
-        Self {
-            config: SegmentConfig::default(),
-        }
+        Self { config: SegmentConfig::default() }
     }
 
     /// Create a new segmenter with custom config.
@@ -82,14 +75,7 @@ impl Segmenter {
     /// Get video information using ffprobe.
     fn probe_video(&self, path: &Path) -> Result<VideoInfo, SegmentError> {
         let output = Command::new("ffprobe")
-            .args([
-                "-v",
-                "quiet",
-                "-print_format",
-                "json",
-                "-show_format",
-                "-show_streams",
-            ])
+            .args(["-v", "quiet", "-print_format", "json", "-show_format", "-show_streams"])
             .arg(path)
             .output()
             .map_err(|_| SegmentError::FfmpegNotFound)?;
@@ -103,9 +89,9 @@ impl Segmenter {
         let json: serde_json::Value = serde_json::from_slice(&output.stdout)?;
 
         // Extract video stream info
-        let streams = json["streams"].as_array().ok_or_else(|| {
-            SegmentError::InvalidVideo("No streams found".to_string())
-        })?;
+        let streams = json["streams"]
+            .as_array()
+            .ok_or_else(|| SegmentError::InvalidVideo("No streams found".to_string()))?;
 
         let video_stream = streams
             .iter()
@@ -138,7 +124,11 @@ impl Segmenter {
     }
 
     /// Segment a video file into GOP-aligned chunks.
-    pub fn segment(&self, video_path: &Path, output_dir: &Path) -> Result<VideoManifest, SegmentError> {
+    pub fn segment(
+        &self,
+        video_path: &Path,
+        output_dir: &Path,
+    ) -> Result<VideoManifest, SegmentError> {
         Self::check_ffmpeg()?;
 
         // Create output directory
@@ -155,10 +145,7 @@ impl Segmenter {
             .arg(video_path)
             .args(["-c", "copy"])
             .args(["-f", "segment"])
-            .args([
-                "-segment_time",
-                &self.config.segment_duration.to_string(),
-            ])
+            .args(["-segment_time", &self.config.segment_duration.to_string()])
             .args(["-reset_timestamps", "1"]);
 
         if self.config.segment_format == "mp4" {
@@ -179,7 +166,11 @@ impl Segmenter {
 
         // Build manifest
         let mut manifest = VideoManifest::new(
-            video_path.file_name().unwrap().to_string_lossy().to_string(),
+            video_path
+                .file_name()
+                .unwrap()
+                .to_string_lossy()
+                .to_string(),
             self.config.segment_duration,
         );
 
@@ -272,22 +263,19 @@ impl Segmenter {
         let mut changed = Vec::new();
 
         // Build hash map of old segments
-        let old_hashes: std::collections::HashMap<u32, &Hash> = old
-            .segments
-            .iter()
-            .map(|s| (s.index, &s.hash))
-            .collect();
+        let old_hashes: std::collections::HashMap<u32, &Hash> =
+            old.segments.iter().map(|s| (s.index, &s.hash)).collect();
 
         // Compare with new segments
         for segment in &new.segments {
             match old_hashes.get(&segment.index) {
                 Some(old_hash) if **old_hash == segment.hash => {
                     // Same hash, unchanged
-                }
+                },
                 _ => {
                     // Changed or new
                     changed.push(segment.index);
-                }
+                },
             }
         }
 
@@ -304,10 +292,10 @@ impl Default for Segmenter {
 /// Video information from ffprobe.
 #[derive(Debug)]
 struct VideoInfo {
-    duration: f64,
-    width: u32,
-    height: u32,
-    frame_rate: String,
+    duration:    f64,
+    width:       u32,
+    height:      u32,
+    frame_rate:  String,
     video_codec: String,
     audio_codec: Option<String>,
 }

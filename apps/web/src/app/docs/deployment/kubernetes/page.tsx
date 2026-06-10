@@ -2,14 +2,13 @@ import { Metadata } from "next";
 import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
 import { Callout } from "@/components/ui/callout";
 import { DocPageHeader } from "@/components/doc-page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Cloud, Shield, Zap } from "lucide-react";
+import { Shield, Zap } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Kubernetes Deployment",

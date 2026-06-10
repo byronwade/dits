@@ -1,11 +1,15 @@
 //! Add files to staging area.
 
-use crate::store::Repository;
-use crate::util::{format_bytes, safe_percentage};
+use std::path::Path;
+
 use anyhow::{Context, Result};
 use console::style;
 use indicatif::{ProgressBar, ProgressStyle};
-use std::path::Path;
+
+use crate::{
+    store::Repository,
+    util::{format_bytes, safe_percentage},
+};
 
 /// Add files to the staging area.
 pub fn add(files: &[String]) -> Result<()> {
@@ -34,14 +38,10 @@ pub fn add(files: &[String]) -> Result<()> {
                 total_result.new_bytes += result.new_bytes;
                 total_result.dedup_chunks += result.dedup_chunks;
                 total_result.dedup_bytes += result.dedup_bytes;
-            }
+            },
             Err(crate::store::repository::RepoError::FileNotFound(f)) => {
-                progress.println(format!(
-                    "{} File not found: {}",
-                    style("!").yellow().bold(),
-                    f
-                ));
-            }
+                progress.println(format!("{} File not found: {}", style("!").yellow().bold(), f));
+            },
             Err(crate::store::repository::RepoError::FileIgnored(f)) => {
                 progress.println(format!(
                     "{} Ignored: {} (matches .ditsignore)",
@@ -49,7 +49,7 @@ pub fn add(files: &[String]) -> Result<()> {
                     f
                 ));
                 total_result.files_ignored += 1;
-            }
+            },
             Err(e) => {
                 progress.println(format!(
                     "{} Error adding {}: {}",
@@ -57,7 +57,7 @@ pub fn add(files: &[String]) -> Result<()> {
                     file,
                     e
                 ));
-            }
+            },
         }
 
         progress.inc(1);
@@ -76,11 +76,7 @@ pub fn add(files: &[String]) -> Result<()> {
 
     // Print summary
     if total_result.files_staged > 0 {
-        println!(
-            "{} Staged {} file(s)",
-            style("✓").green().bold(),
-            total_result.files_staged
-        );
+        println!("{} Staged {} file(s)", style("✓").green().bold(), total_result.files_staged);
 
         let total_bytes = total_result.new_bytes + total_result.dedup_bytes;
         let total_chunks = total_result.new_chunks + total_result.dedup_chunks;
@@ -88,9 +84,7 @@ pub fn add(files: &[String]) -> Result<()> {
         if total_chunks > 0 {
             println!(
                 "  {} chunks ({} new, {} deduplicated)",
-                total_chunks,
-                total_result.new_chunks,
-                total_result.dedup_chunks
+                total_chunks, total_result.new_chunks, total_result.dedup_chunks
             );
 
             if total_result.dedup_bytes > 0 {
@@ -104,10 +98,7 @@ pub fn add(files: &[String]) -> Result<()> {
         }
 
         if total_result.files_ignored > 0 {
-            println!(
-                "  {} file(s) ignored",
-                total_result.files_ignored
-            );
+            println!("  {} file(s) ignored", total_result.files_ignored);
         }
     } else if total_result.files_ignored > 0 {
         println!(
@@ -121,4 +112,3 @@ pub fn add(files: &[String]) -> Result<()> {
 
     Ok(())
 }
-

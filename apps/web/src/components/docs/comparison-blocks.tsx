@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { X, Check, ArrowRight } from "lucide-react";
+import { X, Check } from "lucide-react";
 
 interface ComparisonBlocksProps {
     before: {

@@ -44,41 +44,43 @@ impl FileCategory {
     pub fn from_extension(ext: &str) -> Self {
         match ext {
             // Video formats
-            "mp4" | "m4v" | "mov" | "mkv" | "avi" | "webm" | "wmv" | "flv" |
-            "mxf" | "r3d" | "braw" | "ari" | "dpx" | "exr" | "prores" |
-            "3gp" | "3g2" | "m2ts" | "mts" | "vob" | "ogv" => FileCategory::Video,
+            "mp4" | "m4v" | "mov" | "mkv" | "avi" | "webm" | "wmv" | "flv" | "mxf" | "r3d"
+            | "braw" | "ari" | "dpx" | "exr" | "prores" | "3gp" | "3g2" | "m2ts" | "mts"
+            | "vob" | "ogv" => FileCategory::Video,
 
             // Audio formats
-            "mp3" | "wav" | "aiff" | "aif" | "flac" | "aac" | "m4a" | "ogg" |
-            "wma" | "opus" | "alac" => FileCategory::Audio,
+            "mp3" | "wav" | "aiff" | "aif" | "flac" | "aac" | "m4a" | "ogg" | "wma" | "opus"
+            | "alac" => FileCategory::Audio,
 
             // Image formats
-            "psd" | "psb" | "tiff" | "tif" | "raw" | "cr2" | "cr3" | "nef" |
-            "arw" | "dng" | "orf" | "rw2" | "png" | "jpg" | "jpeg" | "gif" |
-            "bmp" | "webp" | "heic" | "heif" | "avif" => FileCategory::Image,
+            "psd" | "psb" | "tiff" | "tif" | "raw" | "cr2" | "cr3" | "nef" | "arw" | "dng"
+            | "orf" | "rw2" | "png" | "jpg" | "jpeg" | "gif" | "bmp" | "webp" | "heic" | "heif"
+            | "avif" => FileCategory::Image,
 
             // 3D formats
-            "blend" | "blend1" | "ma" | "mb" | "max" | "c4d" | "hip" | "hiplc" |
-            "fbx" | "obj" | "dae" | "gltf" | "glb" | "usd" | "usda" | "usdc" |
-            "usdz" | "abc" | "3ds" | "stl" | "ply" => FileCategory::Model3D,
+            "blend" | "blend1" | "ma" | "mb" | "max" | "c4d" | "hip" | "hiplc" | "fbx" | "obj"
+            | "dae" | "gltf" | "glb" | "usd" | "usda" | "usdc" | "usdz" | "abc" | "3ds" | "stl"
+            | "ply" => FileCategory::Model3D,
 
             // NLE/VFX Project files
-            "prproj" | "drp" | "aep" | "nk" | "hrox" | "veg" | "fcpxml" |
-            "xml" | "otio" | "edl" | "aaf" | "omf" => FileCategory::Project,
+            "prproj" | "drp" | "aep" | "nk" | "hrox" | "veg" | "fcpxml" | "xml" | "otio"
+            | "edl" | "aaf" | "omf" => FileCategory::Project,
 
             // Game engine assets
-            "uasset" | "umap" | "prefab" | "unity" | "asset" | "mat" |
-            "controller" | "anim" | "meta" => FileCategory::GameAsset,
+            "uasset" | "umap" | "prefab" | "unity" | "asset" | "mat" | "controller" | "anim"
+            | "meta" => FileCategory::GameAsset,
 
             // Archives
-            "zip" | "rar" | "7z" | "tar" | "gz" | "bz2" | "xz" | "lz4" |
-            "zst" | "pak" | "pkg" => FileCategory::Archive,
+            "zip" | "rar" | "7z" | "tar" | "gz" | "bz2" | "xz" | "lz4" | "zst" | "pak" | "pkg" => {
+                FileCategory::Archive
+            },
 
             // Text/code
-            "txt" | "md" | "json" | "yaml" | "yml" | "toml" | "ini" | "cfg" |
-            "rs" | "py" | "js" | "ts" | "jsx" | "tsx" | "html" | "css" |
-            "c" | "cpp" | "h" | "hpp" | "java" | "kt" | "swift" | "go" |
-            "sh" | "bash" | "zsh" | "ps1" | "bat" | "cmd" => FileCategory::Text,
+            "txt" | "md" | "json" | "yaml" | "yml" | "toml" | "ini" | "cfg" | "rs" | "py"
+            | "js" | "ts" | "jsx" | "tsx" | "html" | "css" | "c" | "cpp" | "h" | "hpp" | "java"
+            | "kt" | "swift" | "go" | "sh" | "bash" | "zsh" | "ps1" | "bat" | "cmd" => {
+                FileCategory::Text
+            },
 
             // Default to binary
             _ => FileCategory::Binary,
@@ -99,10 +101,7 @@ impl FileCategory {
 
     /// Does this file type benefit from locking in multi-user scenarios?
     pub fn needs_locking(&self) -> bool {
-        matches!(
-            self,
-            FileCategory::Project | FileCategory::Model3D | FileCategory::GameAsset
-        )
+        matches!(self, FileCategory::Project | FileCategory::Model3D | FileCategory::GameAsset)
     }
 
     /// Is this a text-mergeable file type?
@@ -130,15 +129,15 @@ impl FileCategory {
 #[derive(Clone, Debug)]
 pub struct FileHandling {
     /// Detected file category
-    pub category: FileCategory,
+    pub category:        FileCategory,
     /// Recommended chunker config
-    pub chunker_config: super::ChunkerConfig,
+    pub chunker_config:  super::ChunkerConfig,
     /// Should the file be locked for editing?
-    pub recommend_lock: bool,
+    pub recommend_lock:  bool,
     /// Is the file likely a project file (version instructions, not data)?
     pub is_instructions: bool,
     /// Tips for the user
-    pub tips: Vec<&'static str>,
+    pub tips:            Vec<&'static str>,
 }
 
 impl FileHandling {
@@ -158,26 +157,20 @@ impl FileHandling {
                 "Tip: Use external texture references instead of embedding for better dedup",
                 "Tip: Lock files before editing to prevent conflicts",
             ],
-            FileCategory::Project => vec![
-                "Tip: Project files version instructions - link to source media separately",
-            ],
+            FileCategory::Project => {
+                vec!["Tip: Project files version instructions - link to source media separately"]
+            },
             FileCategory::GameAsset => vec![
                 "Tip: Binary assets should be locked before editing",
                 "Tip: Texture changes often only affect headers - CDC handles this well",
             ],
-            FileCategory::Image if path.extension().map(|e| e == "psd").unwrap_or(false) => vec![
-                "Tip: PSD layer changes affect composite - consider flattening for sharing",
-            ],
+            FileCategory::Image if path.extension().map(|e| e == "psd").unwrap_or(false) => {
+                vec!["Tip: PSD layer changes affect composite - consider flattening for sharing"]
+            },
             _ => vec![],
         };
 
-        Self {
-            category,
-            chunker_config,
-            recommend_lock,
-            is_instructions,
-            tips,
-        }
+        Self { category, chunker_config, recommend_lock, is_instructions, tips }
     }
 }
 
@@ -187,58 +180,28 @@ mod tests {
 
     #[test]
     fn test_video_detection() {
-        assert_eq!(
-            FileCategory::from_path(Path::new("video.mp4")),
-            FileCategory::Video
-        );
-        assert_eq!(
-            FileCategory::from_path(Path::new("footage/scene.mov")),
-            FileCategory::Video
-        );
-        assert_eq!(
-            FileCategory::from_path(Path::new("CLIP.MKV")),
-            FileCategory::Video
-        );
+        assert_eq!(FileCategory::from_path(Path::new("video.mp4")), FileCategory::Video);
+        assert_eq!(FileCategory::from_path(Path::new("footage/scene.mov")), FileCategory::Video);
+        assert_eq!(FileCategory::from_path(Path::new("CLIP.MKV")), FileCategory::Video);
     }
 
     #[test]
     fn test_project_detection() {
-        assert_eq!(
-            FileCategory::from_path(Path::new("edit.prproj")),
-            FileCategory::Project
-        );
-        assert_eq!(
-            FileCategory::from_path(Path::new("timeline.drp")),
-            FileCategory::Project
-        );
-        assert_eq!(
-            FileCategory::from_path(Path::new("comp.aep")),
-            FileCategory::Project
-        );
+        assert_eq!(FileCategory::from_path(Path::new("edit.prproj")), FileCategory::Project);
+        assert_eq!(FileCategory::from_path(Path::new("timeline.drp")), FileCategory::Project);
+        assert_eq!(FileCategory::from_path(Path::new("comp.aep")), FileCategory::Project);
     }
 
     #[test]
     fn test_3d_detection() {
-        assert_eq!(
-            FileCategory::from_path(Path::new("scene.blend")),
-            FileCategory::Model3D
-        );
-        assert_eq!(
-            FileCategory::from_path(Path::new("model.fbx")),
-            FileCategory::Model3D
-        );
+        assert_eq!(FileCategory::from_path(Path::new("scene.blend")), FileCategory::Model3D);
+        assert_eq!(FileCategory::from_path(Path::new("model.fbx")), FileCategory::Model3D);
     }
 
     #[test]
     fn test_game_asset_detection() {
-        assert_eq!(
-            FileCategory::from_path(Path::new("Level_01.umap")),
-            FileCategory::GameAsset
-        );
-        assert_eq!(
-            FileCategory::from_path(Path::new("Character.uasset")),
-            FileCategory::GameAsset
-        );
+        assert_eq!(FileCategory::from_path(Path::new("Level_01.umap")), FileCategory::GameAsset);
+        assert_eq!(FileCategory::from_path(Path::new("Character.uasset")), FileCategory::GameAsset);
     }
 
     #[test]

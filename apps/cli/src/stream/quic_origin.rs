@@ -1,29 +1,38 @@
-//! QUIC delta-push origin: a content-addressed segment store reachable over QUIC, plus a client
-//! that pushes only the segments the remote lacks. Because segments are content-addressed, pushing
-//! v2 after v1 transfers only the *changed* segments — "only changed segments cross the network".
+//! QUIC delta-push origin: a content-addressed segment store reachable over
+//! QUIC, plus a client that pushes only the segments the remote lacks. Because
+//! segments are content-addressed, pushing v2 after v1 transfers only the
+//! *changed* segments — "only changed segments cross the network".
 //!
-//! Built on the existing `p2p::net` QUIC transport (self-signed cert + pinning, framed streams).
-//! The build pipeline stays sync+local; delta-push is a separate async step (see the design spec).
+//! Built on the existing `p2p::net` QUIC transport (self-signed cert + pinning,
+//! framed streams). The build pipeline stays sync+local; delta-push is a
+//! separate async step (see the design spec).
 
-use crate::core::Hash;
-use crate::p2p::net::{
-    connect, create_client_endpoint_with_pinned_cert, create_server_endpoint, QuicConnection,
-};
-use crate::p2p::types::CertFingerprint;
-use crate::stream::origin::SegmentOrigin;
+use std::{collections::HashSet, net::SocketAddr, sync::Arc};
+
 use anyhow::{bail, Context, Result};
 use quinn::{RecvStream, SendStream};
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
-use std::net::SocketAddr;
-use std::sync::Arc;
 use tokio::task::JoinHandle;
 
-/// Generous per-frame cap (segments are small, but don't depend on p2p's 1 MiB message limit).
+use crate::{
+    core::Hash,
+    p2p::{
+        net::{
+            connect, create_client_endpoint_with_pinned_cert, create_server_endpoint,
+            QuicConnection,
+        },
+        types::CertFingerprint,
+    },
+    stream::origin::SegmentOrigin,
+};
+
+/// Generous per-frame cap (segments are small, but don't depend on p2p's 1 MiB
+/// message limit).
 const MAX_FRAME: usize = 64 * 1024 * 1024;
 
-/// rustls 0.23 needs a process-wide crypto provider installed before any TLS handshake. The p2p
-/// QUIC layer never installed one (it had no runtime users), so we install `ring` once here.
+/// rustls 0.23 needs a process-wide crypto provider installed before any TLS
+/// handshake. The p2p QUIC layer never installed one (it had no runtime users),
+/// so we install `ring` once here.
 fn ensure_crypto_provider() {
     use std::sync::Once;
     static ONCE: Once = Once::new();
@@ -49,9 +58,9 @@ pub enum SegMessage {
 /// What a delta-push actually moved.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct PushStats {
-    pub pushed: usize,
+    pub pushed:  usize,
     pub skipped: usize,
-    pub bytes: u64,
+    pub bytes:   u64,
 }
 
 async fn write_msg(send: &mut SendStream, msg: &SegMessage) -> Result<()> {
@@ -59,24 +68,31 @@ async fn write_msg(send: &mut SendStream, msg: &SegMessage) -> Result<()> {
     send.write_all(&(payload.len() as u32).to_le_bytes())
         .await
         .context("write frame length")?;
-    send.write_all(&payload).await.context("write frame payload")?;
+    send.write_all(&payload)
+        .await
+        .context("write frame payload")?;
     Ok(())
 }
 
 async fn read_msg(recv: &mut RecvStream) -> Result<SegMessage> {
     let mut len_buf = [0u8; 4];
-    recv.read_exact(&mut len_buf).await.context("read frame length")?;
+    recv.read_exact(&mut len_buf)
+        .await
+        .context("read frame length")?;
     let len = u32::from_le_bytes(len_buf) as usize;
     if len > MAX_FRAME {
         bail!("segment frame too large: {len} bytes");
     }
     let mut buf = vec![0u8; len];
-    recv.read_exact(&mut buf).await.context("read frame payload")?;
+    recv.read_exact(&mut buf)
+        .await
+        .context("read frame payload")?;
     bincode::deserialize(&buf).context("deserialize SegMessage")
 }
 
-/// Start a QUIC origin server backed by `backing`. One request/response per accepted stream.
-/// Returns the bound address, its cert fingerprint (for client pinning), and the accept-loop task.
+/// Start a QUIC origin server backed by `backing`. One request/response per
+/// accepted stream. Returns the bound address, its cert fingerprint (for client
+/// pinning), and the accept-loop task.
 pub async fn serve_quic_origin(
     bind: SocketAddr,
     backing: Arc<dyn SegmentOrigin + Send + Sync>,
@@ -101,9 +117,14 @@ pub async fn serve_quic_origin(
     Ok((addr, fingerprint, handle))
 }
 
-/// Serve requests on one connection until it closes. The client must authenticate (first stream)
-/// with the expected token before any segment request is served.
-async fn handle_connection(conn: QuicConnection, backing: Arc<dyn SegmentOrigin + Send + Sync>, token: String) {
+/// Serve requests on one connection until it closes. The client must
+/// authenticate (first stream) with the expected token before any segment
+/// request is served.
+async fn handle_connection(
+    conn: QuicConnection,
+    backing: Arc<dyn SegmentOrigin + Send + Sync>,
+    token: String,
+) {
     let mut authed = false;
     while let Ok((mut send, mut recv)) = conn.accept_stream().await {
         let req = match read_msg(&mut recv).await {
@@ -120,16 +141,16 @@ async fn handle_connection(conn: QuicConnection, backing: Arc<dyn SegmentOrigin 
                     let _ = send.finish();
                     break; // reject unauthorized connection
                 }
-            }
+            },
             _ if !authed => {
                 // Unauthenticated segment request: refuse and close the connection.
                 break;
-            }
+            },
             SegMessage::Have(h) => SegMessage::HaveResp(backing.has(&h)),
             SegMessage::Put { hash, bytes } => {
                 let _ = backing.put(&hash, &bytes);
                 SegMessage::PutOk
-            }
+            },
             SegMessage::Get(h) => SegMessage::GetResp(backing.get(&h).ok()),
             _ => continue,
         };
@@ -145,7 +166,11 @@ pub struct QuicOriginClient {
 }
 
 impl QuicOriginClient {
-    pub async fn connect(addr: SocketAddr, fingerprint: CertFingerprint, token: &str) -> Result<Self> {
+    pub async fn connect(
+        addr: SocketAddr,
+        fingerprint: CertFingerprint,
+        token: &str,
+    ) -> Result<Self> {
         ensure_crypto_provider();
         let endpoint = create_client_endpoint_with_pinned_cert(0, fingerprint)
             .map_err(|e| anyhow::anyhow!("client endpoint: {e}"))?;
@@ -180,7 +205,10 @@ impl QuicOriginClient {
     }
 
     pub async fn put(&self, h: &Hash, bytes: &[u8]) -> Result<()> {
-        match self.request(SegMessage::Put { hash: *h, bytes: bytes.to_vec() }).await? {
+        match self
+            .request(SegMessage::Put { hash: *h, bytes: bytes.to_vec() })
+            .await?
+        {
             SegMessage::PutOk => Ok(()),
             other => bail!("unexpected response to Put: {other:?}"),
         }
@@ -210,7 +238,9 @@ pub async fn push_delta(
             stats.skipped += 1;
             continue;
         }
-        let bytes = local.get(h).with_context(|| format!("local origin missing {}", h.short()))?;
+        let bytes = local
+            .get(h)
+            .with_context(|| format!("local origin missing {}", h.short()))?;
         client.put(h, &bytes).await?;
         stats.pushed += 1;
         stats.bytes += bytes.len() as u64;
@@ -229,18 +259,23 @@ mod tests {
 
     const TOKEN: &str = "test-token";
 
-    async fn start_origin() -> (SocketAddr, CertFingerprint, Arc<LocalDiskOrigin>, tempfile::TempDir) {
+    async fn start_origin() -> (SocketAddr, CertFingerprint, Arc<LocalDiskOrigin>, tempfile::TempDir)
+    {
         let dir = tempfile::tempdir().unwrap();
         let backing = Arc::new(LocalDiskOrigin::new(dir.path()).unwrap());
         let (addr, fp, _task) =
-            serve_quic_origin("127.0.0.1:0".parse().unwrap(), backing.clone(), TOKEN.to_string()).await.unwrap();
+            serve_quic_origin("127.0.0.1:0".parse().unwrap(), backing.clone(), TOKEN.to_string())
+                .await
+                .unwrap();
         (addr, fp, backing, dir)
     }
 
     #[tokio::test]
     async fn wrong_token_is_rejected() {
         let (addr, fp, _backing, _dir) = start_origin().await;
-        assert!(QuicOriginClient::connect(addr, fp, "bad-token").await.is_err());
+        assert!(QuicOriginClient::connect(addr, fp, "bad-token")
+            .await
+            .is_err());
         // Correct token still works.
         assert!(QuicOriginClient::connect(addr, fp, TOKEN).await.is_ok());
     }
@@ -280,7 +315,9 @@ mod tests {
         assert_eq!(s1.bytes, (a.len() + b.len()) as u64);
 
         // Second push: a, b, c -> only c is new.
-        let s2 = push_delta(&local, &client, &[h(&a), h(&b), h(&c)]).await.unwrap();
+        let s2 = push_delta(&local, &client, &[h(&a), h(&b), h(&c)])
+            .await
+            .unwrap();
         assert_eq!((s2.pushed, s2.skipped), (1, 2));
         assert_eq!(s2.bytes, c.len() as u64);
 

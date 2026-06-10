@@ -1,9 +1,10 @@
 //! Metadata extractors for different file types.
 
-use super::FileMetadata;
+use std::{path::Path, process::Command};
+
 use serde_json::Value;
-use std::path::Path;
-use std::process::Command;
+
+use super::FileMetadata;
 
 /// Trait for extracting metadata from files.
 pub trait MetadataExtractor: Send + Sync {
@@ -164,7 +165,19 @@ impl VideoFFprobeExtractor {
     fn is_video_extension(ext: &str) -> bool {
         matches!(
             ext.to_lowercase().as_str(),
-            "mp4" | "m4v" | "mov" | "avi" | "mkv" | "webm" | "wmv" | "flv" | "mxf" | "3gp" | "ts" | "m2ts" | "mts"
+            "mp4"
+                | "m4v"
+                | "mov"
+                | "avi"
+                | "mkv"
+                | "webm"
+                | "wmv"
+                | "flv"
+                | "mxf"
+                | "3gp"
+                | "ts"
+                | "m2ts"
+                | "mts"
         )
     }
 }
@@ -195,21 +208,13 @@ impl MetadataExtractor for VideoFFprobeExtractor {
     fn extract(&self, path: &Path) -> Result<FileMetadata, String> {
         // Run ffprobe to get JSON metadata
         let output = Command::new("ffprobe")
-            .args([
-                "-v", "quiet",
-                "-print_format", "json",
-                "-show_format",
-                "-show_streams",
-            ])
+            .args(["-v", "quiet", "-print_format", "json", "-show_format", "-show_streams"])
             .arg(path)
             .output()
             .map_err(|e| format!("Failed to run ffprobe: {}", e))?;
 
         if !output.status.success() {
-            return Err(format!(
-                "ffprobe failed: {}",
-                String::from_utf8_lossy(&output.stderr)
-            ));
+            return Err(format!("ffprobe failed: {}", String::from_utf8_lossy(&output.stderr)));
         }
 
         let json: Value = serde_json::from_slice(&output.stdout)
@@ -263,7 +268,11 @@ impl MetadataExtractor for VideoFFprobeExtractor {
         metadata = metadata.with_extra("has_audio", Value::Bool(audio_stream.is_some()));
 
         // Add bitrate
-        if let Some(br) = format.get("bit_rate").and_then(|b| b.as_str()).and_then(|s| s.parse::<u64>().ok()) {
+        if let Some(br) = format
+            .get("bit_rate")
+            .and_then(|b| b.as_str())
+            .and_then(|s| s.parse::<u64>().ok())
+        {
             metadata = metadata.with_extra("bitrate", Value::Number(br.into()));
         }
 
@@ -278,7 +287,10 @@ impl MetadataExtractor for VideoFFprobeExtractor {
                             let fps = num / den;
                             metadata = metadata.with_extra(
                                 "frame_rate",
-                                Value::Number(serde_json::Number::from_f64(fps).unwrap_or(serde_json::Number::from(0))),
+                                Value::Number(
+                                    serde_json::Number::from_f64(fps)
+                                        .unwrap_or(serde_json::Number::from(0)),
+                                ),
                             );
                         }
                     }
@@ -307,8 +319,24 @@ impl PhotoExifExtractor {
     fn is_photo_extension(ext: &str) -> bool {
         matches!(
             ext.to_lowercase().as_str(),
-            "jpg" | "jpeg" | "png" | "gif" | "webp" | "bmp" | "tiff" | "tif" | "heic" | "heif" |
-            "cr2" | "cr3" | "nef" | "arw" | "dng" | "raf" | "rw2" | "orf"
+            "jpg"
+                | "jpeg"
+                | "png"
+                | "gif"
+                | "webp"
+                | "bmp"
+                | "tiff"
+                | "tif"
+                | "heic"
+                | "heif"
+                | "cr2"
+                | "cr3"
+                | "nef"
+                | "arw"
+                | "dng"
+                | "raf"
+                | "rw2"
+                | "orf"
         )
     }
 }
@@ -345,10 +373,7 @@ impl MetadataExtractor for PhotoExifExtractor {
             .map_err(|e| format!("Failed to run exiftool: {}", e))?;
 
         if !output.status.success() {
-            return Err(format!(
-                "exiftool failed: {}",
-                String::from_utf8_lossy(&output.stderr)
-            ));
+            return Err(format!("exiftool failed: {}", String::from_utf8_lossy(&output.stderr)));
         }
 
         let json: Value = serde_json::from_slice(&output.stdout)
@@ -360,10 +385,7 @@ impl MetadataExtractor for PhotoExifExtractor {
             .and_then(|arr| arr.first())
             .ok_or("No metadata returned")?;
 
-        let width = info
-            .get("ImageWidth")
-            .and_then(|v| v.as_u64())
-            .unwrap_or(0) as u32;
+        let width = info.get("ImageWidth").and_then(|v| v.as_u64()).unwrap_or(0) as u32;
         let height = info
             .get("ImageHeight")
             .and_then(|v| v.as_u64())
@@ -400,7 +422,9 @@ impl MetadataExtractor for PhotoExifExtractor {
         if let Some(f) = info.get("FNumber").and_then(|v| v.as_f64()) {
             metadata = metadata.with_extra(
                 "f_number",
-                Value::Number(serde_json::Number::from_f64(f).unwrap_or(serde_json::Number::from(0))),
+                Value::Number(
+                    serde_json::Number::from_f64(f).unwrap_or(serde_json::Number::from(0)),
+                ),
             );
         }
 
@@ -408,7 +432,9 @@ impl MetadataExtractor for PhotoExifExtractor {
         if let Some(fl) = info.get("FocalLength").and_then(|v| v.as_f64()) {
             metadata = metadata.with_extra(
                 "focal_length",
-                Value::Number(serde_json::Number::from_f64(fl).unwrap_or(serde_json::Number::from(0))),
+                Value::Number(
+                    serde_json::Number::from_f64(fl).unwrap_or(serde_json::Number::from(0)),
+                ),
             );
         }
 
@@ -424,11 +450,15 @@ impl MetadataExtractor for PhotoExifExtractor {
         ) {
             metadata = metadata.with_extra(
                 "gps_latitude",
-                Value::Number(serde_json::Number::from_f64(lat).unwrap_or(serde_json::Number::from(0))),
+                Value::Number(
+                    serde_json::Number::from_f64(lat).unwrap_or(serde_json::Number::from(0)),
+                ),
             );
             metadata = metadata.with_extra(
                 "gps_longitude",
-                Value::Number(serde_json::Number::from_f64(lon).unwrap_or(serde_json::Number::from(0))),
+                Value::Number(
+                    serde_json::Number::from_f64(lon).unwrap_or(serde_json::Number::from(0)),
+                ),
             );
         }
 
@@ -438,8 +468,9 @@ impl MetadataExtractor for PhotoExifExtractor {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::path::PathBuf;
+
+    use super::*;
 
     #[test]
     fn test_basic_extractor_supports_all() {
@@ -452,7 +483,10 @@ mod tests {
     fn test_mime_guessing() {
         assert_eq!(BasicFileExtractor::guess_mime(Path::new("video.mp4")), "video/mp4");
         assert_eq!(BasicFileExtractor::guess_mime(Path::new("photo.jpg")), "image/jpeg");
-        assert_eq!(BasicFileExtractor::guess_mime(Path::new("unknown.xyz")), "application/octet-stream");
+        assert_eq!(
+            BasicFileExtractor::guess_mime(Path::new("unknown.xyz")),
+            "application/octet-stream"
+        );
     }
 
     #[test]

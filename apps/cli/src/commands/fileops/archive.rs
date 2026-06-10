@@ -1,9 +1,12 @@
 //! Archive command - Create archives from repository content.
 
+use std::{
+    fs::{self, File},
+    io::{BufWriter, Write},
+    path::{Path, PathBuf},
+};
+
 use anyhow::{Context, Result};
-use std::fs::{self, File};
-use std::io::{BufWriter, Write};
-use std::path::{Path, PathBuf};
 
 use crate::store::Repository;
 
@@ -24,7 +27,7 @@ impl ArchiveFormat {
             _ => None,
         }
     }
-    
+
     pub fn extension(&self) -> &'static str {
         match self {
             Self::Tar => ".tar",
@@ -37,46 +40,48 @@ impl ArchiveFormat {
 /// Options for archive command
 pub struct ArchiveOptions {
     /// Output format
-    pub format: ArchiveFormat,
+    pub format:   ArchiveFormat,
     /// Commit/branch/tag to archive
     pub tree_ish: String,
     /// Prefix to add to all paths
-    pub prefix: Option<String>,
+    pub prefix:   Option<String>,
     /// Output file (None = stdout, except for binary formats)
-    pub output: Option<PathBuf>,
+    pub output:   Option<PathBuf>,
     /// Specific paths to include
-    pub paths: Vec<String>,
+    pub paths:    Vec<String>,
 }
 
 /// Create an archive from repository content
 pub fn archive(options: &ArchiveOptions) -> Result<PathBuf> {
-    let repo = Repository::open(Path::new("."))
-        .context("Not in a dits repository")?;
-    
+    let repo = Repository::open(Path::new(".")).context("Not in a dits repository")?;
+
     // Resolve the tree-ish to a commit (handles HEAD, HEAD~N, branches, tags, and
-    // full/short hashes — resolve_ref alone does not understand the HEAD symbolic ref).
-    let commit_hash = repo.resolve_ref_or_prefix(&options.tree_ish)?
+    // full/short hashes — resolve_ref alone does not understand the HEAD symbolic
+    // ref).
+    let commit_hash = repo
+        .resolve_ref_or_prefix(&options.tree_ish)?
         .with_context(|| format!("Cannot resolve '{}' to a commit", options.tree_ish))?;
-    
+
     let commit = repo.load_commit(&commit_hash)?;
     let manifest = repo.load_manifest(&commit.manifest)?;
-    
+
     // Determine output path
     let output_path = match &options.output {
         Some(p) => p.clone(),
         None => {
-            let name = format!("{}{}", options.tree_ish.replace('/', "-"), options.format.extension());
+            let name =
+                format!("{}{}", options.tree_ish.replace('/', "-"), options.format.extension());
             PathBuf::from(name)
-        }
+        },
     };
-    
+
     // Create archive
     match options.format {
         ArchiveFormat::Zip => create_zip_archive(&repo, &manifest, &options, &output_path)?,
         ArchiveFormat::Tar => create_tar_archive(&repo, &manifest, &options, &output_path, false)?,
         ArchiveFormat::TarGz => create_tar_archive(&repo, &manifest, &options, &output_path, true)?,
     }
-    
+
     println!("Created archive: {}", output_path.display());
     Ok(output_path)
 }
@@ -87,17 +92,16 @@ fn create_zip_archive(
     options: &ArchiveOptions,
     output_path: &Path,
 ) -> Result<()> {
-    use zip::write::SimpleFileOptions;
-    use zip::ZipWriter;
-    
+    use zip::{write::SimpleFileOptions, ZipWriter};
+
     let file = File::create(output_path)?;
     let mut zip = ZipWriter::new(BufWriter::new(file));
-    
-    let zip_options = SimpleFileOptions::default()
-        .compression_method(zip::CompressionMethod::Deflated);
-    
+
+    let zip_options =
+        SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
+
     let repo_root = repo.root();
-    
+
     for (path, _entry) in manifest.iter() {
         // Filter by paths if specified
         if !options.paths.is_empty() {
@@ -106,25 +110,25 @@ fn create_zip_archive(
                 continue;
             }
         }
-        
+
         // Build archive path with prefix
         let archive_path = match &options.prefix {
             Some(prefix) => format!("{}/{}", prefix.trim_end_matches('/'), path),
             None => path.clone(),
         };
-        
+
         // Read file content from disk
         let file_path = repo_root.join(path);
         if !file_path.exists() {
             continue; // Skip files not in working tree
         }
         let content = fs::read(&file_path)?;
-        
+
         // Add to zip
         zip.start_file(&archive_path, zip_options)?;
         zip.write_all(&content)?;
     }
-    
+
     zip.finish()?;
     Ok(())
 }
@@ -137,14 +141,15 @@ fn create_tar_archive(
     compress: bool,
 ) -> Result<()> {
     let file = File::create(output_path)?;
-    
+
     if compress {
-        let encoder = flate2::write::GzEncoder::new(BufWriter::new(file), flate2::Compression::default());
+        let encoder =
+            flate2::write::GzEncoder::new(BufWriter::new(file), flate2::Compression::default());
         write_tar(repo, manifest, options, encoder)?;
     } else {
         write_tar(repo, manifest, options, BufWriter::new(file))?;
     }
-    
+
     Ok(())
 }
 
@@ -156,7 +161,7 @@ fn write_tar<W: Write>(
 ) -> Result<()> {
     let mut tar = tar::Builder::new(writer);
     let repo_root = repo.root();
-    
+
     for (path, entry) in manifest.iter() {
         // Filter by paths if specified
         if !options.paths.is_empty() {
@@ -165,20 +170,20 @@ fn write_tar<W: Write>(
                 continue;
             }
         }
-        
+
         // Build archive path with prefix
         let archive_path = match &options.prefix {
             Some(prefix) => format!("{}/{}", prefix.trim_end_matches('/'), path),
             None => path.clone(),
         };
-        
+
         // Read file content from disk
         let file_path = repo_root.join(path);
         if !file_path.exists() {
             continue; // Skip files not in working tree
         }
         let content = fs::read(&file_path)?;
-        
+
         // Create header
         let mut header = tar::Header::new_gnu();
         header.set_path(&archive_path)?;
@@ -190,11 +195,11 @@ fn write_tar<W: Write>(
         };
         header.set_mode(mode);
         header.set_cksum();
-        
+
         // Add to tar
         tar.append(&header, content.as_slice())?;
     }
-    
+
     tar.finish()?;
     Ok(())
 }

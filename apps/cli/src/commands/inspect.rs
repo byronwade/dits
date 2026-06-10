@@ -1,13 +1,19 @@
 //! Inspect MP4 file structure.
 
-use crate::mp4::parser::Mp4Parser;
-use crate::mp4::deconstructor::Deconstructor;
-use crate::mp4::reconstructor::{Reconstructor, verify_mp4_structure};
+use std::{
+    fs::File,
+    io::{Cursor, Read, Seek, SeekFrom},
+    path::Path,
+};
+
 use anyhow::{Context, Result};
 use console::style;
-use std::fs::File;
-use std::io::{Cursor, Read, Seek, SeekFrom};
-use std::path::Path;
+
+use crate::mp4::{
+    deconstructor::Deconstructor,
+    parser::Mp4Parser,
+    reconstructor::{verify_mp4_structure, Reconstructor},
+};
 
 /// Inspect an MP4 file and display its atom structure.
 pub fn inspect(path: &str) -> Result<()> {
@@ -17,15 +23,10 @@ pub fn inspect(path: &str) -> Result<()> {
         anyhow::bail!("File not found: {}", path.display());
     }
 
-    println!(
-        "{} Inspecting {}",
-        style("→").cyan().bold(),
-        style(path.display()).yellow()
-    );
+    println!("{} Inspecting {}", style("→").cyan().bold(), style(path.display()).yellow());
     println!();
 
-    let structure = Mp4Parser::parse(path)
-        .context("Failed to parse MP4 file")?;
+    let structure = Mp4Parser::parse(path).context("Failed to parse MP4 file")?;
 
     // Print summary
     println!("{}", style("MP4 Structure:").bold().underlined());
@@ -49,10 +50,7 @@ pub fn inspect(path: &str) -> Result<()> {
 
     // Atom table
     println!("{}", style("Atoms:").bold());
-    println!(
-        "  {:<8} {:<12} {:<12} {}",
-        "Type", "Offset", "Size", "Notes"
-    );
+    println!("  {:<8} {:<12} {:<12} {}", "Type", "Offset", "Size", "Notes");
     println!("  {}", "-".repeat(50));
 
     for atom in &structure.atoms {
@@ -60,7 +58,7 @@ pub fn inspect(path: &str) -> Result<()> {
             crate::mp4::atoms::AtomType::Ftyp => "file type".to_string(),
             crate::mp4::atoms::AtomType::Moov => {
                 format!("{} tracks", count_tracks(&atom))
-            }
+            },
             crate::mp4::atoms::AtomType::Mdat => "media data".to_string(),
             crate::mp4::atoms::AtomType::Free => "free space".to_string(),
             _ => String::new(),
@@ -80,16 +78,10 @@ pub fn inspect(path: &str) -> Result<()> {
     if !structure.stco_locations.is_empty() || !structure.co64_locations.is_empty() {
         println!("{}", style("Offset Tables:").bold());
         for (i, stco) in structure.stco_locations.iter().enumerate() {
-            println!(
-                "  stco[{}]: {} entries at offset {}",
-                i, stco.entry_count, stco.data_offset
-            );
+            println!("  stco[{}]: {} entries at offset {}", i, stco.entry_count, stco.data_offset);
         }
         for (i, co64) in structure.co64_locations.iter().enumerate() {
-            println!(
-                "  co64[{}]: {} entries at offset {}",
-                i, co64.entry_count, co64.data_offset
-            );
+            println!("  co64[{}]: {} entries at offset {}", i, co64.entry_count, co64.data_offset);
         }
         println!();
     }
@@ -104,14 +96,8 @@ pub fn inspect(path: &str) -> Result<()> {
             style("no").green()
         }
     );
-    println!(
-        "  moov size:   {}",
-        format_bytes(structure.moov.length)
-    );
-    println!(
-        "  mdat size:   {}",
-        format_bytes(structure.mdat.data_length)
-    );
+    println!("  moov size:   {}", format_bytes(structure.moov.length));
+    println!("  mdat size:   {}", format_bytes(structure.mdat.data_length));
 
     let moov_ratio = (structure.moov.length as f64 / structure.file_size as f64) * 100.0;
     println!(
@@ -140,10 +126,10 @@ pub fn inspect(path: &str) -> Result<()> {
                     style("✗ NO").red().bold()
                 }
             );
-        }
+        },
         Err(e) => {
             println!("  {}: {}", style("Error").red(), e);
-        }
+        },
     }
 
     Ok(())
@@ -157,8 +143,7 @@ fn test_roundtrip(path: &Path) -> Result<(u64, u64, bool)> {
     let original_size = original.len() as u64;
 
     // Deconstruct
-    let deconstructed = Deconstructor::deconstruct(path)
-        .context("Failed to deconstruct MP4")?;
+    let deconstructed = Deconstructor::deconstruct(path).context("Failed to deconstruct MP4")?;
 
     // Read mdat data from original file
     let mut file = File::open(path)?;
@@ -174,7 +159,8 @@ fn test_roundtrip(path: &Path) -> Result<(u64, u64, bool)> {
         &deconstructed,
         &mut mdat_cursor,
         deconstructed.mdat_data_size,
-    ).context("Failed to reconstruct MP4")?;
+    )
+    .context("Failed to reconstruct MP4")?;
 
     let reconstructed_size = reconstructed.len() as u64;
 

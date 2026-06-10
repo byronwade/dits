@@ -6,6 +6,7 @@
 //! - SPAKE2 password-authenticated key exchange (PAKE)
 
 use blake3::Hasher;
+
 use crate::p2p::ShareId;
 
 /// Length of a join code in characters (without dashes)
@@ -33,20 +34,28 @@ pub fn generate_join_code(share_id: &ShareId) -> String {
 /// Parse a join code back into a ShareId
 pub fn parse_join_code(code: &str) -> Result<ShareId, String> {
     // Remove dashes and convert to uppercase
-    let clean_code: String = code.chars()
+    let clean_code: String = code
+        .chars()
         .filter(|c| c.is_alphanumeric())
         .collect::<String>()
         .to_uppercase();
 
     if clean_code.len() != JOIN_CODE_LENGTH {
-        return Err(format!("Invalid join code length: expected {}, got {}", JOIN_CODE_LENGTH, clean_code.len()));
+        return Err(format!(
+            "Invalid join code length: expected {}, got {}",
+            JOIN_CODE_LENGTH,
+            clean_code.len()
+        ));
     }
 
     // Convert characters back to bytes
     let mut bytes = [0u8; 16]; // ShareId is 16 bytes
     for (i, ch) in clean_code.chars().enumerate() {
-        let byte = JOIN_CODE_CHARS.iter().position(|&c| c == ch as u8)
-            .ok_or_else(|| format!("Invalid character in join code: {}", ch))? as u8;
+        let byte = JOIN_CODE_CHARS
+            .iter()
+            .position(|&c| c == ch as u8)
+            .ok_or_else(|| format!("Invalid character in join code: {}", ch))?
+            as u8;
         if i < bytes.len() {
             bytes[i] = byte;
         }
@@ -169,9 +178,7 @@ pub struct StreamingHasher {
 
 impl StreamingHasher {
     pub fn new() -> Self {
-        Self {
-            hasher: Hasher::new(),
-        }
+        Self { hasher: Hasher::new() }
     }
 
     pub fn update(&mut self, data: &[u8]) {

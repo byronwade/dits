@@ -3,12 +3,14 @@
 //! Takes the deconstructed components (moov, mdat chunks) and
 //! rebuilds a valid MP4 file with correct offsets.
 
-use super::deconstructor::DeconstructedMp4;
-use super::offset_patcher::create_mdat_header;
-use super::parser::Mp4Structure;
-use byteorder::{BigEndian, ByteOrder};
 use std::io::{self, Write};
+
+use byteorder::{BigEndian, ByteOrder};
 use thiserror::Error;
+
+use super::{
+    deconstructor::DeconstructedMp4, offset_patcher::create_mdat_header, parser::Mp4Structure,
+};
 
 /// Errors during reconstruction.
 #[derive(Error, Debug)]
@@ -56,10 +58,8 @@ impl Reconstructor {
         let mdat_header_size = mdat_header.len() as u64;
 
         // mdat data starts after: ftyp + moov + other atoms + mdat header
-        let mdat_data_start = deconstructed.ftyp_data.len() as u64
-            + moov_size
-            + other_size
-            + mdat_header_size;
+        let mdat_data_start =
+            deconstructed.ftyp_data.len() as u64 + moov_size + other_size + mdat_header_size;
 
         // Denormalize moov offsets (add mdat_data_start to all offsets)
         let mut moov_data = deconstructed.moov_data.clone();
@@ -219,7 +219,10 @@ pub fn verify_mp4_structure(data: &[u8]) -> bool {
     // Look for moov or mdat after ftyp
     if data.len() > ftyp_size + 8 {
         let next_atom = &data[ftyp_size + 4..ftyp_size + 8];
-        if next_atom != b"moov" && next_atom != b"mdat" && next_atom != b"free" && next_atom != b"uuid"
+        if next_atom != b"moov"
+            && next_atom != b"mdat"
+            && next_atom != b"free"
+            && next_atom != b"uuid"
         {
             return false;
         }

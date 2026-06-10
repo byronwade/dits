@@ -7,6 +7,10 @@
 
 set -e
 
+# Always run from the directory containing this script so that test scripts
+# can reliably source ./test-lib.sh regardless of the caller's CWD.
+cd "$(dirname "$0")"
+
 TEST_DIRECTORY=$(pwd)
 export TEST_DIRECTORY
 

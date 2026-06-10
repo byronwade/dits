@@ -18,7 +18,7 @@ export function GitBranches() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const animationRef = useRef<number | undefined>(undefined);
     const branchesRef = useRef<Branch[]>([]);
-    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const [, setDimensions] = useState({ width: 0, height: 0 });
 
     useEffect(() => {
         const canvas = canvasRef.current;

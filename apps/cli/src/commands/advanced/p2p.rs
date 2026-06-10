@@ -1,6 +1,7 @@
 //! DITS P2P Commands
 //!
-//! Commands for peer-to-peer repository sharing using Wormhole-style P2P functionality.
+//! Commands for peer-to-peer repository sharing using Wormhole-style P2P
+//! functionality.
 //!
 //! # Usage
 //!
@@ -13,11 +14,15 @@
 //! ```
 
 use std::path::PathBuf;
+
 use anyhow::{Context, Result};
 use clap::{Args, Subcommand};
+use dits::p2p::{
+    client::{connect_p2p_repository, ClientConfig},
+    host::{start_p2p_host, HostConfig},
+};
 
 use crate::store::Repository;
-use dits::p2p::{host::{HostConfig, start_p2p_host}, client::{ClientConfig, connect_p2p_repository}};
 
 /// P2P subcommands
 #[derive(Subcommand)]
@@ -164,7 +169,9 @@ pub fn handle_p2p_command(command: P2pCommands) -> Result<()> {
 /// Share a repository for P2P access
 pub fn share_repository(args: ShareArgs) -> Result<()> {
     // Validate the repository path
-    let repo_path = args.path.canonicalize()
+    let repo_path = args
+        .path
+        .canonicalize()
         .with_context(|| format!("Failed to access repository path: {}", args.path.display()))?;
 
     // Check if this is a valid DITS repository
@@ -173,17 +180,16 @@ pub fn share_repository(args: ShareArgs) -> Result<()> {
 
     // Create host configuration
     let config = HostConfig {
-        repo_path: repo_path.clone(),
-        name: args.name.clone(),
-        port: args.port,
-        bind_addr: args.bind.clone(),
+        repo_path:       repo_path.clone(),
+        name:            args.name.clone(),
+        port:            args.port,
+        bind_addr:       args.bind.clone(),
         max_connections: 10, // Default value
-        daemon: args.daemon,
+        daemon:          args.daemon,
     };
 
     // Start the P2P host (this will block until shutdown)
-    let rt = tokio::runtime::Runtime::new()
-        .with_context(|| "Failed to create tokio runtime")?;
+    let rt = tokio::runtime::Runtime::new().with_context(|| "Failed to create tokio runtime")?;
 
     rt.block_on(async {
         let host = start_p2p_host(config).await?;
@@ -198,14 +204,18 @@ pub fn connect_repository(args: ConnectArgs) -> Result<()> {
     // Validate the target path
     if args.path.exists() {
         if !args.path.is_dir() {
-            return Err(anyhow::anyhow!("Target path exists but is not a directory: {}", args.path.display()));
+            return Err(anyhow::anyhow!(
+                "Target path exists but is not a directory: {}",
+                args.path.display()
+            ));
         }
         if args.path.read_dir()?.next().is_some() {
             return Err(anyhow::anyhow!("Target directory is not empty: {}", args.path.display()));
         }
     } else {
-        std::fs::create_dir_all(&args.path)
-            .with_context(|| format!("Failed to create target directory: {}", args.path.display()))?;
+        std::fs::create_dir_all(&args.path).with_context(|| {
+            format!("Failed to create target directory: {}", args.path.display())
+        })?;
     }
 
     println!("🔗 Connecting to P2P repository...");
@@ -215,14 +225,13 @@ pub fn connect_repository(args: ConnectArgs) -> Result<()> {
 
     // Create client configuration
     let config = ClientConfig {
-        target: args.target.clone(),
+        target:     args.target.clone(),
         mount_path: args.path.clone(),
-        timeout: std::time::Duration::from_secs(args.timeout),
+        timeout:    std::time::Duration::from_secs(args.timeout),
     };
 
     // Connect to the P2P repository
-    let rt = tokio::runtime::Runtime::new()
-        .with_context(|| "Failed to create tokio runtime")?;
+    let rt = tokio::runtime::Runtime::new().with_context(|| "Failed to create tokio runtime")?;
 
     rt.block_on(async {
         let _client = connect_p2p_repository(config).await?;

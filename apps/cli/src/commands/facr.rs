@@ -1,12 +1,15 @@
-//! `dits facr add` / `dits facr checkout` — real video in/out of the frame-addressable store.
+//! `dits facr add` / `dits facr checkout` — real video in/out of the
+//! frame-addressable store.
+
+use std::path::{Path, PathBuf};
+
+use anyhow::{Context, Result};
+use console::style;
 
 use crate::facr::{
     ingest_photo, ingest_video, reconstruct_video, render_photo, trim, ClipManifest, FrameStore,
     PhotoEdit, PhotoVersion,
 };
-use anyhow::{Context, Result};
-use console::style;
-use std::path::{Path, PathBuf};
 
 fn store_dir(explicit: Option<&str>) -> PathBuf {
     explicit
@@ -104,13 +107,20 @@ pub fn facr_add(
     );
     println!(
         "  {}",
-        style("storage. (Re-ingesting a re-encoded export will NOT dedup — see the FACR docs.)").italic()
+        style("storage. (Re-ingesting a re-encoded export will NOT dedup — see the FACR docs.)")
+            .italic()
     );
     Ok(())
 }
 
-/// Trim a clip manifest to frames `[start, end)` without storing any new frames.
-pub fn facr_trim(manifest: &str, start: usize, end: Option<usize>, out: Option<&str>) -> Result<()> {
+/// Trim a clip manifest to frames `[start, end)` without storing any new
+/// frames.
+pub fn facr_trim(
+    manifest: &str,
+    start: usize,
+    end: Option<usize>,
+    out: Option<&str>,
+) -> Result<()> {
     let manifest_path = Path::new(manifest);
     anyhow::ensure!(manifest_path.exists(), "manifest not found: {}", manifest);
     let json = std::fs::read_to_string(manifest_path).context("read manifest")?;
@@ -134,19 +144,20 @@ pub fn facr_trim(manifest: &str, start: usize, end: Option<usize>, out: Option<&
     Ok(())
 }
 
-/// Import a CMX3600 EDL into a FACR manifest that references an existing source clip's
-/// frames (zero new storage). All EDL reels map to the single provided source manifest.
+/// Import a CMX3600 EDL into a FACR manifest that references an existing source
+/// clip's frames (zero new storage). All EDL reels map to the single provided
+/// source manifest.
 pub fn facr_import_edl(
     edl: &str,
     source_manifest: &str,
     out: &str,
     fps: Option<u32>,
 ) -> Result<()> {
-    use crate::facr::parse_cmx3600;
     use std::collections::HashMap;
 
-    let edl_text = std::fs::read_to_string(edl)
-        .with_context(|| format!("read EDL {edl}"))?;
+    use crate::facr::parse_cmx3600;
+
+    let edl_text = std::fs::read_to_string(edl).with_context(|| format!("read EDL {edl}"))?;
     let source = ClipManifest::from_json(
         &std::fs::read_to_string(source_manifest)
             .with_context(|| format!("read source manifest {source_manifest}"))?,
@@ -159,7 +170,11 @@ pub fn facr_import_edl(
         if let Some((n, d)) = r.split_once('/') {
             let n: f64 = n.parse().unwrap_or(30.0);
             let d: f64 = d.parse().unwrap_or(1.0);
-            if d != 0.0 { (n / d).round() as u32 } else { 30 }
+            if d != 0.0 {
+                (n / d).round() as u32
+            } else {
+                30
+            }
         } else {
             r.parse::<f64>().unwrap_or(30.0).round() as u32
         }
@@ -170,16 +185,19 @@ pub fn facr_import_edl(
     // Map every reel referenced by the EDL to the single source manifest.
     let mut sources = HashMap::new();
     for ev in &events {
-        sources.entry(ev.reel.clone()).or_insert_with(|| source.clone());
+        sources
+            .entry(ev.reel.clone())
+            .or_insert_with(|| source.clone());
     }
     finish_import(&events, &sources, out)
 }
 
-/// Import an OTIO timeline JSON into a FACR manifest referencing a source clip (zero
-/// new storage). All clips map to the single provided source manifest.
+/// Import an OTIO timeline JSON into a FACR manifest referencing a source clip
+/// (zero new storage). All clips map to the single provided source manifest.
 pub fn facr_import_otio(otio: &str, source_manifest: &str, out: &str) -> Result<()> {
-    use crate::facr::parse_otio;
     use std::collections::HashMap;
+
+    use crate::facr::parse_otio;
 
     let otio_text = std::fs::read_to_string(otio).with_context(|| format!("read OTIO {otio}"))?;
     let source = ClipManifest::from_json(
@@ -191,7 +209,9 @@ pub fn facr_import_otio(otio: &str, source_manifest: &str, out: &str) -> Result<
     let events = parse_otio(&otio_text)?;
     let mut sources = HashMap::new();
     for ev in &events {
-        sources.entry(ev.reel.clone()).or_insert_with(|| source.clone());
+        sources
+            .entry(ev.reel.clone())
+            .or_insert_with(|| source.clone());
     }
     finish_import(&events, &sources, out)
 }
@@ -212,25 +232,23 @@ fn finish_import(
         style("(0 new frames stored — references the source clip's frames)").green()
     );
     println!("  Manifest: {}", style(out).cyan());
-    println!(
-        "  {}",
-        style(format!("Reconstruct it: dits facr-checkout {out} cut.mp4")).dim()
-    );
+    println!("  {}", style(format!("Reconstruct it: dits facr-checkout {out} cut.mp4")).dim());
     Ok(())
 }
 
-// ---- Photo path -----------------------------------------------------------------
+// ---- Photo path
+// -----------------------------------------------------------------
 
 /// Selected photo edits to append, parsed from CLI flags.
 #[derive(Default)]
 pub struct PhotoEditArgs {
-    pub exposure: Option<f32>,
-    pub contrast: Option<f32>,
-    pub saturation: Option<f32>,
+    pub exposure:      Option<f32>,
+    pub contrast:      Option<f32>,
+    pub saturation:    Option<f32>,
     pub white_balance: Option<f32>,
-    pub rotate: Option<u16>,
+    pub rotate:        Option<u16>,
     /// "x,y,w,h"
-    pub crop: Option<String>,
+    pub crop:          Option<String>,
 }
 
 impl PhotoEditArgs {
@@ -243,13 +261,28 @@ impl PhotoEditArgs {
                 .collect::<std::result::Result<_, _>>()
                 .with_context(|| format!("--crop expects x,y,w,h (got '{c}')"))?;
             anyhow::ensure!(nums.len() == 4, "--crop expects 4 values x,y,w,h");
-            edits.push(PhotoEdit::Crop { x: nums[0], y: nums[1], width: nums[2], height: nums[3] });
+            edits.push(PhotoEdit::Crop {
+                x:      nums[0],
+                y:      nums[1],
+                width:  nums[2],
+                height: nums[3],
+            });
         }
-        if let Some(v) = self.exposure { edits.push(PhotoEdit::Exposure { stops: v }); }
-        if let Some(v) = self.contrast { edits.push(PhotoEdit::Contrast { amount: v }); }
-        if let Some(v) = self.saturation { edits.push(PhotoEdit::Saturation { amount: v }); }
-        if let Some(v) = self.white_balance { edits.push(PhotoEdit::WhiteBalance { kelvin: v }); }
-        if let Some(v) = self.rotate { edits.push(PhotoEdit::Rotate { degrees: v }); }
+        if let Some(v) = self.exposure {
+            edits.push(PhotoEdit::Exposure { stops: v });
+        }
+        if let Some(v) = self.contrast {
+            edits.push(PhotoEdit::Contrast { amount: v });
+        }
+        if let Some(v) = self.saturation {
+            edits.push(PhotoEdit::Saturation { amount: v });
+        }
+        if let Some(v) = self.white_balance {
+            edits.push(PhotoEdit::WhiteBalance { kelvin: v });
+        }
+        if let Some(v) = self.rotate {
+            edits.push(PhotoEdit::Rotate { degrees: v });
+        }
         Ok(edits)
     }
 }
@@ -269,15 +302,26 @@ pub fn photo_add(input: &str, store: Option<&str>, manifest_out: Option<&str>) -
         .unwrap_or_else(|| PathBuf::from(format!("{input}.photo.json")));
     std::fs::write(&manifest_path, version.to_json()?)?;
 
-    println!("Stored {} {}", style(input).cyan(),
-        if new == 0 { style("(already in store — deduped)").green() } else { style("(1 source image)").dim() });
+    println!(
+        "Stored {} {}",
+        style(input).cyan(),
+        if new == 0 {
+            style("(already in store — deduped)").green()
+        } else {
+            style("(1 source image)").dim()
+        }
+    );
     println!("  Resolution : {}x{}", version.width, version.height);
     println!("  Manifest   : {}", style(manifest_path.display()).cyan());
-    println!("  {}", style("Edit it non-destructively with `dits photo-edit` — edits cost ~0 storage.").italic());
+    println!(
+        "  {}",
+        style("Edit it non-destructively with `dits photo-edit` — edits cost ~0 storage.").italic()
+    );
     Ok(())
 }
 
-/// Append edits to a photo manifest (non-destructive; stores no new image bytes).
+/// Append edits to a photo manifest (non-destructive; stores no new image
+/// bytes).
 pub fn photo_edit(manifest: &str, args: PhotoEditArgs, out: Option<&str>) -> Result<()> {
     let manifest_path = Path::new(manifest);
     anyhow::ensure!(manifest_path.exists(), "manifest not found: {}", manifest);
@@ -291,7 +335,9 @@ pub fn photo_edit(manifest: &str, args: PhotoEditArgs, out: Option<&str>) -> Res
         next = next.with_edit(e);
     }
 
-    let out_path = out.map(PathBuf::from).unwrap_or_else(|| manifest_path.to_path_buf());
+    let out_path = out
+        .map(PathBuf::from)
+        .unwrap_or_else(|| manifest_path.to_path_buf());
     std::fs::write(&out_path, next.to_json()?)?;
 
     println!(
@@ -300,7 +346,10 @@ pub fn photo_edit(manifest: &str, args: PhotoEditArgs, out: Option<&str>) -> Res
         style("(0 new image bytes stored — non-destructive edit log)").green()
     );
     println!("  Manifest : {}", style(out_path.display()).cyan());
-    println!("  Render it: {}", style(format!("dits photo-render {} out.jpg", out_path.display())).dim());
+    println!(
+        "  Render it: {}",
+        style(format!("dits photo-render {} out.jpg", out_path.display())).dim()
+    );
     Ok(())
 }
 
@@ -327,7 +376,8 @@ pub fn facr_checkout(
     let manifest_path = Path::new(manifest);
     anyhow::ensure!(manifest_path.exists(), "manifest not found: {}", manifest);
 
-    // Output codec: H.264 by default; ProRes/DNxHR for an editor-ready mezzanine deliverable.
+    // Output codec: H.264 by default; ProRes/DNxHR for an editor-ready mezzanine
+    // deliverable.
     let out_codec = match codec {
         Some(name) => crate::facr::OutputCodec::from_name(name)
             .with_context(|| format!("unknown output codec '{name}' (use: h264, prores, dnxhr)"))?,
@@ -340,11 +390,7 @@ pub fn facr_checkout(
     let frame_store = FrameStore::new(&store_dir(store))?;
     let output_path = Path::new(output);
 
-    println!(
-        "Reconstructing {} frames -> {} ...",
-        manifest.frames.len(),
-        style(output).cyan()
-    );
+    println!("Reconstructing {} frames -> {} ...", manifest.frames.len(), style(output).cyan());
     reconstruct_video(&manifest, &frame_store, output_path, out_codec)?;
     println!("{} {}", style("✓ Wrote").green(), output);
     Ok(())

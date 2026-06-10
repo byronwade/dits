@@ -6,10 +6,13 @@
 //! - 3-way merge (via `similar` crate)
 //! - Blame/annotate support (planned)
 
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
+
 use git2::{ObjectType, Oid, Repository as GitRepo};
 use similar::{ChangeTag, TextDiff};
-use std::fs;
-use std::path::{Path, PathBuf};
 use thiserror::Error;
 
 /// Errors from the Git text engine.
@@ -48,7 +51,7 @@ pub struct GitTextEngine {
     /// Path to .dits/objects/git
     git_dir: PathBuf,
     /// libgit2 repository handle
-    repo: GitRepo,
+    repo:    GitRepo,
 }
 
 impl GitTextEngine {
@@ -150,17 +153,17 @@ impl GitTextEngine {
                             old_lines += 1;
                             new_lines += 1;
                             DiffLineType::Context
-                        }
+                        },
                         ChangeTag::Insert => {
                             new_lines += 1;
                             stats.additions += 1;
                             DiffLineType::Addition
-                        }
+                        },
                         ChangeTag::Delete => {
                             old_lines += 1;
                             stats.deletions += 1;
                             DiffLineType::Deletion
-                        }
+                        },
                     };
 
                     lines.push(DiffLine {
@@ -182,15 +185,16 @@ impl GitTextEngine {
             });
         }
 
-        DiffResult {
-            path: String::new(),
-            hunks,
-            stats,
-        }
+        DiffResult { path: String::new(), hunks, stats }
     }
 
     /// Compute diff between two blobs.
-    pub fn diff_blobs(&self, old_oid: Oid, new_oid: Oid, context_lines: usize) -> GitResult<DiffResult> {
+    pub fn diff_blobs(
+        &self,
+        old_oid: Oid,
+        new_oid: Oid,
+        context_lines: usize,
+    ) -> GitResult<DiffResult> {
         let old_content = self.read_blob_str(old_oid)?;
         let new_content = self.read_blob_str(new_oid)?;
 
@@ -219,7 +223,10 @@ impl GitTextEngine {
         let mut conflicts = 0;
 
         // Simple merge: if both sides change differently from base, it's a conflict
-        let max_len = base_lines.len().max(ours_lines.len()).max(theirs_lines.len());
+        let max_len = base_lines
+            .len()
+            .max(ours_lines.len())
+            .max(theirs_lines.len());
 
         for i in 0..max_len {
             let base_line = base_lines.get(i).copied().unwrap_or("");
@@ -250,14 +257,9 @@ impl GitTextEngine {
         }
 
         if conflicts > 0 {
-            MergeResult::Conflict {
-                content: result.into_bytes(),
-                marker_count: conflicts,
-            }
+            MergeResult::Conflict { content: result.into_bytes(), marker_count: conflicts }
         } else {
-            MergeResult::Clean {
-                content: result.into_bytes(),
-            }
+            MergeResult::Clean { content: result.into_bytes() }
         }
     }
 
@@ -290,18 +292,15 @@ impl GitTextEngine {
             .lines()
             .enumerate()
             .map(|(i, _)| BlameLine {
-                line_number: i + 1,
-                commit_hash: "0000000".to_string(),
-                author_name: "Unknown".to_string(),
+                line_number:  i + 1,
+                commit_hash:  "0000000".to_string(),
+                author_name:  "Unknown".to_string(),
                 author_email: String::new(),
-                timestamp: 0,
+                timestamp:    0,
             })
             .collect();
 
-        BlameResult {
-            path: path.to_string(),
-            lines,
-        }
+        BlameResult { path: path.to_string(), lines }
     }
 
     // ===== Statistics =====
@@ -322,10 +321,7 @@ impl GitTextEngine {
             true
         })?;
 
-        Ok(GitStoreStats {
-            blob_count,
-            total_size,
-        })
+        Ok(GitStoreStats { blob_count, total_size })
     }
 }
 
@@ -335,7 +331,7 @@ impl GitTextEngine {
 #[derive(Debug, Clone)]
 pub struct DiffResult {
     /// File path
-    pub path: String,
+    pub path:  String,
     /// Diff hunks
     pub hunks: Vec<DiffHunk>,
     /// Statistics
@@ -387,18 +383,18 @@ pub struct DiffHunk {
     /// Number of lines in new file
     pub new_lines: u32,
     /// Hunk header (e.g., function name)
-    pub header: String,
+    pub header:    String,
     /// Lines in this hunk
-    pub lines: Vec<DiffLine>,
+    pub lines:     Vec<DiffLine>,
 }
 
 /// A single diff line.
 #[derive(Debug, Clone)]
 pub struct DiffLine {
     /// Type of line change
-    pub line_type: DiffLineType,
+    pub line_type:  DiffLineType,
     /// Line content (includes newline)
-    pub content: String,
+    pub content:    String,
     /// Line number in old file (None for additions)
     pub old_lineno: Option<u32>,
     /// Line number in new file (None for deletions)
@@ -465,7 +461,7 @@ impl MergeResult {
 #[derive(Debug, Clone)]
 pub struct BlameResult {
     /// File path
-    pub path: String,
+    pub path:  String,
     /// Blame information per line
     pub lines: Vec<BlameLine>,
 }
@@ -474,15 +470,15 @@ pub struct BlameResult {
 #[derive(Debug, Clone)]
 pub struct BlameLine {
     /// Line number (1-indexed)
-    pub line_number: usize,
+    pub line_number:  usize,
     /// Commit hash (short form)
-    pub commit_hash: String,
+    pub commit_hash:  String,
     /// Author name
-    pub author_name: String,
+    pub author_name:  String,
     /// Author email
     pub author_email: String,
     /// Commit timestamp (Unix epoch)
-    pub timestamp: i64,
+    pub timestamp:    i64,
 }
 
 /// Statistics about the Git object store.
@@ -496,8 +492,9 @@ pub struct GitStoreStats {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use tempfile::TempDir;
+
+    use super::*;
 
     fn create_test_engine() -> (TempDir, GitTextEngine) {
         let temp = TempDir::new().unwrap();

@@ -1,16 +1,18 @@
 //! Minimal OpenTimelineIO (OTIO) JSON import.
 //!
-//! OTIO is the modern timeline interchange format. Like the EDL importer, this turns a
-//! timeline into a list of [`EdlEvent`] cuts (reel = clip name, frame in/out from the
-//! clip's `source_range`), which [`super::edl::build_manifest_from_edl`] then slices from
-//! the source clip's already-stored frames — a Case-A edit at zero new storage.
+//! OTIO is the modern timeline interchange format. Like the EDL importer, this
+//! turns a timeline into a list of [`EdlEvent`] cuts (reel = clip name, frame
+//! in/out from the clip's `source_range`), which
+//! [`super::edl::build_manifest_from_edl`] then slices from the source clip's
+//! already-stored frames — a Case-A edit at zero new storage.
 //!
-//! Scope (v1): the first Video track's `Clip` children with a `source_range`. Gaps,
-//! transitions, effects, nested stacks, and non-video tracks are ignored.
+//! Scope (v1): the first Video track's `Clip` children with a `source_range`.
+//! Gaps, transitions, effects, nested stacks, and non-video tracks are ignored.
 
-use super::edl::EdlEvent;
 use anyhow::{bail, Context, Result};
 use serde_json::Value;
+
+use super::edl::EdlEvent;
 
 fn schema_is(node: &Value, prefix: &str) -> bool {
     node.get("OTIO_SCHEMA")
@@ -19,9 +21,12 @@ fn schema_is(node: &Value, prefix: &str) -> bool {
         .unwrap_or(false)
 }
 
-/// RationalTime.value as an integer frame count (value is already in frame units).
+/// RationalTime.value as an integer frame count (value is already in frame
+/// units).
 fn rational_frames(node: &Value) -> Option<i64> {
-    node.get("value").and_then(|v| v.as_f64()).map(|f| f.round() as i64)
+    node.get("value")
+        .and_then(|v| v.as_f64())
+        .map(|f| f.round() as i64)
 }
 
 /// Parse an OTIO timeline JSON into cut events.
@@ -61,7 +66,10 @@ pub fn parse_otio(json: &str) -> Result<Vec<EdlEvent>> {
             Some(r) => r,
             None => continue,
         };
-        let start = range.get("start_time").and_then(rational_frames).unwrap_or(0);
+        let start = range
+            .get("start_time")
+            .and_then(rational_frames)
+            .unwrap_or(0);
         let dur = match range.get("duration").and_then(rational_frames) {
             Some(d) if d > 0 => d,
             _ => continue,

@@ -5,14 +5,15 @@
 //! - Dependency tracking to prevent "Media Offline" errors
 //! - Validation that all referenced assets are tracked before commit
 
-mod parser;
 mod graph;
+mod parser;
 mod validator;
 
+pub use graph::{DependencyEdge, DependencyGraph, DependencyNode, EdgeType, GraphStats};
 pub use parser::{
-    ProjectParser, ProjectType, ParsedProject, MediaReference, MediaType,
-    PremiereParser, ResolveParser, FcpParser, AfterEffectsParser,
-    parse_project, ParseError,
+    parse_project, AfterEffectsParser, FcpParser, MediaReference, MediaType, ParseError,
+    ParsedProject, PremiereParser, ProjectParser, ProjectType, ResolveParser,
 };
-pub use graph::{DependencyGraph, DependencyNode, DependencyEdge, EdgeType, GraphStats};
-pub use validator::{DependencyValidator, ValidationResult, ValidationError, is_project_file, filter_project_files};
+pub use validator::{
+    filter_project_files, is_project_file, DependencyValidator, ValidationError, ValidationResult,
+};

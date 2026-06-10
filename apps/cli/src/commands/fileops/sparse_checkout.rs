@@ -2,46 +2,40 @@
 //!
 //! This command enables working with a subset of files in large repositories.
 
-use anyhow::{Context, Result};
-use std::fs;
-use std::path::Path;
+use std::{fs, path::Path};
 
-use crate::store::Repository;
-use crate::core::ManifestEntry;
+use anyhow::{Context, Result};
+
+use crate::{core::ManifestEntry, store::Repository};
 
 /// Sparse checkout configuration
 #[derive(Debug, Clone)]
 pub struct SparseCheckoutConfig {
     /// Enabled
-    pub enabled: bool,
+    pub enabled:  bool,
     /// Cone mode (directory-based patterns)
-    pub cone: bool,
+    pub cone:     bool,
     /// Patterns to include
     pub patterns: Vec<String>,
 }
 
 impl Default for SparseCheckoutConfig {
     fn default() -> Self {
-        Self {
-            enabled: false,
-            cone: true,
-            patterns: Vec::new(),
-        }
+        Self { enabled: false, cone: true, patterns: Vec::new() }
     }
 }
 
 /// Initialize sparse checkout
 pub fn init(cone: bool) -> Result<()> {
-    let repo = Repository::open(Path::new("."))
-        .context("Not in a dits repository")?;
-    
+    let repo = Repository::open(Path::new(".")).context("Not in a dits repository")?;
+
     let sparse_dir = repo.dits_dir().join("info");
     fs::create_dir_all(&sparse_dir)?;
-    
+
     // Write initial patterns (include everything by default)
     let sparse_file = sparse_dir.join("sparse-checkout");
     fs::write(&sparse_file, "/*\n")?;
-    
+
     // Enable sparse checkout in config
     let config_file = repo.dits_dir().join("config");
     let mut config = if config_file.exists() {
@@ -49,37 +43,36 @@ pub fn init(cone: bool) -> Result<()> {
     } else {
         String::new()
     };
-    
+
     if !config.contains("[core]") {
         config.push_str("[core]\n");
     }
-    
+
     if !config.contains("sparseCheckout") {
         config.push_str("\tsparseCheckout = true\n");
     }
-    
+
     if cone && !config.contains("sparseCheckoutCone") {
         config.push_str("\tsparseCheckoutCone = true\n");
     }
-    
+
     fs::write(&config_file, config)?;
-    
+
     println!("Sparse checkout initialized{}", if cone { " in cone mode" } else { "" });
     println!("Use 'dits sparse-checkout set <paths>' to define what to check out");
-    
+
     Ok(())
 }
 
 /// Set sparse checkout patterns
 pub fn set(patterns: &[String], cone: bool) -> Result<()> {
-    let repo = Repository::open(Path::new("."))
-        .context("Not in a dits repository")?;
-    
+    let repo = Repository::open(Path::new(".")).context("Not in a dits repository")?;
+
     let sparse_dir = repo.dits_dir().join("info");
     fs::create_dir_all(&sparse_dir)?;
-    
+
     let sparse_file = sparse_dir.join("sparse-checkout");
-    
+
     let content = if cone {
         // Cone mode: patterns are directory paths
         let mut lines = Vec::new();
@@ -93,29 +86,28 @@ pub fn set(patterns: &[String], cone: bool) -> Result<()> {
         // Pattern mode: use patterns as-is
         patterns.join("\n")
     };
-    
+
     fs::write(&sparse_file, content)?;
-    
+
     // Apply the sparse checkout
     apply_sparse_checkout(&repo)?;
-    
+
     println!("Sparse checkout set with {} pattern(s)", patterns.len());
     Ok(())
 }
 
 /// Add patterns to sparse checkout
 pub fn add(patterns: &[String]) -> Result<()> {
-    let repo = Repository::open(Path::new("."))
-        .context("Not in a dits repository")?;
-    
+    let repo = Repository::open(Path::new(".")).context("Not in a dits repository")?;
+
     let sparse_file = repo.dits_dir().join("info").join("sparse-checkout");
-    
+
     let mut existing = if sparse_file.exists() {
         fs::read_to_string(&sparse_file)?
     } else {
         String::new()
     };
-    
+
     for pattern in patterns {
         let pattern = pattern.trim();
         if !existing.lines().any(|l| l.trim() == pattern) {
@@ -123,42 +115,40 @@ pub fn add(patterns: &[String]) -> Result<()> {
             existing.push('\n');
         }
     }
-    
+
     fs::write(&sparse_file, existing)?;
-    
+
     // Apply the sparse checkout
     apply_sparse_checkout(&repo)?;
-    
+
     println!("Added {} pattern(s) to sparse checkout", patterns.len());
     Ok(())
 }
 
 /// List current sparse checkout patterns
 pub fn list() -> Result<Vec<String>> {
-    let repo = Repository::open(Path::new("."))
-        .context("Not in a dits repository")?;
-    
+    let repo = Repository::open(Path::new(".")).context("Not in a dits repository")?;
+
     let sparse_file = repo.dits_dir().join("info").join("sparse-checkout");
-    
+
     if !sparse_file.exists() {
         return Ok(Vec::new());
     }
-    
+
     let content = fs::read_to_string(&sparse_file)?;
     let patterns: Vec<String> = content
         .lines()
         .filter(|l| !l.trim().is_empty() && !l.starts_with('#'))
         .map(|l| l.to_string())
         .collect();
-    
+
     Ok(patterns)
 }
 
 /// Disable sparse checkout
 pub fn disable() -> Result<()> {
-    let repo = Repository::open(Path::new("."))
-        .context("Not in a dits repository")?;
-    
+    let repo = Repository::open(Path::new(".")).context("Not in a dits repository")?;
+
     // Remove sparse checkout config
     let config_file = repo.dits_dir().join("config");
     if config_file.exists() {
@@ -170,35 +160,35 @@ pub fn disable() -> Result<()> {
             .join("\n");
         fs::write(&config_file, new_content)?;
     }
-    
+
     // Remove sparse-checkout file
     let sparse_file = repo.dits_dir().join("info").join("sparse-checkout");
     if sparse_file.exists() {
         fs::remove_file(&sparse_file)?;
     }
-    
+
     // Checkout all files
     restore_full_checkout(&repo)?;
-    
+
     println!("Sparse checkout disabled");
     Ok(())
 }
 
 /// Check if sparse checkout is enabled
 pub fn is_enabled() -> Result<bool> {
-    let repo = Repository::open(Path::new("."))
-        .context("Not in a dits repository")?;
-    
+    let repo = Repository::open(Path::new(".")).context("Not in a dits repository")?;
+
     let config_file = repo.dits_dir().join("config");
     if !config_file.exists() {
         return Ok(false);
     }
-    
+
     let content = fs::read_to_string(&config_file)?;
     Ok(content.contains("sparseCheckout = true"))
 }
 
-/// Apply sparse checkout - remove files not matching patterns and restore matching files
+/// Apply sparse checkout - remove files not matching patterns and restore
+/// matching files
 fn apply_sparse_checkout(repo: &Repository) -> Result<()> {
     let patterns = list()?;
     if patterns.is_empty() {
@@ -264,7 +254,11 @@ fn restore_file(repo: &Repository, path: &str, entry: &ManifestEntry) -> Result<
 }
 
 /// Restore a regular file by reconstructing it from chunks
-fn restore_regular_file(repo: &Repository, full_path: &std::path::Path, entry: &ManifestEntry) -> Result<()> {
+fn restore_regular_file(
+    repo: &Repository,
+    full_path: &std::path::Path,
+    entry: &ManifestEntry,
+) -> Result<()> {
     use crate::store::GitTextEngine;
 
     // Phase 3.6: Check storage strategy
@@ -301,12 +295,12 @@ fn restore_full_checkout(_repo: &Repository) -> Result<()> {
 /// Clean up empty parent directories
 fn cleanup_empty_parents(path: &Path, stop_at: &Path) -> Result<()> {
     let mut current = path.parent();
-    
+
     while let Some(parent) = current {
         if parent == stop_at {
             break;
         }
-        
+
         // Check if directory is empty
         match fs::read_dir(parent) {
             Ok(mut entries) => {
@@ -315,28 +309,28 @@ fn cleanup_empty_parents(path: &Path, stop_at: &Path) -> Result<()> {
                 } else {
                     break;
                 }
-            }
+            },
             Err(_) => break,
         }
-        
+
         current = parent.parent();
     }
-    
+
     Ok(())
 }
 
 /// Print sparse checkout status
 pub fn print_status() -> Result<()> {
     let enabled = is_enabled()?;
-    
+
     if !enabled {
         println!("Sparse checkout is not enabled");
         println!("Run 'dits sparse-checkout init' to enable");
         return Ok(());
     }
-    
+
     let patterns = list()?;
-    
+
     println!("Sparse checkout is enabled");
     if patterns.is_empty() {
         println!("No patterns defined (all files checked out)");
@@ -346,7 +340,7 @@ pub fn print_status() -> Result<()> {
             println!("  {}", pattern);
         }
     }
-    
+
     Ok(())
 }
 

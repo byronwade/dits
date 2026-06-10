@@ -3,14 +3,16 @@
 //! This module provides opt-in telemetry for improving Dits.
 //! All data is anonymized and respects user privacy.
 
-use std::collections::HashMap;
-use std::sync::Arc;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::{
+    collections::HashMap,
+    sync::Arc,
+    time::{Duration, SystemTime, UNIX_EPOCH},
+};
 
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
 
-use crate::config::{Config, global_config_path};
+use crate::config::{global_config_path, Config};
 
 const TELEMETRY_URL: &str = "https://telemetry.dits.dev/v1/events";
 const TELEMETRY_CONFIG_KEY: &str = "telemetry.enabled";
@@ -21,57 +23,50 @@ const TELEMETRY_SEND_INTERVAL: Duration = Duration::from_secs(24 * 60 * 60); // 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TelemetryEvent {
     /// Unique user identifier (anonymized)
-    pub user_id: String,
+    pub user_id:    String,
     /// Event timestamp (Unix timestamp)
-    pub timestamp: u64,
+    pub timestamp:  u64,
     /// Event type
     pub event_type: String,
     /// Event properties
     pub properties: HashMap<String, serde_json::Value>,
     /// Dits version
-    pub version: String,
+    pub version:    String,
     /// Platform information
-    pub platform: String,
+    pub platform:   String,
     /// Anonymized session ID
     pub session_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TelemetryConfig {
-    pub enabled: bool,
-    pub user_id: String,
+    pub enabled:   bool,
+    pub user_id:   String,
     pub last_sent: u64,
 }
 
 impl Default for TelemetryConfig {
     fn default() -> Self {
-        Self {
-            enabled: false,
-            user_id: generate_user_id(),
-            last_sent: 0,
-        }
+        Self { enabled: false, user_id: generate_user_id(), last_sent: 0 }
     }
 }
 
 pub struct TelemetryManager {
-    config: Arc<Mutex<Config>>,
+    config:     Arc<Mutex<Config>>,
     session_id: String,
-    events: Arc<Mutex<Vec<TelemetryEvent>>>,
+    events:     Arc<Mutex<Vec<TelemetryEvent>>>,
 }
 
 impl TelemetryManager {
     pub fn new(config: Arc<Mutex<Config>>) -> Self {
-        Self {
-            config,
-            session_id: generate_session_id(),
-            events: Arc::new(Mutex::new(Vec::new())),
-        }
+        Self { config, session_id: generate_session_id(), events: Arc::new(Mutex::new(Vec::new())) }
     }
 
     /// Check if telemetry is enabled
     pub async fn is_enabled(&self) -> bool {
         let config = self.config.lock().await;
-        config.get(TELEMETRY_CONFIG_KEY)
+        config
+            .get(TELEMETRY_CONFIG_KEY)
             .and_then(|s| s.parse::<bool>().ok())
             .unwrap_or(false)
     }
@@ -98,24 +93,27 @@ impl TelemetryManager {
     pub async fn status(&self) -> Result<TelemetryConfig, Box<dyn std::error::Error>> {
         let config = self.config.lock().await;
 
-        let enabled = config.get(TELEMETRY_CONFIG_KEY)
+        let enabled = config
+            .get(TELEMETRY_CONFIG_KEY)
             .and_then(|s| s.parse::<bool>().ok())
             .unwrap_or(false);
-        let user_id = config.get(TELEMETRY_USER_ID_KEY)
+        let user_id = config
+            .get(TELEMETRY_USER_ID_KEY)
             .unwrap_or_else(|| generate_user_id());
-        let last_sent = config.get(TELEMETRY_LAST_SENT_KEY)
+        let last_sent = config
+            .get(TELEMETRY_LAST_SENT_KEY)
             .and_then(|s| s.parse::<u64>().ok())
             .unwrap_or(0);
 
-        Ok(TelemetryConfig {
-            enabled,
-            user_id,
-            last_sent,
-        })
+        Ok(TelemetryConfig { enabled, user_id, last_sent })
     }
 
     /// Record a telemetry event
-    pub async fn record_event(&self, event_type: &str, properties: HashMap<String, serde_json::Value>) {
+    pub async fn record_event(
+        &self,
+        event_type: &str,
+        properties: HashMap<String, serde_json::Value>,
+    ) {
         if !self.is_enabled().await {
             return;
         }
@@ -171,11 +169,11 @@ impl TelemetryManager {
             {
                 Ok(_) => {
                     // Successfully sent
-                }
+                },
                 Err(e) => {
                     // Failed to send - could log to file or retry later
                     eprintln!("Failed to send telemetry: {}", e);
-                }
+                },
             }
         });
 
@@ -195,7 +193,8 @@ impl TelemetryManager {
     /// Check if we should send telemetry events
     async fn should_send(&self) -> bool {
         let config = self.config.lock().await;
-        let last_sent = config.get(TELEMETRY_LAST_SENT_KEY)
+        let last_sent = config
+            .get(TELEMETRY_LAST_SENT_KEY)
             .and_then(|s| s.parse::<u64>().ok())
             .unwrap_or(0);
         let now = SystemTime::now()
@@ -226,8 +225,10 @@ impl TelemetryManager {
 
 /// Generate an anonymized user ID
 fn generate_user_id() -> String {
-    use std::collections::hash_map::DefaultHasher;
-    use std::hash::{Hash, Hasher};
+    use std::{
+        collections::hash_map::DefaultHasher,
+        hash::{Hash, Hasher},
+    };
 
     let mut hasher = DefaultHasher::new();
 
@@ -287,17 +288,26 @@ fn get_platform_info() -> String {
 
 /// Record common telemetry events
 pub mod events {
-    use super::*;
     use std::collections::HashMap;
 
-    pub async fn record_command_usage(telemetry: &TelemetryManager, command: &str, args: &[String]) {
+    use super::*;
+
+    pub async fn record_command_usage(
+        telemetry: &TelemetryManager,
+        command: &str,
+        args: &[String],
+    ) {
         let mut properties = HashMap::new();
         properties.insert("command".to_string(), command.into());
         properties.insert("arg_count".to_string(), args.len().into());
 
         // Anonymize arguments (don't send actual file paths, etc.)
-        properties.insert("has_paths".to_string(),
-            args.iter().any(|arg| arg.contains('/') || arg.contains('\\')).into());
+        properties.insert(
+            "has_paths".to_string(),
+            args.iter()
+                .any(|arg| arg.contains('/') || arg.contains('\\'))
+                .into(),
+        );
 
         telemetry.record_event("command_used", properties).await;
     }
@@ -310,7 +320,12 @@ pub mod events {
         telemetry.record_event("error_occurred", properties).await;
     }
 
-    pub async fn record_performance(telemetry: &TelemetryManager, operation: &str, duration_ms: u64, file_size: Option<u64>) {
+    pub async fn record_performance(
+        telemetry: &TelemetryManager,
+        operation: &str,
+        duration_ms: u64,
+        file_size: Option<u64>,
+    ) {
         let mut properties = HashMap::new();
         properties.insert("operation".to_string(), operation.into());
         properties.insert("duration_ms".to_string(), duration_ms.into());
@@ -318,11 +333,18 @@ pub mod events {
             properties.insert("file_size".to_string(), size.into());
         }
 
-        telemetry.record_event("performance_metric", properties).await;
+        telemetry
+            .record_event("performance_metric", properties)
+            .await;
     }
 
-    pub async fn record_feature_usage(telemetry: &TelemetryManager, feature: &str, details: HashMap<String, serde_json::Value>) {
-        telemetry.record_event(&format!("feature_{}", feature), details).await;
+    pub async fn record_feature_usage(
+        telemetry: &TelemetryManager,
+        feature: &str,
+        details: HashMap<String, serde_json::Value>,
+    ) {
+        telemetry
+            .record_event(&format!("feature_{}", feature), details)
+            .await;
     }
 }
-

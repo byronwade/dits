@@ -1,18 +1,13 @@
 //! Garbage collection command - clean up unreferenced objects.
 
-use crate::core::Hash;
-use crate::store::Repository;
-use anyhow::{Result, bail};
-use std::collections::HashSet;
-use std::fs;
-use std::path::Path;
+use std::{collections::HashSet, fs, path::Path};
+
+use anyhow::{bail, Result};
+
+use crate::{core::Hash, store::Repository};
 
 /// Run garbage collection.
-pub fn gc(
-    dry_run: bool,
-    prune: bool,
-    aggressive: bool,
-) -> Result<()> {
+pub fn gc(dry_run: bool, prune: bool, aggressive: bool) -> Result<()> {
     let dits_dir = std::path::Path::new(".dits");
     if !dits_dir.exists() {
         bail!("Not a dits repository");
@@ -103,17 +98,17 @@ pub fn gc(
 /// Stats for garbage collection run.
 #[derive(Default)]
 struct GcStats {
-    reachable_objects: usize,
+    reachable_objects:    usize,
     unreferenced_objects: usize,
-    objects_removed: usize,
-    bytes_to_free: u64,
-    locks_pruned: usize,
+    objects_removed:      usize,
+    bytes_to_free:        u64,
+    locks_pruned:         usize,
 }
 
-/// Collect every object hash reachable from any ref, by actually walking the object
-/// graph: refs/HEAD/tags/stash -> commits -> parents -> manifest -> per-entry
-/// content/chunks/mp4 blobs. (Git-text content lives in the git engine, not
-/// `.dits/objects`, so it is never scanned for pruning here.)
+/// Collect every object hash reachable from any ref, by actually walking the
+/// object graph: refs/HEAD/tags/stash -> commits -> parents -> manifest ->
+/// per-entry content/chunks/mp4 blobs. (Git-text content lives in the git
+/// engine, not `.dits/objects`, so it is never scanned for pruning here.)
 fn collect_reachable_objects(_dits_dir: &Path) -> Result<HashSet<String>> {
     let repo = Repository::open(Path::new("."))?;
     let mut reachable: HashSet<String> = HashSet::new();
@@ -134,7 +129,8 @@ fn collect_reachable_objects(_dits_dir: &Path) -> Result<HashSet<String>> {
             stack.push(h);
         }
     }
-    // Stash entries also keep commits alive — harvest any 64-hex hashes they contain.
+    // Stash entries also keep commits alive — harvest any 64-hex hashes they
+    // contain.
     let stash_dir = Path::new(".dits").join("stash");
     if stash_dir.exists() {
         for entry in fs::read_dir(&stash_dir)?.flatten() {
@@ -192,7 +188,10 @@ fn collect_reachable_objects(_dits_dir: &Path) -> Result<HashSet<String>> {
 }
 
 /// Find unreferenced objects.
-fn find_unreferenced_objects(objects_dir: &Path, reachable: &HashSet<String>) -> Result<Vec<std::path::PathBuf>> {
+fn find_unreferenced_objects(
+    objects_dir: &Path,
+    reachable: &HashSet<String>,
+) -> Result<Vec<std::path::PathBuf>> {
     let mut unreferenced = Vec::new();
 
     if !objects_dir.exists() {
@@ -200,10 +199,11 @@ fn find_unreferenced_objects(objects_dir: &Path, reachable: &HashSet<String>) ->
     }
 
     // Only prune Dits's own content-addressed categories, laid out as
-    // objects/<category>/<aa>/<rest> where <aa><rest> is the object hash. CRITICALLY,
-    // never descend into objects/git — that is the embedded git engine; its files
-    // (HEAD/config/blobs/...) are not Dits hashes and deleting them corrupts text
-    // storage. The git engine manages its own garbage.
+    // objects/<category>/<aa>/<rest> where <aa><rest> is the object hash.
+    // CRITICALLY, never descend into objects/git — that is the embedded git
+    // engine; its files (HEAD/config/blobs/...) are not Dits hashes and
+    // deleting them corrupts text storage. The git engine manages its own
+    // garbage.
     for category in ["commits", "manifests", "chunks", "blobs"] {
         let cat_dir = objects_dir.join(category);
         if !cat_dir.exists() {

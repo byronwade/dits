@@ -1,23 +1,23 @@
 //! Reflog command - show reference history.
 
-use crate::core::Hash;
-use crate::store::Repository;
+use std::{fs, path::Path};
+
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use console::style;
 use serde::{Deserialize, Serialize};
-use std::fs;
-use std::path::Path;
+
+use crate::{core::Hash, store::Repository};
 
 /// A single reflog entry.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReflogEntry {
     /// The commit hash after this action.
-    pub hash: Hash,
+    pub hash:      Hash,
     /// The previous commit hash (if any).
-    pub previous: Option<Hash>,
+    pub previous:  Option<Hash>,
     /// Description of the action.
-    pub action: String,
+    pub action:    String,
     /// Timestamp of the action.
     pub timestamp: DateTime<Utc>,
 }
@@ -91,10 +91,7 @@ pub fn reflog(ref_name: Option<&str>, limit: usize) -> Result<()> {
         }
 
         println!();
-        println!(
-            "{} Reflog is reconstructed from commit history.",
-            style("Note:").cyan()
-        );
+        println!("{} Reflog is reconstructed from commit history.", style("Note:").cyan());
         println!("Future actions will be recorded automatically.");
 
         return Ok(());

@@ -29,13 +29,14 @@ mod util {
 }
 mod vfs;
 
-// p2p::host refers to `crate::Repository` (a root re-export in the library crate); mirror it
-// here so the p2p module compiles in the binary crate too.
-pub(crate) use crate::store::Repository;
+// p2p::host refers to `crate::Repository` (a root re-export in the library
+// crate); mirror it here so the p2p module compiles in the binary crate too.
+use std::sync::Arc;
 
 use clap::{Parser, Subcommand};
-use std::sync::Arc;
 use tokio::sync::Mutex;
+
+pub(crate) use crate::store::Repository;
 
 #[derive(Parser)]
 #[command(name = "dits")]
@@ -77,16 +78,16 @@ enum Commands {
     Log {
         /// Number of commits to show
         #[arg(short = 'n', long, default_value = "10")]
-        limit: usize,
+        limit:   usize,
         /// Show each commit on a single line
         #[arg(long)]
         oneline: bool,
         /// Draw ASCII graph of branch structure
         #[arg(long)]
-        graph: bool,
+        graph:   bool,
         /// Show commits from all branches
         #[arg(long)]
-        all: bool,
+        all:     bool,
     },
 
     /// Checkout a commit or branch
@@ -95,13 +96,13 @@ enum Commands {
         target: String,
         /// Checkout mode: full (default) or proxy
         #[arg(short, long, default_value = "full")]
-        mode: String,
+        mode:   String,
     },
 
     /// List, create, or delete branches
     Branch {
         /// Branch name to create or delete
-        name: Option<String>,
+        name:   Option<String>,
         /// Delete the branch
         #[arg(short, long)]
         delete: bool,
@@ -122,13 +123,13 @@ enum Commands {
         #[arg(short, long)]
         commit: Option<String>,
         /// Specific file to diff
-        file: Option<String>,
+        file:   Option<String>,
     },
 
     /// List, create, or delete tags
     Tag {
         /// Tag name to create or delete
-        name: Option<String>,
+        name:   Option<String>,
         /// Commit to tag (default: HEAD)
         #[arg(short, long)]
         commit: Option<String>,
@@ -137,13 +138,13 @@ enum Commands {
         delete: bool,
         /// Sort order for listing tags: name, created, version
         #[arg(long, default_value = "name")]
-        sort: String,
+        sort:   String,
     },
 
     /// Merge a branch into the current branch
     Merge {
         /// Branch to merge into current branch
-        branch: String,
+        branch:  String,
         /// Merge commit message (used when a merge commit is created)
         #[arg(short, long)]
         message: Option<String>,
@@ -153,25 +154,25 @@ enum Commands {
     Show {
         /// Commit to show (default: HEAD)
         #[arg(default_value = "HEAD")]
-        object: String,
+        object:      String,
         /// Show file statistics
         #[arg(long)]
-        stat: bool,
+        stat:        bool,
         /// Show only file names
         #[arg(long)]
-        name_only: bool,
+        name_only:   bool,
         /// Show file names with change type
         #[arg(long)]
         name_status: bool,
         /// Don't show diff
         #[arg(long)]
-        no_patch: bool,
+        no_patch:    bool,
     },
 
     /// Show who changed what in a file
     Blame {
         /// File to blame
-        file: String,
+        file:  String,
         /// Line range (e.g., "1,10" or "5,")
         #[arg(short = 'L')]
         lines: Option<String>,
@@ -184,7 +185,7 @@ enum Commands {
         ref_name: Option<String>,
         /// Number of entries to show
         #[arg(short = 'n', long, default_value = "20")]
-        limit: usize,
+        limit:    usize,
     },
 
     /// Binary search to find bug-introducing commit
@@ -198,25 +199,25 @@ enum Commands {
     /// Reapply commits on top of another base
     Rebase {
         /// Upstream branch to rebase onto
-        upstream: Option<String>,
+        upstream:        Option<String>,
         /// Rebase onto specific commit
         #[arg(long)]
-        onto: Option<String>,
+        onto:            Option<String>,
         /// Continue rebase after resolving conflicts
         #[arg(long, name = "continue")]
         continue_rebase: bool,
         /// Abort current rebase
         #[arg(long)]
-        abort: bool,
+        abort:           bool,
         /// Skip the current commit
         #[arg(long)]
-        skip: bool,
+        skip:            bool,
     },
 
     /// Apply specific commits to current branch
     CherryPick {
         /// Commits to apply
-        commits: Vec<String>,
+        commits:   Vec<String>,
         /// Apply without committing
         #[arg(long)]
         no_commit: bool,
@@ -228,64 +229,64 @@ enum Commands {
         target: Option<String>,
         /// Soft reset (only move HEAD)
         #[arg(long)]
-        soft: bool,
+        soft:   bool,
         /// Hard reset (reset HEAD, index, and working tree)
         #[arg(long)]
-        hard: bool,
+        hard:   bool,
         /// Paths to unstage (reset specific files)
         #[arg(last = true)]
-        paths: Vec<String>,
+        paths:  Vec<String>,
     },
 
     /// Restore working tree files or unstage
     Restore {
         /// Paths to restore
         #[arg(required = true)]
-        paths: Vec<String>,
+        paths:    Vec<String>,
         /// Restore staged files (unstage)
         #[arg(long)]
-        staged: bool,
+        staged:   bool,
         /// Restore working tree (default)
         #[arg(long)]
         worktree: bool,
         /// Source commit to restore from
         #[arg(short, long)]
-        source: Option<String>,
+        source:   Option<String>,
         /// Use "ours" version during merge conflict
         #[arg(long)]
-        ours: bool,
+        ours:     bool,
         /// Use "theirs" version during merge conflict
         #[arg(long)]
-        theirs: bool,
+        theirs:   bool,
     },
 
     /// Get and set repository or global options
     Config {
         /// Config key (e.g., user.name)
-        key: Option<String>,
+        key:    Option<String>,
         /// Value to set
-        value: Option<String>,
+        value:  Option<String>,
         /// Use global config file
         #[arg(long)]
         global: bool,
         /// List all config values
         #[arg(short, long)]
-        list: bool,
+        list:   bool,
         /// Unset a key
         #[arg(long)]
-        unset: bool,
+        unset:  bool,
     },
 
     /// Stash changes in working directory
     Stash {
         /// Action: push, pop, apply, list, drop, clear, show
-        action: Option<String>,
+        action:  Option<String>,
         /// Message for stash (with push)
         #[arg(short, long)]
         message: Option<String>,
         /// Stash index (for pop, apply, drop, show)
         #[arg(short, long)]
-        index: Option<usize>,
+        index:   Option<usize>,
     },
 
     /// Inspect MP4 file structure (Phase 2)
@@ -297,7 +298,7 @@ enum Commands {
     /// Test MP4 deconstruct/reconstruct roundtrip (Phase 2)
     Roundtrip {
         /// Input MP4 file
-        input: String,
+        input:  String,
         /// Output MP4 file
         output: String,
     },
@@ -305,10 +306,10 @@ enum Commands {
     /// Segment a video into GOP-aligned chunks (Phase 3)
     Segment {
         /// Video file to segment
-        file: String,
+        file:     String,
         /// Output directory for segments (default: <filename>.dits-segments)
         #[arg(short, long)]
-        output: Option<String>,
+        output:   Option<String>,
         /// Segment duration in seconds
         #[arg(short, long, default_value = "2.0")]
         duration: f64,
@@ -319,7 +320,7 @@ enum Commands {
         /// Segments directory containing manifest.json
         segments_dir: String,
         /// Output video file
-        output: String,
+        output:       String,
     },
 
     /// Mount repository as a virtual filesystem (Phase 4)
@@ -329,10 +330,10 @@ enum Commands {
         mount_point: String,
         /// Commit to mount (default: HEAD)
         #[arg(short, long)]
-        commit: Option<String>,
+        commit:      Option<String>,
         /// L1 (RAM) cache size in MB
         #[arg(long, default_value = "256")]
-        cache_mb: u64,
+        cache_mb:    u64,
     },
 
     /// Unmount a virtual filesystem
@@ -345,13 +346,14 @@ enum Commands {
     /// Show cache statistics
     CacheStats,
 
-    /// Demonstrate FACR frame-level dedup: commit a synthetic clip, re-grade some
-    /// frames, and show that only the changed frames are stored (Phase: FACR)
+    /// Demonstrate FACR frame-level dedup: commit a synthetic clip, re-grade
+    /// some frames, and show that only the changed frames are stored
+    /// (Phase: FACR)
     #[command(name = "facr-demo")]
     FacrDemo {
         /// Number of frames in the synthetic clip
         #[arg(long, default_value = "300")]
-        frames: usize,
+        frames:  usize,
         /// Number of frames to re-grade in the second version
         #[arg(long, default_value = "5")]
         regrade: usize,
@@ -361,14 +363,15 @@ enum Commands {
     #[command(name = "facr-add")]
     FacrAdd {
         /// Path to the input video
-        input: String,
+        input:       String,
         /// Frame store directory (default: .dits-facr)
         #[arg(long)]
-        store: Option<String>,
+        store:       Option<String>,
         /// Where to write the clip manifest (default: <input>.facr.json)
         #[arg(long)]
-        manifest: Option<String>,
-        /// Per-frame codec: png, webp (lossless), or webp-vl (visually-lossless, ~85% smaller). Default: webp
+        manifest:    Option<String>,
+        /// Per-frame codec: png, webp (lossless), or webp-vl
+        /// (visually-lossless, ~85% smaller). Default: webp
         #[arg(long = "frame-codec")]
         frame_codec: Option<String>,
     },
@@ -379,155 +382,169 @@ enum Commands {
         /// Path to the clip manifest (.facr.json)
         manifest: String,
         /// Output video path
-        output: String,
+        output:   String,
         /// Frame store directory (default: .dits-facr)
         #[arg(long)]
-        store: Option<String>,
-        /// Output codec: h264 (default), prores, or dnxhr (use a .mov output for the latter)
+        store:    Option<String>,
+        /// Output codec: h264 (default), prores, or dnxhr (use a .mov output
+        /// for the latter)
         #[arg(long)]
-        codec: Option<String>,
+        codec:    Option<String>,
     },
 
-    /// Non-destructively trim a FACR manifest to a frame range (stores ZERO new frames)
+    /// Non-destructively trim a FACR manifest to a frame range (stores ZERO new
+    /// frames)
     #[command(name = "facr-trim")]
     FacrTrim {
         /// Path to the clip manifest (.facr.json)
         manifest: String,
         /// First frame to keep (0-based, inclusive)
         #[arg(long, default_value = "0")]
-        start: usize,
+        start:    usize,
         /// Last frame to keep (exclusive); defaults to end of clip
         #[arg(long)]
-        end: Option<usize>,
+        end:      Option<usize>,
         /// Output manifest path (default: <manifest>.trimmed.json)
         #[arg(long)]
-        out: Option<String>,
+        out:      Option<String>,
     },
 
-    /// Import a CMX3600 EDL into a FACR manifest referencing a source clip (0 new storage)
+    /// Import a CMX3600 EDL into a FACR manifest referencing a source clip (0
+    /// new storage)
     #[command(name = "facr-import-edl")]
     FacrImportEdl {
         /// Path to the EDL file
-        edl: String,
+        edl:    String,
         /// Source clip manifest (.facr.json) the EDL cuts reference
         source: String,
         /// Output manifest path
-        out: String,
+        out:    String,
         /// Frame rate override (defaults to the source manifest's rate)
         #[arg(long)]
-        fps: Option<u32>,
+        fps:    Option<u32>,
     },
 
-    /// Import an OTIO timeline JSON into a FACR manifest referencing a source clip (0 new storage)
+    /// Import an OTIO timeline JSON into a FACR manifest referencing a source
+    /// clip (0 new storage)
     #[command(name = "facr-import-otio")]
     FacrImportOtio {
         /// Path to the OTIO (.otio) JSON file
-        otio: String,
+        otio:   String,
         /// Source clip manifest (.facr.json) the timeline clips reference
         source: String,
         /// Output manifest path
-        out: String,
+        out:    String,
     },
 
-    /// End-to-end FACR incremental-streaming proof: ingest, re-grade a time window,
-    /// re-encode only changed HLS segments, and serve a browser player (requires FFmpeg)
+    /// End-to-end FACR incremental-streaming proof: ingest, re-grade a time
+    /// window, re-encode only changed HLS segments, and serve a browser
+    /// player (requires FFmpeg)
     #[command(name = "stream-demo")]
     StreamDemo {
         /// Input video (default: generate a 10s test clip)
         #[arg(long)]
-        input: Option<std::path::PathBuf>,
+        input:           Option<std::path::PathBuf>,
         /// Re-grade window start, seconds
         #[arg(long, default_value = "4.0")]
-        grade_start: f64,
+        grade_start:     f64,
         /// Re-grade window end, seconds
         #[arg(long, default_value = "6.0")]
-        grade_end: f64,
+        grade_end:       f64,
         /// Segment duration, seconds
         #[arg(long, default_value = "2.0")]
         segment_seconds: f64,
-        /// Store canonical frames as true-lossless JPEG-XL (default: visually-lossless)
+        /// Store canonical frames as true-lossless JPEG-XL (default:
+        /// visually-lossless)
         #[arg(long)]
-        lossless: bool,
-        /// Delta-push the segments to an in-process remote QUIC origin (only changed cross the wire)
+        lossless:        bool,
+        /// Delta-push the segments to an in-process remote QUIC origin (only
+        /// changed cross the wire)
         #[arg(long)]
-        push: bool,
-        /// Per-segment VMAF-targeted encoding to this quality target (e.g. 93); single source rendition
+        push:            bool,
+        /// Per-segment VMAF-targeted encoding to this quality target (e.g. 93);
+        /// single source rendition
         #[arg(long)]
-        vmaf: Option<f64>,
-        /// Demonstrate edit-resilient reuse with content-defined boundaries: "insert" or "trim"
+        vmaf:            Option<f64>,
+        /// Demonstrate edit-resilient reuse with content-defined boundaries:
+        /// "insert" or "trim"
         #[arg(long)]
-        edit: Option<String>,
-        /// Reconstruct an edit from a generated OpenTimelineIO timeline (0 new frames)
+        edit:            Option<String>,
+        /// Reconstruct an edit from a generated OpenTimelineIO timeline (0 new
+        /// frames)
         #[arg(long)]
-        otio: bool,
+        otio:            bool,
         /// Reconstruct an edit from a real OTIO (.otio) file
         #[arg(long)]
-        import: Option<String>,
-        /// Encrypt segments with AES-128 (deterministic; reuse + delta-push preserved)
+        import:          Option<String>,
+        /// Encrypt segments with AES-128 (deterministic; reuse + delta-push
+        /// preserved)
         #[arg(long)]
-        encrypt: bool,
+        encrypt:         bool,
         /// HTTP port for the player
         #[arg(long, default_value = "8088")]
-        port: u16,
+        port:            u16,
     },
 
-    /// Store a photo once and start a non-destructive edit history (requires FFmpeg)
+    /// Store a photo once and start a non-destructive edit history (requires
+    /// FFmpeg)
     #[command(name = "photo-add")]
     PhotoAdd {
         /// Path to the source image (jpg/png/tiff/etc.)
-        input: String,
+        input:    String,
         /// Object store directory (default: .dits-facr)
         #[arg(long)]
-        store: Option<String>,
+        store:    Option<String>,
         /// Where to write the photo manifest (default: <input>.photo.json)
         #[arg(long)]
         manifest: Option<String>,
     },
 
-    /// Append non-destructive edits to a photo manifest (stores ZERO new image bytes)
+    /// Append non-destructive edits to a photo manifest (stores ZERO new image
+    /// bytes)
     #[command(name = "photo-edit")]
     PhotoEdit {
         /// Path to the photo manifest (.photo.json)
-        manifest: String,
+        manifest:      String,
         /// Exposure adjustment in stops (e.g. 0.5)
         #[arg(long)]
-        exposure: Option<f32>,
+        exposure:      Option<f32>,
         /// Contrast multiplier (1.0 = unchanged)
         #[arg(long)]
-        contrast: Option<f32>,
+        contrast:      Option<f32>,
         /// Saturation multiplier (1.0 = unchanged)
         #[arg(long)]
-        saturation: Option<f32>,
+        saturation:    Option<f32>,
         /// White balance in Kelvin
         #[arg(long = "white-balance")]
         white_balance: Option<f32>,
         /// Clockwise rotation in degrees (90/180/270)
         #[arg(long)]
-        rotate: Option<u16>,
+        rotate:        Option<u16>,
         /// Crop rectangle as x,y,w,h
         #[arg(long)]
-        crop: Option<String>,
+        crop:          Option<String>,
         /// Output manifest (default: overwrite input)
         #[arg(long)]
-        out: Option<String>,
+        out:           Option<String>,
     },
 
-    /// Render a photo manifest into an image by applying its edit log (requires FFmpeg)
+    /// Render a photo manifest into an image by applying its edit log (requires
+    /// FFmpeg)
     #[command(name = "photo-render")]
     PhotoRender {
         /// Path to the photo manifest (.photo.json)
         manifest: String,
         /// Output image path
-        output: String,
+        output:   String,
         /// Object store directory (default: .dits-facr)
         #[arg(long)]
-        store: Option<String>,
+        store:    Option<String>,
     },
 
     /// Inspect a tracked file's deduplication statistics (Phase 4)
     InspectFile {
         /// Path to tracked file (relative to repo root)
-        path: String,
+        path:   String,
         /// Show all chunk hashes
         #[arg(long)]
         chunks: bool,
@@ -577,22 +594,22 @@ enum Commands {
     #[command(name = "video-add-clip")]
     VideoAddClip {
         /// Project name
-        project: String,
+        project:  String,
         /// Path to video file (must be tracked)
         #[arg(long)]
-        file: String,
+        file:     String,
         /// In-point (seconds from source start)
         #[arg(long, name = "in")]
         in_point: f64,
         /// Out-point (seconds from source start)
         #[arg(long)]
-        out: f64,
+        out:      f64,
         /// Start position on timeline (seconds)
         #[arg(long)]
-        start: f64,
+        start:    f64,
         /// Track ID (optional, defaults to first video track)
         #[arg(long)]
-        track: Option<String>,
+        track:    Option<String>,
     },
 
     /// Show a video timeline (Phase 5)
@@ -610,19 +627,19 @@ enum Commands {
     #[command(name = "proxy-generate")]
     ProxyGenerate {
         /// Video files to generate proxies for
-        files: Vec<String>,
+        files:      Vec<String>,
         /// Resolution: 1080, 720, 540, half, quarter
         #[arg(short, long)]
         resolution: Option<String>,
         /// Codec: h264, h265, prores, prores-lt, dnxhr, dnxhr-sq
         #[arg(short, long)]
-        codec: Option<String>,
+        codec:      Option<String>,
         /// Preset: fast, hq, offline
         #[arg(short, long)]
-        preset: Option<String>,
+        preset:     Option<String>,
         /// Generate proxies for all tracked video files
         #[arg(long)]
-        all: bool,
+        all:        bool,
     },
 
     /// Show proxy generation status (Phase 6)
@@ -644,17 +661,17 @@ enum Commands {
         files: Vec<String>,
         /// Delete all proxies
         #[arg(long)]
-        all: bool,
+        all:   bool,
     },
 
     /// Check dependencies for project files (Phase 7)
     #[command(name = "dep-check")]
     DepCheck {
         /// Project files to check (default: staged project files)
-        files: Vec<String>,
+        files:  Vec<String>,
         /// Check all tracked project files
         #[arg(long)]
-        all: bool,
+        all:    bool,
         /// Fail with error if dependencies are missing
         #[arg(long)]
         strict: bool,
@@ -664,7 +681,7 @@ enum Commands {
     #[command(name = "dep-graph")]
     DepGraph {
         /// Project file to analyze
-        file: String,
+        file:   String,
         /// Output format: tree, json, stats, list
         #[arg(short, long)]
         format: Option<String>,
@@ -685,16 +702,16 @@ enum Commands {
     /// Freeze chunks to colder storage tier (Phase 8)
     Freeze {
         /// Files to freeze
-        files: Vec<String>,
+        files:        Vec<String>,
         /// Target tier: warm, cold, archive
         #[arg(short, long)]
-        tier: Option<String>,
+        tier:         Option<String>,
         /// Apply lifecycle policy to all eligible chunks
         #[arg(long)]
         apply_policy: bool,
         /// Freeze all eligible chunks
         #[arg(long)]
-        all: bool,
+        all:          bool,
     },
 
     /// Thaw chunks from cold/archive storage (Phase 8)
@@ -703,7 +720,7 @@ enum Commands {
         files: Vec<String>,
         /// Thaw all frozen chunks
         #[arg(long)]
-        all: bool,
+        all:   bool,
     },
 
     /// Set or view lifecycle policy (Phase 8)
@@ -753,7 +770,7 @@ enum Commands {
     Audit {
         /// Number of events to show (default: 20)
         #[arg(short = 'n', long, default_value = "20")]
-        last: usize,
+        last:       usize,
         /// Filter by event type
         #[arg(short, long)]
         event_type: Option<String>,
@@ -783,7 +800,7 @@ enum Commands {
         /// Source repository (path or URL)
         source: String,
         /// Destination directory
-        dest: Option<String>,
+        dest:   Option<String>,
         /// Branch to checkout after clone
         #[arg(short, long)]
         branch: Option<String>,
@@ -792,17 +809,17 @@ enum Commands {
     /// Manage remote repositories
     Remote {
         /// Action: add, remove, rm, rename, get-url, set-url, list
-        action: Option<String>,
+        action:  Option<String>,
         /// Remote name
-        name: Option<String>,
+        name:    Option<String>,
         /// Remote URL (for add/set-url)
-        url: Option<String>,
+        url:     Option<String>,
         /// Show verbose output
         #[arg(short, long)]
         verbose: bool,
         /// Apply to push URL (for get-url/set-url)
         #[arg(long)]
-        push: bool,
+        push:    bool,
     },
 
     /// Push changes to a remote repository
@@ -813,10 +830,10 @@ enum Commands {
         branch: Option<String>,
         /// Force push (overwrite remote)
         #[arg(short, long)]
-        force: bool,
+        force:  bool,
         /// Push all branches
         #[arg(long)]
-        all: bool,
+        all:    bool,
     },
 
     /// Pull changes from a remote repository
@@ -836,13 +853,14 @@ enum Commands {
         remote: Option<String>,
         /// Fetch from all remotes
         #[arg(long)]
-        all: bool,
+        all:    bool,
         /// Prune remote-tracking refs that no longer exist
         #[arg(short, long)]
-        prune: bool,
+        prune:  bool,
     },
 
-    /// Pull missing objects from another local dits repo (content-addressed, incremental)
+    /// Pull missing objects from another local dits repo (content-addressed,
+    /// incremental)
     #[command(name = "fetch-objects")]
     FetchObjects {
         /// Path to the source dits repository
@@ -852,22 +870,22 @@ enum Commands {
     /// Lock a file (for binary files)
     Lock {
         /// Path to lock
-        path: String,
+        path:   String,
         /// Reason for locking
         #[arg(short, long)]
         reason: Option<String>,
         /// TTL in hours (default: 8)
         #[arg(long)]
-        ttl: Option<u64>,
+        ttl:    Option<u64>,
         /// Force lock (override existing lock)
         #[arg(short, long)]
-        force: bool,
+        force:  bool,
     },
 
     /// Unlock a file
     Unlock {
         /// Path to unlock
-        path: String,
+        path:  String,
         /// Force unlock (override ownership check)
         #[arg(short, long)]
         force: bool,
@@ -877,7 +895,7 @@ enum Commands {
     Locks {
         /// Filter by owner
         #[arg(short, long)]
-        owner: Option<String>,
+        owner:   Option<String>,
         /// Show verbose output
         #[arg(short, long)]
         verbose: bool,
@@ -887,10 +905,10 @@ enum Commands {
     Gc {
         /// Dry run (show what would be done)
         #[arg(long)]
-        dry_run: bool,
+        dry_run:    bool,
         /// Prune expired locks
         #[arg(short, long)]
-        prune: bool,
+        prune:      bool,
         /// Aggressive mode (repack objects)
         #[arg(long)]
         aggressive: bool,
@@ -900,50 +918,50 @@ enum Commands {
     Clean {
         /// Dry run (show what would be deleted)
         #[arg(short = 'n', long)]
-        dry_run: bool,
+        dry_run:        bool,
         /// Actually remove files
         #[arg(short, long)]
-        force: bool,
+        force:          bool,
         /// Remove untracked directories
         #[arg(short = 'd')]
-        directories: bool,
+        directories:    bool,
         /// Remove ignored files as well
         #[arg(short = 'x')]
         remove_ignored: bool,
         /// Remove only ignored files
         #[arg(short = 'X')]
-        only_ignored: bool,
+        only_ignored:   bool,
         /// Exclude patterns
         #[arg(short = 'e', long)]
-        exclude: Vec<String>,
+        exclude:        Vec<String>,
         /// Paths to clean
-        paths: Vec<String>,
+        paths:          Vec<String>,
     },
 
     /// Search tracked files for patterns
     Grep {
         /// Pattern to search for
-        pattern: String,
+        pattern:            String,
         /// Show line numbers
         #[arg(short = 'n', long)]
-        line_number: bool,
+        line_number:        bool,
         /// Case insensitive search
         #[arg(short, long)]
-        ignore_case: bool,
+        ignore_case:        bool,
         /// Match whole words only
         #[arg(short, long)]
-        word_regexp: bool,
+        word_regexp:        bool,
         /// Show count only
         #[arg(short, long)]
-        count: bool,
+        count:              bool,
         /// Show filenames only
         #[arg(short = 'l', long)]
         files_with_matches: bool,
         /// Use fixed string (no regex)
         #[arg(short = 'F', long)]
-        fixed_strings: bool,
+        fixed_strings:      bool,
         /// Paths to search
-        paths: Vec<String>,
+        paths:              Vec<String>,
     },
 
     /// Manage multiple working trees
@@ -951,25 +969,25 @@ enum Commands {
         /// Action: add, list, remove, prune, lock, unlock
         action: String,
         /// Path or argument for action
-        path: Option<String>,
+        path:   Option<String>,
         /// Branch name (for add)
         #[arg(short, long)]
         branch: Option<String>,
         /// Force operation
         #[arg(short, long)]
-        force: bool,
+        force:  bool,
     },
 
     /// Manage sparse checkout
     #[command(name = "sparse-checkout")]
     SparseCheckout {
         /// Action: init, set, add, list, disable
-        action: String,
+        action:   String,
         /// Patterns to set/add
         patterns: Vec<String>,
         /// Use cone mode (directory-based)
         #[arg(long)]
-        cone: bool,
+        cone:     bool,
     },
 
     /// Manage Git hooks
@@ -977,13 +995,13 @@ enum Commands {
         /// Action: list, install, uninstall, run, show
         action: String,
         /// Hook name
-        hook: Option<String>,
+        hook:   Option<String>,
         /// Force overwrite
         #[arg(short, long)]
-        force: bool,
+        force:  bool,
         /// Additional arguments for run
         #[arg(last = true)]
-        args: Vec<String>,
+        args:   Vec<String>,
     },
 
     /// Create archives from repository content
@@ -993,16 +1011,16 @@ enum Commands {
         tree_ish: String,
         /// Output format: tar, tar.gz, zip
         #[arg(long, default_value = "tar.gz")]
-        format: String,
+        format:   String,
         /// Prefix to add to paths
         #[arg(long)]
-        prefix: Option<String>,
+        prefix:   Option<String>,
         /// Output file
         #[arg(short, long)]
-        output: Option<String>,
+        output:   Option<String>,
         /// Specific paths to include
         #[arg(last = true)]
-        paths: Vec<String>,
+        paths:    Vec<String>,
     },
 
     /// Give a human-readable name to a commit
@@ -1011,16 +1029,16 @@ enum Commands {
         commit: Option<String>,
         /// Use any tag, not just annotated
         #[arg(long)]
-        tags: bool,
+        tags:   bool,
         /// Use any ref
         #[arg(long)]
-        all: bool,
+        all:    bool,
         /// Always use long format
         #[arg(long)]
-        long: bool,
+        long:   bool,
         /// Add dirty suffix if modified
         #[arg(long)]
-        dirty: bool,
+        dirty:  bool,
         /// Abbreviation length
         #[arg(long, default_value = "7")]
         abbrev: usize,
@@ -1033,13 +1051,13 @@ enum Commands {
         numbered: bool,
         /// Show only counts
         #[arg(short, long)]
-        summary: bool,
+        summary:  bool,
         /// Show email addresses
         #[arg(short, long)]
-        email: bool,
+        email:    bool,
         /// Number of commits to process
         #[arg(long, default_value = "0")]
-        limit: usize,
+        limit:    usize,
     },
 
     /// Repository maintenance tasks
@@ -1047,7 +1065,7 @@ enum Commands {
         /// Action: start, stop, run, status
         action: String,
         /// Task to run (gc, commit-graph, etc.)
-        task: Option<String>,
+        task:   Option<String>,
     },
 
     /// Generate shell completions
@@ -1066,7 +1084,7 @@ enum Commands {
     Serve {
         /// Port to listen on
         #[arg(short, long, default_value = "8080")]
-        port: u16,
+        port:     u16,
         /// Base directory containing repositories
         #[arg(short, long)]
         base_dir: Option<String>,
@@ -1076,12 +1094,12 @@ enum Commands {
     Sync {
         /// Remote name (default: origin)
         #[arg(default_value = "origin")]
-        remote: String,
+        remote:  String,
         /// Branch to sync (default: current branch)
-        branch: Option<String>,
+        branch:  Option<String>,
         /// Force sync (resolve conflicts automatically)
         #[arg(long)]
-        force: bool,
+        force:   bool,
         /// Dry run - show what would be synced
         #[arg(long)]
         dry_run: bool,
@@ -1104,7 +1122,8 @@ async fn main() {
 
     // Initialize telemetry (async operation)
     let config_path = crate::config::global_config_path();
-    let config = Arc::new(Mutex::new(crate::config::Config::load(&config_path).unwrap_or_default()));
+    let config =
+        Arc::new(Mutex::new(crate::config::Config::load(&config_path).unwrap_or_default()));
     let telemetry = Arc::new(telemetry::TelemetryManager::new(config.clone()));
 
     // Record command usage
@@ -1215,44 +1234,43 @@ async fn main() {
         Commands::Commit { message } => commands::commit(&message),
         Commands::Log { limit, oneline, graph, all } => commands::log(limit, oneline, graph, all),
         Commands::Checkout { target, mode } => {
-            let checkout_mode = commands::CheckoutMode::from_str(&mode)
-                .unwrap_or(commands::CheckoutMode::Full);
+            let checkout_mode =
+                commands::CheckoutMode::from_str(&mode).unwrap_or(commands::CheckoutMode::Full);
             commands::checkout(&target, checkout_mode)
-        }
+        },
         Commands::Branch { name, delete } => commands::branch(name.as_deref(), delete),
         Commands::Switch { branch } => commands::switch(&branch),
         Commands::Diff { staged, commit, file } => {
             commands::diff(staged, commit.as_deref(), file.as_deref())
-        }
+        },
         Commands::Tag { name, commit, delete, sort } => {
             let sort_mode = match sort.as_str() {
                 "name" => commands::TagSort::Name,
                 "created" => commands::TagSort::CreatedAt,
                 "version" => commands::TagSort::Version,
                 _ => {
-                    eprintln!("Invalid sort option '{}'. Valid options: name, created, version", sort);
+                    eprintln!(
+                        "Invalid sort option '{}'. Valid options: name, created, version",
+                        sort
+                    );
                     std::process::exit(1);
-                }
+                },
             };
             commands::tag(name.as_deref(), commit.as_deref(), delete, sort_mode)
-        }
+        },
         Commands::Merge { branch, message } => commands::merge(&branch, message.as_deref()),
         Commands::Show { object, stat, name_only, name_status, no_patch } => {
             commands::show(&object, stat, name_only, name_status, no_patch)
-        }
+        },
         Commands::Blame { file, lines } => commands::blame(&file, lines.as_deref()),
-        Commands::Reflog { ref_name, limit } => {
-            commands::reflog(ref_name.as_deref(), limit)
-        }
+        Commands::Reflog { ref_name, limit } => commands::reflog(ref_name.as_deref(), limit),
         Commands::Bisect { action, commit } => {
             commands::bisect(action.as_deref(), commit.as_deref())
-        }
+        },
         Commands::Rebase { upstream, onto, continue_rebase, abort, skip } => {
             commands::rebase(upstream.as_deref(), onto.as_deref(), continue_rebase, abort, skip)
-        }
-        Commands::CherryPick { commits, no_commit } => {
-            commands::cherry_pick(&commits, no_commit)
-        }
+        },
+        Commands::CherryPick { commits, no_commit } => commands::cherry_pick(&commits, no_commit),
         Commands::Reset { target, soft, hard, paths } => {
             let mode = if soft {
                 commands::ResetMode::Soft
@@ -1262,56 +1280,104 @@ async fn main() {
                 commands::ResetMode::Mixed
             };
             commands::reset(target.as_deref(), mode, &paths)
-        }
+        },
         Commands::Restore { paths, staged, worktree, source, ours, theirs } => {
             commands::restore(&paths, staged, worktree, source.as_deref(), ours, theirs)
-        }
+        },
         Commands::Config { key, value, global, list, unset } => {
             commands::config(key.as_deref(), value.as_deref(), global, list, unset)
-        }
+        },
         Commands::Stash { action, message, index } => {
             commands::stash(action.as_deref(), message.as_deref(), index)
-        }
+        },
         Commands::Inspect { file } => commands::inspect(&file),
         Commands::Roundtrip { input, output } => commands::roundtrip(&input, &output),
-        Commands::Segment { file, output, duration } => commands::segment(&file, output.as_deref(), duration),
+        Commands::Segment { file, output, duration } => {
+            commands::segment(&file, output.as_deref(), duration)
+        },
         Commands::Assemble { segments_dir, output } => commands::assemble(&segments_dir, &output),
         #[cfg(feature = "fuser")]
-        Commands::Mount { mount_point, commit, cache_mb } => commands::mount(&mount_point, commit.as_deref(), cache_mb),
+        Commands::Mount { mount_point, commit, cache_mb } => {
+            commands::mount(&mount_point, commit.as_deref(), cache_mb)
+        },
         #[cfg(feature = "fuser")]
         Commands::Unmount { mount_point } => commands::unmount(&mount_point),
         Commands::CacheStats => commands::cache_stats(),
         Commands::FacrDemo { frames, regrade } => commands::facr_demo(frames, regrade),
-        Commands::StreamDemo { input, grade_start, grade_end, segment_seconds, lossless, push, vmaf, edit, otio, import, encrypt, port } => {
-            commands::stream_demo(input, grade_start, grade_end, segment_seconds, lossless, push, vmaf, edit, otio, import, encrypt, port).await
-        }
-        Commands::FacrAdd { input, store, manifest, frame_codec } => {
-            commands::facr_add(&input, store.as_deref(), manifest.as_deref(), frame_codec.as_deref())
-        }
+        Commands::StreamDemo {
+            input,
+            grade_start,
+            grade_end,
+            segment_seconds,
+            lossless,
+            push,
+            vmaf,
+            edit,
+            otio,
+            import,
+            encrypt,
+            port,
+        } => {
+            commands::stream_demo(
+                input,
+                grade_start,
+                grade_end,
+                segment_seconds,
+                lossless,
+                push,
+                vmaf,
+                edit,
+                otio,
+                import,
+                encrypt,
+                port,
+            )
+            .await
+        },
+        Commands::FacrAdd { input, store, manifest, frame_codec } => commands::facr_add(
+            &input,
+            store.as_deref(),
+            manifest.as_deref(),
+            frame_codec.as_deref(),
+        ),
         Commands::FacrCheckout { manifest, output, store, codec } => {
             commands::facr_checkout(&manifest, &output, store.as_deref(), codec.as_deref())
-        }
+        },
         Commands::FacrImportEdl { edl, source, out, fps } => {
             commands::facr_import_edl(&edl, &source, &out, fps)
-        }
+        },
         Commands::FacrImportOtio { otio, source, out } => {
             commands::facr_import_otio(&otio, &source, &out)
-        }
+        },
         Commands::FacrTrim { manifest, start, end, out } => {
             commands::facr_trim(&manifest, start, end, out.as_deref())
-        }
+        },
         Commands::PhotoAdd { input, store, manifest } => {
             commands::photo_add(&input, store.as_deref(), manifest.as_deref())
-        }
-        Commands::PhotoEdit { manifest, exposure, contrast, saturation, white_balance, rotate, crop, out } => {
+        },
+        Commands::PhotoEdit {
+            manifest,
+            exposure,
+            contrast,
+            saturation,
+            white_balance,
+            rotate,
+            crop,
+            out,
+        } => {
             let args = commands::PhotoEditArgs {
-                exposure, contrast, saturation, white_balance, rotate, crop,
+                exposure,
+                contrast,
+                saturation,
+                white_balance,
+                rotate,
+                crop,
             };
             commands::photo_edit(&manifest, args, out.as_deref())
-        }
+        },
         Commands::PhotoRender { manifest, output, store } => {
             commands::photo_render(&manifest, &output, store.as_deref())
-        }
+        },
         Commands::InspectFile { path, chunks } => commands::inspect_file(&path, chunks),
         Commands::RepoStats { verbose } => commands::repo_stats(verbose),
         Commands::Fsck { verbose } => commands::fsck(verbose),
@@ -1321,12 +1387,18 @@ async fn main() {
         Commands::VideoInit { name } => commands::video_init(&name),
         Commands::VideoAddClip { project, file, in_point, out, start, track } => {
             commands::video_add_clip(&project, &file, in_point, out, start, track.as_deref())
-        }
+        },
         Commands::VideoShow { name } => commands::video_show(&name),
         Commands::VideoList => commands::video_list(),
         Commands::ProxyGenerate { files, resolution, codec, preset, all } => {
-            commands::proxy_generate(&files, resolution.as_deref(), codec.as_deref(), preset.as_deref(), all)
-        }
+            commands::proxy_generate(
+                &files,
+                resolution.as_deref(),
+                codec.as_deref(),
+                preset.as_deref(),
+                all,
+            )
+        },
         Commands::ProxyStatus => commands::proxy_status(),
         Commands::ProxyList { verbose } => commands::proxy_list(verbose),
         Commands::ProxyDelete { files, all } => commands::proxy_delete(&files, all),
@@ -1337,41 +1409,51 @@ async fn main() {
         Commands::FreezeStatus => commands::freeze_status(),
         Commands::Freeze { files, tier, apply_policy, all } => {
             commands::freeze(&files, tier.as_deref(), apply_policy, all)
-        }
+        },
         Commands::Thaw { files, all } => commands::thaw(&files, all),
         Commands::FreezePolicy { name, list } => commands::freeze_policy(name.as_deref(), list),
         Commands::EncryptInit { password } => commands::encrypt_init(password.as_deref()),
         Commands::EncryptStatus => commands::encrypt_status(),
         Commands::Login { password } => commands::login(password.as_deref()),
         Commands::Logout => commands::logout(),
-        Commands::ChangePassword { old, new } => commands::change_password(old.as_deref(), new.as_deref()),
+        Commands::ChangePassword { old, new } => {
+            commands::change_password(old.as_deref(), new.as_deref())
+        },
         Commands::Audit { last, event_type } => commands::audit_show(last, event_type.as_deref()),
         Commands::AuditStats => commands::audit_stats(),
         Commands::AuditExport { output } => commands::audit_export(output.as_deref()),
         Commands::P2p { command } => commands::handle_p2p_command(command),
         Commands::Clone { source, dest, branch } => {
             commands::clone(&source, dest.as_deref(), branch.as_deref())
-        }
+        },
         Commands::Remote { action, name, url, verbose, push } => {
             commands::remote(action.as_deref(), name.as_deref(), url.as_deref(), verbose, push)
-        }
+        },
         Commands::Push { remote, branch, force, all } => {
             commands::push(remote.as_deref(), branch.as_deref(), force, all).await
-        }
+        },
         Commands::Pull { remote, branch, rebase } => {
             commands::pull(remote.as_deref(), branch.as_deref(), rebase).await
-        }
+        },
         Commands::FetchObjects { source } => commands::fetch_objects(&source).await,
         Commands::Fetch { remote, all, prune } => {
             commands::fetch(remote.as_deref(), all, prune).await
-        }
+        },
         Commands::Lock { path, reason, ttl, force } => {
             commands::lock_file(&path, reason.as_deref(), ttl, force)
-        }
+        },
         Commands::Unlock { path, force } => commands::unlock(&path, force),
         Commands::Locks { owner, verbose } => commands::locks(owner.as_deref(), verbose),
         Commands::Gc { dry_run, prune, aggressive } => commands::gc(dry_run, prune, aggressive),
-        Commands::Clean { dry_run, force, directories, remove_ignored, only_ignored, exclude, paths } => {
+        Commands::Clean {
+            dry_run,
+            force,
+            directories,
+            remove_ignored,
+            only_ignored,
+            exclude,
+            paths,
+        } => {
             let options = commands::clean::CleanOptions {
                 dry_run,
                 force,
@@ -1385,8 +1467,17 @@ async fn main() {
                 commands::clean::print_results(&result, dry_run);
                 ()
             })
-        }
-        Commands::Grep { pattern, line_number, ignore_case, word_regexp, count, files_with_matches, fixed_strings, paths } => {
+        },
+        Commands::Grep {
+            pattern,
+            line_number,
+            ignore_case,
+            word_regexp,
+            count,
+            files_with_matches,
+            fixed_strings,
+            paths,
+        } => {
             let options = commands::grep::GrepOptions {
                 pattern,
                 line_number,
@@ -1402,83 +1493,87 @@ async fn main() {
                 commands::grep::print_results(&result, &options);
                 ()
             })
-        }
-        Commands::Worktree { action, path, branch, force } => {
-            match action.as_str() {
-                "list" => commands::worktree::list().map(|wts| {
-                    commands::worktree::print_list(&wts, false);
-                    ()
-                }),
-                "add" => match path {
-                    Some(p) => commands::worktree::add(&p, branch.as_deref(), branch.is_none(), force).map(|wt| {
+        },
+        Commands::Worktree { action, path, branch, force } => match action.as_str() {
+            "list" => commands::worktree::list().map(|wts| {
+                commands::worktree::print_list(&wts, false);
+                ()
+            }),
+            "add" => match path {
+                Some(p) => commands::worktree::add(&p, branch.as_deref(), branch.is_none(), force)
+                    .map(|wt| {
                         println!("Created worktree at {}", wt.path.display());
                         ()
                     }),
-                    None => Err(anyhow::anyhow!("Path required for worktree add")),
-                },
-                "remove" | "rm" => match path {
-                    Some(p) => commands::worktree::remove(&p, force),
-                    None => Err(anyhow::anyhow!("Path required for worktree remove")),
-                },
-                "prune" => commands::worktree::prune(false).map(|pruned| {
-                    if pruned.is_empty() {
-                        println!("Nothing to prune");
-                    } else {
-                        for p in pruned {
-                            println!("Pruned {}", p.display());
-                        }
+                None => Err(anyhow::anyhow!("Path required for worktree add")),
+            },
+            "remove" | "rm" => match path {
+                Some(p) => commands::worktree::remove(&p, force),
+                None => Err(anyhow::anyhow!("Path required for worktree remove")),
+            },
+            "prune" => commands::worktree::prune(false).map(|pruned| {
+                if pruned.is_empty() {
+                    println!("Nothing to prune");
+                } else {
+                    for p in pruned {
+                        println!("Pruned {}", p.display());
                     }
-                    ()
-                }),
-                "lock" => match path {
-                    Some(p) => commands::worktree::lock(&p, None),
-                    None => Err(anyhow::anyhow!("Path required for worktree lock")),
-                },
-                "unlock" => match path {
-                    Some(p) => commands::worktree::unlock(&p),
-                    None => Err(anyhow::anyhow!("Path required for worktree unlock")),
-                },
-                _ => Err(anyhow::anyhow!("Unknown worktree action: {}. Use: list, add, remove, prune, lock, unlock", action)),
-            }
-        }
-        Commands::SparseCheckout { action, patterns, cone } => {
-            match action.as_str() {
-                "init" => commands::sparse_checkout::init(cone),
-                "set" => commands::sparse_checkout::set(&patterns, cone),
-                "add" => commands::sparse_checkout::add(&patterns),
-                "list" => commands::sparse_checkout::list().map(|patterns| {
-                    for p in patterns {
-                        println!("{}", p);
-                    }
-                    ()
-                }),
-                "disable" => commands::sparse_checkout::disable(),
-                "status" => commands::sparse_checkout::print_status(),
-                _ => Err(anyhow::anyhow!("Unknown sparse-checkout action: {}. Use: init, set, add, list, disable", action)),
-            }
-        }
-        Commands::Hooks { action, hook, force, args } => {
-            match action.as_str() {
-                "list" => commands::hooks::list(),
-                "install" => match hook {
-                    Some(h) => commands::hooks::install(&h, force),
-                    None => Err(anyhow::anyhow!("Hook name required")),
-                },
-                "uninstall" => match hook {
-                    Some(h) => commands::hooks::uninstall(&h),
-                    None => Err(anyhow::anyhow!("Hook name required")),
-                },
-                "run" => match hook {
-                    Some(h) => commands::hooks::run(&h, &args),
-                    None => Err(anyhow::anyhow!("Hook name required")),
-                },
-                "show" => match hook {
-                    Some(h) => commands::hooks::show(&h),
-                    None => Err(anyhow::anyhow!("Hook name required")),
-                },
-                _ => Err(anyhow::anyhow!("Unknown hooks action: {}. Use: list, install, uninstall, run, show", action)),
-            }
-        }
+                }
+                ()
+            }),
+            "lock" => match path {
+                Some(p) => commands::worktree::lock(&p, None),
+                None => Err(anyhow::anyhow!("Path required for worktree lock")),
+            },
+            "unlock" => match path {
+                Some(p) => commands::worktree::unlock(&p),
+                None => Err(anyhow::anyhow!("Path required for worktree unlock")),
+            },
+            _ => Err(anyhow::anyhow!(
+                "Unknown worktree action: {}. Use: list, add, remove, prune, lock, unlock",
+                action
+            )),
+        },
+        Commands::SparseCheckout { action, patterns, cone } => match action.as_str() {
+            "init" => commands::sparse_checkout::init(cone),
+            "set" => commands::sparse_checkout::set(&patterns, cone),
+            "add" => commands::sparse_checkout::add(&patterns),
+            "list" => commands::sparse_checkout::list().map(|patterns| {
+                for p in patterns {
+                    println!("{}", p);
+                }
+                ()
+            }),
+            "disable" => commands::sparse_checkout::disable(),
+            "status" => commands::sparse_checkout::print_status(),
+            _ => Err(anyhow::anyhow!(
+                "Unknown sparse-checkout action: {}. Use: init, set, add, list, disable",
+                action
+            )),
+        },
+        Commands::Hooks { action, hook, force, args } => match action.as_str() {
+            "list" => commands::hooks::list(),
+            "install" => match hook {
+                Some(h) => commands::hooks::install(&h, force),
+                None => Err(anyhow::anyhow!("Hook name required")),
+            },
+            "uninstall" => match hook {
+                Some(h) => commands::hooks::uninstall(&h),
+                None => Err(anyhow::anyhow!("Hook name required")),
+            },
+            "run" => match hook {
+                Some(h) => commands::hooks::run(&h, &args),
+                None => Err(anyhow::anyhow!("Hook name required")),
+            },
+            "show" => match hook {
+                Some(h) => commands::hooks::show(&h),
+                None => Err(anyhow::anyhow!("Hook name required")),
+            },
+            _ => Err(anyhow::anyhow!(
+                "Unknown hooks action: {}. Use: list, install, uninstall, run, show",
+                action
+            )),
+        },
         Commands::Archive { tree_ish, format, prefix, output, paths } => {
             match commands::archive::ArchiveFormat::from_str(&format) {
                 Some(fmt) => {
@@ -1490,10 +1585,10 @@ async fn main() {
                         paths,
                     };
                     commands::archive::archive(&options).map(|_| ())
-                }
+                },
                 None => Err(anyhow::anyhow!("Unknown format: {}. Use: tar, tar.gz, zip", format)),
             }
-        }
+        },
         Commands::Describe { commit, tags, all, long, dirty, abbrev } => {
             let options = commands::describe::DescribeOptions {
                 commit,
@@ -1508,7 +1603,7 @@ async fn main() {
                 commands::describe::print_result(&result);
                 ()
             })
-        }
+        },
         Commands::Shortlog { numbered, summary, email, limit } => {
             let options = commands::shortlog::ShortlogOptions {
                 numbered,
@@ -1521,87 +1616,87 @@ async fn main() {
                 commands::shortlog::print_shortlog(&entries, &options);
                 ()
             })
-        }
-        Commands::Maintenance { action, task } => {
-            match action.as_str() {
-                "start" => commands::maintenance::start(),
-                "stop" => commands::maintenance::stop(),
-                "run" => commands::maintenance::run(task.as_deref()),
-                "status" => commands::maintenance::status(),
-                _ => Err(anyhow::anyhow!("Unknown maintenance action: {}. Use: start, stop, run, status", action)),
-            }
-        }
-        Commands::Completions { shell } => {
-            commands::completions::generate_completions(&shell)
-        }
-        Commands::Telemetry { command } => {
-            match command {
-                TelemetryCommands::Enable => {
-                    match telemetry.enable().await {
-                        Ok(()) => {
-                            println!("Telemetry enabled. Thank you for helping improve Dits!");
-                            println!("You can disable telemetry anytime with: dits telemetry disable");
-                            Ok(())
-                        }
-                        Err(e) => {
-                            eprintln!("Failed to enable telemetry: {}", e);
-                            Err(anyhow::anyhow!("Failed to enable telemetry"))
-                        }
+        },
+        Commands::Maintenance { action, task } => match action.as_str() {
+            "start" => commands::maintenance::start(),
+            "stop" => commands::maintenance::stop(),
+            "run" => commands::maintenance::run(task.as_deref()),
+            "status" => commands::maintenance::status(),
+            _ => Err(anyhow::anyhow!(
+                "Unknown maintenance action: {}. Use: start, stop, run, status",
+                action
+            )),
+        },
+        Commands::Completions { shell } => commands::completions::generate_completions(&shell),
+        Commands::Telemetry { command } => match command {
+            TelemetryCommands::Enable => match telemetry.enable().await {
+                Ok(()) => {
+                    println!("Telemetry enabled. Thank you for helping improve Dits!");
+                    println!("You can disable telemetry anytime with: dits telemetry disable");
+                    Ok(())
+                },
+                Err(e) => {
+                    eprintln!("Failed to enable telemetry: {}", e);
+                    Err(anyhow::anyhow!("Failed to enable telemetry"))
+                },
+            },
+            TelemetryCommands::Disable => match telemetry.disable().await {
+                Ok(()) => {
+                    println!("Telemetry disabled.");
+                    Ok(())
+                },
+                Err(e) => {
+                    eprintln!("Failed to disable telemetry: {}", e);
+                    Err(anyhow::anyhow!("Failed to disable telemetry"))
+                },
+            },
+            TelemetryCommands::Status => match telemetry.status().await {
+                Ok(status) => {
+                    println!("Telemetry status:");
+                    println!("  Enabled: {}", status.enabled);
+                    println!("  User ID: {}", status.user_id);
+                    if status.last_sent > 0 {
+                        let datetime = std::time::UNIX_EPOCH
+                            + std::time::Duration::from_secs(status.last_sent);
+                        println!(
+                            "  Last sent: {}",
+                            chrono::DateTime::<chrono::Utc>::from(datetime)
+                                .format("%Y-%m-%d %H:%M:%S UTC")
+                        );
+                    } else {
+                        println!("  Last sent: Never");
                     }
-                }
-                TelemetryCommands::Disable => {
-                    match telemetry.disable().await {
-                        Ok(()) => {
-                            println!("Telemetry disabled.");
-                            Ok(())
-                        }
-                        Err(e) => {
-                            eprintln!("Failed to disable telemetry: {}", e);
-                            Err(anyhow::anyhow!("Failed to disable telemetry"))
-                        }
-                    }
-                }
-                TelemetryCommands::Status => {
-                    match telemetry.status().await {
-                        Ok(status) => {
-                            println!("Telemetry status:");
-                            println!("  Enabled: {}", status.enabled);
-                            println!("  User ID: {}", status.user_id);
-                            if status.last_sent > 0 {
-                                let datetime = std::time::UNIX_EPOCH + std::time::Duration::from_secs(status.last_sent);
-                                println!("  Last sent: {}", chrono::DateTime::<chrono::Utc>::from(datetime).format("%Y-%m-%d %H:%M:%S UTC"));
-                            } else {
-                                println!("  Last sent: Never");
-                            }
-                            println!();
-                            println!("Telemetry helps us improve Dits by collecting anonymized usage data.");
-                            println!("No personal information or file contents are ever collected.");
-                            println!("Enable with: dits telemetry enable");
-                            println!("Disable with: dits telemetry disable");
-                            Ok(())
-                        }
-                        Err(e) => {
-                            eprintln!("Failed to get telemetry status: {}", e);
-                            Err(anyhow::anyhow!("Failed to get telemetry status"))
-                        }
-                    }
-                }
-            }
-        }
+                    println!();
+                    println!(
+                        "Telemetry helps us improve Dits by collecting anonymized usage data."
+                    );
+                    println!("No personal information or file contents are ever collected.");
+                    println!("Enable with: dits telemetry enable");
+                    println!("Disable with: dits telemetry disable");
+                    Ok(())
+                },
+                Err(e) => {
+                    eprintln!("Failed to get telemetry status: {}", e);
+                    Err(anyhow::anyhow!("Failed to get telemetry status"))
+                },
+            },
+        },
         Commands::Serve { port, base_dir } => {
             use std::path::PathBuf;
-            let base = base_dir.map(PathBuf::from).unwrap_or_else(|| std::env::current_dir().unwrap());
+            let base = base_dir
+                .map(PathBuf::from)
+                .unwrap_or_else(|| std::env::current_dir().unwrap());
             match crate::store::remote_server::start_server(base, port).await {
                 Ok(()) => Ok(()),
                 Err(e) => {
                     eprintln!("Failed to start server: {}", e);
                     Err(anyhow::anyhow!("Failed to start server"))
-                }
+                },
             }
-        }
+        },
         Commands::Sync { remote, branch, force, dry_run } => {
             commands::sync(&remote, branch.as_deref(), force, dry_run).await
-        }
+        },
     };
 
     match result {
@@ -1609,6 +1704,6 @@ async fn main() {
         Err(e) => {
             eprintln!("Error: {}", e);
             std::process::exit(1);
-        }
+        },
     }
 }

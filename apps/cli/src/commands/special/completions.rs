@@ -1,8 +1,9 @@
 //! Completions command - Generate shell completions.
 
+use std::io;
+
 use anyhow::Result;
 use clap_complete::{generate, Shell};
-use std::io;
 
 /// Generate shell completions
 pub fn generate_completions(shell: &str) -> Result<()> {
@@ -17,13 +18,13 @@ pub fn generate_completions(shell: &str) -> Result<()> {
             shell
         ),
     };
-    
+
     // We need to get the clap Command from main.rs
     // For now, we'll create a minimal version
     let mut cmd = create_cli_command();
-    
+
     generate(shell, &mut cmd, "dits", &mut io::stdout());
-    
+
     Ok(())
 }
 
@@ -36,7 +37,7 @@ pub fn print_install_instructions(shell: &str) {
             println!();
             println!("# Or save to a file:");
             println!("dits completions bash > /etc/bash_completion.d/dits");
-        }
+        },
         "zsh" => {
             println!("# Add this to your ~/.zshrc:");
             println!("eval \"$(dits completions zsh)\"");
@@ -44,18 +45,18 @@ pub fn print_install_instructions(shell: &str) {
             println!("# Or save to a file:");
             println!("dits completions zsh > ~/.zsh/completions/_dits");
             println!("# Make sure ~/.zsh/completions is in your fpath");
-        }
+        },
         "fish" => {
             println!("# Save to fish completions directory:");
             println!("dits completions fish > ~/.config/fish/completions/dits.fish");
-        }
+        },
         "powershell" | "ps" => {
             println!("# Add to your PowerShell profile:");
             println!("dits completions powershell | Out-String | Invoke-Expression");
-        }
+        },
         _ => {
             println!("Supported shells: bash, zsh, fish, powershell");
-        }
+        },
     }
 }
 

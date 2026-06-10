@@ -6,25 +6,27 @@
 //! - Verifying commit graph integrity
 //! - Checking ref validity
 
-use crate::core::{Hash, Hasher};
-use crate::store::Repository;
+use std::{collections::HashSet, fs, path::Path};
+
 use anyhow::{Context, Result};
 use console::style;
-use std::collections::HashSet;
-use std::fs;
-use std::path::Path;
 use walkdir::WalkDir;
+
+use crate::{
+    core::{Hash, Hasher},
+    store::Repository,
+};
 
 /// Result of fsck operation.
 #[derive(Debug, Default)]
 pub struct FsckResult {
-    pub objects_checked: usize,
-    pub chunks_checked: usize,
+    pub objects_checked:   usize,
+    pub chunks_checked:    usize,
     pub manifests_checked: usize,
-    pub commits_checked: usize,
-    pub refs_checked: usize,
-    pub errors: Vec<String>,
-    pub warnings: Vec<String>,
+    pub commits_checked:   usize,
+    pub refs_checked:      usize,
+    pub errors:            Vec<String>,
+    pub warnings:          Vec<String>,
 }
 
 impl FsckResult {
@@ -77,26 +79,11 @@ pub fn fsck(verbose: bool) -> Result<()> {
     println!();
     println!("{}", style("Integrity Check Results:").bold().underlined());
     println!();
-    println!(
-        "  Objects checked: {}",
-        result.objects_checked
-    );
-    println!(
-        "    Chunks:    {}",
-        result.chunks_checked
-    );
-    println!(
-        "    Manifests: {}",
-        result.manifests_checked
-    );
-    println!(
-        "    Commits:   {}",
-        result.commits_checked
-    );
-    println!(
-        "  Refs checked:    {}",
-        result.refs_checked
-    );
+    println!("  Objects checked: {}", result.objects_checked);
+    println!("    Chunks:    {}", result.chunks_checked);
+    println!("    Manifests: {}", result.manifests_checked);
+    println!("    Commits:   {}", result.commits_checked);
+    println!("  Refs checked:    {}", result.refs_checked);
     println!();
 
     // Print warnings
@@ -110,22 +97,14 @@ pub fn fsck(verbose: bool) -> Result<()> {
 
     // Print errors
     if result.errors.is_empty() {
-        println!(
-            "{} {}",
-            style("✓").green().bold(),
-            style("Repository is healthy.").green()
-        );
+        println!("{} {}", style("✓").green().bold(), style("Repository is healthy.").green());
     } else {
         println!("{}", style("Errors:").red().bold());
         for error in &result.errors {
             println!("  {} {}", style("✗").red(), error);
         }
         println!();
-        println!(
-            "{} {} errors found.",
-            style("✗").red().bold(),
-            result.errors.len()
-        );
+        println!("{} {} errors found.", style("✗").red().bold(), result.errors.len());
     }
 
     Ok(())
@@ -150,10 +129,9 @@ fn check_chunks(dits_dir: &Path, result: &mut FsckResult) -> Result<()> {
         let rel_path = entry.path().strip_prefix(&chunks_dir).unwrap();
         let components: Vec<_> = rel_path.components().collect();
         if components.len() != 2 {
-            result.warnings.push(format!(
-                "Unexpected chunk path structure: {}",
-                entry.path().display()
-            ));
+            result
+                .warnings
+                .push(format!("Unexpected chunk path structure: {}", entry.path().display()));
             continue;
         }
 
@@ -165,12 +143,11 @@ fn check_chunks(dits_dir: &Path, result: &mut FsckResult) -> Result<()> {
         let data = match fs::read(entry.path()) {
             Ok(d) => d,
             Err(e) => {
-                result.errors.push(format!(
-                    "Failed to read chunk {}: {}",
-                    expected_hex, e
-                ));
+                result
+                    .errors
+                    .push(format!("Failed to read chunk {}: {}", expected_hex, e));
                 continue;
-            }
+            },
         };
 
         let actual_hash = Hasher::hash(&data);
@@ -206,10 +183,9 @@ fn check_manifests(dits_dir: &Path, result: &mut FsckResult) -> Result<()> {
         let rel_path = entry.path().strip_prefix(&manifests_dir).unwrap();
         let components: Vec<_> = rel_path.components().collect();
         if components.len() != 2 {
-            result.warnings.push(format!(
-                "Unexpected manifest path structure: {}",
-                entry.path().display()
-            ));
+            result
+                .warnings
+                .push(format!("Unexpected manifest path structure: {}", entry.path().display()));
             continue;
         }
 
@@ -221,12 +197,11 @@ fn check_manifests(dits_dir: &Path, result: &mut FsckResult) -> Result<()> {
         let json = match fs::read_to_string(entry.path()) {
             Ok(j) => j,
             Err(e) => {
-                result.errors.push(format!(
-                    "Failed to read manifest {}: {}",
-                    expected_hex, e
-                ));
+                result
+                    .errors
+                    .push(format!("Failed to read manifest {}: {}", expected_hex, e));
                 continue;
-            }
+            },
         };
 
         let actual_hash = Hasher::hash(json.as_bytes());
@@ -241,10 +216,9 @@ fn check_manifests(dits_dir: &Path, result: &mut FsckResult) -> Result<()> {
 
         // Try to parse the manifest
         if let Err(e) = serde_json::from_str::<serde_json::Value>(&json) {
-            result.errors.push(format!(
-                "Invalid manifest JSON {}: {}",
-                expected_hex, e
-            ));
+            result
+                .errors
+                .push(format!("Invalid manifest JSON {}: {}", expected_hex, e));
         }
     }
 
@@ -270,10 +244,9 @@ fn check_commits(dits_dir: &Path, result: &mut FsckResult) -> Result<()> {
         let rel_path = entry.path().strip_prefix(&commits_dir).unwrap();
         let components: Vec<_> = rel_path.components().collect();
         if components.len() != 2 {
-            result.warnings.push(format!(
-                "Unexpected commit path structure: {}",
-                entry.path().display()
-            ));
+            result
+                .warnings
+                .push(format!("Unexpected commit path structure: {}", entry.path().display()));
             continue;
         }
 
@@ -285,12 +258,11 @@ fn check_commits(dits_dir: &Path, result: &mut FsckResult) -> Result<()> {
         let json = match fs::read_to_string(entry.path()) {
             Ok(j) => j,
             Err(e) => {
-                result.errors.push(format!(
-                    "Failed to read commit {}: {}",
-                    expected_hex, e
-                ));
+                result
+                    .errors
+                    .push(format!("Failed to read commit {}: {}", expected_hex, e));
                 continue;
-            }
+            },
         };
 
         // Parse the commit and verify stored hash
@@ -304,13 +276,12 @@ fn check_commits(dits_dir: &Path, result: &mut FsckResult) -> Result<()> {
                         ));
                     }
                 }
-            }
+            },
             Err(e) => {
-                result.errors.push(format!(
-                    "Invalid commit JSON {}: {}",
-                    expected_hex, e
-                ));
-            }
+                result
+                    .errors
+                    .push(format!("Invalid commit JSON {}: {}", expected_hex, e));
+            },
         }
     }
 
@@ -333,18 +304,16 @@ fn check_refs(repo: &Repository, result: &mut FsckResult) -> Result<()> {
             let target = head_content.strip_prefix("ref: ").unwrap();
             let target_path = repo.dits_dir().join(target);
             if !target_path.exists() {
-                result.warnings.push(format!(
-                    "HEAD points to non-existent ref: {}",
-                    target
-                ));
+                result
+                    .warnings
+                    .push(format!("HEAD points to non-existent ref: {}", target));
             }
         } else {
             // Detached HEAD - verify commit exists
             if let Err(_) = Hash::from_hex(head_content) {
-                result.errors.push(format!(
-                    "HEAD contains invalid hash: {}",
-                    head_content
-                ));
+                result
+                    .errors
+                    .push(format!("HEAD contains invalid hash: {}", head_content));
             }
         }
     }
@@ -378,13 +347,12 @@ fn check_refs(repo: &Repository, result: &mut FsckResult) -> Result<()> {
                             ref_name, hash_hex
                         ));
                     }
-                }
+                },
                 Err(_) => {
-                    result.errors.push(format!(
-                        "Branch {} contains invalid hash: {}",
-                        ref_name, hash_hex
-                    ));
-                }
+                    result
+                        .errors
+                        .push(format!("Branch {} contains invalid hash: {}", ref_name, hash_hex));
+                },
             }
         }
     }

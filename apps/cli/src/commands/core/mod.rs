@@ -2,17 +2,14 @@
 
 pub mod add;
 pub mod commit;
-pub mod status;
+pub mod diff;
 pub mod log;
 pub mod show;
-pub mod diff;
+pub mod status;
 
 pub use add::add;
 pub use commit::commit;
-pub use status::status;
+pub use diff::diff;
 pub use log::log;
 pub use show::show;
-pub use diff::diff;
-
-
-
+pub use status::status;

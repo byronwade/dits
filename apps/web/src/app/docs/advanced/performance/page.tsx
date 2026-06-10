@@ -9,7 +9,7 @@ import {
 import { Callout } from "@/components/ui/callout";
 import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
-import { Zap, Settings, Database, Cpu, Clock, LineChart } from "lucide-react";
+import { Settings, Database, Cpu, Clock, LineChart } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Performance Tuning",
