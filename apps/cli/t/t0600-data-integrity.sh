@@ -75,15 +75,14 @@ test_expect_success 'System detects single bit flips' '
 		cp "$chunk_file" "${chunk_file}.backup" &&
 
 		# Flip a single bit
-		perl -e "
-			open(F, \'+\<\', \'$chunk_file\') or die;
-			seek(F, 100, 0);
-			read(F, \$byte, 1);
-			\$flipped = chr(ord(\$byte) ^ 0x01);
-			seek(F, 100, 0);
-			print F \$flipped;
-			close(F);
-		" &&
+		python3 -c "
+f = open(\"$chunk_file\", \"r+b\")
+f.seek(100)
+b = f.read(1)
+f.seek(100)
+f.write(bytes([b[0] ^ 0x01]))
+f.close()
+" &&
 
 		# Should detect the corruption
 		"$DITS_BINARY" fsck >/dev/null 2>&1 || true &&
@@ -107,14 +106,13 @@ test_expect_success 'System detects multi-bit corruption' '
 		cp "$chunk_file" "${chunk_file}.backup" &&
 
 		# Corrupt multiple bytes
-		perl -e "
-			open(F, \'+\<\', \'$chunk_file\') or die;
-			for my \$i (0..9) {
-				seek(F, 200 + \$i, 0);
-				print F chr(0xFF);
-			}
-			close(F);
-		" &&
+		python3 -c "
+f = open(\"$chunk_file\", \"r+b\")
+for i in range(10):
+    f.seek(200 + i)
+    f.write(bytes([0xFF]))
+f.close()
+" &&
 
 		"$DITS_BINARY" fsck >/dev/null 2>&1 || true &&
 		mv "${chunk_file}.backup" "$chunk_file" &&
@@ -293,18 +291,15 @@ test_expect_success 'System detects silent corruption in stored data' '
 		cp "$chunk_file" "${chunk_file}.backup" &&
 
 		# Make a subtle change that could be missed
-		perl -e "
-			open(F, \'+\<\', \'$chunk_file\') or die;
-			# Change a byte in a way that might not be immediately obvious
-			seek(F, 1000, 0);
-			read(F, \$byte, 1);
-			# Change 0x00 to 0x01 (very subtle change)
-			if (ord(\$byte) == 0) {
-				seek(F, 1000, 0);
-				print F chr(1);
-			}
-			close(F);
-		" &&
+		python3 -c "
+f = open(\"$chunk_file\", \"r+b\")
+f.seek(1000)
+b = f.read(1)
+if b[0] == 0:
+    f.seek(1000)
+    f.write(bytes([1]))
+f.close()
+" &&
 
 		# Should detect the corruption
 		"$DITS_BINARY" fsck >/dev/null 2>&1 || true &&

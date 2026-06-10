@@ -78,7 +78,7 @@ test_expect_success 'Storage tier migration works correctly' '
 		done
 	done &&
 
-	# Verify migration didn't corrupt data
+	# Verify migration did not corrupt data
 	test_file_exists important_data.txt &&
 	"$DITS_BINARY" freeze-status >/dev/null 2>&1 2>/dev/null || true &&
 
@@ -137,7 +137,7 @@ test_expect_success 'Automatic lifecycle policies work based on access patterns'
 	# Recent file gets accessed frequently
 	cat recent_file.txt >/dev/null &&
 
-	# Old file hasn't been accessed
+	# Old file has not been accessed
 	# (In real implementation, this would be tracked)
 
 	# Apply access-pattern-based policies
