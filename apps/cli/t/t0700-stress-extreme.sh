@@ -320,7 +320,7 @@ test_expect_success 'System handles extremely long filenames' '
 
 	# Create files with very long names (pure POSIX - no Perl needed)
 	max_name_length=255
-	long_name=$(printf "%-${max_name_length}s" "" | tr ' ' 'a') &&
+	long_name=$(printf "%-${max_name_length}s" "" | tr " " "a") &&
 	test_write_file "$long_name.txt" "Content with extremely long filename" &&
 	"$DITS_BINARY" add "$long_name.txt" >/dev/null 2>&1 2>/dev/null || true &&
 
