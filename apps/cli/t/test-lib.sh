@@ -140,6 +140,10 @@ trap remove_trash EXIT
 # TEST PREREQUISITES AND SKIPPING
 # ============================================================================
 
+# Flag set by test_skip_if_missing_prereq so test_expect_success knows the
+# test was intentionally skipped (not a real failure).
+_test_skip_requested=0
+
 # Test prerequisites - check if required tools/commands are available
 test_prereq() {
 	local prereq="$1"
@@ -151,9 +155,10 @@ test_prereq() {
 			command -v convert >/dev/null 2>&1
 			;;
 		LARGE_DISK)
-			# Check if we have at least 10GB free space
+			# Require 50GB free to avoid running large-file tests in constrained
+			# environments (e.g. GitHub Actions runners with ~14 GB free disk).
 			local free_kb=$(df -k . | tail -1 | awk '{print $4}')
-			test $free_kb -gt 10000000  # 10GB in KB
+			test $free_kb -gt 50000000  # 50GB in KB
 			;;
 		FAST_NETWORK)
 			# Basic network connectivity check
@@ -171,17 +176,21 @@ test_prereq() {
 	esac
 }
 
-# Skip a test if prerequisites are not met
+# Skip a test if prerequisites are not met.
+# Returns 0 (continue) when the prereq IS met; returns 1 (stop &&-chain) and
+# sets _test_skip_requested when the prereq is NOT met.  test_expect_success
+# checks the flag so the test is recorded as a skip rather than a failure.
 test_skip_if_missing_prereq() {
 	local prereq="$1"
 	local reason="${2:-$prereq not available}"
 
 	if ! test_prereq "$prereq"
 	then
+		_test_skip_requested=1
 		test_skip "$reason"
-		return 0
+		return 1  # stop the &&-chain without running the rest of the test
 	fi
-	return 1  # Don't skip
+	return 0  # prereq met - continue
 }
 
 # Set up test prerequisites
@@ -263,11 +272,15 @@ test_failure_() {
 
 # Run a test that should succeed
 test_expect_success() {
+	_test_skip_requested=0
 	start_test_case_output "$1"
 
 	if eval "$2"
 	then
 		test_ok_ "$1"
+	elif test $_test_skip_requested -eq 1
+	then
+		: # intentionally skipped via test_skip_if_missing_prereq
 	else
 		test_failure_ "$1" "command failed: $2"
 	fi
@@ -322,8 +335,15 @@ test_write_file() {
 test_write_binary() {
 	local filename="$1"
 	local size="${2:-1024}"
-	# Create a file with some predictable binary content
-	perl -e "print chr(\$_ % 256) for 0..($size-1)" >"$filename"
+	# Use truncate for speed (creates a sparse file; content is zeros).
+	# Fall back to dd when truncate is unavailable.
+	if command -v truncate >/dev/null 2>&1
+	then
+		truncate -s "$size" "$filename"
+	else
+		dd if=/dev/zero bs=65536 count=$(( (size + 65535) / 65536 )) 2>/dev/null \
+			| head -c "$size" > "$filename"
+	fi
 }
 
 # Create a large test file for performance testing
@@ -413,12 +433,13 @@ test_wait_for() {
 # PERFORMANCE TESTING HELPERS
 # ============================================================================
 
-# Time a command and return milliseconds
+# Time a command and return milliseconds (second granularity via date +%s)
 test_time_ms() {
-	local start=$(perl -MTime::HiRes=time -e 'print int(time * 1000)')
+	local start end
+	start=$(date +%s)
 	eval "$1"
-	local end=$(perl -MTime::HiRes=time -e 'print int(time * 1000)')
-	echo $((end - start))
+	end=$(date +%s)
+	echo $(( (end - start) * 1000 ))
 }
 
 # Assert that a command takes less than a certain time
