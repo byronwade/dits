@@ -111,7 +111,8 @@ export default function LargeFilesPage() {
                 <Card>
                     <CardHeader>
                         <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
-                            <Image className="size-5 text-brand" alt="" />
+                            {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                            <Image className="size-5 text-brand" />
                         </div>
                         <CardTitle className="text-base">Images</CardTitle>
                         <p className="text-xs text-muted-foreground mt-1">.psd, .tiff, .raw, .exr, .dpx</p>
