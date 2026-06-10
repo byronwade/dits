@@ -33,7 +33,10 @@ serde_json = "1.0"
 rayon = "1.10"
 
 # Git integration for text files (Phase 3.6 Hybrid Storage)
-git2 = { version = "0.19", features = ["vendored-libgit2"] }
+# `vendored-openssl` builds OpenSSL from source so cross-target builds (e.g.
+# x86_64-apple-darwin on an arm64 runner) don't depend on a system OpenSSL that
+# pkg-config can't locate for the target.
+git2 = { version = "0.19", features = ["vendored-libgit2", "vendored-openssl"] }
 
 # Utilities
 hex = "0.4"
