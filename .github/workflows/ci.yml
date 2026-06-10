@@ -343,19 +343,31 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
-      # actions-rs/* is unmaintained and the repo was removed; rustsec/audit-check
-      # is the maintained successor. Mirror the exact ignore list from the
-      # security job so both gates behave identically.
-      - name: Scan Rust dependencies
-        uses: rustsec/audit-check@v2
+      # actions-rs/audit was removed from GitHub; run cargo-audit directly.
+      # Mirror the exact ignore list from the Security Audit job.
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: >-
-            --deny warnings
-            --ignore RUSTSEC-2025-0141
-            --ignore RUSTSEC-2025-0119
-            --ignore RUSTSEC-2026-0008
-            --ignore RUSTSEC-2026-0002
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install cargo-audit
+        run: cargo install --locked cargo-audit
+
+      - name: Scan Rust dependencies
+        run: >-
+          cargo audit --deny warnings
+          --ignore RUSTSEC-2025-0141
+          --ignore RUSTSEC-2025-0119
+          --ignore RUSTSEC-2026-0008
+          --ignore RUSTSEC-2026-0002
 
       # This repo uses npm (root package-lock.json), not pnpm. `--audit-level
       # high` gates on genuinely actionable advisories without failing on the
