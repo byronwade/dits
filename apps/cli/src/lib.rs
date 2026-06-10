@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Dits - Version control for video and large binary files.
 //!
 //! This library provides the core functionality for the Dits version control

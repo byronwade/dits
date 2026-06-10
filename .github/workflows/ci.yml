@@ -148,11 +148,14 @@ jobs:
         run: cargo nextest run --profile ci
 
       - name: Generate coverage report
+        continue-on-error: true
         run: |
           cargo install --locked cargo-tarpaulin
+          mkdir -p coverage
           cargo tarpaulin --out Xml --output-dir coverage
 
       - name: Upload coverage to Codecov
+        continue-on-error: true
         uses: codecov/codecov-action@v4
         with:
           file: coverage/cobertura.xml

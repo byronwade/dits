@@ -150,7 +150,7 @@ impl DitsFS {
         let ranges = entry.chunks_for_range(offset, actual_size as u64);
 
         // Prefetch upcoming chunks
-        if ranges.len() > 0 {
+        if !ranges.is_empty() {
             let chunk_idx = ranges.last().unwrap().0;
             let prefetch_hashes: Vec<Hash> = entry
                 .chunks
