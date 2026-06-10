@@ -42,7 +42,7 @@ mod entry;
 mod fuse;
 
 #[cfg(feature = "fuser")]
-pub use fuse::{mount, unmount, DitsFS};
+pub use fuse::{mount, unmount};
 #[allow(unused_imports)]
 pub use {
     cache::{CacheConfig, ChunkCache},

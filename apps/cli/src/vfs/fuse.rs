@@ -3,17 +3,11 @@
 //! This module provides a read-only FUSE filesystem that exposes
 //! a repository commit as a virtual directory structure.
 
-use std::{
-    ffi::OsStr,
-    path::Path,
-    sync::Arc,
-    time::{Duration, SystemTime, UNIX_EPOCH},
-};
+use std::{ffi::OsStr, path::Path, sync::Arc, time::Duration};
 
 use byteorder::{BigEndian, ByteOrder};
 use fuser::{
     FileAttr, FileType, Filesystem, ReplyAttr, ReplyData, ReplyDirectory, ReplyEntry, Request,
-    FUSE_ROOT_ID,
 };
 use libc::{EISDIR, ENOENT, ENOTDIR};
 
@@ -91,7 +85,7 @@ fn entry_to_attr(entry: &VfsEntry) -> FileAttr {
     FileAttr {
         ino: entry.inode,
         size: entry.size,
-        blocks: (entry.size + 511) / 512,
+        blocks: entry.size.div_ceil(512),
         atime: entry.atime,
         mtime: entry.mtime,
         ctime: entry.ctime,
@@ -601,7 +595,7 @@ mod tests {
 
     #[test]
     fn test_tree_structure() {
-        let (manifest, store, _temp) = create_test_manifest();
+        let (manifest, _store, _temp) = create_test_manifest();
         let tree = VfsTree::from_manifest(&manifest);
 
         // Check root

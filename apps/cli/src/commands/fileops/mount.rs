@@ -2,7 +2,7 @@
 
 use std::{path::Path, sync::Arc};
 
-use anyhow::{bail, Result};
+use anyhow::Result;
 
 use crate::{
     store::Repository,
