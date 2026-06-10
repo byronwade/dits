@@ -91,9 +91,9 @@ test_expect_success 'advanced features are accessible' '
 # ============================================================================
 
 test_expect_success 'all test files are present and executable' '
-	# Count total test files
-	total_tests=$(find . -name "t[0-9][0-9][0-9][0-9]*.sh" | wc -l | tr -d ' ')
-	perf_tests=$(find perf -name "p[0-9][0-9][0-9][0-9]*.sh" | wc -l | tr -d ' ')
+	# Count total test files (use TEST_DIRECTORY since tests run in a tmpdir)
+	total_tests=$(find "$TEST_DIRECTORY" -name "t[0-9][0-9][0-9][0-9]*.sh" | wc -l | tr -d " ")
+	perf_tests=$(find "$TEST_DIRECTORY/perf" -name "p[0-9][0-9][0-9][0-9]*.sh" 2>/dev/null | wc -l | tr -d " ")
 	total=$((total_tests + perf_tests))
 
 	# Should have at least 13 test suites
@@ -102,17 +102,17 @@ test_expect_success 'all test files are present and executable' '
 '
 
 test_expect_success 'helper libraries are present' '
-	test_file_exists lib-repo.sh &&
-	test_file_exists lib-chunking.sh &&
-	test_file_exists lib-video.sh &&
+	test_file_exists "$TEST_DIRECTORY/lib-repo.sh" &&
+	test_file_exists "$TEST_DIRECTORY/lib-chunking.sh" &&
+	test_file_exists "$TEST_DIRECTORY/lib-video.sh" &&
 	test_expect_success "all helper libraries present" true
 '
 
 test_expect_success 'test infrastructure components work' '
-	test_file_exists test-lib.sh &&
-	test_file_exists run-tests.sh &&
-	test_file_exists chainlint.pl &&
-	test_file_exists chainlint-cat.pl &&
+	test_file_exists "$TEST_DIRECTORY/test-lib.sh" &&
+	test_file_exists "$TEST_DIRECTORY/run-tests.sh" &&
+	test_file_exists "$TEST_DIRECTORY/chainlint.pl" &&
+	test_file_exists "$TEST_DIRECTORY/chainlint-cat.pl" &&
 	test_expect_success "all infrastructure components present" true
 '
 

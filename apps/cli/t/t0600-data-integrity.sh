@@ -158,7 +158,7 @@ test_expect_success 'System detects partially written chunks' '
 		cp "$chunk_file" "${chunk_file}.backup" &&
 
 		# Truncate the file to simulate partial write
-		original_size=$(stat -f%z "$chunk_file" 2>/dev/null || stat -c%s "$chunk_file" 2>/dev/null || wc -c < "$chunk_file" | tr -d ' ') &&
+		original_size=$(stat -f%z "$chunk_file" 2>/dev/null || stat -c%s "$chunk_file" 2>/dev/null || wc -c < "$chunk_file" | tr -d " ") &&
 		truncate -s $((original_size / 2)) "$chunk_file" 2>/dev/null || head -c $((original_size / 2)) "${chunk_file}.backup" > "$chunk_file" &&
 
 		"$DITS_BINARY" fsck >/dev/null 2>&1 || true &&
