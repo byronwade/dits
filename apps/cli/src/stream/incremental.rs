@@ -93,6 +93,7 @@ fn output_dims(manifest: &ClipManifest, profile: &EncodeProfile) -> (u32, u32) {
 
 /// Build v2 incrementally: reuse v1's SegmentRefs for unchanged segments (bytes
 /// already in `origin`); encode only the changed segments from v2's frames.
+#[allow(clippy::too_many_arguments)]
 pub fn build_incremental(
     v1_version: &StreamVersion,
     v2_manifest: &ClipManifest,

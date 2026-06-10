@@ -42,7 +42,7 @@ pub fn segment(file: &str, output: Option<&str>, duration: f64) -> Result<()> {
     println!();
 
     // Print segment info
-    println!("{:<12} {:<12} {:<12} {}", "Segment", "Duration", "Size", "Hash");
+    println!("{:<12} {:<12} {:<12} Hash", "Segment", "Duration", "Size");
     println!("{}", "─".repeat(60));
 
     for segment in &manifest.segments {

@@ -180,6 +180,4 @@ fn find_dits_dir() -> Result<std::path::PathBuf> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-}
+mod tests {}

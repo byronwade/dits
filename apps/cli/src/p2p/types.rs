@@ -1,4 +1,5 @@
 //! Core types for DITS P2P
+#![allow(dead_code)]
 
 use std::path::PathBuf;
 

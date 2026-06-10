@@ -17,7 +17,7 @@ pub fn inspect_file(path: &str, show_chunks: bool) -> Result<()> {
         .head()?
         .context("No commits yet - nothing to inspect")?;
 
-    let commit = repo.load_commit(&head)?;
+    let _commit = repo.load_commit(&head)?;
 
     // Get file dedup stats
     let stats = repo

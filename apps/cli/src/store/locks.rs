@@ -112,8 +112,7 @@ impl LockStore {
     pub fn save(&self) -> std::io::Result<()> {
         let file = File::create(&self.locks_path)?;
         let writer = BufWriter::new(file);
-        serde_json::to_writer_pretty(writer, &self.locks)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
+        serde_json::to_writer_pretty(writer, &self.locks).map_err(std::io::Error::other)
     }
 
     /// Acquire a lock on a file.

@@ -12,10 +12,20 @@
 use std::{
     fs::{self, File},
     io::{self, BufWriter, Read, Seek, SeekFrom, Write},
-    os::unix::fs::PermissionsExt,
     path::{Path, PathBuf},
     sync::Mutex,
 };
+
+#[cfg(unix)]
+fn file_mode(metadata: &std::fs::Metadata) -> u32 {
+    use std::os::unix::fs::PermissionsExt;
+    metadata.permissions().mode()
+}
+
+#[cfg(not(unix))]
+fn file_mode(_metadata: &std::fs::Metadata) -> u32 {
+    0o644
+}
 
 use bincode;
 use thiserror::Error;
@@ -98,6 +108,7 @@ pub struct Repository {
     /// Ignore pattern matcher.
     ignore:          IgnoreMatcher,
     /// Repository configuration.
+    #[allow(dead_code)]
     config:          Config,
     /// Git text engine for text files (Phase 3.6).
     git_engine:      Option<GitTextEngine>,
@@ -689,7 +700,7 @@ impl Repository {
                     .as_secs() as i64
             })
             .unwrap_or(0);
-        let mode = metadata.permissions().mode();
+        let mode = file_mode(&metadata);
         let file_type = if metadata.is_dir() {
             FileType::Directory
         } else if metadata.is_symlink() {
@@ -815,7 +826,7 @@ impl Repository {
                     .as_secs() as i64
             })
             .unwrap_or(0);
-        let mode = metadata.permissions().mode();
+        let mode = file_mode(&metadata);
         let file_type = if metadata.is_dir() {
             FileType::Directory
         } else if metadata.is_symlink() {
@@ -1038,7 +1049,7 @@ impl Repository {
                     .as_secs() as i64
             })
             .unwrap_or(0);
-        let mode = metadata.permissions().mode();
+        let mode = file_mode(&metadata);
         let file_type = if metadata.is_dir() {
             FileType::Directory
         } else if metadata.is_symlink() {
@@ -1127,7 +1138,7 @@ impl Repository {
             .unwrap_or(0);
 
         // Get file mode and type
-        let mode = metadata.permissions().mode();
+        let mode = file_mode(&metadata);
         let file_type = if metadata.is_dir() {
             FileType::Directory
         } else if metadata.file_type().is_symlink() {
@@ -1171,8 +1182,7 @@ impl Repository {
         let index = self.load_index()?;
         let head_manifest = self.get_head_manifest()?;
 
-        let mut status = Status::default();
-        status.branch = self.refs.current_branch()?;
+        let mut status = Status { branch: self.refs.current_branch()?, ..Default::default() };
 
         // Check staged files
         let mut staged_added = Vec::new();
@@ -1281,7 +1291,7 @@ impl Repository {
                 if manifest.contains(rel_path) {
                     // File exists in HEAD - check various change types
                     let metadata = fs::metadata(full_path)?;
-                    let current_mode = metadata.permissions().mode();
+                    let current_mode = file_mode(&metadata);
                     let current_file_type = if metadata.is_dir() {
                         FileType::Directory
                     } else if metadata.is_symlink() {
@@ -1298,7 +1308,7 @@ impl Repository {
                         let content_changed = manifest_entry.content_hash != hash;
 
                         // Check for type changes (only for files that exist in both)
-                        let type_changed = !matches!(manifest_entry.mp4_metadata, Some(_))
+                        let type_changed = manifest_entry.mp4_metadata.is_none()
                             && (current_file_type != FileType::Regular
                                 || manifest_entry.file_type != current_file_type);
 
@@ -1311,11 +1321,7 @@ impl Repository {
                         let mode_changed = manifest_mode_u32 != (current_mode & 0o777);
 
                         // Prioritize change types: content > type > mode
-                        if content_changed {
-                            status.modified.push(rel_path.clone());
-                        } else if type_changed {
-                            status.modified.push(rel_path.clone());
-                        } else if mode_changed {
+                        if content_changed || type_changed || mode_changed {
                             status.modified.push(rel_path.clone());
                         }
                     }
@@ -1571,7 +1577,7 @@ impl Repository {
             // Get file metadata if possible
             let (mode, file_type, symlink_target) = if full_path.exists() {
                 if let Ok(metadata) = fs::metadata(&full_path) {
-                    let mode = metadata.permissions().mode();
+                    let mode = file_mode(&metadata);
                     let file_type = if metadata.is_dir() {
                         FileType::Directory
                     } else if metadata.is_symlink() {
@@ -2274,7 +2280,7 @@ mod tests {
     #[test]
     fn test_init_repository() {
         let temp = tempdir().unwrap();
-        let repo = Repository::init(temp.path()).unwrap();
+        let _repo = Repository::init(temp.path()).unwrap();
 
         assert!(temp.path().join(".dits").exists());
         assert!(temp.path().join(".dits/objects").exists());

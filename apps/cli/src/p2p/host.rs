@@ -1,5 +1,5 @@
 //! P2P Host Server for DITS
-//!
+#![allow(dead_code)]
 //! This module implements the server side of DITS P2P functionality,
 //! allowing repositories to be shared over the network using QUIC.
 
@@ -39,11 +39,13 @@ pub struct P2pHost {
     config:     HostConfig,
     share_id:   ShareId,
     join_code:  String,
+    #[allow(dead_code)]
     repository: Arc<RwLock<Repository>>,
 }
 
 impl P2pHost {
     /// Create a new P2P host server
+    #[allow(clippy::arc_with_non_send_sync)]
     pub async fn new(config: HostConfig) -> Result<Self> {
         // Validate repository
         let repo = Repository::open(&config.repo_path).with_context(|| {

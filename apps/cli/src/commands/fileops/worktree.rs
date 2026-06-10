@@ -396,8 +396,6 @@ pub fn print_list(worktrees: &[Worktree], verbose: bool) {
 
 #[cfg(test)]
 mod tests {
-    use tempfile::TempDir;
-
     use super::*;
 
     #[test]

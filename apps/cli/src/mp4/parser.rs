@@ -290,8 +290,6 @@ impl Mp4Structure {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test_atom_header_parsing() {
         // This would need a test MP4 file

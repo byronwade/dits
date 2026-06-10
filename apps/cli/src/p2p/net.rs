@@ -1,5 +1,5 @@
 //! QUIC networking layer for DITS P2P
-//!
+#![allow(dead_code)]
 //! Handles connection establishment and message framing over QUIC.
 
 use std::{collections::HashMap, net::SocketAddr, sync::Arc, time::Duration};
@@ -374,6 +374,7 @@ struct SkipServerVerification;
 pub struct ConnectionPool {
     endpoint:      Endpoint,
     connections:   Arc<Mutex<HashMap<String, QuicConnection>>>,
+    #[allow(dead_code)]
     max_idle_time: Duration,
 }
 

@@ -5,10 +5,11 @@ use std::{fmt, path::PathBuf};
 use serde::{Deserialize, Serialize};
 
 /// Storage temperature tier.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum StorageTier {
     /// Hot: actively editing, instant access (NVMe/SSD).
+    #[default]
     Hot,
     /// Warm: recently used (≤30 days), fast access.
     Warm,
@@ -20,6 +21,7 @@ pub enum StorageTier {
 
 impl StorageTier {
     /// Get tier from string.
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "hot" => Some(Self::Hot),
@@ -94,12 +96,6 @@ impl StorageTier {
 impl fmt::Display for StorageTier {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.name())
-    }
-}
-
-impl Default for StorageTier {
-    fn default() -> Self {
-        Self::Hot
     }
 }
 

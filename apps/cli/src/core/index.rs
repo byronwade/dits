@@ -127,6 +127,7 @@ pub struct IndexEntry {
 
 impl IndexEntry {
     /// Create a new index entry for a binary file (Dits storage).
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         path: String,
         content_hash: Hash,
@@ -154,6 +155,7 @@ impl IndexEntry {
     }
 
     /// Create a new index entry for an MP4 file.
+    #[allow(clippy::too_many_arguments)]
     pub fn new_mp4(
         path: String,
         content_hash: Hash,
@@ -184,6 +186,7 @@ impl IndexEntry {
     /// Create a new index entry for a text file (Git storage).
     ///
     /// Phase 3.6: Text files are stored using libgit2.
+    #[allow(clippy::too_many_arguments)]
     pub fn new_text(
         path: String,
         content_hash: Hash,
@@ -211,6 +214,7 @@ impl IndexEntry {
     }
 
     /// Create a new index entry with explicit storage strategy.
+    #[allow(clippy::too_many_arguments)]
     pub fn new_with_strategy(
         path: String,
         content_hash: Hash,

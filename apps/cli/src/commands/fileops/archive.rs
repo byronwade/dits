@@ -77,9 +77,9 @@ pub fn archive(options: &ArchiveOptions) -> Result<PathBuf> {
 
     // Create archive
     match options.format {
-        ArchiveFormat::Zip => create_zip_archive(&repo, &manifest, &options, &output_path)?,
-        ArchiveFormat::Tar => create_tar_archive(&repo, &manifest, &options, &output_path, false)?,
-        ArchiveFormat::TarGz => create_tar_archive(&repo, &manifest, &options, &output_path, true)?,
+        ArchiveFormat::Zip => create_zip_archive(&repo, &manifest, options, &output_path)?,
+        ArchiveFormat::Tar => create_tar_archive(&repo, &manifest, options, &output_path, false)?,
+        ArchiveFormat::TarGz => create_tar_archive(&repo, &manifest, options, &output_path, true)?,
     }
 
     println!("Created archive: {}", output_path.display());

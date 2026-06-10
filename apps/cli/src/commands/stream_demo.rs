@@ -28,6 +28,7 @@ use crate::{
 /// Async because the binary runs under `#[tokio::main]`; nesting a runtime
 /// would panic. The ingest/encode work is blocking (shells out to ffmpeg) but
 /// runs once at startup.
+#[allow(clippy::too_many_arguments)]
 pub async fn stream_demo(
     input: Option<PathBuf>,
     grade_start: f64,

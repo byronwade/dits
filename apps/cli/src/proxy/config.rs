@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Proxy codec options.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ProxyCodec {
     /// ProRes 422 Proxy - Apple ecosystem, excellent quality
     #[serde(rename = "prores_proxy")]
@@ -19,6 +19,7 @@ pub enum ProxyCodec {
     DnxhrSQ,
     /// H.264 - Universal compatibility, smaller files
     #[serde(rename = "h264")]
+    #[default]
     H264,
     /// H.265/HEVC - Better compression than H.264
     #[serde(rename = "h265")]
@@ -72,18 +73,12 @@ impl ProxyCodec {
     }
 }
 
-impl Default for ProxyCodec {
-    fn default() -> Self {
-        // H.264 is the most universally compatible
-        ProxyCodec::H264
-    }
-}
-
 /// Proxy resolution options.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ProxyResolution {
     /// 1920x1080 (Full HD)
     #[serde(rename = "1080p")]
+    #[default]
     HD1080,
     /// 1280x720 (HD)
     #[serde(rename = "720p")]
@@ -143,12 +138,6 @@ impl ProxyResolution {
             ProxyResolution::Half => "half",
             ProxyResolution::Quarter => "quarter",
         }
-    }
-}
-
-impl Default for ProxyResolution {
-    fn default() -> Self {
-        ProxyResolution::HD1080
     }
 }
 

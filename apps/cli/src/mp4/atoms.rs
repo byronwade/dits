@@ -67,6 +67,7 @@ impl AtomType {
     }
 
     /// Convert atom type to 4-byte tag.
+    #[allow(clippy::wrong_self_convention)]
     pub fn to_tag(&self) -> [u8; 4] {
         match self {
             AtomType::Ftyp => *b"ftyp",

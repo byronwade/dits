@@ -54,8 +54,7 @@ impl LifecycleManager {
         let policy_path = self.dits_dir.join("lifecycle-policy.json");
         let file = File::create(&policy_path)?;
         let writer = BufWriter::new(file);
-        serde_json::to_writer_pretty(writer, &self.policy)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+        serde_json::to_writer_pretty(writer, &self.policy).map_err(io::Error::other)
     }
 
     /// Get access statistics.
@@ -436,8 +435,7 @@ impl ThawQueue {
         let path = dits_dir.join("thaw-queue.json");
         let file = File::create(&path)?;
         let writer = BufWriter::new(file);
-        serde_json::to_writer_pretty(writer, self)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+        serde_json::to_writer_pretty(writer, self).map_err(io::Error::other)
     }
 
     fn add(&mut self, hash: Hash, size: u64) {
@@ -546,8 +544,6 @@ fn decompress_chunk(src: &Path, dest: &Path) -> io::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use tempfile::tempdir;
-
     use super::*;
 
     #[test]

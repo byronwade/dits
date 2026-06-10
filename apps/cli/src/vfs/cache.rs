@@ -122,7 +122,7 @@ impl ChunkCache {
     pub fn new(config: CacheConfig, object_store: Arc<ObjectStore>) -> Self {
         // Calculate L1 capacity based on average chunk size (~64KB)
         let avg_chunk_size = 64 * 1024;
-        let l1_capacity = (config.l1_max_bytes / avg_chunk_size) as u64;
+        let l1_capacity = config.l1_max_bytes / avg_chunk_size;
 
         let l1 = Cache::builder()
             .max_capacity(l1_capacity)
@@ -291,11 +291,13 @@ impl ChunkCache {
 }
 
 /// Synchronous wrapper for use in FUSE handlers.
+#[allow(dead_code)]
 pub struct SyncChunkCache {
     inner:   ChunkCache,
     runtime: tokio::runtime::Runtime,
 }
 
+#[allow(dead_code)]
 impl SyncChunkCache {
     /// Create a new synchronous cache wrapper.
     pub fn new(config: CacheConfig, object_store: Arc<ObjectStore>) -> std::io::Result<Self> {

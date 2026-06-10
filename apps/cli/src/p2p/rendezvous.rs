@@ -1,5 +1,5 @@
 //! Rendezvous/signaling client for DITS P2P
-//!
+#![allow(dead_code)]
 //! Handles peer discovery and NAT traversal via a signal server.
 
 use std::{net::SocketAddr, time::Duration};
@@ -132,7 +132,7 @@ impl RendezvousClient {
         let msg = SignalMessage::Register {
             code:             code.clone(),
             port:             crate::p2p::DEFAULT_P2P_PORT,
-            cert_fingerprint: cert_fingerprint.map(|f| hex::encode(f)),
+            cert_fingerprint: cert_fingerprint.map(hex::encode),
         };
 
         ws.send(Message::Text(serde_json::to_string(&msg).unwrap()))

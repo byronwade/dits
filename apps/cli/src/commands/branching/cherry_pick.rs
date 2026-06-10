@@ -66,7 +66,7 @@ fn cherry_pick_single(repo: &Repository, commit_ref: &str, no_commit: bool) -> R
 
     // Apply changes from the commit
     for (path, entry) in commit_manifest.iter() {
-        let was_in_parent = parent_manifest.as_ref().map(|m| m.get(path)).flatten();
+        let was_in_parent = parent_manifest.as_ref().and_then(|m| m.get(path));
 
         let is_new = was_in_parent.is_none();
         let is_modified = was_in_parent

@@ -161,7 +161,7 @@ impl ProxyStore {
                 let file_entry = file_entry?;
                 let path = file_entry.path();
 
-                if path.extension().map_or(false, |e| e == "json") {
+                if path.extension().is_some_and(|e| e == "json") {
                     if let Ok(json) = fs::read_to_string(&path) {
                         if let Ok(variant) = ProxyVariant::from_json(&json) {
                             variants.push(variant);

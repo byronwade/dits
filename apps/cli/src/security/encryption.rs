@@ -152,7 +152,6 @@ pub enum EncryptionError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::security::keys::Argon2Params;
 
     fn test_user_secret() -> UserSecret {
         UserSecret::from_bytes([42u8; 32])

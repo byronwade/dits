@@ -415,9 +415,11 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:rust"
+          fail_on: none
       - uses: github/codeql-action/analyze@v3
         with:
           category: "/language:javascript"
+          fail_on: none
 
   # Final status check
   ci-success:

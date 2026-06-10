@@ -339,11 +339,10 @@ fn bisect_status(bisect_file: &Path) -> Result<()> {
         let remaining = state.remaining();
         println!();
         println!(
-            "  ~{} step{} remaining (approximately {} commit{} to test)",
+            "  ~{} step{} remaining (approximately {} commits to test)",
             remaining,
             if remaining == 1 { "" } else { "s" },
             state.commits.len() - state.good_commits.len() - state.bad_commits.len(),
-            ""
         );
     }
 

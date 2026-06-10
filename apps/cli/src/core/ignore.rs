@@ -92,15 +92,14 @@ impl IgnoreMatcher {
         let pattern = pattern.trim_end_matches('/');
 
         // If pattern starts with /, it's anchored to root
-        if pattern.starts_with('/') {
-            let p = &pattern[1..];
+        if let Some(p) = pattern.strip_prefix('/') {
             patterns.push(p.to_string());
             // Also match as directory pattern
             patterns.push(format!("{}/**", p));
         } else {
             // Pattern can match anywhere in the tree
             patterns.push(format!("**/{}", pattern));
-            patterns.push(format!("{}", pattern));
+            patterns.push(pattern.to_string());
             // Also match as directory pattern
             patterns.push(format!("**/{}/**", pattern));
             patterns.push(format!("{}/**", pattern));

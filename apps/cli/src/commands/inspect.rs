@@ -50,14 +50,14 @@ pub fn inspect(path: &str) -> Result<()> {
 
     // Atom table
     println!("{}", style("Atoms:").bold());
-    println!("  {:<8} {:<12} {:<12} {}", "Type", "Offset", "Size", "Notes");
+    println!("  {:<8} {:<12} {:<12} Notes", "Type", "Offset", "Size");
     println!("  {}", "-".repeat(50));
 
     for atom in &structure.atoms {
         let notes = match atom.atom_type {
             crate::mp4::atoms::AtomType::Ftyp => "file type".to_string(),
             crate::mp4::atoms::AtomType::Moov => {
-                format!("{} tracks", count_tracks(&atom))
+                format!("{} tracks", count_tracks(atom))
             },
             crate::mp4::atoms::AtomType::Mdat => "media data".to_string(),
             crate::mp4::atoms::AtomType::Free => "free space".to_string(),

@@ -126,7 +126,7 @@ fn show_chunk_blame(
     repo: &Repository,
     file: &str,
     manifest: &crate::core::Manifest,
-    head_hash: &Hash,
+    _head_hash: &Hash,
 ) -> Result<()> {
     println!("{}", style("Chunk-level blame for binary file:").bold());
     println!("{}", style(file).cyan());

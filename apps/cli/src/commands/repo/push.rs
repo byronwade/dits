@@ -117,8 +117,8 @@ pub fn push_local(remote_path: &Path, branch: Option<&str>, force: bool, all: bo
     let mut objects_copied = 0;
 
     for branch_name in &branches {
-        let local_ref = local_dits.join("refs").join("heads").join(&branch_name);
-        let remote_ref = remote_dits.join("refs").join("heads").join(&branch_name);
+        let local_ref = local_dits.join("refs").join("heads").join(branch_name);
+        let remote_ref = remote_dits.join("refs").join("heads").join(branch_name);
 
         if !local_ref.exists() {
             println!("  ! Branch '{}' does not exist locally", branch_name);
@@ -227,6 +227,4 @@ fn copy_missing_objects(local_objects: &Path, remote_objects: &Path) -> Result<u
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-}
+mod tests {}

@@ -242,6 +242,4 @@ fn copy_missing_objects(remote_objects: &Path, local_objects: &Path) -> Result<u
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-}
+mod tests {}

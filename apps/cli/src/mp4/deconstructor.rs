@@ -204,8 +204,6 @@ impl DeconstructedMp4 {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test_deconstructor_compiles() {
         // Basic compilation test

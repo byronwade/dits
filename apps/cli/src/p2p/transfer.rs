@@ -1,5 +1,5 @@
 //! P2P file transfer for DITS
-//!
+#![allow(dead_code)]
 //! Handles sending and receiving files between peers.
 
 use std::{
@@ -44,7 +44,7 @@ pub mod zero_copy {
 
         /// Get total number of chunks
         pub fn chunk_count(&self) -> u32 {
-            ((self.mmap.len() + self.chunk_size - 1) / self.chunk_size) as u32
+            self.mmap.len().div_ceil(self.chunk_size) as u32
         }
     }
 
@@ -60,6 +60,7 @@ pub mod zero_copy {
                 .read(true)
                 .write(true)
                 .create(true)
+                .truncate(false)
                 .open(path)?;
 
             file.set_len(total_size)?;
@@ -87,7 +88,7 @@ pub mod zero_copy {
     /// Sendfile-based zero-copy network transfer (Linux only)
     #[cfg(target_os = "linux")]
     pub mod sendfile {
-        use std::{fs::File, os::unix::io::AsRawFd, path::Path};
+        use std::fs::File;
 
         /// Send file chunk directly from disk to network without copying to
         /// userspace
@@ -97,8 +98,6 @@ pub mod zero_copy {
             size: usize,
             stream: &mut quinn::SendStream,
         ) -> std::io::Result<()> {
-            use tokio::io::AsyncWriteExt;
-
             // For now, fall back to regular read + write
             // In a full implementation, this would use sendfile or splice
             let mut buffer = vec![0u8; size];
@@ -145,7 +144,14 @@ pub struct TransferManager {
 /// Multi-peer transfer manager for parallel downloads from multiple sources
 pub struct MultiPeerTransferManager {
     chunk_size:          usize,
+    #[allow(dead_code)]
     max_peers_per_chunk: usize,
+}
+
+impl Default for MultiPeerTransferManager {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl MultiPeerTransferManager {
@@ -164,7 +170,7 @@ impl MultiPeerTransferManager {
         file_hash: ContentHash,
         peers: Vec<TransferPeer>,
     ) -> Result<(), TransferError> {
-        let chunk_count = ((file_size as usize + self.chunk_size - 1) / self.chunk_size) as u32;
+        let chunk_count = (file_size as usize).div_ceil(self.chunk_size) as u32;
 
         // Create download session
         let session = Arc::new(MultiPeerDownloadSession::new(
@@ -239,11 +245,14 @@ pub struct TransferPeer {
 /// Multi-peer download session
 pub struct MultiPeerDownloadSession {
     file_path:         std::path::PathBuf,
+    #[allow(dead_code)]
     file_size:         u64,
     file_hash:         ContentHash,
+    #[allow(dead_code)]
     chunk_count:       u32,
     peers:             Vec<TransferPeer>,
     downloaded_chunks: Mutex<Vec<Option<ChunkData>>>,
+    #[allow(dead_code)]
     chunk_assignments: Mutex<HashMap<u32, Vec<TransferPeer>>>,
 }
 
@@ -317,6 +326,12 @@ pub struct PerformanceMonitor {
     bandwidth_samples:  Vec<f64>,
 }
 
+impl Default for PerformanceMonitor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PerformanceMonitor {
     pub fn new() -> Self {
         Self {
@@ -384,9 +399,7 @@ impl PerformanceMonitor {
             0.25
         };
 
-        ((base_concurrency as f64 * latency_factor) as usize)
-            .max(1)
-            .min(256)
+        ((base_concurrency as f64 * latency_factor) as usize).clamp(1, 256)
     }
 
     /// Get optimal chunk size for current conditions
@@ -403,7 +416,7 @@ impl PerformanceMonitor {
             2 * 1024 * 1024 // 2MB
         } else if latency < 50.0 {
             // Low latency: medium chunks
-            1 * 1024 * 1024 // 1MB
+            1024 * 1024 // 1MB
         } else {
             // High latency or low bandwidth: small chunks
             256 * 1024 // 256KB
@@ -504,7 +517,7 @@ impl TransferManager {
         }
 
         let file_hash = hasher.finalize();
-        let chunk_count = ((file_size as usize + self.chunk_size - 1) / self.chunk_size) as u32;
+        let chunk_count = (file_size as usize).div_ceil(self.chunk_size) as u32;
 
         Ok(FileInfo { path: path.to_path_buf(), size: file_size, hash: file_hash, chunk_count })
     }
@@ -531,6 +544,7 @@ impl TransferManager {
         let mut file = std::fs::OpenOptions::new()
             .write(true)
             .create(true)
+            .truncate(false)
             .open(path)?;
 
         let offset = (chunk_index as usize) * self.chunk_size;

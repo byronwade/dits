@@ -24,7 +24,6 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use bincode;
 use thiserror::Error;
 
 use crate::{

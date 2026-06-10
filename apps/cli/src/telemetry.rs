@@ -99,7 +99,7 @@ impl TelemetryManager {
             .unwrap_or(false);
         let user_id = config
             .get(TELEMETRY_USER_ID_KEY)
-            .unwrap_or_else(|| generate_user_id());
+            .unwrap_or_else(generate_user_id);
         let last_sent = config
             .get(TELEMETRY_LAST_SENT_KEY)
             .and_then(|s| s.parse::<u64>().ok())

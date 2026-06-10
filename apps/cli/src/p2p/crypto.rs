@@ -1,5 +1,5 @@
 //! Cryptographic utilities for DITS P2P
-//!
+#![allow(dead_code)]
 //! Provides:
 //! - Join code generation and parsing
 //! - BLAKE3 checksums for data integrity

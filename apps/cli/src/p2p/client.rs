@@ -1,5 +1,5 @@
 //! P2P Client for DITS
-//!
+#![allow(dead_code)]
 //! This module implements the client side of DITS P2P functionality,
 //! allowing connection to shared repositories using join codes.
 

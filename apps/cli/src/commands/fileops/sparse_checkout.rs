@@ -264,7 +264,7 @@ fn restore_regular_file(
     // Phase 3.6: Check storage strategy
     if entry.is_git_text() {
         // Load from Git object store
-        if let (Some(ref git_oid), Some(ref engine)) = (&entry.git_oid, &repo.git_engine()) {
+        if let (Some(ref git_oid), Some(engine)) = (&entry.git_oid, &repo.git_engine()) {
             let oid = GitTextEngine::parse_oid(git_oid)?;
             let data = engine.read_blob(oid)?;
             fs::write(full_path, &data)?;

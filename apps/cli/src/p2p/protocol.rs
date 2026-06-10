@@ -1,5 +1,5 @@
 //! Wire protocol definitions for DITS P2P
-//!
+#![allow(dead_code)]
 //! All network messages are defined here. Messages are serialized with bincode
 //! and prefixed with a 4-byte little-endian length.
 

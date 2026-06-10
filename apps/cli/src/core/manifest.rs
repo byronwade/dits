@@ -16,20 +16,15 @@ use crate::core::{
 };
 
 /// File mode/type.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum FileMode {
     /// Regular file.
+    #[default]
     Regular,
     /// Executable file.
     Executable,
     /// Symbolic link.
     Symlink,
-}
-
-impl Default for FileMode {
-    fn default() -> Self {
-        Self::Regular
-    }
 }
 
 /// An entry in the manifest representing a single file.
@@ -234,7 +229,7 @@ impl Manifest {
             .values()
             .flat_map(|e| e.chunks.iter().map(|c| c.hash))
             .collect();
-        hashes.sort_by(|a, b| a.to_hex().cmp(&b.to_hex()));
+        hashes.sort_by_key(|a| a.to_hex());
         hashes.dedup();
         hashes
     }

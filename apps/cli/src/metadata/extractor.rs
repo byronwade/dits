@@ -468,8 +468,6 @@ impl MetadataExtractor for PhotoExifExtractor {
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
-
     use super::*;
 
     #[test]

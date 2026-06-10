@@ -197,11 +197,7 @@ impl ProxyGenerator {
         // Check duration tolerance
         let source_ms = (source_info.duration * 1000.0) as u64;
         let proxy_ms = (proxy_info.duration * 1000.0) as u64;
-        let diff = if source_ms > proxy_ms {
-            source_ms - proxy_ms
-        } else {
-            proxy_ms - source_ms
-        };
+        let diff = source_ms.abs_diff(proxy_ms);
 
         if diff > self.config.duration_tolerance_ms as u64 {
             // Clean up the generated file
@@ -275,16 +271,14 @@ impl ProxyGenerator {
         output_path: &Path,
         source_info: &SourceInfo,
     ) -> Result<Vec<String>, GenerationError> {
-        let mut args = Vec::new();
-
-        // Input
-        args.push("-y".to_string()); // Overwrite output
-        args.push("-i".to_string());
-        args.push(source_path.display().to_string());
-
-        // Video codec
-        args.push("-c:v".to_string());
-        args.push(self.config.codec.ffmpeg_encoder().to_string());
+        let mut args = vec![
+            "-y".to_string(), // Overwrite output
+            "-i".to_string(),
+            source_path.display().to_string(),
+            // Video codec
+            "-c:v".to_string(),
+            self.config.codec.ffmpeg_encoder().to_string(),
+        ];
 
         // Codec options
         for (key, value) in self.config.codec.ffmpeg_options() {
@@ -656,20 +650,17 @@ fn detect_log_profile(
     }
 
     // Check pixel format for common log indicators
-    if let Some(pix_fmt) = video_stream.get("pix_fmt").and_then(|v| v.as_str()) {
-        match pix_fmt {
-            "yuv422p10le" | "yuv444p10le" => {
-                // Often used with log profiles
-                if let Some(make) = tags
-                    .get("com.apple.quicktime.make")
-                    .and_then(|v| v.as_str())
-                {
-                    if make.contains("Sony") {
-                        return Some("S-Log3".to_string());
-                    }
-                }
-            },
-            _ => {},
+    if let Some("yuv422p10le" | "yuv444p10le") =
+        video_stream.get("pix_fmt").and_then(|v| v.as_str())
+    {
+        // Often used with log profiles
+        if let Some(make) = tags
+            .get("com.apple.quicktime.make")
+            .and_then(|v| v.as_str())
+        {
+            if make.contains("Sony") {
+                return Some("S-Log3".to_string());
+            }
         }
     }
 
@@ -684,8 +675,7 @@ mod tests {
     fn test_check_ffmpeg() {
         // This test will pass if FFmpeg is installed
         let result = ProxyGenerator::check_ffmpeg();
-        if result.is_ok() {
-            let version = result.unwrap();
+        if let Ok(version) = result {
             assert!(version.contains("ffmpeg"));
         }
     }

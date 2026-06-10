@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Dits - Version control for video and large binary files.
 //!
 //! Architecture: Hybrid Universal Deduplication + File-Type Awareness
@@ -1465,7 +1466,6 @@ async fn main() {
             };
             commands::clean::clean(&options).map(|result| {
                 commands::clean::print_results(&result, dry_run);
-                ()
             })
         },
         Commands::Grep {
@@ -1487,23 +1487,19 @@ async fn main() {
                 files_with_matches,
                 fixed_strings,
                 paths,
-                ..Default::default()
             };
             commands::grep::grep(&options).map(|result| {
                 commands::grep::print_results(&result, &options);
-                ()
             })
         },
         Commands::Worktree { action, path, branch, force } => match action.as_str() {
             "list" => commands::worktree::list().map(|wts| {
                 commands::worktree::print_list(&wts, false);
-                ()
             }),
             "add" => match path {
                 Some(p) => commands::worktree::add(&p, branch.as_deref(), branch.is_none(), force)
                     .map(|wt| {
                         println!("Created worktree at {}", wt.path.display());
-                        ()
                     }),
                 None => Err(anyhow::anyhow!("Path required for worktree add")),
             },
@@ -1519,7 +1515,6 @@ async fn main() {
                         println!("Pruned {}", p.display());
                     }
                 }
-                ()
             }),
             "lock" => match path {
                 Some(p) => commands::worktree::lock(&p, None),
@@ -1542,7 +1537,6 @@ async fn main() {
                 for p in patterns {
                     println!("{}", p);
                 }
-                ()
             }),
             "disable" => commands::sparse_checkout::disable(),
             "status" => commands::sparse_checkout::print_status(),
@@ -1590,31 +1584,16 @@ async fn main() {
             }
         },
         Commands::Describe { commit, tags, all, long, dirty, abbrev } => {
-            let options = commands::describe::DescribeOptions {
-                commit,
-                tags,
-                all,
-                long,
-                dirty,
-                abbrev,
-                ..Default::default()
-            };
+            let options =
+                commands::describe::DescribeOptions { commit, tags, all, long, dirty, abbrev };
             commands::describe::describe(&options).map(|result| {
                 commands::describe::print_result(&result);
-                ()
             })
         },
         Commands::Shortlog { numbered, summary, email, limit } => {
-            let options = commands::shortlog::ShortlogOptions {
-                numbered,
-                summary,
-                email,
-                limit,
-                ..Default::default()
-            };
+            let options = commands::shortlog::ShortlogOptions { numbered, summary, email, limit };
             commands::shortlog::shortlog(&options).map(|entries| {
                 commands::shortlog::print_shortlog(&entries, &options);
-                ()
             })
         },
         Commands::Maintenance { action, task } => match action.as_str() {

@@ -256,11 +256,11 @@ pub fn format_size(bytes: u64) -> String {
     const MB: u64 = KB * 1024;
     const GB: u64 = MB * 1024;
 
-    if bytes >= GB && bytes % GB == 0 {
+    if bytes >= GB && bytes.is_multiple_of(GB) {
         format!("{}GB", bytes / GB)
-    } else if bytes >= MB && bytes % MB == 0 {
+    } else if bytes >= MB && bytes.is_multiple_of(MB) {
         format!("{}MB", bytes / MB)
-    } else if bytes >= KB && bytes % KB == 0 {
+    } else if bytes >= KB && bytes.is_multiple_of(KB) {
         format!("{}KB", bytes / KB)
     } else {
         format!("{}", bytes)

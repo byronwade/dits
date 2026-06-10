@@ -110,7 +110,7 @@ pub fn optimize_crf(
         encode_reference(&dir, frame_rate, frame_ext, &reference)?;
 
         let probe = dir.join("probe.mp4");
-        let mut measure = |crf: u32| -> Result<f64> {
+        let measure = |crf: u32| -> Result<f64> {
             encode_probe(&dir, frame_rate, frame_ext, crf, &probe)?;
             measure_vmaf(&probe, &reference)
         };

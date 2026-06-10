@@ -125,7 +125,7 @@ mod tests {
     use tempfile::tempdir;
 
     use super::*;
-    use crate::project::{Clip, Track, TrackType};
+    use crate::project::Clip;
 
     #[test]
     fn test_store_and_load() {

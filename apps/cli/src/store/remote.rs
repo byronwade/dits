@@ -71,8 +71,7 @@ impl RemoteStore {
     pub fn save(&self) -> std::io::Result<()> {
         let file = File::create(&self.config_path)?;
         let writer = BufWriter::new(file);
-        serde_json::to_writer_pretty(writer, &self.remotes)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
+        serde_json::to_writer_pretty(writer, &self.remotes).map_err(std::io::Error::other)
     }
 
     /// Add a new remote.

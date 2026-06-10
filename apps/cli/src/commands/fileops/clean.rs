@@ -16,6 +16,7 @@ use walkdir::WalkDir;
 use crate::store::Repository;
 
 /// Options for the clean command
+#[derive(Default)]
 pub struct CleanOptions {
     /// Dry run - show what would be deleted without deleting
     pub dry_run:        bool,
@@ -31,20 +32,6 @@ pub struct CleanOptions {
     pub exclude:        Vec<String>,
     /// Paths to clean (empty = all)
     pub paths:          Vec<String>,
-}
-
-impl Default for CleanOptions {
-    fn default() -> Self {
-        Self {
-            dry_run:        false,
-            force:          false,
-            directories:    false,
-            remove_ignored: false,
-            only_ignored:   false,
-            exclude:        Vec::new(),
-            paths:          Vec::new(),
-        }
-    }
 }
 
 /// Results of the clean operation
@@ -255,12 +242,10 @@ fn scan_for_untracked(
 }
 
 fn has_tracked_descendant(dir: &Path, repo_root: &Path, tracked: &HashSet<PathBuf>) -> bool {
-    for entry in WalkDir::new(dir).min_depth(1) {
-        if let Ok(entry) = entry {
-            if let Ok(relative) = entry.path().strip_prefix(repo_root) {
-                if tracked.contains(&relative.to_path_buf()) {
-                    return true;
-                }
+    for entry in WalkDir::new(dir).min_depth(1).into_iter().flatten() {
+        if let Ok(relative) = entry.path().strip_prefix(repo_root) {
+            if tracked.contains(&relative.to_path_buf()) {
+                return true;
             }
         }
     }

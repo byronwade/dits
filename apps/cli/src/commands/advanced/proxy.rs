@@ -312,7 +312,7 @@ pub fn proxy_delete(files: &[String], all: bool) -> Result<()> {
                 println!("  {} {} (no proxies found)", style("!").yellow(), file_path);
             } else {
                 for variant in &matching {
-                    proxy_store.delete(&variant.parent_hash, variant.variant_type.clone())?;
+                    proxy_store.delete(&variant.parent_hash, variant.variant_type)?;
                     deleted_count += 1;
                 }
                 println!(

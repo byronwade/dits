@@ -125,7 +125,7 @@ fn log_with_graph(repo: &Repository, limit: usize, oneline: bool, all: bool) -> 
         };
 
         // Simple linear graph
-        let prefix = if i == 0 { "*" } else { "*" };
+        let prefix = "*";
         let connector = if i < commits.len() - 1 { "|" } else { " " };
 
         if oneline {

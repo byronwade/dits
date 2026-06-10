@@ -235,8 +235,7 @@ impl AccessTracker {
 
         let file = File::create(&self.db_path)?;
         let writer = BufWriter::new(file);
-        serde_json::to_writer_pretty(writer, &vec)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        serde_json::to_writer_pretty(writer, &vec).map_err(std::io::Error::other)?;
 
         self.dirty = false;
         Ok(())
@@ -300,7 +299,9 @@ impl AccessTracker {
                             let size = metadata.len();
 
                             // Only add if not already tracked
-                            if !self.records.contains_key(&hash) {
+                            if let std::collections::hash_map::Entry::Vacant(e) =
+                                self.records.entry(hash)
+                            {
                                 let mut record = AccessRecord::new(hash, size);
                                 // Set created time from file metadata if possible
                                 if let Ok(created) = metadata.created() {
@@ -309,7 +310,7 @@ impl AccessTracker {
                                         record.last_accessed = duration.as_secs();
                                     }
                                 }
-                                self.records.insert(hash, record);
+                                e.insert(record);
                                 count += 1;
                             }
                         }

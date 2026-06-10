@@ -254,8 +254,6 @@ pub fn filter_project_files(paths: &[PathBuf]) -> Vec<PathBuf> {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
-
     use super::*;
 
     #[test]

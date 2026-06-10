@@ -230,6 +230,6 @@ mod tests {
 
     #[test]
     fn test_task_all() {
-        assert!(MaintenanceTask::all().len() > 0);
+        assert!(!MaintenanceTask::all().is_empty());
     }
 }

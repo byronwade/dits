@@ -75,11 +75,8 @@ pub fn reflog(ref_name: Option<&str>, limit: usize) -> Result<()> {
         }
 
         for (i, commit) in commits.iter().enumerate() {
-            let action = if i == 0 {
-                format!("commit: {}", commit.message.lines().next().unwrap_or(&commit.message))
-            } else {
-                format!("commit: {}", commit.message.lines().next().unwrap_or(&commit.message))
-            };
+            let action =
+                format!("commit: {}", commit.message.lines().next().unwrap_or(&commit.message));
 
             println!(
                 "{} {}@{{{}}}: {}",

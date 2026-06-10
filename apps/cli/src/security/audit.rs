@@ -204,8 +204,7 @@ impl AuditLog {
         }
 
         // Serialize event to JSON line
-        let json = serde_json::to_string(event)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        let json = serde_json::to_string(event).map_err(std::io::Error::other)?;
 
         // Append to log file
         let mut file = OpenOptions::new()
@@ -359,8 +358,7 @@ impl AuditLog {
         let file = File::create(&self.log_path)?;
         let mut writer = BufWriter::new(file);
         for event in retained {
-            let json = serde_json::to_string(event)
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            let json = serde_json::to_string(event).map_err(std::io::Error::other)?;
             writeln!(writer, "{}", json)?;
         }
 
@@ -378,8 +376,7 @@ impl AuditLog {
     /// Export audit log to JSON.
     pub fn export_json(&self) -> std::io::Result<String> {
         let events = self.read_all()?;
-        serde_json::to_string_pretty(&events)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
+        serde_json::to_string_pretty(&events).map_err(std::io::Error::other)
     }
 }
 

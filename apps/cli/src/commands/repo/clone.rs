@@ -52,7 +52,7 @@ fn clone_local(source: &Path, dest: Option<&str>, branch: Option<&str>) -> Resul
         // Use source directory name
         source_path
             .file_name()
-            .map(|n| PathBuf::from(n))
+            .map(PathBuf::from)
             .ok_or_else(|| anyhow::anyhow!("Cannot determine destination name from source"))?
     };
 
@@ -161,8 +161,6 @@ fn copy_dir_recursive(src: &Path, dst: &Path) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use tempfile::tempdir;
-
     use super::*;
 
     #[test]

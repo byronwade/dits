@@ -252,7 +252,7 @@ mod tests {
         let mut record = AccessRecord::new(hash, 1024 * 1024);
         record.tier = tier;
         // Backdate the last access
-        record.last_accessed = record.last_accessed - (days_inactive as u64 * 86400);
+        record.last_accessed -= days_inactive as u64 * 86400;
         record
     }
 

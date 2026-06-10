@@ -310,7 +310,7 @@ fn check_refs(repo: &Repository, result: &mut FsckResult) -> Result<()> {
             }
         } else {
             // Detached HEAD - verify commit exists
-            if let Err(_) = Hash::from_hex(head_content) {
+            if Hash::from_hex(head_content).is_err() {
                 result
                     .errors
                     .push(format!("HEAD contains invalid hash: {}", head_content));

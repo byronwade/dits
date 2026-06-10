@@ -194,7 +194,6 @@ pub fn render_photo(version: &PhotoVersion, store: &FrameStore, output: &Path) -
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::Hasher;
 
     #[test]
     fn many_edits_share_one_stored_source() {

@@ -52,7 +52,7 @@ pub async fn sync(
         .map_err(|_| anyhow::anyhow!("Not in a dits repository"))?;
 
     let dits_dir = repo.dits_dir();
-    let remotes = RemoteStore::new(&dits_dir);
+    let remotes = RemoteStore::new(dits_dir);
 
     // Get the remote
     let remote = remotes
@@ -155,35 +155,6 @@ async fn sync_local(
     Ok(())
 }
 
-#[cfg(test)]
-mod tests {
-    use std::fs;
-
-    use tempfile::tempdir;
-
-    use super::*;
-
-    #[test]
-    fn is_ancestor_follows_parent_chain() {
-        let temp = tempdir().unwrap();
-        let repo = Repository::init(temp.path()).unwrap();
-
-        fs::write(temp.path().join("a.txt"), b"a").unwrap();
-        repo.add("a.txt").unwrap();
-        let c1 = repo.commit("c1").unwrap();
-
-        fs::write(temp.path().join("b.txt"), b"b").unwrap();
-        repo.add("b.txt").unwrap();
-        let c2 = repo.commit("c2").unwrap();
-
-        // c1 is an ancestor of c2, but not vice versa.
-        assert!(is_ancestor(&repo, &c1.hash, &c2.hash).unwrap());
-        assert!(!is_ancestor(&repo, &c2.hash, &c1.hash).unwrap());
-        // A commit is its own ancestor.
-        assert!(is_ancestor(&repo, &c1.hash, &c1.hash).unwrap());
-    }
-}
-
 /// Sync with a network remote repository.
 async fn sync_network(
     repo: &Repository,
@@ -201,7 +172,7 @@ async fn sync_network(
         println!("  - Would analyze differences");
         println!("  - Would merge conflicting changes");
         println!("  - Would push merged changes");
-        println!("");
+        println!();
         println!("Network sync will be fully implemented in Phase 4b");
         return Ok(());
     }
@@ -231,4 +202,33 @@ async fn sync_network(
     println!("Use 'dits fetch' and 'dits push' for now");
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+
+    use tempfile::tempdir;
+
+    use super::*;
+
+    #[test]
+    fn is_ancestor_follows_parent_chain() {
+        let temp = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+
+        fs::write(temp.path().join("a.txt"), b"a").unwrap();
+        repo.add("a.txt").unwrap();
+        let c1 = repo.commit("c1").unwrap();
+
+        fs::write(temp.path().join("b.txt"), b"b").unwrap();
+        repo.add("b.txt").unwrap();
+        let c2 = repo.commit("c2").unwrap();
+
+        // c1 is an ancestor of c2, but not vice versa.
+        assert!(is_ancestor(&repo, &c1.hash, &c2.hash).unwrap());
+        assert!(!is_ancestor(&repo, &c2.hash, &c1.hash).unwrap());
+        // A commit is its own ancestor.
+        assert!(is_ancestor(&repo, &c1.hash, &c1.hash).unwrap());
+    }
 }
