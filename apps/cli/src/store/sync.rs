@@ -120,6 +120,23 @@ fn validate_remote_object_path(rel: &str) -> anyhow::Result<PathBuf> {
         if seg.contains(':') {
             bail!("remote object path segment looks like a drive/scheme prefix: {entry:?}");
         }
+        // Windows interprets reserved device names (CON, NUL, COM1, …) as devices even when
+        // they appear inside a directory, and it strips trailing dots/spaces from a component.
+        // Neither is a directory-escape, but both make a write land somewhere other than the
+        // intended store file — so reject them to keep object paths interpreted identically on
+        // every platform. Valid object paths (hex shards + `chunks`/`manifests`/`commits`)
+        // never collide with these.
+        if seg.ends_with('.') || seg.ends_with(' ') {
+            bail!("remote object path segment has a trailing dot or space: {entry:?}");
+        }
+        const WINDOWS_RESERVED: &[&str] = &[
+            "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
+            "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+        ];
+        let stem = seg.split('.').next().unwrap_or(seg).to_ascii_uppercase();
+        if WINDOWS_RESERVED.contains(&stem.as_str()) {
+            bail!("remote object path segment is a reserved device name: {entry:?}");
+        }
         // Defense in depth: confirm the OS itself sees this segment as exactly one *normal*
         // path component (catches any platform-specific form we didn't anticipate, e.g. a
         // Windows `Prefix`/`RootDir` component sneaking through).
@@ -207,12 +224,30 @@ pub async fn transfer_objects_http(base_url: &str, dst_dits: &Path) -> anyhow::R
             .await?;
 
         // The destination parent is derived only from validated, normal components, so it is
-        // lexically inside `dst_objects`. We still create it and then canonicalize, verifying
-        // it resolves to a path under the canonical object root — this catches a pre-existing
-        // symlink inside the store that points elsewhere. `create_dir_all` only ever runs on
-        // this validated path, never on raw remote input.
+        // lexically inside `dst_objects`. As defense in depth against a *pre-existing* symlink
+        // in the store pointing elsewhere, we enforce containment both BEFORE and after
+        // creating directories — so `create_dir_all` can never materialize a directory outside
+        // the object root, even via a symlinked ancestor. It only ever runs on validated paths.
         if let Some(parent) = dst_path.parent() {
+            // Before creating anything: canonicalize the deepest *existing* ancestor of the
+            // parent and require it to resolve inside the object root. If an existing ancestor
+            // is a symlink out of the store, this bails before any directory is created.
+            let mut existing = parent;
+            while !existing.exists() {
+                match existing.parent() {
+                    Some(p) => existing = p,
+                    None => break,
+                }
+            }
+            let resolved_existing = std::fs::canonicalize(existing)
+                .context("resolving object directory")?;
+            if !resolved_existing.starts_with(&object_root) {
+                anyhow::bail!("remote object path escapes the local object store");
+            }
+
             std::fs::create_dir_all(parent).context("creating object parent directory")?;
+
+            // After creating: re-verify the now-existing parent resolves inside the root.
             let resolved_parent = std::fs::canonicalize(parent)
                 .context("resolving object parent directory")?;
             if !resolved_parent.starts_with(&object_root) {
@@ -325,6 +360,13 @@ mod tests {
             "a\\b",                                // backslash as separator
             "..\\..\\x",                            // Windows-style traversal
             "foo\0bar",                            // NUL byte
+            "CON",                                 // Windows reserved device name
+            "nul",                                 // reserved, case-insensitive
+            "chunks/COM1",                         // reserved name nested
+            "aux.txt",                             // reserved name with extension
+            "trailingdot.",                        // Windows strips trailing dot (end of entry)
+            "foo./bar",                            // trailing dot on an internal segment
+            "foo /bar",                            // trailing space on an internal segment
         ];
         for b in bad {
             assert!(
@@ -398,6 +440,28 @@ mod tests {
         let base = spawn_fake_remote("..\\..\\poc.txt\n", b"pwned").await;
         assert!(transfer_objects_http(&base, &dits).await.is_err());
         assert!(!repo.path().join("poc.txt").exists());
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn http_rejects_symlinked_ancestor_escaping_the_store() {
+        // A *pre-existing* symlink inside the object store that points outside it must not let
+        // a remote object land outside the store, and must not cause directories to be created
+        // through the symlink. (Not remote-plantable, but defense in depth for requirement 6.)
+        let repo = TempDir::new().unwrap();
+        let escape = TempDir::new().unwrap();
+        let dits = repo.path().join(".dits");
+        let objects = dits.join("objects");
+        fs::create_dir_all(&objects).unwrap();
+        // `objects/chunks` -> /some/outside/dir
+        std::os::unix::fs::symlink(escape.path(), objects.join("chunks")).unwrap();
+
+        let base = spawn_fake_remote("chunks/aa/aabb01\n", b"pwned").await;
+        let result = transfer_objects_http(&base, &dits).await;
+        assert!(result.is_err(), "symlinked-ancestor write must fail the fetch");
+        // Nothing was written through the symlink into the outside directory.
+        assert!(!escape.path().join("aa").exists(), "no dir created outside the store");
+        assert!(!escape.path().join("aa/aabb01").exists(), "no file created outside the store");
     }
 
     #[tokio::test]
