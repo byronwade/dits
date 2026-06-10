@@ -93,7 +93,7 @@ pub mod zero_copy {
             file: &File,
             offset: u64,
             size: usize,
-            stream: &mut crate::p2p::net::SendStream,
+            stream: &mut quinn::SendStream,
         ) -> std::io::Result<()> {
             use tokio::io::AsyncWriteExt;
 
@@ -113,8 +113,7 @@ pub mod zero_copy {
 
         impl FileExt for File {
             fn read_exact_at(&self, buf: &mut [u8], offset: u64) -> std::io::Result<()> {
-                use std::os::unix::fs::FileExt;
-                self.read_exact_at(buf, offset)
+                std::os::unix::fs::FileExt::read_exact_at(self, buf, offset)
             }
         }
     }
