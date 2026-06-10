@@ -6,3 +6,9 @@
 trash.*/
 test-results/
 extreme-path-test/
+# Objects and refs created when stress tests run locally against fixture repos
+*-test/.dits/objects/chunks/
+*-test/.dits/objects/commits/
+*-test/.dits/objects/manifests/
+*-test/.dits/refs/
+*-test/.dits/*.corrupted
