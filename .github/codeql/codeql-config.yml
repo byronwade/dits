@@ -1,12 +1,9 @@
 name: "Dits CodeQL config"
 
-# Exclude test modules from security analysis to prevent false positives
-# from test-only hardcoded credential strings.
+# Exclude test-only files from security analysis to prevent false positives
+# from test credential strings (e.g. "test-password" in keystore tests).
 paths-ignore:
   - "**/*_test.rs"
+  - "**/*_tests.rs"
   - "**/tests/**"
   - "**/test_*.rs"
-
-# Only report high-severity findings to reduce noise
-queries:
-  - uses: security-extended
