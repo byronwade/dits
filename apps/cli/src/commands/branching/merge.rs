@@ -443,13 +443,13 @@ fn detect_conflicts(
             },
 
             // Both added (no base)
-            (None, Some(our_entry), Some(their_entry)) => {
-                if our_entry.content_hash != their_entry.content_hash {
-                    conflicts.push(MergeConflict {
-                        path:          path.clone(),
-                        conflict_type: ConflictType::BothAdded,
-                    });
-                }
+            (None, Some(our_entry), Some(their_entry))
+                if our_entry.content_hash != their_entry.content_hash =>
+            {
+                conflicts.push(MergeConflict {
+                    path:          path.clone(),
+                    conflict_type: ConflictType::BothAdded,
+                });
             },
 
             // No conflict cases

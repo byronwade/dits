@@ -390,8 +390,8 @@ fn find_all_video_files(repo: &Repository) -> Result<Vec<String>> {
 
     let video_files: Vec<String> = manifest
         .entries
-        .iter()
-        .filter_map(|(path, _entry)| {
+        .keys()
+        .filter_map(|path| {
             let path_lower = path.to_lowercase();
             if video_extensions.iter().any(|ext| path_lower.ends_with(ext)) {
                 Some(path.clone())

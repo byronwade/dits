@@ -219,7 +219,7 @@ fn collect_all_commits(repo: &Repository, limit: usize) -> Result<Vec<crate::cor
     }
 
     // Sort by timestamp (newest first)
-    commits.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
+    commits.sort_by_key(|b| std::cmp::Reverse(b.timestamp));
 
     // Limit results
     commits.truncate(limit);

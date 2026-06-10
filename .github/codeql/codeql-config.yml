@@ -1,0 +1,12 @@
+name: "Dits CodeQL config"
+
+# Exclude test modules from security analysis to prevent false positives
+# from test-only hardcoded credential strings.
+paths-ignore:
+  - "**/*_test.rs"
+  - "**/tests/**"
+  - "**/test_*.rs"
+
+# Only report high-severity findings to reduce noise
+queries:
+  - uses: security-extended
