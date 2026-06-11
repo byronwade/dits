@@ -4,17 +4,22 @@
 //!
 //! Manifest entries now track storage strategy and git_oid for text files.
 
-use crate::core::chunk::ChunkRef;
-use crate::core::hash::{Hash, Hasher};
-use crate::core::index::{FileType, Mp4Metadata};
-use crate::core::storage_strategy::StorageStrategy;
-use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
+use serde::{Deserialize, Serialize};
+
+use crate::core::{
+    chunk::ChunkRef,
+    hash::{Hash, Hasher},
+    index::{FileType, Mp4Metadata},
+    storage_strategy::StorageStrategy,
+};
+
 /// File mode/type.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum FileMode {
     /// Regular file.
+    #[default]
     Regular,
     /// Executable file.
     Executable,
@@ -22,36 +27,29 @@ pub enum FileMode {
     Symlink,
 }
 
-impl Default for FileMode {
-    fn default() -> Self {
-        Self::Regular
-    }
-}
-
 /// An entry in the manifest representing a single file.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ManifestEntry {
     /// File path relative to repository root.
-    pub path: String,
+    pub path:           String,
     /// File mode.
-    pub mode: FileMode,
+    pub mode:           FileMode,
     /// File type (regular, symlink, directory, etc.).
-    pub file_type: FileType,
+    pub file_type:      FileType,
     /// Symlink target (empty string for non-symlinks).
     pub symlink_target: String,
     /// Total file size.
-    pub size: u64,
+    pub size:           u64,
     /// Hash of the file content (all chunks combined).
-    pub content_hash: Hash,
+    pub content_hash:   Hash,
     /// Ordered list of chunk references (for mdat data if MP4).
     /// Empty for GitText storage strategy.
-    pub chunks: Vec<ChunkRef>,
+    pub chunks:         Vec<ChunkRef>,
     /// MP4-specific metadata (None for non-MP4 files).
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub mp4_metadata: Option<Mp4Metadata>,
+    pub mp4_metadata:   Option<Mp4Metadata>,
 
     // === Phase 3.6: Hybrid Storage Fields ===
-
     /// Storage strategy for this file.
     #[serde(default)]
     pub storage: StorageStrategy,
@@ -171,9 +169,7 @@ pub struct Manifest {
 impl Manifest {
     /// Create a new empty manifest.
     pub fn new() -> Self {
-        Self {
-            entries: BTreeMap::new(),
-        }
+        Self { entries: BTreeMap::new() }
     }
 
     /// Add an entry to the manifest.
@@ -233,7 +229,7 @@ impl Manifest {
             .values()
             .flat_map(|e| e.chunks.iter().map(|c| c.hash))
             .collect();
-        hashes.sort_by(|a, b| a.to_hex().cmp(&b.to_hex()));
+        hashes.sort_by_key(|a| a.to_hex());
         hashes.dedup();
         hashes
     }
@@ -288,18 +284,8 @@ mod tests {
     #[test]
     fn test_manifest_hash_deterministic() {
         let mut manifest = Manifest::new();
-        manifest.add(ManifestEntry::new(
-            "a.txt".to_string(),
-            10,
-            Hash::ZERO,
-            vec![],
-        ));
-        manifest.add(ManifestEntry::new(
-            "b.txt".to_string(),
-            20,
-            Hash::ZERO,
-            vec![],
-        ));
+        manifest.add(ManifestEntry::new("a.txt".to_string(), 10, Hash::ZERO, vec![]));
+        manifest.add(ManifestEntry::new("b.txt".to_string(), 20, Hash::ZERO, vec![]));
 
         let hash1 = manifest.hash();
         let hash2 = manifest.hash();

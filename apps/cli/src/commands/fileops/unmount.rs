@@ -1,8 +1,10 @@
 //! Unmount command - unmount a virtual filesystem.
 
-use crate::vfs::unmount as fuse_unmount;
-use anyhow::Result;
 use std::path::Path;
+
+use anyhow::Result;
+
+use crate::vfs::unmount as fuse_unmount;
 
 /// Unmount a FUSE filesystem.
 pub fn unmount(mount_point: &str) -> Result<()> {

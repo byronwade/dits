@@ -2,11 +2,13 @@
 //!
 //! Commands for creating and managing video project timelines.
 
-use dits::core::Hash;
-use dits::project::{Clip, ProjectGraph, ProjectStore};
-use dits::store::Repository;
-use anyhow::{Context, Result, bail};
+use anyhow::{bail, Context, Result};
 use console::style;
+use dits::{
+    core::Hash,
+    project::{Clip, ProjectGraph, ProjectStore},
+    store::Repository,
+};
 
 /// Initialize a new video timeline project.
 pub fn video_init(name: &str) -> Result<()> {
@@ -14,7 +16,9 @@ pub fn video_init(name: &str) -> Result<()> {
     let repo = Repository::open(&cwd).context("Not a dits repository")?;
 
     // Check we have a HEAD commit
-    let head = repo.head()?.context("No commits yet - commit some files first")?;
+    let head = repo
+        .head()?
+        .context("No commits yet - commit some files first")?;
 
     // Initialize project store
     let project_store = ProjectStore::new(repo.dits_dir());
@@ -38,7 +42,10 @@ pub fn video_init(name: &str) -> Result<()> {
     println!("  Project ID: {}", &project_hash.to_hex()[..12]);
     println!();
     println!("Next steps:");
-    println!("  1. Add clips: dits video-add-clip {} --file <path> --in 0 --out 10 --start 0", name);
+    println!(
+        "  1. Add clips: dits video-add-clip {} --file <path> --in 0 --out 10 --start 0",
+        name
+    );
     println!("  2. View timeline: dits video-show {}", name);
 
     // Store project reference (simple file-based for now)
@@ -82,7 +89,8 @@ pub fn video_add_clip(
     let track_id_used: String;
     {
         let track = if let Some(tid) = track_id {
-            project.get_track_mut(tid)
+            project
+                .get_track_mut(tid)
                 .context(format!("Track not found: {}", tid))?
         } else {
             project.get_or_create_video_track()
@@ -104,11 +112,7 @@ pub fn video_add_clip(
     // Update project reference
     save_project_ref(&repo, project_name, &new_hash)?;
 
-    println!(
-        "{} Added clip to project '{}'",
-        style("✓").green().bold(),
-        project_name
-    );
+    println!("{} Added clip to project '{}'", style("✓").green().bold(), project_name);
     println!("  Clip:   {} ({:.2}s - {:.2}s)", file_path, in_point, out_point);
     println!("  Start:  {:.2}s", start);
     println!("  Track:  {}", track_id_used);
@@ -150,11 +154,7 @@ pub fn video_show(project_name: &str) -> Result<()> {
     println!("{}", style("Timeline:").bold());
     for track in &project.tracks {
         println!();
-        println!(
-            "  {} [{}]",
-            style(&track.id).cyan().bold(),
-            track.track_type
-        );
+        println!("  {} [{}]", style(&track.id).cyan().bold(), track.track_type);
 
         if track.clips.is_empty() {
             println!("    {}", style("(empty)").dim());
@@ -162,7 +162,8 @@ pub fn video_show(project_name: &str) -> Result<()> {
         }
 
         for clip in &track.clips {
-            let manifest_short = clip.manifest_id
+            let manifest_short = clip
+                .manifest_id
                 .as_ref()
                 .map(|h| format!("#{}", &h[..8]))
                 .unwrap_or_else(|| "".to_string());
@@ -248,7 +249,8 @@ fn load_project_ref(repo: &Repository, name: &str) -> Result<Option<Hash>> {
     Ok(Some(hash))
 }
 
-/// Get project hashes from a commit (placeholder - projects stored separately for now).
+/// Get project hashes from a commit (placeholder - projects stored separately
+/// for now).
 fn get_commit_projects(repo: &Repository, _commit_hash: &Hash) -> Result<Vec<Hash>> {
     let projects_dir = repo.dits_dir().join("projects");
 

@@ -1,10 +1,15 @@
-//! `dits fetch-objects` — content-addressed incremental object pull from a local repo.
+//! `dits fetch-objects` — content-addressed incremental object pull from a
+//! local repo.
 
-use crate::store::sync::{transfer_objects, transfer_objects_http};
-use crate::store::Repository;
+use std::path::Path;
+
 use anyhow::{Context, Result};
 use console::style;
-use std::path::Path;
+
+use crate::store::{
+    sync::{transfer_objects, transfer_objects_http},
+    Repository,
+};
 
 fn human(bytes: u64) -> String {
     const U: [&str; 5] = ["B", "KB", "MB", "GB", "TB"];
@@ -17,10 +22,10 @@ fn human(bytes: u64) -> String {
     format!("{:.1} {}", v, U[i])
 }
 
-/// Pull objects this repository is missing from another local dits repository. Only the
-/// objects the destination lacks are transferred (content-addressed), so re-fetching is
-/// free and an interrupted fetch resumes with only the remainder. Purely additive — never
-/// deletes or overwrites local objects.
+/// Pull objects this repository is missing from another local dits repository.
+/// Only the objects the destination lacks are transferred (content-addressed),
+/// so re-fetching is free and an interrupted fetch resumes with only the
+/// remainder. Purely additive — never deletes or overwrites local objects.
 pub async fn fetch_objects(source: &str) -> Result<()> {
     // Ensure we are inside a dits repository.
     let _repo = Repository::open(Path::new("."))

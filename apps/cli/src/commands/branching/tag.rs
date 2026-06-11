@@ -1,9 +1,11 @@
 //! Tag management commands.
 
-use crate::store::Repository;
+use std::path::Path;
+
 use anyhow::{Context, Result};
 use console::style;
-use std::path::Path;
+
+use crate::store::Repository;
 
 /// How to sort tags when listing.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -50,14 +52,15 @@ fn list_tags(repo: &Repository, sort: TagSort) -> Result<()> {
     match sort {
         TagSort::Name => {
             // Already sorted alphabetically by list_tags()
-        }
+        },
         TagSort::CreatedAt => {
-            // For now, fall back to name sorting since we don't have creation timestamps in the basic refs
-            // TODO: This would need to be implemented with proper tag metadata storage
-        }
+            // For now, fall back to name sorting since we don't have creation
+            // timestamps in the basic refs TODO: This would need to
+            // be implemented with proper tag metadata storage
+        },
         TagSort::Version => {
             tags.sort_by(|a, b| compare_semantic_versions(a, b));
-        }
+        },
     }
 
     for tag in tags {
@@ -74,8 +77,7 @@ fn create_tag(repo: &Repository, name: &str, commit_ref: Option<&str>) -> Result
         repo.resolve_ref_or_prefix(ref_str)?
             .with_context(|| format!("Could not resolve '{}' to a commit", ref_str))?
     } else {
-        repo.head()?
-            .context("No commits yet - cannot create tag")?
+        repo.head()?.context("No commits yet - cannot create tag")?
     };
 
     // Check if tag already exists
@@ -100,11 +102,7 @@ fn create_tag(repo: &Repository, name: &str, commit_ref: Option<&str>) -> Result
 fn delete_tag(repo: &Repository, name: &str) -> Result<()> {
     // Check if tag exists
     if repo.refs().get_tag(name)?.is_none() {
-        println!(
-            "{} Tag '{}' not found",
-            style("!").yellow().bold(),
-            name
-        );
+        println!("{} Tag '{}' not found", style("!").yellow().bold(), name);
         return Ok(());
     }
 
@@ -112,11 +110,7 @@ fn delete_tag(repo: &Repository, name: &str) -> Result<()> {
     let tag_path = repo.dits_dir().join("refs").join("tags").join(name);
     std::fs::remove_file(&tag_path)?;
 
-    println!(
-        "{} Deleted tag '{}'",
-        style("✓").green().bold(),
-        style(name).cyan()
-    );
+    println!("{} Deleted tag '{}'", style("✓").green().bold(), style(name).cyan());
 
     Ok(())
 }
@@ -124,7 +118,8 @@ fn delete_tag(repo: &Repository, name: &str) -> Result<()> {
 /// Compare two tag names using semantic versioning rules.
 /// Handles versions like: v1.0.0, v1.10.0, v2.0.0-alpha, etc.
 fn compare_semantic_versions(a: &str, b: &str) -> std::cmp::Ordering {
-    // Extract version parts from tag names (handle common prefixes like 'v', 'release-')
+    // Extract version parts from tag names (handle common prefixes like 'v',
+    // 'release-')
     let a_version = extract_version_part(a);
     let b_version = extract_version_part(b);
 

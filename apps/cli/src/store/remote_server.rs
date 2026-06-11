@@ -3,17 +3,10 @@
 //! This implements basic HTTP endpoints for remote repository access.
 //! Full QUIC protocol implementation will come in Phase 4b.
 
-use axum::{
-    extract::Path,
-    http::StatusCode,
-    response::Json,
-    routing::get,
-    Router,
-};
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
+
+use axum::{extract::Path, http::StatusCode, response::Json, routing::get, Router};
 use serde_json::json;
-use std::collections::HashMap;
-use std::path::PathBuf;
-use std::sync::Arc;
 use tower_http::cors::CorsLayer;
 
 /// Repository server state
@@ -41,7 +34,8 @@ impl RepoServer {
             .with_state(self)
     }
 
-    /// List every object's store-relative path (newline-separated) — the "have" set.
+    /// List every object's store-relative path (newline-separated) — the "have"
+    /// set.
     async fn list_objects(
         Path(repo): Path<String>,
         state: axum::extract::State<Arc<RepoServer>>,
@@ -96,7 +90,9 @@ impl RepoServer {
         // Read heads
         let heads_dir = repo_path.join(".dits/refs/heads");
         if heads_dir.exists() {
-            for entry in std::fs::read_dir(&heads_dir).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)? {
+            for entry in
+                std::fs::read_dir(&heads_dir).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+            {
                 let entry = entry.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
                 if let Some(name) = entry.file_name().to_str() {
                     if let Ok(content) = std::fs::read_to_string(entry.path()) {
@@ -109,7 +105,9 @@ impl RepoServer {
         // Read tags
         let tags_dir = repo_path.join(".dits/refs/tags");
         if tags_dir.exists() {
-            for entry in std::fs::read_dir(&tags_dir).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)? {
+            for entry in
+                std::fs::read_dir(&tags_dir).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+            {
                 let entry = entry.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
                 if let Some(name) = entry.file_name().to_str() {
                     if let Ok(content) = std::fs::read_to_string(entry.path()) {
@@ -146,7 +144,11 @@ impl RepoServer {
         let object_types = ["chunks", "manifests", "commits"];
 
         for obj_type in &object_types {
-            let object_path = objects_dir.join(obj_type).join(prefix1).join(prefix2).join(&hash);
+            let object_path = objects_dir
+                .join(obj_type)
+                .join(prefix1)
+                .join(prefix2)
+                .join(&hash);
             if object_path.exists() {
                 return std::fs::read(&object_path).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR);
             }
@@ -169,4 +171,3 @@ pub async fn start_server(base_dir: PathBuf, port: u16) -> anyhow::Result<()> {
 
     Ok(())
 }
-

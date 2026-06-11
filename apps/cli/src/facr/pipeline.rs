@@ -1,15 +1,19 @@
-//! End-to-end FACR pipeline: encode frames, store them content-addressed, and build
-//! a clip manifest. This is where the "only changed frames are stored" guarantee is
-//! realized: encoding is deterministic and the store dedups, so committing a new
-//! version of a clip only grows the store by the frames that actually changed.
+//! End-to-end FACR pipeline: encode frames, store them content-addressed, and
+//! build a clip manifest. This is where the "only changed frames are stored"
+//! guarantee is realized: encoding is deterministic and the store dedups, so
+//! committing a new version of a clip only grows the store by the frames that
+//! actually changed.
 
-use super::codec::{FrameCodec, RawFrame};
-use super::manifest::{ClipManifest, FrameRef};
-use super::store::FrameStore;
 use anyhow::Result;
 
-/// Encode each raw frame with `codec`, store it, and return a clip manifest. Frames
-/// already present in the store are not rewritten (automatic dedup).
+use super::{
+    codec::{FrameCodec, RawFrame},
+    manifest::{ClipManifest, FrameRef},
+    store::FrameStore,
+};
+
+/// Encode each raw frame with `codec`, store it, and return a clip manifest.
+/// Frames already present in the store are not rewritten (automatic dedup).
 pub fn commit_clip<C: FrameCodec>(
     frames: &[RawFrame],
     codec: &C,
@@ -25,11 +29,7 @@ pub fn commit_clip<C: FrameCodec>(
     for (i, frame) in frames.iter().enumerate() {
         let encoded = codec.encode_frame(frame)?;
         let hash = store.store_frame(&encoded)?;
-        manifest.push_frame(FrameRef {
-            hash,
-            pts: i as i64,
-            duration: 1,
-        });
+        manifest.push_frame(FrameRef { hash, pts: i as i64, duration: 1 });
     }
 
     Ok(manifest)
@@ -37,11 +37,13 @@ pub fn commit_clip<C: FrameCodec>(
 
 #[cfg(test)]
 mod tests {
-    use super::super::codec::DeflateRawCodec;
-    use super::super::diff::diff_manifests;
-    use super::*;
+    use super::{
+        super::{codec::DeflateRawCodec, diff::diff_manifests},
+        *,
+    };
 
-    /// Build `n` frames; frames whose index is in `regraded` get distinct pixels.
+    /// Build `n` frames; frames whose index is in `regraded` get distinct
+    /// pixels.
     fn frames(n: usize, regraded: &[usize]) -> Vec<RawFrame> {
         (0..n)
             .map(|i| {
@@ -52,11 +54,7 @@ mod tests {
                 } else {
                     (i % 150) as u8
                 };
-                RawFrame {
-                    width: 4,
-                    height: 4,
-                    data: vec![v; 4 * 4 * 4],
-                }
+                RawFrame { width: 4, height: 4, data: vec![v; 4 * 4 * 4] }
             })
             .collect()
     }

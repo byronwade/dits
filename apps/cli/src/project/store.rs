@@ -1,10 +1,12 @@
 //! Project graph storage.
 
+use std::{
+    fs, io,
+    path::{Path, PathBuf},
+};
+
 use super::ProjectGraph;
 use crate::core::{Hash, Hasher};
-use std::fs;
-use std::io;
-use std::path::{Path, PathBuf};
 
 /// Project graph storage under `.dits/objects/project/`.
 pub struct ProjectStore {
@@ -15,9 +17,7 @@ pub struct ProjectStore {
 impl ProjectStore {
     /// Create a new project store.
     pub fn new(dits_dir: &Path) -> Self {
-        Self {
-            base_path: dits_dir.join("objects").join("project"),
-        }
+        Self { base_path: dits_dir.join("objects").join("project") }
     }
 
     /// Initialize the store (create directories).
@@ -34,7 +34,8 @@ impl ProjectStore {
 
     /// Store a project graph and return its hash.
     pub fn store(&self, project: &ProjectGraph) -> io::Result<Hash> {
-        let bytes = project.to_bytes()
+        let bytes = project
+            .to_bytes()
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
 
         let hash = Hasher::hash(&bytes);
@@ -103,7 +104,11 @@ impl ProjectStore {
     }
 
     /// Find a project by name in the list of project hashes.
-    pub fn find_by_name(&self, name: &str, project_hashes: &[Hash]) -> io::Result<Option<(Hash, ProjectGraph)>> {
+    pub fn find_by_name(
+        &self,
+        name: &str,
+        project_hashes: &[Hash],
+    ) -> io::Result<Option<(Hash, ProjectGraph)>> {
         for hash in project_hashes {
             if let Ok(project) = self.load(hash) {
                 if project.name == name {
@@ -117,9 +122,10 @@ impl ProjectStore {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::project::{Track, Clip, TrackType};
     use tempfile::tempdir;
+
+    use super::*;
+    use crate::project::Clip;
 
     #[test]
     fn test_store_and_load() {

@@ -1,0 +1,16 @@
+# Test-run artifacts. The harness (test-lib.sh) executes each script inside a
+# per-PID `trash.<pid>` working directory, and some stress tests build repos
+# directly in their CWD. None of this should ever be committed — in particular
+# `extreme-path-test` builds a 20-level-deep directory tree that exceeds the
+# Windows MAX_PATH limit and breaks `git checkout` on Windows CI runners.
+trash.*/
+test-results/
+extreme-path-test/
+# Objects, refs and runtime state created when stress tests run against fixture repos
+*-test/.dits/objects/chunks/
+*-test/.dits/objects/commits/
+*-test/.dits/objects/manifests/
+*-test/.dits/refs/
+*-test/.dits/index
+*-test/.dits/*.corrupted
+io-intensive-test/io_test_*.bin

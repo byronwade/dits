@@ -1,7 +1,8 @@
 //! Proxy variant types.
 
-use crate::core::Hash;
 use serde::{Deserialize, Serialize};
+
+use crate::core::Hash;
 
 /// Type of proxy variant.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -65,10 +66,7 @@ impl VariantType {
 
     /// Check if this is an image variant.
     pub fn is_image(&self) -> bool {
-        matches!(
-            self,
-            VariantType::Thumbnail | VariantType::Poster | VariantType::Sprite
-        )
+        matches!(self, VariantType::Thumbnail | VariantType::Poster | VariantType::Sprite)
     }
 
     /// Get file extension for this variant type.

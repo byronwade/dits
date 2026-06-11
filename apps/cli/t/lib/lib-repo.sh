@@ -158,7 +158,3 @@ test_repo_pull() {
 }
 
 # Export all functions
-export -f test_repo_init test_repo_commit_file test_repo_commit_count
-export -f test_repo_file_content test_repo_create_branch test_repo_switch_branch
-export -f test_repo_merge_branch test_repo_is_clean test_repo_clone
-export -f test_repo_push test_repo_pull

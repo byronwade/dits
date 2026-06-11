@@ -1,23 +1,28 @@
 //! Dependency graph data structures.
 //!
-//! Represents the relationship between project files and their media dependencies.
+//! Represents the relationship between project files and their media
+//! dependencies.
+
+use std::{
+    collections::{HashMap, HashSet},
+    path::PathBuf,
+};
+
+use serde::{Deserialize, Serialize};
 
 use crate::core::Hash;
-use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
-use std::path::PathBuf;
 
 /// A node in the dependency graph.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DependencyNode {
     /// Path to the file (relative to repo root).
-    pub path: String,
+    pub path:           String,
     /// Content hash of the file (if tracked).
-    pub hash: Option<Hash>,
+    pub hash:           Option<Hash>,
     /// Whether this is a project file (vs media).
-    pub is_project: bool,
+    pub is_project:     bool,
     /// Whether this file exists in the repository.
-    pub is_tracked: bool,
+    pub is_tracked:     bool,
     /// Whether this file exists on disk.
     pub exists_on_disk: bool,
 }
@@ -26,10 +31,10 @@ impl DependencyNode {
     /// Create a new dependency node.
     pub fn new(path: impl Into<String>) -> Self {
         Self {
-            path: path.into(),
-            hash: None,
-            is_project: false,
-            is_tracked: false,
+            path:           path.into(),
+            hash:           None,
+            is_project:     false,
+            is_tracked:     false,
             exists_on_disk: false,
         }
     }
@@ -63,9 +68,9 @@ impl DependencyNode {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DependencyEdge {
     /// Source node (the project file).
-    pub from: String,
+    pub from:      String,
     /// Target node (the dependency).
-    pub to: String,
+    pub to:        String,
     /// Type of dependency.
     pub edge_type: EdgeType,
 }
@@ -102,12 +107,14 @@ impl DependencyGraph {
     }
 
     /// Add an edge to the graph.
-    pub fn add_edge(&mut self, from: impl Into<String>, to: impl Into<String>, edge_type: EdgeType) {
-        self.edges.push(DependencyEdge {
-            from: from.into(),
-            to: to.into(),
-            edge_type,
-        });
+    pub fn add_edge(
+        &mut self,
+        from: impl Into<String>,
+        to: impl Into<String>,
+        edge_type: EdgeType,
+    ) {
+        self.edges
+            .push(DependencyEdge { from: from.into(), to: to.into(), edge_type });
     }
 
     /// Get a node by path.
@@ -169,7 +176,10 @@ impl DependencyGraph {
 
     /// Get all untracked dependencies.
     pub fn untracked_dependencies(&self) -> Vec<&DependencyNode> {
-        self.nodes.values().filter(|n| !n.is_tracked && !n.is_project).collect()
+        self.nodes
+            .values()
+            .filter(|n| !n.is_tracked && !n.is_project)
+            .collect()
     }
 
     /// Get all missing files (don't exist on disk).
@@ -193,13 +203,13 @@ impl DependencyGraph {
     /// Get statistics about the graph.
     pub fn stats(&self) -> GraphStats {
         GraphStats {
-            total_nodes: self.nodes.len(),
-            project_files: self.nodes.values().filter(|n| n.is_project).count(),
-            media_files: self.nodes.values().filter(|n| !n.is_project).count(),
-            tracked_files: self.nodes.values().filter(|n| n.is_tracked).count(),
+            total_nodes:     self.nodes.len(),
+            project_files:   self.nodes.values().filter(|n| n.is_project).count(),
+            media_files:     self.nodes.values().filter(|n| !n.is_project).count(),
+            tracked_files:   self.nodes.values().filter(|n| n.is_tracked).count(),
             untracked_files: self.nodes.values().filter(|n| !n.is_tracked).count(),
-            missing_files: self.nodes.values().filter(|n| !n.exists_on_disk).count(),
-            total_edges: self.edges.len(),
+            missing_files:   self.nodes.values().filter(|n| !n.exists_on_disk).count(),
+            total_edges:     self.edges.len(),
         }
     }
 
@@ -240,7 +250,8 @@ impl DependencyGraph {
         }
         visited.insert(path.to_string());
 
-        let children: Vec<_> = self.edges
+        let children: Vec<_> = self
+            .edges
             .iter()
             .filter(|e| e.from == path)
             .map(|e| e.to.clone())
@@ -258,13 +269,13 @@ impl DependencyGraph {
 /// Statistics about a dependency graph.
 #[derive(Debug, Clone)]
 pub struct GraphStats {
-    pub total_nodes: usize,
-    pub project_files: usize,
-    pub media_files: usize,
-    pub tracked_files: usize,
+    pub total_nodes:     usize,
+    pub project_files:   usize,
+    pub media_files:     usize,
+    pub tracked_files:   usize,
     pub untracked_files: usize,
-    pub missing_files: usize,
-    pub total_edges: usize,
+    pub missing_files:   usize,
+    pub total_edges:     usize,
 }
 
 #[cfg(test)]
@@ -275,9 +286,22 @@ mod tests {
     fn test_dependency_graph() {
         let mut graph = DependencyGraph::new();
 
-        graph.add_node(DependencyNode::new("project.prproj").as_project().as_tracked().as_exists());
-        graph.add_node(DependencyNode::new("media/video.mp4").as_tracked().as_exists());
-        graph.add_node(DependencyNode::new("media/audio.wav").as_tracked().as_exists());
+        graph.add_node(
+            DependencyNode::new("project.prproj")
+                .as_project()
+                .as_tracked()
+                .as_exists(),
+        );
+        graph.add_node(
+            DependencyNode::new("media/video.mp4")
+                .as_tracked()
+                .as_exists(),
+        );
+        graph.add_node(
+            DependencyNode::new("media/audio.wav")
+                .as_tracked()
+                .as_exists(),
+        );
         graph.add_node(DependencyNode::new("missing.mp4"));
 
         graph.add_edge("project.prproj", "media/video.mp4", EdgeType::Media);
@@ -298,8 +322,18 @@ mod tests {
     fn test_nested_projects() {
         let mut graph = DependencyGraph::new();
 
-        graph.add_node(DependencyNode::new("main.prproj").as_project().as_tracked().as_exists());
-        graph.add_node(DependencyNode::new("sub.prproj").as_project().as_tracked().as_exists());
+        graph.add_node(
+            DependencyNode::new("main.prproj")
+                .as_project()
+                .as_tracked()
+                .as_exists(),
+        );
+        graph.add_node(
+            DependencyNode::new("sub.prproj")
+                .as_project()
+                .as_tracked()
+                .as_exists(),
+        );
         graph.add_node(DependencyNode::new("video.mp4").as_tracked().as_exists());
 
         graph.add_edge("main.prproj", "sub.prproj", EdgeType::NestedProject);

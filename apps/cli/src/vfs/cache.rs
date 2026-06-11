@@ -8,37 +8,36 @@
 //! Reads check each tier in order. Cache misses trigger fetches
 //! from the next tier and populate the faster tiers.
 
-use crate::core::Hash;
-use crate::store::ObjectStore;
+use std::{path::PathBuf, sync::Arc};
+
 use moka::future::Cache;
-use std::path::PathBuf;
-use std::sync::Arc;
-use tokio::fs;
-use tokio::sync::RwLock;
+use tokio::{fs, sync::RwLock};
+
+use crate::{core::Hash, store::ObjectStore};
 
 /// Configuration for the chunk cache.
 #[derive(Clone, Debug)]
 pub struct CacheConfig {
     /// Maximum L1 (RAM) cache size in bytes.
-    pub l1_max_bytes: u64,
+    pub l1_max_bytes:     u64,
     /// Maximum L2 (disk) cache size in bytes.
-    pub l2_max_bytes: u64,
+    pub l2_max_bytes:     u64,
     /// Path to L2 disk cache directory.
-    pub l2_path: PathBuf,
+    pub l2_path:          PathBuf,
     /// Whether to enable read-ahead prefetching.
     pub prefetch_enabled: bool,
     /// Number of chunks to prefetch ahead.
-    pub prefetch_count: usize,
+    pub prefetch_count:   usize,
 }
 
 impl Default for CacheConfig {
     fn default() -> Self {
         Self {
-            l1_max_bytes: 256 * 1024 * 1024,  // 256 MB RAM cache
-            l2_max_bytes: 4 * 1024 * 1024 * 1024, // 4 GB disk cache
-            l2_path: PathBuf::from(".dits/cache"),
+            l1_max_bytes:     256 * 1024 * 1024,      // 256 MB RAM cache
+            l2_max_bytes:     4 * 1024 * 1024 * 1024, // 4 GB disk cache
+            l2_path:          PathBuf::from(".dits/cache"),
             prefetch_enabled: true,
-            prefetch_count: 4,
+            prefetch_count:   4,
         }
     }
 }
@@ -47,8 +46,8 @@ impl CacheConfig {
     /// Create config for a small device (limited RAM/storage).
     pub fn small() -> Self {
         Self {
-            l1_max_bytes: 64 * 1024 * 1024,   // 64 MB
-            l2_max_bytes: 512 * 1024 * 1024,  // 512 MB
+            l1_max_bytes: 64 * 1024 * 1024,  // 64 MB
+            l2_max_bytes: 512 * 1024 * 1024, // 512 MB
             ..Default::default()
         }
     }
@@ -56,7 +55,7 @@ impl CacheConfig {
     /// Create config for a workstation (lots of RAM/storage).
     pub fn large() -> Self {
         Self {
-            l1_max_bytes: 1024 * 1024 * 1024,     // 1 GB
+            l1_max_bytes: 1024 * 1024 * 1024,      // 1 GB
             l2_max_bytes: 32 * 1024 * 1024 * 1024, // 32 GB
             ..Default::default()
         }
@@ -66,32 +65,32 @@ impl CacheConfig {
 /// Multi-tier chunk cache.
 pub struct ChunkCache {
     /// Configuration.
-    config: CacheConfig,
+    config:       CacheConfig,
     /// L1 in-memory cache.
-    l1: Cache<Hash, Arc<Vec<u8>>>,
+    l1:           Cache<Hash, Arc<Vec<u8>>>,
     /// Path to L2 disk cache.
-    l2_path: PathBuf,
+    l2_path:      PathBuf,
     /// Object store for L3 (local chunks).
     object_store: Arc<ObjectStore>,
     /// Statistics.
-    stats: Arc<RwLock<CacheStats>>,
+    stats:        Arc<RwLock<CacheStats>>,
     /// L2 cache current size in bytes.
-    l2_size: Arc<RwLock<u64>>,
+    l2_size:      Arc<RwLock<u64>>,
 }
 
 /// Cache statistics.
 #[derive(Clone, Debug, Default)]
 pub struct CacheStats {
     /// L1 cache hits.
-    pub l1_hits: u64,
+    pub l1_hits:       u64,
     /// L2 cache hits.
-    pub l2_hits: u64,
+    pub l2_hits:       u64,
     /// L3 (object store) hits.
-    pub l3_hits: u64,
+    pub l3_hits:       u64,
     /// Total cache misses (chunk not found anywhere).
-    pub misses: u64,
+    pub misses:        u64,
     /// Total bytes read from cache.
-    pub bytes_read: u64,
+    pub bytes_read:    u64,
     /// Total bytes fetched from object store.
     pub bytes_fetched: u64,
 }
@@ -123,7 +122,7 @@ impl ChunkCache {
     pub fn new(config: CacheConfig, object_store: Arc<ObjectStore>) -> Self {
         // Calculate L1 capacity based on average chunk size (~64KB)
         let avg_chunk_size = 64 * 1024;
-        let l1_capacity = (config.l1_max_bytes / avg_chunk_size) as u64;
+        let l1_capacity = config.l1_max_bytes / avg_chunk_size;
 
         let l1 = Cache::builder()
             .max_capacity(l1_capacity)
@@ -182,10 +181,10 @@ impl ChunkCache {
                 stats.bytes_read += data.len() as u64;
                 stats.bytes_fetched += data.len() as u64;
                 return Some(data);
-            }
+            },
             Err(e) => {
                 eprintln!("L3 miss for {}: {:?}", hash.to_hex(), e);
-            }
+            },
         }
 
         // Not found anywhere
@@ -255,12 +254,12 @@ impl ChunkCache {
     /// Clone self for use in prefetch tasks.
     fn clone_for_prefetch(&self) -> Self {
         Self {
-            config: self.config.clone(),
-            l1: self.l1.clone(),
-            l2_path: self.l2_path.clone(),
+            config:       self.config.clone(),
+            l1:           self.l1.clone(),
+            l2_path:      self.l2_path.clone(),
             object_store: self.object_store.clone(),
-            stats: self.stats.clone(),
-            l2_size: self.l2_size.clone(),
+            stats:        self.stats.clone(),
+            l2_size:      self.l2_size.clone(),
         }
     }
 
@@ -292,11 +291,13 @@ impl ChunkCache {
 }
 
 /// Synchronous wrapper for use in FUSE handlers.
+#[allow(dead_code)]
 pub struct SyncChunkCache {
-    inner: ChunkCache,
+    inner:   ChunkCache,
     runtime: tokio::runtime::Runtime,
 }
 
+#[allow(dead_code)]
 impl SyncChunkCache {
     /// Create a new synchronous cache wrapper.
     pub fn new(config: CacheConfig, object_store: Arc<ObjectStore>) -> std::io::Result<Self> {
@@ -336,9 +337,10 @@ impl SyncChunkCache {
 
 #[cfg(test)]
 mod tests {
+    use tempfile::tempdir;
+
     use super::*;
     use crate::core::Chunk;
-    use tempfile::tempdir;
 
     #[tokio::test]
     async fn test_cache_basic() {
@@ -352,10 +354,7 @@ mod tests {
         store.store_chunk(&chunk).unwrap();
 
         // Create cache
-        let config = CacheConfig {
-            l2_path: temp.path().join("cache"),
-            ..Default::default()
-        };
+        let config = CacheConfig { l2_path: temp.path().join("cache"), ..Default::default() };
         let cache = ChunkCache::new(config, store);
         cache.init().await.unwrap();
 
@@ -379,10 +378,7 @@ mod tests {
         let store = Arc::new(ObjectStore::new(temp.path()));
         store.init().unwrap();
 
-        let config = CacheConfig {
-            l2_path: temp.path().join("cache"),
-            ..Default::default()
-        };
+        let config = CacheConfig { l2_path: temp.path().join("cache"), ..Default::default() };
         let cache = ChunkCache::new(config, store);
         cache.init().await.unwrap();
 

@@ -7,6 +7,10 @@
 
 set -e
 
+# Always run from the directory containing this script so that test scripts
+# can reliably source ./test-lib.sh regardless of the caller's CWD.
+cd "$(dirname "$0")"
+
 TEST_DIRECTORY=$(pwd)
 export TEST_DIRECTORY
 
@@ -68,7 +72,7 @@ then
 fi
 
 # Find test scripts
-test_scripts=$(find . -name "t[0-9][0-9][0-9][0-9]*.sh" -type f | sort)
+test_scripts=$(find . -maxdepth 1 -name "t[0-9][0-9][0-9][0-9]*.sh" -type f | sort)
 
 # Filter by run list if specified
 if test -n "$run_list"

@@ -6,12 +6,12 @@
 //! - Freeze/thaw operations for archival storage
 //! - Policy-based automatic tier transitions
 
+mod manager;
+mod policy;
 mod tier;
 mod tracker;
-mod policy;
-mod manager;
 
-pub use tier::{StorageTier, TierConfig, TierStats};
-pub use tracker::{AccessTracker, AccessRecord, AccessStats};
+pub use manager::{FreezeResult, LifecycleManager, ThawResult, ThawStatus};
 pub use policy::{LifecyclePolicy, PolicyRule, TierTransition};
-pub use manager::{LifecycleManager, FreezeResult, ThawResult, ThawStatus};
+pub use tier::{StorageTier, TierConfig, TierStats};
+pub use tracker::{AccessRecord, AccessStats, AccessTracker};

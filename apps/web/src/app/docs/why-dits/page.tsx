@@ -2,8 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { Callout } from "@/components/ui/callout";
 import { DocPageHeader } from "@/components/doc-page-header";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { generateArticleSchema, generateBreadcrumbSchema } from "@/lib/seo";
 import Script from "next/script";
 import {
@@ -101,7 +100,7 @@ export default function WhyDitsPage() {
         Every feature is thoroughly tested and production-hardened.
       </Callout>
 
-      <h2>The Problem Git Solves (and Doesn't)</h2>
+      <h2>The Problem Git Solves (and Doesn&apos;t)</h2>
       <p>
         Git was designed for software development—small text files that change incrementally.
         It works brilliantly for this use case because:
@@ -120,12 +119,12 @@ export default function WhyDitsPage() {
         <li><strong>Binary formats:</strong> Video, audio, images, 3D models</li>
         <li><strong>Huge files:</strong> 4K video files can be 10-500GB</li>
         <li><strong>Frequent full-file changes:</strong> Editing a video frame changes the entire file</li>
-        <li><strong>No meaningful diffs:</strong> You can't "merge" two video edits</li>
+        <li><strong>No meaningful diffs:</strong> You can&apos;t &quot;merge&quot; two video edits</li>
       </ul>
 
       <h2>Git LFS: The Band-Aid Solution</h2>
       <p>
-        Git LFS (Large File Storage) was created to address this gap, but it's fundamentally limited:
+        Git LFS (Large File Storage) was created to address this gap, but it&apos;s fundamentally limited:
       </p>
 
       <div className="not-prose grid gap-4 md:grid-cols-2 my-6">
@@ -178,7 +177,7 @@ export default function WhyDitsPage() {
 
       <h2>Dits Hybrid Approach: Best of Both Worlds</h2>
       <p>
-        Dits doesn't replace Git—it <strong>complements it</strong>. Use both tools together for optimal workflows:
+        Dits doesn&apos;t replace Git—it <strong>complements it</strong>. Use both tools together for optimal workflows:
       </p>
 
       <div className="not-prose my-6">
@@ -414,8 +413,8 @@ export default function WhyDitsPage() {
         <li>Start with a single project directory</li>
         <li>Use <code>dits init</code> to create the repository</li>
         <li>Add your existing files with <code>dits add .</code></li>
-        <li>Commit with <code>dits commit -m "Initial import"</code></li>
-        <li>Delete those "final_v27.mp4" files forever</li>
+        <li>Commit with <code>dits commit -m &quot;Initial import&quot;</code></li>
+        <li>Delete those &quot;final_v27.mp4&quot; files forever</li>
       </ol>
 
       <h2>Next Steps</h2>
@@ -427,7 +426,7 @@ export default function WhyDitsPage() {
       </p>
 
       <Callout type="tip" title="Pro Tip" className="not-prose my-6">
-        Dits is designed to be Git-compatible. If you know Git, you'll feel right at home with Dits commands and workflows.
+        Dits is designed to be Git-compatible. If you know Git, you&apos;ll feel right at home with Dits commands and workflows.
       </Callout>
     </div>
     </>

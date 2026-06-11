@@ -1,10 +1,12 @@
 //! Content-addressed segment store/delivery seam. `LocalDiskOrigin` is impl #1;
 //! a future QUIC delta-push origin is impl #2 with no upstream rework.
 
+use std::{
+    fs, io,
+    path::{Path, PathBuf},
+};
+
 use crate::core::Hash;
-use std::fs;
-use std::io;
-use std::path::{Path, PathBuf};
 
 /// A place segments live, addressed by content hash.
 pub trait SegmentOrigin {

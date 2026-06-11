@@ -1,9 +1,11 @@
 //! Show repository status.
 
-use crate::store::Repository;
+use std::path::Path;
+
 use anyhow::{Context, Result};
 use console::style;
-use std::path::Path;
+
+use crate::store::Repository;
 
 /// Show repository status.
 pub fn status() -> Result<()> {
@@ -87,10 +89,10 @@ pub fn status() -> Result<()> {
     // Clean status
     if status.is_clean() && status.untracked.is_empty() && status.unstaged_renamed.is_empty() {
         println!("nothing to commit, working tree clean");
-    } else if status.is_clean() && (!status.untracked.is_empty() || !status.unstaged_renamed.is_empty()) {
-        println!(
-            "nothing added to commit but untracked files present (use \"dits add\" to track)"
-        );
+    } else if status.is_clean()
+        && (!status.untracked.is_empty() || !status.unstaged_renamed.is_empty())
+    {
+        println!("nothing added to commit but untracked files present (use \"dits add\" to track)");
     }
 
     Ok(())

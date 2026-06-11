@@ -1,14 +1,16 @@
 //! Reference storage for branches and HEAD.
 
+use std::{
+    fs, io,
+    path::{Path, PathBuf},
+};
+
 use crate::core::Hash;
-use std::fs;
-use std::io;
-use std::path::{Path, PathBuf};
 
 /// Reference store for branches and HEAD.
 pub struct RefStore {
     /// Root path of the refs directory.
-    root: PathBuf,
+    root:      PathBuf,
     /// Path to HEAD file.
     head_path: PathBuf,
 }
@@ -16,10 +18,7 @@ pub struct RefStore {
 impl RefStore {
     /// Create a new ref store.
     pub fn new(dits_dir: &Path) -> Self {
-        Self {
-            root: dits_dir.join("refs"),
-            head_path: dits_dir.join("HEAD"),
-        }
+        Self { root: dits_dir.join("refs"), head_path: dits_dir.join("HEAD") }
     }
 
     /// Initialize the ref store.
@@ -201,8 +200,9 @@ pub enum HeadRef {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use tempfile::tempdir;
+
+    use super::*;
 
     #[test]
     fn test_init_and_read_head() {

@@ -1,13 +1,15 @@
 //! FFmpeg-based proxy generator.
 
-use super::config::{ProxyConfig, ProxyResolution};
-use super::variant::{ProxyVariant, VariantType};
-use crate::core::{chunk_data_with_refs_parallel, ChunkerConfig, Hash, Hasher};
-use std::path::Path;
-use std::process::Command;
-use tokio::sync::mpsc;
-use tokio::task;
+use std::{path::Path, process::Command};
+
 use thiserror::Error;
+use tokio::{sync::mpsc, task};
+
+use super::{
+    config::{ProxyConfig, ProxyResolution},
+    variant::{ProxyVariant, VariantType},
+};
+use crate::core::{chunk_data_with_refs_parallel, ChunkerConfig, Hash, Hasher};
 
 /// Proxy generation errors.
 #[derive(Debug, Error)]
@@ -24,12 +26,10 @@ pub enum GenerationError {
     #[error("Failed to probe source: {0}")]
     ProbeFailed(String),
 
-    #[error("Duration mismatch: source={source_ms}ms, proxy={proxy_ms}ms (tolerance={tolerance_ms}ms)")]
-    DurationMismatch {
-        source_ms: u64,
-        proxy_ms: u64,
-        tolerance_ms: u32,
-    },
+    #[error(
+        "Duration mismatch: source={source_ms}ms, proxy={proxy_ms}ms (tolerance={tolerance_ms}ms)"
+    )]
+    DurationMismatch { source_ms: u64, proxy_ms: u64, tolerance_ms: u32 },
 
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
@@ -45,22 +45,22 @@ pub enum GenerationError {
 #[derive(Debug, Clone)]
 pub struct ProxyJob {
     /// Source file path.
-    pub source_path: std::path::PathBuf,
+    pub source_path:  std::path::PathBuf,
     /// Output directory for proxy files.
-    pub output_dir: std::path::PathBuf,
+    pub output_dir:   std::path::PathBuf,
     /// Proxy configuration.
-    pub config: ProxyConfig,
+    pub config:       ProxyConfig,
     /// Content hash of source file.
     pub content_hash: Hash,
     /// Relative path in repository.
-    pub repo_path: String,
+    pub repo_path:    String,
 }
 
 /// Result of async proxy generation.
 #[derive(Debug)]
 pub struct AsyncProxyResult {
     /// The proxy job that was processed.
-    pub job: ProxyJob,
+    pub job:    ProxyJob,
     /// Result of generation.
     pub result: Result<ProxyResult, GenerationError>,
 }
@@ -69,17 +69,17 @@ pub struct AsyncProxyResult {
 #[derive(Debug)]
 pub struct ProxyResult {
     /// The generated proxy variant.
-    pub variant: ProxyVariant,
+    pub variant:         ProxyVariant,
     /// Path to the proxy file (temporary).
-    pub proxy_path: std::path::PathBuf,
+    pub proxy_path:      std::path::PathBuf,
     /// Thumbnail path (if generated).
-    pub thumbnail_path: Option<std::path::PathBuf>,
+    pub thumbnail_path:  Option<std::path::PathBuf>,
     /// FFmpeg command used.
-    pub ffmpeg_command: String,
+    pub ffmpeg_command:  String,
     /// Source duration in seconds.
     pub source_duration: f64,
     /// Proxy duration in seconds.
-    pub proxy_duration: f64,
+    pub proxy_duration:  f64,
 }
 
 /// Proxy generator using FFmpeg.
@@ -133,18 +133,11 @@ impl ProxyGenerator {
     /// Probe source file for metadata.
     pub fn probe_source(&self, source_path: &Path) -> Result<SourceInfo, GenerationError> {
         if !source_path.exists() {
-            return Err(GenerationError::SourceNotFound(
-                source_path.display().to_string(),
-            ));
+            return Err(GenerationError::SourceNotFound(source_path.display().to_string()));
         }
 
         let output = Command::new("ffprobe")
-            .args([
-                "-v", "quiet",
-                "-print_format", "json",
-                "-show_format",
-                "-show_streams",
-            ])
+            .args(["-v", "quiet", "-print_format", "json", "-show_format", "-show_streams"])
             .arg(source_path)
             .output()
             .map_err(|e| GenerationError::ProbeFailed(e.to_string()))?;
@@ -204,11 +197,7 @@ impl ProxyGenerator {
         // Check duration tolerance
         let source_ms = (source_info.duration * 1000.0) as u64;
         let proxy_ms = (proxy_info.duration * 1000.0) as u64;
-        let diff = if source_ms > proxy_ms {
-            source_ms - proxy_ms
-        } else {
-            proxy_ms - source_ms
-        };
+        let diff = source_ms.abs_diff(proxy_ms);
 
         if diff > self.config.duration_tolerance_ms as u64 {
             // Clean up the generated file
@@ -282,16 +271,14 @@ impl ProxyGenerator {
         output_path: &Path,
         source_info: &SourceInfo,
     ) -> Result<Vec<String>, GenerationError> {
-        let mut args = Vec::new();
-
-        // Input
-        args.push("-y".to_string()); // Overwrite output
-        args.push("-i".to_string());
-        args.push(source_path.display().to_string());
-
-        // Video codec
-        args.push("-c:v".to_string());
-        args.push(self.config.codec.ffmpeg_encoder().to_string());
+        let mut args = vec![
+            "-y".to_string(), // Overwrite output
+            "-i".to_string(),
+            source_path.display().to_string(),
+            // Video codec
+            "-c:v".to_string(),
+            self.config.codec.ffmpeg_encoder().to_string(),
+        ];
 
         // Codec options
         for (key, value) in self.config.codec.ffmpeg_options() {
@@ -300,13 +287,18 @@ impl ProxyGenerator {
         }
 
         // Scale filter
-        let scale = if matches!(self.config.resolution, ProxyResolution::Half | ProxyResolution::Quarter) {
-            self.config.resolution.ffmpeg_scale_relative(source_info.width, source_info.height)
-        } else {
-            self.config.resolution.ffmpeg_scale()
-                .unwrap_or("scale=1920:1080")
-                .to_string()
-        };
+        let scale =
+            if matches!(self.config.resolution, ProxyResolution::Half | ProxyResolution::Quarter) {
+                self.config
+                    .resolution
+                    .ffmpeg_scale_relative(source_info.width, source_info.height)
+            } else {
+                self.config
+                    .resolution
+                    .ffmpeg_scale()
+                    .unwrap_or("scale=1920:1080")
+                    .to_string()
+            };
 
         // Build filter chain
         let mut filters = vec![scale];
@@ -377,11 +369,16 @@ impl ProxyGenerator {
         let status = Command::new("ffmpeg")
             .args([
                 "-y",
-                "-ss", &position.to_string(),
-                "-i", &source_path.display().to_string(),
-                "-vframes", "1",
-                "-vf", "scale=320:-1",
-                "-q:v", "2",
+                "-ss",
+                &position.to_string(),
+                "-i",
+                &source_path.display().to_string(),
+                "-vframes",
+                "1",
+                "-vf",
+                "scale=320:-1",
+                "-q:v",
+                "2",
                 &thumb_path.display().to_string(),
             ])
             .status()
@@ -425,17 +422,15 @@ impl ProxyGenerator {
         use futures_util::stream::{self, StreamExt};
 
         let jobs_stream = stream::iter(jobs);
-        let workers = jobs_stream.map(|job| {
-            let tx = tx.clone();
-            task::spawn(async move {
-                let result = Self::process_job_async(job.clone()).await;
-                let _ = tx.send(AsyncProxyResult {
-                    job,
-                    result,
-                }).await;
+        let workers = jobs_stream
+            .map(|job| {
+                let tx = tx.clone();
+                task::spawn(async move {
+                    let result = Self::process_job_async(job.clone()).await;
+                    let _ = tx.send(AsyncProxyResult { job, result }).await;
+                })
             })
-        })
-        .buffer_unordered(max_workers);
+            .buffer_unordered(max_workers);
 
         workers.collect::<Vec<_>>().await;
     }
@@ -456,21 +451,21 @@ impl ProxyGenerator {
 #[derive(Debug, Clone)]
 pub struct SourceInfo {
     /// Duration in seconds.
-    pub duration: f64,
+    pub duration:   f64,
     /// Video width.
-    pub width: u32,
+    pub width:      u32,
     /// Video height.
-    pub height: u32,
+    pub height:     u32,
     /// Frame rate (fps).
     pub frame_rate: f64,
     /// Video codec.
-    pub codec: String,
+    pub codec:      String,
     /// Timecode (if present).
-    pub timecode: Option<String>,
+    pub timecode:   Option<String>,
     /// Has audio.
-    pub has_audio: bool,
+    pub has_audio:  bool,
     /// File size in bytes.
-    pub file_size: u64,
+    pub file_size:  u64,
 
     /// Camera metadata for LUT detection.
     pub camera_metadata: Option<CameraMetadata>,
@@ -480,9 +475,9 @@ pub struct SourceInfo {
 #[derive(Debug, Clone)]
 pub struct CameraMetadata {
     /// Camera make (e.g., "Sony", "Canon").
-    pub make: Option<String>,
+    pub make:        Option<String>,
     /// Camera model.
-    pub model: Option<String>,
+    pub model:       Option<String>,
     /// Color space/gamma (e.g., "S-Log3", "Rec.709").
     pub color_space: Option<String>,
     /// Log profile information.
@@ -495,7 +490,8 @@ fn parse_ffprobe_json(json_str: &str) -> Result<SourceInfo, GenerationError> {
         .map_err(|e| GenerationError::ProbeFailed(format!("JSON parse error: {}", e)))?;
 
     // Get format info
-    let format = json.get("format")
+    let format = json
+        .get("format")
         .ok_or_else(|| GenerationError::ProbeFailed("No format info".to_string()))?;
 
     let duration: f64 = format
@@ -511,7 +507,8 @@ fn parse_ffprobe_json(json_str: &str) -> Result<SourceInfo, GenerationError> {
         .unwrap_or(0);
 
     // Find video stream
-    let streams = json.get("streams")
+    let streams = json
+        .get("streams")
         .and_then(|v| v.as_array())
         .ok_or_else(|| GenerationError::ProbeFailed("No streams info".to_string()))?;
 
@@ -545,7 +542,11 @@ fn parse_ffprobe_json(json_str: &str) -> Result<SourceInfo, GenerationError> {
             if parts.len() == 2 {
                 let num: f64 = parts[0].parse().ok()?;
                 let den: f64 = parts[1].parse().ok()?;
-                if den > 0.0 { Some(num / den) } else { None }
+                if den > 0.0 {
+                    Some(num / den)
+                } else {
+                    None
+                }
             } else {
                 s.parse().ok()
             }
@@ -584,20 +585,23 @@ fn parse_ffprobe_json(json_str: &str) -> Result<SourceInfo, GenerationError> {
 fn extract_camera_metadata(video_stream: &serde_json::Value) -> Option<CameraMetadata> {
     let tags = video_stream.get("tags")?;
 
-    let make = tags.get("com.apple.quicktime.make")
+    let make = tags
+        .get("com.apple.quicktime.make")
         .or_else(|| tags.get("make"))
         .or_else(|| tags.get("manufacturer"))
         .and_then(|v| v.as_str())
         .map(|s| s.to_string());
 
-    let model = tags.get("com.apple.quicktime.model")
+    let model = tags
+        .get("com.apple.quicktime.model")
         .or_else(|| tags.get("model"))
         .or_else(|| tags.get("camera_model"))
         .and_then(|v| v.as_str())
         .map(|s| s.to_string());
 
     // Detect color space and log profiles
-    let color_space = tags.get("color_space")
+    let color_space = tags
+        .get("color_space")
         .or_else(|| tags.get("color_space_name"))
         .and_then(|v| v.as_str())
         .map(|s| s.to_string());
@@ -605,21 +609,20 @@ fn extract_camera_metadata(video_stream: &serde_json::Value) -> Option<CameraMet
     let log_profile = detect_log_profile(video_stream, tags);
 
     if make.is_some() || model.is_some() || color_space.is_some() || log_profile.is_some() {
-        Some(CameraMetadata {
-            make,
-            model,
-            color_space,
-            log_profile,
-        })
+        Some(CameraMetadata { make, model, color_space, log_profile })
     } else {
         None
     }
 }
 
 /// Detect log profile from various metadata sources.
-fn detect_log_profile(video_stream: &serde_json::Value, tags: &serde_json::Value) -> Option<String> {
+fn detect_log_profile(
+    video_stream: &serde_json::Value,
+    tags: &serde_json::Value,
+) -> Option<String> {
     // Check for explicit log profile tags
-    if let Some(profile) = tags.get("log_profile")
+    if let Some(profile) = tags
+        .get("log_profile")
         .or_else(|| tags.get("gamma"))
         .or_else(|| tags.get("transfer_characteristics"))
         .and_then(|v| v.as_str())
@@ -629,7 +632,8 @@ fn detect_log_profile(video_stream: &serde_json::Value, tags: &serde_json::Value
     }
 
     // Check for S-Log profiles (Sony)
-    if let Some(true) = tags.get("slog")
+    if let Some(true) = tags
+        .get("slog")
         .or_else(|| tags.get("s-log"))
         .and_then(|v| v.as_bool())
     {
@@ -637,7 +641,8 @@ fn detect_log_profile(video_stream: &serde_json::Value, tags: &serde_json::Value
     }
 
     // Check for Cineon log
-    if let Some(true) = tags.get("cineon")
+    if let Some(true) = tags
+        .get("cineon")
         .or_else(|| tags.get("log_c"))
         .and_then(|v| v.as_bool())
     {
@@ -645,17 +650,17 @@ fn detect_log_profile(video_stream: &serde_json::Value, tags: &serde_json::Value
     }
 
     // Check pixel format for common log indicators
-    if let Some(pix_fmt) = video_stream.get("pix_fmt").and_then(|v| v.as_str()) {
-        match pix_fmt {
-            "yuv422p10le" | "yuv444p10le" => {
-                // Often used with log profiles
-                if let Some(make) = tags.get("com.apple.quicktime.make").and_then(|v| v.as_str()) {
-                    if make.contains("Sony") {
-                        return Some("S-Log3".to_string());
-                    }
-                }
+    if let Some("yuv422p10le" | "yuv444p10le") =
+        video_stream.get("pix_fmt").and_then(|v| v.as_str())
+    {
+        // Often used with log profiles
+        if let Some(make) = tags
+            .get("com.apple.quicktime.make")
+            .and_then(|v| v.as_str())
+        {
+            if make.contains("Sony") {
+                return Some("S-Log3".to_string());
             }
-            _ => {}
         }
     }
 
@@ -670,8 +675,7 @@ mod tests {
     fn test_check_ffmpeg() {
         // This test will pass if FFmpeg is installed
         let result = ProxyGenerator::check_ffmpeg();
-        if result.is_ok() {
-            let version = result.unwrap();
+        if let Ok(version) = result {
             assert!(version.contains("ffmpeg"));
         }
     }

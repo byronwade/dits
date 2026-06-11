@@ -1,24 +1,27 @@
 //! Rebase command - reapply commits on top of another base.
 
-use crate::core::{Author, Commit, Index, IndexEntry};
-use crate::store::Repository;
-use anyhow::{Context, Result, bail};
+use std::{fs, path::Path};
+
+use anyhow::{bail, Context, Result};
 use console::style;
 use serde::{Deserialize, Serialize};
-use std::fs;
-use std::path::Path;
+
+use crate::{
+    core::{Author, Commit, Index, IndexEntry},
+    store::Repository,
+};
 
 /// Rebase state for interrupted rebases.
 #[derive(Debug, Serialize, Deserialize)]
 struct RebaseState {
     /// Original branch/commit we started from.
-    original_head: String,
+    original_head:    String,
     /// Target base commit.
-    onto: crate::core::Hash,
+    onto:             crate::core::Hash,
     /// Commits to apply (in order).
     commits_to_apply: Vec<crate::core::Hash>,
     /// Current index in commits_to_apply.
-    current_index: usize,
+    current_index:    usize,
 }
 
 /// Rebase current branch onto another.
@@ -50,12 +53,12 @@ pub fn rebase(
     let upstream = upstream.context("Please specify the upstream branch to rebase onto")?;
 
     // Resolve upstream
-    let upstream_hash = repo.resolve_ref_or_prefix(upstream)?
+    let upstream_hash = repo
+        .resolve_ref_or_prefix(upstream)?
         .with_context(|| format!("Could not resolve '{}' to a commit", upstream))?;
 
     // Get current HEAD
-    let head_hash = repo.head()?
-        .context("No commits yet - nothing to rebase")?;
+    let head_hash = repo.head()?.context("No commits yet - nothing to rebase")?;
 
     // Find the merge base (for now, just use upstream as base)
     let base_hash = if let Some(onto_ref) = onto {
@@ -177,8 +180,7 @@ fn apply_commits(
         let has_conflicts = false;
 
         for (path, entry) in commit_manifest.iter() {
-            let was_in_parent = parent_manifest.as_ref()
-                .and_then(|m| m.get(path));
+            let was_in_parent = parent_manifest.as_ref().and_then(|m| m.get(path));
 
             let is_new = was_in_parent.is_none();
             let is_modified = was_in_parent
@@ -215,14 +217,10 @@ fn apply_commits(
 
         if has_conflicts {
             // Update state
-            let mut state: RebaseState = serde_json::from_str(
-                &fs::read_to_string(rebase_dir.join("state.json"))?
-            )?;
+            let mut state: RebaseState =
+                serde_json::from_str(&fs::read_to_string(rebase_dir.join("state.json"))?)?;
             state.current_index = i;
-            fs::write(
-                rebase_dir.join("state.json"),
-                serde_json::to_string_pretty(&state)?
-            )?;
+            fs::write(rebase_dir.join("state.json"), serde_json::to_string_pretty(&state)?)?;
 
             println!();
             println!("{}", style("CONFLICT: Resolve conflicts and run:").red().bold());
@@ -236,24 +234,15 @@ fn apply_commits(
 
         // Create new commit
         let author = Author::from_env();
-        let new_commit = Commit::new(
-            Some(current_head),
-            commit.manifest,
-            &commit.message,
-            author,
-        );
+        let new_commit = Commit::new(Some(current_head), commit.manifest, &commit.message, author);
         repo.objects().store_commit(&new_commit)?;
         repo.refs().set_head_detached(&new_commit.hash)?;
 
         // Update state
-        let mut state: RebaseState = serde_json::from_str(
-            &fs::read_to_string(rebase_dir.join("state.json"))?
-        )?;
+        let mut state: RebaseState =
+            serde_json::from_str(&fs::read_to_string(rebase_dir.join("state.json"))?)?;
         state.current_index = i + 1;
-        fs::write(
-            rebase_dir.join("state.json"),
-            serde_json::to_string_pretty(&state)?
-        )?;
+        fs::write(rebase_dir.join("state.json"), serde_json::to_string_pretty(&state)?)?;
     }
 
     Ok(())
@@ -265,17 +254,15 @@ fn continue_rebase_op(repo: &Repository, rebase_dir: &Path) -> Result<()> {
         bail!("No rebase in progress");
     }
 
-    let state: RebaseState = serde_json::from_str(
-        &fs::read_to_string(rebase_dir.join("state.json"))?
-    )?;
+    let state: RebaseState =
+        serde_json::from_str(&fs::read_to_string(rebase_dir.join("state.json"))?)?;
 
     // Continue from current index
     apply_commits(repo, rebase_dir, &state.commits_to_apply, state.current_index)?;
 
     // Check if complete
-    let updated_state: RebaseState = serde_json::from_str(
-        &fs::read_to_string(rebase_dir.join("state.json"))?
-    )?;
+    let updated_state: RebaseState =
+        serde_json::from_str(&fs::read_to_string(rebase_dir.join("state.json"))?)?;
 
     if updated_state.current_index >= updated_state.commits_to_apply.len() {
         finish_rebase(repo, rebase_dir)?;
@@ -290,24 +277,18 @@ fn skip_commit(repo: &Repository, rebase_dir: &Path) -> Result<()> {
         bail!("No rebase in progress");
     }
 
-    let mut state: RebaseState = serde_json::from_str(
-        &fs::read_to_string(rebase_dir.join("state.json"))?
-    )?;
+    let mut state: RebaseState =
+        serde_json::from_str(&fs::read_to_string(rebase_dir.join("state.json"))?)?;
 
-    let commit_str = state.commits_to_apply.get(state.current_index)
+    let commit_str = state
+        .commits_to_apply
+        .get(state.current_index)
         .map(|h| h.to_hex()[..7].to_string())
         .unwrap_or_else(|| "unknown".to_string());
-    println!(
-        "{} Skipping commit {}",
-        style("→").yellow(),
-        commit_str
-    );
+    println!("{} Skipping commit {}", style("→").yellow(), commit_str);
 
     state.current_index += 1;
-    fs::write(
-        rebase_dir.join("state.json"),
-        serde_json::to_string_pretty(&state)?
-    )?;
+    fs::write(rebase_dir.join("state.json"), serde_json::to_string_pretty(&state)?)?;
 
     if state.current_index >= state.commits_to_apply.len() {
         finish_rebase(repo, rebase_dir)?;
@@ -315,9 +296,8 @@ fn skip_commit(repo: &Repository, rebase_dir: &Path) -> Result<()> {
         apply_commits(repo, rebase_dir, &state.commits_to_apply, state.current_index)?;
 
         // Check if complete after applying
-        let updated_state: RebaseState = serde_json::from_str(
-            &fs::read_to_string(rebase_dir.join("state.json"))?
-        )?;
+        let updated_state: RebaseState =
+            serde_json::from_str(&fs::read_to_string(rebase_dir.join("state.json"))?)?;
 
         if updated_state.current_index >= updated_state.commits_to_apply.len() {
             finish_rebase(repo, rebase_dir)?;
@@ -333,9 +313,8 @@ fn abort_rebase(repo: &Repository, rebase_dir: &Path) -> Result<()> {
         bail!("No rebase in progress");
     }
 
-    let state: RebaseState = serde_json::from_str(
-        &fs::read_to_string(rebase_dir.join("state.json"))?
-    )?;
+    let state: RebaseState =
+        serde_json::from_str(&fs::read_to_string(rebase_dir.join("state.json"))?)?;
 
     // Restore original HEAD
     if let Ok(hash) = crate::core::Hash::from_hex(&state.original_head) {
@@ -348,20 +327,15 @@ fn abort_rebase(repo: &Repository, rebase_dir: &Path) -> Result<()> {
     // Clean up
     fs::remove_dir_all(rebase_dir)?;
 
-    println!(
-        "{} Rebase aborted, returned to {}",
-        style("→").yellow(),
-        state.original_head
-    );
+    println!("{} Rebase aborted, returned to {}", style("→").yellow(), state.original_head);
 
     Ok(())
 }
 
 /// Finish the rebase successfully.
 fn finish_rebase(repo: &Repository, rebase_dir: &Path) -> Result<()> {
-    let state: RebaseState = serde_json::from_str(
-        &fs::read_to_string(rebase_dir.join("state.json"))?
-    )?;
+    let state: RebaseState =
+        serde_json::from_str(&fs::read_to_string(rebase_dir.join("state.json"))?)?;
 
     // If we started on a branch, update it to point to new HEAD
     if !state.original_head.chars().all(|c| c.is_ascii_hexdigit()) {

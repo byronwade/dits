@@ -1,8 +1,10 @@
 //! Segment command - split video into GOP-aligned chunks.
 
-use crate::segment::{SegmentConfig, Segmenter, VideoManifest};
-use anyhow::{bail, Result};
 use std::path::Path;
+
+use anyhow::{bail, Result};
+
+use crate::segment::{SegmentConfig, Segmenter, VideoManifest};
 
 pub fn segment(file: &str, output: Option<&str>, duration: f64) -> Result<()> {
     let file_path = Path::new(file);
@@ -21,8 +23,8 @@ pub fn segment(file: &str, output: Option<&str>, duration: f64) -> Result<()> {
     // Create segmenter with config
     let config = SegmentConfig {
         segment_duration: duration,
-        segment_format: "mp4".to_string(),
-        force_keyframes: true,
+        segment_format:   "mp4".to_string(),
+        force_keyframes:  true,
     };
     let segmenter = Segmenter::with_config(config);
 
@@ -40,7 +42,7 @@ pub fn segment(file: &str, output: Option<&str>, duration: f64) -> Result<()> {
     println!();
 
     // Print segment info
-    println!("{:<12} {:<12} {:<12} {}", "Segment", "Duration", "Size", "Hash");
+    println!("{:<12} {:<12} {:<12} Hash", "Segment", "Duration", "Size");
     println!("{}", "─".repeat(60));
 
     for segment in &manifest.segments {

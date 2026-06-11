@@ -1,30 +1,34 @@
 //! A streamable version = ordered content-addressed segments + HLS emit.
 
-use crate::core::Hash;
 use serde::{Deserialize, Serialize};
+
+use crate::core::Hash;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SegmentRef {
-    pub index: usize,
-    pub hash: Hash,
+    pub index:       usize,
+    pub hash:        Hash,
     /// Segment duration in milliseconds (for the EXTINF tag).
     pub duration_ms: u64,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct StreamVersion {
-    pub width: u32,
-    pub height: u32,
-    /// Hash of the shared CMAF init segment (ftyp+moov), referenced via EXT-X-MAP.
+    pub width:     u32,
+    pub height:    u32,
+    /// Hash of the shared CMAF init segment (ftyp+moov), referenced via
+    /// EXT-X-MAP.
     pub init_hash: Hash,
-    pub segments: Vec<SegmentRef>,
+    pub segments:  Vec<SegmentRef>,
 }
 
 impl StreamVersion {
-    /// Render a fMP4/CMAF HLS media playlist. Media segments are `{base}{hex}.m4s` and share
-    /// one init via `#EXT-X-MAP` (`{base}{init}.mp4`), so unchanged segments across versions
-    /// share identical URIs (cache hit). The fragments carry continuous `baseMediaDecodeTime`s
-    /// (patched per segment index), so the timeline is continuous — no discontinuity markers.
+    /// Render a fMP4/CMAF HLS media playlist. Media segments are
+    /// `{base}{hex}.m4s` and share one init via `#EXT-X-MAP`
+    /// (`{base}{init}.mp4`), so unchanged segments across versions
+    /// share identical URIs (cache hit). The fragments carry continuous
+    /// `baseMediaDecodeTime`s (patched per segment index), so the timeline
+    /// is continuous — no discontinuity markers.
     pub fn to_hls(&self, seg_url_base: &str) -> String {
         let target = self
             .segments
@@ -38,7 +42,11 @@ impl StreamVersion {
         out.push_str("#EXT-X-MEDIA-SEQUENCE:0\n");
         out.push_str("#EXT-X-PLAYLIST-TYPE:VOD\n");
         if !self.segments.is_empty() {
-            out.push_str(&format!("#EXT-X-MAP:URI=\"{}{}.mp4\"\n", seg_url_base, self.init_hash.to_hex()));
+            out.push_str(&format!(
+                "#EXT-X-MAP:URI=\"{}{}.mp4\"\n",
+                seg_url_base,
+                self.init_hash.to_hex()
+            ));
         }
         for s in &self.segments {
             out.push_str(&format!("#EXTINF:{:.3},\n", s.duration_ms as f64 / 1000.0));
@@ -49,9 +57,9 @@ impl StreamVersion {
     }
 }
 
-/// Render an encrypted (HLS AES-128) media playlist: each segment is preceded by an
-/// `#EXT-X-KEY:METHOD=AES-128,URI=...,IV=0x...` with its per-segment IV. `segs` is
-/// `(hash, duration_ms, iv_hex)`.
+/// Render an encrypted (HLS AES-128) media playlist: each segment is preceded
+/// by an `#EXT-X-KEY:METHOD=AES-128,URI=...,IV=0x...` with its per-segment IV.
+/// `segs` is `(hash, duration_ms, iv_hex)`.
 pub fn to_hls_encrypted(
     init_hash: &Hash,
     segs: &[(Hash, u64, String)],
@@ -79,8 +87,9 @@ pub fn to_hls_encrypted(
     out
 }
 
-/// Render an HLS master playlist: one `#EXT-X-STREAM-INF` per rung pointing at that rung's
-/// media playlist. Each entry is `(bandwidth_bps, width, height, media_playlist_uri)`.
+/// Render an HLS master playlist: one `#EXT-X-STREAM-INF` per rung pointing at
+/// that rung's media playlist. Each entry is `(bandwidth_bps, width, height,
+/// media_playlist_uri)`.
 pub fn master_playlist(rungs: &[(u64, u32, u32, String)]) -> String {
     let mut out = String::new();
     out.push_str("#EXTM3U\n#EXT-X-VERSION:7\n");
@@ -109,7 +118,9 @@ mod tests {
             "/key",
         );
         assert!(m.contains("#EXT-X-MAP:URI=\"/seg/"));
-        assert!(m.contains("#EXT-X-KEY:METHOD=AES-128,URI=\"/key\",IV=0x00112233445566778899aabbccddeeff"));
+        assert!(m.contains(
+            "#EXT-X-KEY:METHOD=AES-128,URI=\"/key\",IV=0x00112233445566778899aabbccddeeff"
+        ));
         assert!(m.contains(&format!("/seg/{}.m4s", h(b"a").to_hex())));
     }
 
@@ -128,10 +139,10 @@ mod tests {
     #[test]
     fn emits_valid_fmp4_hls_with_content_addressed_uris() {
         let v = StreamVersion {
-            width: 160,
-            height: 120,
+            width:     160,
+            height:    120,
             init_hash: h(b"init"),
-            segments: vec![
+            segments:  vec![
                 SegmentRef { index: 0, hash: h(b"a"), duration_ms: 2000 },
                 SegmentRef { index: 1, hash: h(b"b"), duration_ms: 1500 },
             ],
@@ -153,8 +164,18 @@ mod tests {
     #[test]
     fn shared_segments_produce_identical_uris() {
         let s0 = SegmentRef { index: 0, hash: h(b"same"), duration_ms: 2000 };
-        let v1 = StreamVersion { width: 1, height: 1, init_hash: h(b"init"), segments: vec![s0.clone()] };
-        let v2 = StreamVersion { width: 1, height: 1, init_hash: h(b"init"), segments: vec![s0] };
+        let v1 = StreamVersion {
+            width:     1,
+            height:    1,
+            init_hash: h(b"init"),
+            segments:  vec![s0.clone()],
+        };
+        let v2 = StreamVersion {
+            width:     1,
+            height:    1,
+            init_hash: h(b"init"),
+            segments:  vec![s0],
+        };
         // Unchanged segment => identical URI line in both playlists.
         let line = format!("/seg/{}.m4s", h(b"same").to_hex());
         assert!(v1.to_hls("/seg/").contains(&line));

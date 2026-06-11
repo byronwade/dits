@@ -1,12 +1,12 @@
 //! Bisect command - binary search for bugs.
 
-use crate::core::Hash;
-use crate::store::Repository;
-use anyhow::{Context, Result, bail};
+use std::{fs, path::Path};
+
+use anyhow::{bail, Context, Result};
 use console::style;
 use serde::{Deserialize, Serialize};
-use std::fs;
-use std::path::Path;
+
+use crate::{core::Hash, store::Repository};
 
 /// Bisect state.
 #[derive(Debug, Serialize, Deserialize)]
@@ -14,17 +14,17 @@ struct BisectState {
     /// Original HEAD before bisect started.
     original_head: String,
     /// Known good commit.
-    good: Option<Hash>,
+    good:          Option<Hash>,
     /// Known bad commit.
-    bad: Option<Hash>,
+    bad:           Option<Hash>,
     /// List of all commits between good and bad.
-    commits: Vec<Hash>,
+    commits:       Vec<Hash>,
     /// Commits marked as good.
-    good_commits: Vec<Hash>,
+    good_commits:  Vec<Hash>,
     /// Commits marked as bad.
-    bad_commits: Vec<Hash>,
+    bad_commits:   Vec<Hash>,
     /// Currently testing commit.
-    current: Option<Hash>,
+    current:       Option<Hash>,
 }
 
 impl BisectState {
@@ -58,10 +58,7 @@ impl BisectState {
 }
 
 /// Bisect command handler.
-pub fn bisect(
-    action: Option<&str>,
-    commit: Option<&str>,
-) -> Result<()> {
+pub fn bisect(action: Option<&str>, commit: Option<&str>) -> Result<()> {
     let repo = Repository::open(Path::new("."))
         .context("Not a Dits repository (or any parent directory)")?;
 
@@ -73,7 +70,9 @@ pub fn bisect(
         Some("bad") => bisect_mark(&repo, &bisect_file, commit, false),
         Some("reset") => bisect_reset(&repo, &bisect_file),
         Some("status") => bisect_status(&bisect_file),
-        Some(other) => bail!("Unknown bisect action: {}. Use: start, good, bad, reset, status", other),
+        Some(other) => {
+            bail!("Unknown bisect action: {}. Use: start, good, bad, reset, status", other)
+        },
         None => {
             if bisect_file.exists() {
                 bisect_status(&bisect_file)
@@ -86,7 +85,7 @@ pub fn bisect(
                 println!("  dits bisect good <known-good-commit>");
                 Ok(())
             }
-        }
+        },
     }
 }
 
@@ -120,7 +119,12 @@ fn bisect_start(repo: &Repository, bisect_file: &Path) -> Result<()> {
 }
 
 /// Mark a commit as good or bad.
-fn bisect_mark(repo: &Repository, bisect_file: &Path, commit: Option<&str>, is_good: bool) -> Result<()> {
+fn bisect_mark(
+    repo: &Repository,
+    bisect_file: &Path,
+    commit: Option<&str>,
+    is_good: bool,
+) -> Result<()> {
     if !bisect_file.exists() {
         bail!("No bisect session in progress. Run 'dits bisect start' first.");
     }
@@ -147,11 +151,7 @@ fn bisect_mark(repo: &Repository, bisect_file: &Path, commit: Option<&str>, is_g
             );
         } else {
             state.good_commits.push(commit_hash);
-            println!(
-                "{} Marked {} as good",
-                style("✓").green(),
-                &commit_hash.to_hex()[..7]
-            );
+            println!("{} Marked {} as good", style("✓").green(), &commit_hash.to_hex()[..7]);
         }
     } else {
         if state.bad.is_none() {
@@ -163,11 +163,7 @@ fn bisect_mark(repo: &Repository, bisect_file: &Path, commit: Option<&str>, is_g
             );
         } else {
             state.bad_commits.push(commit_hash);
-            println!(
-                "{} Marked {} as bad",
-                style("✗").red(),
-                &commit_hash.to_hex()[..7]
-            );
+            println!("{} Marked {} as bad", style("✗").red(), &commit_hash.to_hex()[..7]);
         }
     }
 
@@ -215,19 +211,14 @@ fn bisect_mark(repo: &Repository, bisect_file: &Path, commit: Option<&str>, is_g
             println!("  dits bisect bad   # if the bug IS present");
         } else {
             // We found it!
-            let first_bad = state.bad_commits.last()
-                .or(state.bad.as_ref())
-                .copied();
+            let first_bad = state.bad_commits.last().or(state.bad.as_ref()).copied();
 
             if let Some(bad_hash) = first_bad {
                 let commit = repo.load_commit(&bad_hash)?;
                 println!();
                 println!("{}", style("Bisect complete!").green().bold());
                 println!();
-                println!(
-                    "{} is the first bad commit",
-                    style(&bad_hash.to_hex()).yellow()
-                );
+                println!("{} is the first bad commit", style(&bad_hash.to_hex()).yellow());
                 println!();
                 println!("Author: {} <{}>", commit.author.name, commit.author.email);
                 println!("Date:   {}", commit.timestamp.format("%Y-%m-%d %H:%M:%S"));
@@ -270,13 +261,10 @@ fn collect_commits_between(repo: &Repository, good: &Hash, bad: &Hash) -> Result
 }
 
 /// Find the midpoint commit to test.
-fn find_midpoint(
-    commits: &[Hash],
-    good: &[Hash],
-    bad: &[Hash],
-) -> Option<Hash> {
+fn find_midpoint(commits: &[Hash], good: &[Hash], bad: &[Hash]) -> Option<Hash> {
     // Filter out already tested commits
-    let untested: Vec<&Hash> = commits.iter()
+    let untested: Vec<&Hash> = commits
+        .iter()
         .filter(|h| !good.contains(h) && !bad.contains(h))
         .collect();
 
@@ -313,11 +301,7 @@ fn bisect_reset(repo: &Repository, bisect_file: &Path) -> Result<()> {
     // Clean up
     fs::remove_file(bisect_file)?;
 
-    println!(
-        "{} Bisect session ended, returned to {}",
-        style("→").green(),
-        state.original_head
-    );
+    println!("{} Bisect session ended, returned to {}", style("→").green(), state.original_head);
 
     Ok(())
 }
@@ -355,11 +339,10 @@ fn bisect_status(bisect_file: &Path) -> Result<()> {
         let remaining = state.remaining();
         println!();
         println!(
-            "  ~{} step{} remaining (approximately {} commit{} to test)",
+            "  ~{} step{} remaining (approximately {} commits to test)",
             remaining,
             if remaining == 1 { "" } else { "s" },
             state.commits.len() - state.good_commits.len() - state.bad_commits.len(),
-            ""
         );
     }
 

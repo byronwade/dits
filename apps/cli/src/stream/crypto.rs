@@ -1,14 +1,17 @@
-//! Deterministic AES-128-CBC segment encryption (HLS `EXT-X-KEY` / METHOD=AES-128).
+//! Deterministic AES-128-CBC segment encryption (HLS `EXT-X-KEY` /
+//! METHOD=AES-128).
 //!
-//! The reuse model survives encryption because encryption is deterministic: the per-segment IV is
-//! derived from the *plaintext* content hash, so identical plaintext segments produce identical
-//! ciphertext — the encrypted segment is itself content-addressable, and the QUIC delta-push still
-//! transfers only changed encrypted segments.
+//! The reuse model survives encryption because encryption is deterministic: the
+//! per-segment IV is derived from the *plaintext* content hash, so identical
+//! plaintext segments produce identical ciphertext — the encrypted segment is
+//! itself content-addressable, and the QUIC delta-push still transfers only
+//! changed encrypted segments.
 
-use crate::core::Hash;
 use aes::cipher::{block_padding::Pkcs7, BlockDecryptMut, BlockEncryptMut, KeyIvInit};
 use anyhow::Result;
 use sha2::{Digest, Sha256};
+
+use crate::core::Hash;
 
 type Enc = cbc::Encryptor<aes::Aes128>;
 type Dec = cbc::Decryptor<aes::Aes128>;
@@ -29,7 +32,8 @@ impl SegmentKey {
     }
 }
 
-/// Per-segment IV from the plaintext segment's content hash (deterministic → reuse-stable).
+/// Per-segment IV from the plaintext segment's content hash (deterministic →
+/// reuse-stable).
 pub fn derive_iv(plaintext_hash: &Hash) -> [u8; 16] {
     let mut iv = [0u8; 16];
     iv.copy_from_slice(&plaintext_hash.as_bytes()[..16]);
@@ -91,9 +95,10 @@ mod tests {
         let iv = derive_iv(&Hash::from_slice(blake3::hash(&pt).as_bytes()));
         let ct = encrypt_segment(&pt, &key(), &iv);
         let wrong = SegmentKey::from_passphrase("other");
-        // Wrong key usually yields a padding error; if it happens to validate, bytes differ.
+        // Wrong key usually yields a padding error; if it happens to validate, bytes
+        // differ.
         match decrypt_segment(&ct, &wrong, &iv) {
-            Err(_) => {}
+            Err(_) => {},
             Ok(out) => assert_ne!(out, pt),
         }
     }

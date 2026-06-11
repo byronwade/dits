@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Zap, Shield, Network, Clock, CheckCircle } from "lucide-react";
+import { Shield, Network, CheckCircle } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Wire Protocol",

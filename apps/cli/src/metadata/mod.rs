@@ -8,12 +8,13 @@ mod extractor;
 mod registry;
 mod store;
 
-pub use extractor::{MetadataExtractor, BasicFileExtractor, VideoFFprobeExtractor, PhotoExifExtractor};
+pub use extractor::{
+    BasicFileExtractor, MetadataExtractor, PhotoExifExtractor, VideoFFprobeExtractor,
+};
 pub use registry::MetadataRegistry;
-pub use store::MetadataStore;
-
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+pub use store::MetadataStore;
 
 /// Metadata for a file manifest.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -22,10 +23,10 @@ pub struct FileMetadata {
     #[serde(rename = "type")]
     pub content_type: String,
     /// MIME type
-    pub mime: String,
+    pub mime:         String,
     /// Additional type-specific metadata
     #[serde(flatten)]
-    pub extra: Value,
+    pub extra:        Value,
 }
 
 impl FileMetadata {
@@ -33,23 +34,28 @@ impl FileMetadata {
     pub fn new(content_type: &str, mime: &str) -> Self {
         Self {
             content_type: content_type.to_string(),
-            mime: mime.to_string(),
-            extra: Value::Object(serde_json::Map::new()),
+            mime:         mime.to_string(),
+            extra:        Value::Object(serde_json::Map::new()),
         }
     }
 
     /// Create video metadata.
     pub fn video(mime: &str, duration: f64, width: u32, height: u32, codec: &str) -> Self {
         let mut extra = serde_json::Map::new();
-        extra.insert("duration".to_string(), Value::Number(serde_json::Number::from_f64(duration).unwrap_or(serde_json::Number::from(0))));
+        extra.insert(
+            "duration".to_string(),
+            Value::Number(
+                serde_json::Number::from_f64(duration).unwrap_or(serde_json::Number::from(0)),
+            ),
+        );
         extra.insert("width".to_string(), Value::Number(width.into()));
         extra.insert("height".to_string(), Value::Number(height.into()));
         extra.insert("codec".to_string(), Value::String(codec.to_string()));
 
         Self {
             content_type: "video".to_string(),
-            mime: mime.to_string(),
-            extra: Value::Object(extra),
+            mime:         mime.to_string(),
+            extra:        Value::Object(extra),
         }
     }
 
@@ -61,8 +67,8 @@ impl FileMetadata {
 
         Self {
             content_type: "photo".to_string(),
-            mime: mime.to_string(),
-            extra: Value::Object(extra),
+            mime:         mime.to_string(),
+            extra:        Value::Object(extra),
         }
     }
 

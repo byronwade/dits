@@ -1,31 +1,33 @@
 //! Clip manifest — an ordered list of frame references.
 //!
-//! A video version in FACR is not a file; it is a `ClipManifest`: stream metadata
-//! plus an ordered sequence of `FrameRef`s into the content-addressed frame store.
-//! Trims, reorders, and inserts are manifest edits; the frames they reference are
-//! shared with prior versions automatically.
+//! A video version in FACR is not a file; it is a `ClipManifest`: stream
+//! metadata plus an ordered sequence of `FrameRef`s into the content-addressed
+//! frame store. Trims, reorders, and inserts are manifest edits; the frames
+//! they reference are shared with prior versions automatically.
+
+use serde::{Deserialize, Serialize};
 
 use crate::core::Hash;
-use serde::{Deserialize, Serialize};
 
 /// A reference to one frame in the content-addressed store, with timing.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FrameRef {
     /// Content hash of the encoded frame.
-    pub hash: Hash,
+    pub hash:     Hash,
     /// Presentation timestamp (in `timescale` units).
-    pub pts: i64,
+    pub pts:      i64,
     /// Frame duration (in `timescale` units).
     pub duration: i64,
 }
 
-/// A content-addressed audio track stored alongside the frames. The audio is extracted
-/// stream-copied (lossless) into a container and stored once; it dedups across versions
-/// just like frames, and is muxed back on reconstruction.
+/// A content-addressed audio track stored alongside the frames. The audio is
+/// extracted stream-copied (lossless) into a container and stored once; it
+/// dedups across versions just like frames, and is muxed back on
+/// reconstruction.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AudioTrack {
     /// Content hash of the stored audio container bytes.
-    pub hash: Hash,
+    pub hash:   Hash,
     /// Container/format extension used when storing the audio (e.g. "mka").
     pub format: String,
 }
@@ -34,22 +36,24 @@ pub struct AudioTrack {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClipManifest {
     /// Frame width in pixels.
-    pub width: u32,
+    pub width:      u32,
     /// Frame height in pixels.
-    pub height: u32,
+    pub height:     u32,
     /// Name of the `FrameCodec` used to encode the frames.
-    pub codec: String,
+    pub codec:      String,
     /// Timescale: `timescale` pts/duration units per second.
-    pub timescale: u32,
+    pub timescale:  u32,
     /// Source frame rate as ffmpeg reports it (e.g. "30000/1001"), preserved so
-    /// reconstruction keeps exact timing. Defaults for manifests built without video.
+    /// reconstruction keeps exact timing. Defaults for manifests built without
+    /// video.
     #[serde(default = "default_frame_rate")]
     pub frame_rate: String,
-    /// Optional audio track (None for silent clips or manifests built without video).
+    /// Optional audio track (None for silent clips or manifests built without
+    /// video).
     #[serde(default)]
-    pub audio: Option<AudioTrack>,
+    pub audio:      Option<AudioTrack>,
     /// Ordered frame references.
-    pub frames: Vec<FrameRef>,
+    pub frames:     Vec<FrameRef>,
 }
 
 fn default_frame_rate() -> String {
@@ -102,11 +106,7 @@ mod tests {
     use crate::core::Hasher;
 
     fn frame(seed: &[u8], pts: i64) -> FrameRef {
-        FrameRef {
-            hash: Hasher::hash(seed),
-            pts,
-            duration: 1,
-        }
+        FrameRef { hash: Hasher::hash(seed), pts, duration: 1 }
     }
 
     #[test]

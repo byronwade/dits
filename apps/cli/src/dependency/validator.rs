@@ -3,11 +3,17 @@
 //! Validates that all media referenced by project files is tracked
 //! before allowing commits.
 
-use super::graph::{DependencyGraph, DependencyNode, EdgeType};
-use super::parser::{parse_project, ParsedProject, ProjectType};
-use std::collections::HashSet;
-use std::path::{Path, PathBuf};
+use std::{
+    collections::HashSet,
+    path::{Path, PathBuf},
+};
+
 use thiserror::Error;
+
+use super::{
+    graph::{DependencyGraph, DependencyNode, EdgeType},
+    parser::{parse_project, ParsedProject, ProjectType},
+};
 
 /// Validation errors.
 #[derive(Debug, Error)]
@@ -29,27 +35,21 @@ pub enum ValidationError {
 #[derive(Debug)]
 pub struct ValidationResult {
     /// The dependency graph built during validation.
-    pub graph: DependencyGraph,
+    pub graph:     DependencyGraph,
     /// Paths that are missing (not tracked).
-    pub missing: Vec<String>,
+    pub missing:   Vec<String>,
     /// Paths that are outside the repository.
-    pub external: Vec<String>,
+    pub external:  Vec<String>,
     /// Paths that exist and are tracked.
     pub satisfied: Vec<String>,
     /// Whether validation passed.
-    pub is_valid: bool,
+    pub is_valid:  bool,
 }
 
 impl ValidationResult {
     /// Create a successful validation result.
     pub fn success(graph: DependencyGraph, satisfied: Vec<String>) -> Self {
-        Self {
-            graph,
-            missing: Vec::new(),
-            external: Vec::new(),
-            satisfied,
-            is_valid: true,
-        }
+        Self { graph, missing: Vec::new(), external: Vec::new(), satisfied, is_valid: true }
     }
 
     /// Create a failed validation result.
@@ -59,20 +59,14 @@ impl ValidationResult {
         external: Vec<String>,
         satisfied: Vec<String>,
     ) -> Self {
-        Self {
-            graph,
-            missing,
-            external,
-            satisfied,
-            is_valid: false,
-        }
+        Self { graph, missing, external, satisfied, is_valid: false }
     }
 }
 
 /// Validates dependencies for project files.
 pub struct DependencyValidator {
     /// Repository root path.
-    repo_root: PathBuf,
+    repo_root:     PathBuf,
     /// Set of tracked file paths (relative to repo root).
     tracked_files: HashSet<String>,
 }
@@ -80,10 +74,7 @@ pub struct DependencyValidator {
 impl DependencyValidator {
     /// Create a new validator.
     pub fn new(repo_root: impl Into<PathBuf>) -> Self {
-        Self {
-            repo_root: repo_root.into(),
-            tracked_files: HashSet::new(),
-        }
+        Self { repo_root: repo_root.into(), tracked_files: HashSet::new() }
     }
 
     /// Add tracked files to the validator.
@@ -103,13 +94,19 @@ impl DependencyValidator {
     }
 
     /// Validate a single project file.
-    pub fn validate_project(&self, project_path: &Path) -> Result<ValidationResult, ValidationError> {
+    pub fn validate_project(
+        &self,
+        project_path: &Path,
+    ) -> Result<ValidationResult, ValidationError> {
         let parsed = parse_project(project_path)?;
         self.validate_parsed_project(&parsed)
     }
 
     /// Validate a parsed project.
-    pub fn validate_parsed_project(&self, parsed: &ParsedProject) -> Result<ValidationResult, ValidationError> {
+    pub fn validate_parsed_project(
+        &self,
+        parsed: &ParsedProject,
+    ) -> Result<ValidationResult, ValidationError> {
         let mut graph = DependencyGraph::new();
         let mut missing = Vec::new();
         let mut external = Vec::new();
@@ -121,7 +118,7 @@ impl DependencyValidator {
             DependencyNode::new(&project_rel_path)
                 .as_project()
                 .as_tracked()
-                .as_exists()
+                .as_exists(),
         );
 
         // Process all media references
@@ -192,7 +189,10 @@ impl DependencyValidator {
     }
 
     /// Validate multiple project files.
-    pub fn validate_projects(&self, project_paths: &[PathBuf]) -> Result<ValidationResult, ValidationError> {
+    pub fn validate_projects(
+        &self,
+        project_paths: &[PathBuf],
+    ) -> Result<ValidationResult, ValidationError> {
         let mut combined_graph = DependencyGraph::new();
         let mut all_missing = Vec::new();
         let mut all_external = Vec::new();
@@ -234,17 +234,19 @@ impl DependencyValidator {
 
 /// Check if a file is a supported project file.
 pub fn is_project_file(path: &Path) -> bool {
-    matches!(ProjectType::from_path(path),
-        ProjectType::PremierePro |
-        ProjectType::DaVinciResolve |
-        ProjectType::FinalCutPro |
-        ProjectType::AfterEffects
+    matches!(
+        ProjectType::from_path(path),
+        ProjectType::PremierePro
+            | ProjectType::DaVinciResolve
+            | ProjectType::FinalCutPro
+            | ProjectType::AfterEffects
     )
 }
 
 /// Get all project files from a list of paths.
 pub fn filter_project_files(paths: &[PathBuf]) -> Vec<PathBuf> {
-    paths.iter()
+    paths
+        .iter()
         .filter(|p| is_project_file(p))
         .cloned()
         .collect()
@@ -253,7 +255,6 @@ pub fn filter_project_files(paths: &[PathBuf]) -> Vec<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashSet;
 
     #[test]
     fn test_validator_creation() {

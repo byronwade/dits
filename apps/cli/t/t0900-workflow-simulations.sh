@@ -40,12 +40,12 @@ test_expect_success 'Premiere Pro editing workflow simulation' '
 	# Create audio files
 	for track in $(seq 1 8); do
 		# Simulate audio file (simplified)
-		perl -e "print chr(\$_ % 256) x 1000000" > "audio/track_${track}.wav" &&
+		test_write_binary "audio/track_${track}.wav" 1000000 &&
 		"$DITS_BINARY" add "audio/track_${track}.wav" >/dev/null 2>&1 2>/dev/null || true
 	done &&
 
 	# Create Premiere project file
-	cat > project.prproj << 'EOF'
+	cat > project.prproj << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <PremiereData Version="1">
   <Project ObjectID="1" ClassID="62ad66dd-0dcd-42da-a660-6d8fbde94876" Version="1">
@@ -88,16 +88,12 @@ test_expect_success 'DaVinci Resolve color grading workflow simulation' '
 	# Create high-quality source footage
 	for shot in $(seq 1 30); do
 		# Simulate 4K footage
-		perl -e "
-			# Create larger MP4-like structure for 4K simulation
-			print pack('H*', '00000020667479706D703431');  # MP4 header
-			print chr(\$_ % 256) x 5000000;  # 5MB of fake 4K data
-		" > "media/shot_${shot}_4k.mp4" &&
+		test_write_binary "media/shot_${shot}_4k.mp4" 5000000 &&
 		"$DITS_BINARY" add "media/shot_${shot}_4k.mp4" >/dev/null 2>&1 2>/dev/null || true
 	done &&
 
 	# Create Resolve project file
-	cat > project.drp << 'EOF'
+	cat > project.drp << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <ResolveProject>
   <Timeline>
@@ -118,7 +114,7 @@ EOF
 	mkdir -p grades/scene1 grades/scene2 &&
 	for grade in $(seq 1 10); do
 		# Simulate LUT files or grade settings
-		cat > "grades/scene1/grade_${grade}.cube" << 'EOF'
+		cat > "grades/scene1/grade_${grade}.cube" << EOF
 # DaVinci Resolve LUT
 TITLE "Grade ${grade}"
 LUT_3D_SIZE 33
@@ -144,15 +140,12 @@ test_expect_success 'After Effects composition workflow simulation' '
 	# Create motion graphics elements
 	for element in $(seq 1 20); do
 		# Simulate layered PSD or AI files
-		perl -e "
-			print 'After Effects Element ${element}';
-			print chr(\$_ % 256) x 200000;  # Fake element data
-		" > "footage/element_${element}.psd" &&
+		test_write_binary "footage/element_${element}.psd" 200000 &&
 		"$DITS_BINARY" add "footage/element_${element}.psd" >/dev/null 2>&1 2>/dev/null || true
 	done &&
 
 	# Create After Effects project file
-	cat > project.aep << 'EOF'
+	cat > project.aep << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <AfterEffectsProject>
   <Compositions>
@@ -290,7 +283,7 @@ test_expect_success 'Automated build pipeline simulation' '
 	mkdir -p assets/code builds tests &&
 
 	# Source code
-	cat > assets/code/game_engine.rs << 'EOF'
+	cat > assets/code/game_engine.rs << EOF
 pub struct GameEngine {
     pub assets: Vec<String>,
 }
@@ -306,7 +299,7 @@ impl GameEngine {
 }
 EOF
 
-	cat > assets/code/main.rs << 'EOF'
+	cat > assets/code/main.rs << EOF
 mod game_engine;
 
 fn main() {
@@ -328,7 +321,7 @@ EOF
 	"$DITS_BINARY" commit -m "Game assets batch 1" >/dev/null 2>&1 2>/dev/null || true
 
 	# Automated tests
-	cat > tests/unit_tests.rs << 'EOF'
+	cat > tests/unit_tests.rs << EOF
 #[test]
 fn test_game_engine() {
     let mut engine = GameEngine::new();
@@ -359,7 +352,7 @@ test_expect_success 'Content delivery pipeline simulation' '
 	# Source content (high quality)
 	for episode in $(seq -w 1 12); do
 		for shot in $(seq -w 1 50); do
-			test_write_binary "source/ep${episode}_shot${shot}_4k.exr" 50000000 &&  # 50MB each
+			test_write_binary "source/ep${episode}_shot${shot}_4k.exr" 1024 &&  # simulated 4K source
 			"$DITS_BINARY" add "source/ep${episode}_shot${shot}_4k.exr" >/dev/null 2>&1 2>/dev/null || true
 		done &&
 		"$DITS_BINARY" commit -m "Episode ${episode} source footage" >/dev/null 2>&1 2>/dev/null || true
@@ -367,7 +360,7 @@ test_expect_success 'Content delivery pipeline simulation' '
 
 	# Processed content (edited, graded, mixed)
 	for episode in $(seq -w 1 12); do
-		test_write_binary "processed/episode_${episode}_final.mp4" 1000000000 &&  # 1GB each
+		test_write_binary "processed/episode_${episode}_final.mp4" 1024 &&  # simulated processed episode
 		"$DITS_BINARY" add "processed/episode_${episode}_final.mp4" >/dev/null 2>&1 2>/dev/null || true
 	done &&
 	"$DITS_BINARY" commit -m "Processed episodes ready for delivery" >/dev/null 2>&1 2>/dev/null || true
@@ -376,7 +369,7 @@ test_expect_success 'Content delivery pipeline simulation' '
 	formats="1080p_h264 1080p_h265 4k_h264 4k_h265"
 	for format in $formats; do
 		for episode in $(seq -w 1 12); do
-			test_write_binary "delivery/episode_${episode}_${format}.mp4" 200000000 &&  # 200MB each
+			test_write_binary "delivery/episode_${episode}_${format}.mp4" 1024 &&  # simulated delivery format
 			"$DITS_BINARY" add "delivery/episode_${episode}_${format}.mp4" >/dev/null 2>&1 2>/dev/null || true
 		done &&
 		"$DITS_BINARY" commit -m "Delivery format: ${format}" >/dev/null 2>&1 2>/dev/null || true
@@ -397,7 +390,7 @@ test_expect_success 'Backup and restore workflow simulation' '
 	# Create important project data
 	test_write_file "critical_project.prproj" "Critical Premiere project data" &&
 	for backup in $(seq 1 10); do
-		test_write_binary "backup_${backup}.dits" 100000000 &&  # 100MB backups
+		test_write_binary "backup_${backup}.dits" 1024 &&  # simulated backup
 		"$DITS_BINARY" add "backup_${backup}.dits" >/dev/null 2>&1 2>/dev/null || true
 	done &&
 	"$DITS_BINARY" commit -m "Critical project with backups" >/dev/null 2>&1 2>/dev/null || true

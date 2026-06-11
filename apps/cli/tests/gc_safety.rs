@@ -1,10 +1,11 @@
-//! Regression test: `dits gc` must NEVER delete referenced objects. The reachability
-//! walk previously only marked commit hashes (not manifests/chunks/blobs), so gc
-//! silently deleted live data and fsck still reported "healthy".
+//! Regression test: `dits gc` must NEVER delete referenced objects. The
+//! reachability walk previously only marked commit hashes (not
+//! manifests/chunks/blobs), so gc silently deleted live data and fsck still
+//! reported "healthy".
+
+use std::{fs, path::Path};
 
 use assert_cmd::Command;
-use std::fs;
-use std::path::Path;
 use tempfile::TempDir;
 
 fn dits(dir: &Path) -> Command {
@@ -20,7 +21,9 @@ fn gc_preserves_referenced_text_and_binary() {
     dits(dir).arg("init").assert().success();
 
     // A deterministic binary blob that spans multiple chunks.
-    let blob: Vec<u8> = (0..2_000_000u32).map(|i| (i.wrapping_mul(2654435761) >> 13) as u8).collect();
+    let blob: Vec<u8> = (0..2_000_000u32)
+        .map(|i| (i.wrapping_mul(2654435761) >> 13) as u8)
+        .collect();
 
     // Commit 1.
     fs::write(dir.join("a.txt"), b"version one\n").unwrap();
@@ -28,7 +31,8 @@ fn gc_preserves_referenced_text_and_binary() {
     dits(dir).args(["add", "."]).assert().success();
     dits(dir).args(["commit", "-m", "c1"]).assert().success();
 
-    // Commit 2 changes a.txt, orphaning version one's object — gc has real work to do.
+    // Commit 2 changes a.txt, orphaning version one's object — gc has real work to
+    // do.
     fs::write(dir.join("a.txt"), b"version two\n").unwrap();
     dits(dir).args(["add", "a.txt"]).assert().success();
     dits(dir).args(["commit", "-m", "c2"]).assert().success();

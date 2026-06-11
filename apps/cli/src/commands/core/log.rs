@@ -1,10 +1,11 @@
 //! Show commit history.
 
-use crate::store::Repository;
+use std::{collections::HashSet, path::Path};
+
 use anyhow::{Context, Result};
 use console::style;
-use std::collections::HashSet;
-use std::path::Path;
+
+use crate::store::Repository;
 
 /// Show commit history.
 pub fn log(limit: usize, oneline: bool, graph: bool, all: bool) -> Result<()> {
@@ -124,7 +125,7 @@ fn log_with_graph(repo: &Repository, limit: usize, oneline: bool, all: bool) -> 
         };
 
         // Simple linear graph
-        let prefix = if i == 0 { "*" } else { "*" };
+        let prefix = "*";
         let connector = if i < commits.len() - 1 { "|" } else { " " };
 
         if oneline {
@@ -143,8 +144,17 @@ fn log_with_graph(repo: &Repository, limit: usize, oneline: bool, all: bool) -> 
                 style(commit.hash.to_hex()).yellow(),
                 style(&dec_str).cyan()
             );
-            println!("{} Author: {} <{}>", style(connector).yellow(), commit.author.name, commit.author.email);
-            println!("{} Date:   {}", style(connector).yellow(), commit.timestamp.format("%a %b %d %H:%M:%S %Y %z"));
+            println!(
+                "{} Author: {} <{}>",
+                style(connector).yellow(),
+                commit.author.name,
+                commit.author.email
+            );
+            println!(
+                "{} Date:   {}",
+                style(connector).yellow(),
+                commit.timestamp.format("%a %b %d %H:%M:%S %Y %z")
+            );
             println!("{}", style(connector).yellow());
             println!("{}     {}", style(connector).yellow(), commit.message);
             println!("{}", style(connector).yellow());
@@ -209,7 +219,7 @@ fn collect_all_commits(repo: &Repository, limit: usize) -> Result<Vec<crate::cor
     }
 
     // Sort by timestamp (newest first)
-    commits.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
+    commits.sort_by_key(|b| std::cmp::Reverse(b.timestamp));
 
     // Limit results
     commits.truncate(limit);

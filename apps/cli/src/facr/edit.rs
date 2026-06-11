@@ -1,15 +1,16 @@
 //! Non-destructive manifest edits.
 //!
 //! Edits in FACR are operations over a clip manifest's frame references — not
-//! re-encodes. A trim produces a new manifest that points at the *same* stored frames,
-//! so it costs ZERO new storage. This is the "Case A" path: when Dits owns the edit,
-//! changes cost only their diff.
+//! re-encodes. A trim produces a new manifest that points at the *same* stored
+//! frames, so it costs ZERO new storage. This is the "Case A" path: when Dits
+//! owns the edit, changes cost only their diff.
 
 use super::manifest::{ClipManifest, FrameRef};
 
-/// Return a new manifest containing frames `[start, end)` of `src` (end-exclusive,
-/// clamped to bounds). Presentation timestamps are renumbered from 0. No frames are
-/// copied or re-encoded — the result references the same content-addressed frames.
+/// Return a new manifest containing frames `[start, end)` of `src`
+/// (end-exclusive, clamped to bounds). Presentation timestamps are renumbered
+/// from 0. No frames are copied or re-encoded — the result references the same
+/// content-addressed frames.
 pub fn trim(src: &ClipManifest, start: usize, end: usize) -> ClipManifest {
     let n = src.frames.len();
     let start = start.min(n);
@@ -18,27 +19,22 @@ pub fn trim(src: &ClipManifest, start: usize, end: usize) -> ClipManifest {
     let mut out = ClipManifest::new(src.width, src.height, src.codec.clone(), src.timescale);
     out.frame_rate = src.frame_rate.clone();
     for (i, f) in src.frames[start..end].iter().enumerate() {
-        out.push_frame(FrameRef {
-            hash: f.hash,
-            pts: i as i64,
-            duration: f.duration,
-        });
+        out.push_frame(FrameRef { hash: f.hash, pts: i as i64, duration: f.duration });
     }
     out
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use super::super::diff::diff_manifests;
+    use super::{super::diff::diff_manifests, *};
     use crate::core::Hasher;
 
     fn manifest(n: usize) -> ClipManifest {
         let mut m = ClipManifest::new(320, 240, "png", 1);
         for i in 0..n {
             m.push_frame(FrameRef {
-                hash: Hasher::hash(format!("frame-{i}").as_bytes()),
-                pts: i as i64,
+                hash:     Hasher::hash(format!("frame-{i}").as_bytes()),
+                pts:      i as i64,
                 duration: 1,
             });
         }

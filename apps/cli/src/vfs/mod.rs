@@ -1,6 +1,7 @@
 //! Virtual File System (VFS) layer for on-demand file hydration.
 //!
-//! This module implements the "Phantom Drive" concept from the Hybrid Architecture:
+//! This module implements the "Phantom Drive" concept from the Hybrid
+//! Architecture:
 //! - Mount a repository as a virtual filesystem
 //! - Files appear with full size but are fetched on-demand
 //! - Chunks are cached locally for fast repeated access
@@ -40,11 +41,13 @@ mod entry;
 #[cfg(feature = "fuser")]
 mod fuse;
 
-#[allow(unused_imports)]
-pub use {cache::{CacheConfig, ChunkCache}, entry::{VfsEntry, VfsEntryType, VfsTree}};
-
 #[cfg(feature = "fuser")]
-pub use fuse::{DitsFS, mount, unmount};
+pub use fuse::{mount, unmount};
+#[allow(unused_imports)]
+pub use {
+    cache::{CacheConfig, ChunkCache},
+    entry::{VfsEntry, VfsEntryType, VfsTree},
+};
 
 /// Errors from VFS operations.
 #[derive(Debug, thiserror::Error)]

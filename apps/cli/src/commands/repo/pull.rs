@@ -1,16 +1,16 @@
 //! Pull command - fetch and merge changes from a remote repository.
 
-use anyhow::{Context, Result, bail};
-use crate::store::{Repository, remote::{RemoteStore, RemoteType}};
-use std::fs;
-use std::path::Path;
+use std::{fs, path::Path};
+
+use anyhow::{bail, Context, Result};
+
+use crate::store::{
+    remote::{RemoteStore, RemoteType},
+    Repository,
+};
 
 /// Pull changes from a remote (fetch + merge).
-pub async fn pull(
-    remote_name: Option<&str>,
-    branch: Option<&str>,
-    rebase: bool,
-) -> Result<()> {
+pub async fn pull(remote_name: Option<&str>, branch: Option<&str>, rebase: bool) -> Result<()> {
     let current_dir = std::env::current_dir()?;
     let dits_dir = current_dir.join(".dits");
     if !dits_dir.exists() {
@@ -21,7 +21,8 @@ pub async fn pull(
 
     // Get the remote
     let remote_name = remote_name.unwrap_or("origin");
-    let remote = remotes.get(remote_name)
+    let remote = remotes
+        .get(remote_name)
         .ok_or_else(|| anyhow::anyhow!("Remote '{}' not found", remote_name))?;
 
     let remote_type = RemoteType::parse(&remote.url);
@@ -29,10 +30,10 @@ pub async fn pull(
     match remote_type {
         RemoteType::Local(remote_path) => {
             pull_local(&current_dir, remote_name, &remote_path, branch, rebase)
-        }
+        },
         RemoteType::Http(url) | RemoteType::Dits(url) | RemoteType::Ssh(url) => {
             pull_network(remote_name, &url, branch, rebase).await
-        }
+        },
     }
 }
 
@@ -81,8 +82,8 @@ fn pull_local(
     let local_dits = work_dir.join(".dits");
 
     // Get current branch
-    let head_content = fs::read_to_string(local_dits.join("HEAD"))
-        .context("Failed to read HEAD")?;
+    let head_content =
+        fs::read_to_string(local_dits.join("HEAD")).context("Failed to read HEAD")?;
     let current_branch = if let Some(refname) = head_content.strip_prefix("ref: refs/heads/") {
         refname.trim().to_string()
     } else {
@@ -107,7 +108,11 @@ fn pull_local(
     let fetched = copy_missing_objects(&remote_objects, &local_objects)?;
 
     // Update remote tracking ref
-    let tracking_ref = local_dits.join("refs").join("remotes").join(remote_name).join(branch_name);
+    let tracking_ref = local_dits
+        .join("refs")
+        .join("remotes")
+        .join(remote_name)
+        .join(branch_name);
     fs::create_dir_all(tracking_ref.parent().unwrap())?;
     fs::write(&tracking_ref, format!("{}\n", remote_commit))?;
 
@@ -132,18 +137,18 @@ fn pull_local(
         fs::write(&local_ref, format!("{}\n", remote_commit))?;
 
         // Open repo and checkout
-        let repo = Repository::open(work_dir)
-            .context("Failed to open repository")?;
+        let repo = Repository::open(work_dir).context("Failed to open repository")?;
         match repo.checkout_branch(branch_name) {
             Ok(result) => {
-                println!("Fast-forward to {}: {} files restored",
+                println!(
+                    "Fast-forward to {}: {} files restored",
                     &remote_commit[..8.min(remote_commit.len())],
                     result.files_restored
                 );
-            }
+            },
             Err(e) => {
                 println!("Warning: Could not checkout: {}", e);
-            }
+            },
         }
         return Ok(());
     }
@@ -166,15 +171,14 @@ fn pull_local(
     fs::write(&local_ref, format!("{}\n", remote_commit))?;
 
     // Open repo and checkout the merged result
-    let repo = Repository::open(work_dir)
-        .context("Failed to open repository")?;
+    let repo = Repository::open(work_dir).context("Failed to open repository")?;
     match repo.checkout_branch(branch_name) {
         Ok(result) => {
             println!("Restored {} files", result.files_restored);
-        }
+        },
         Err(e) => {
             println!("Warning: Could not checkout merged result: {}", e);
-        }
+        },
     }
 
     Ok(())
@@ -189,7 +193,8 @@ fn copy_missing_objects(remote_objects: &Path, local_objects: &Path) -> Result<u
 
     let mut count = 0;
 
-    // Handle the dits objects directory structure: blobs/, chunks/, commits/, manifests/
+    // Handle the dits objects directory structure: blobs/, chunks/, commits/,
+    // manifests/
     for category in &["blobs", "chunks", "commits", "manifests"] {
         let remote_category = remote_objects.join(category);
         let local_category = local_objects.join(category);
@@ -237,6 +242,4 @@ fn copy_missing_objects(remote_objects: &Path, local_objects: &Path) -> Result<u
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-}
+mod tests {}

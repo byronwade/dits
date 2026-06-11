@@ -1,5 +1,5 @@
 //! DITS P2P - Peer-to-peer file sharing for DITS
-//!
+#![allow(dead_code, unused_imports)]
 //! This module integrates Wormhole-style P2P functionality into DITS,
 //! allowing users to share repositories and files directly between peers
 //! without uploading to a central server.

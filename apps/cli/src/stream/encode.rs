@@ -1,33 +1,39 @@
-//! Encode a contiguous run of PNG frames into ONE self-contained CMAF (fragmented-MP4)
-//! segment: a shared init (`ftyp`+`moov`) plus a media fragment (`moof`+`mdat`…).
+//! Encode a contiguous run of PNG frames into ONE self-contained CMAF
+//! (fragmented-MP4) segment: a shared init (`ftyp`+`moov`) plus a media
+//! fragment (`moof`+`mdat`…).
 //!
 //! Each segment is encoded independently, so its media fragment carries
-//! `baseMediaDecodeTime = 0` — i.e. the bytes depend only on the frames, not on the
-//! segment's position. That keeps segments content-addressable and reusable by hash; the
-//! playlist marks seams with `#EXT-X-DISCONTINUITY` so the player re-bases each fragment.
-//! Unlike MPEG-TS, fMP4 has no continuity counters, so there is no seam corruption.
+//! `baseMediaDecodeTime = 0` — i.e. the bytes depend only on the frames, not on
+//! the segment's position. That keeps segments content-addressable and reusable
+//! by hash; the playlist marks seams with `#EXT-X-DISCONTINUITY` so the player
+//! re-bases each fragment. Unlike MPEG-TS, fMP4 has no continuity counters, so
+//! there is no seam corruption.
+
+use std::{io::Write, process::Command};
 
 use anyhow::{bail, Context, Result};
-use std::io::Write;
-use std::process::Command;
 
-/// A CMAF segment split into its shared init and its per-segment media fragment.
+/// A CMAF segment split into its shared init and its per-segment media
+/// fragment.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CmafSegment {
-    /// `ftyp`+`moov` — codec config; identical across same-resolution encodes, so shared.
-    pub init: Vec<u8>,
-    /// `moof`+`mdat`(+`mfra`) — the actual samples; content-addressed, position-independent.
+    /// `ftyp`+`moov` — codec config; identical across same-resolution encodes,
+    /// so shared.
+    pub init:  Vec<u8>,
+    /// `moof`+`mdat`(+`mfra`) — the actual samples; content-addressed,
+    /// position-independent.
     pub media: Vec<u8>,
 }
 
-/// How to encode a delivery rendition: optional downscale height, and either a target bitrate or a
-/// fixed CRF (quality). `crf` wins when set; otherwise `bitrate_kbps` applies; otherwise libx264's
-/// default. `source()` reproduces the pre-ABR encode exactly.
+/// How to encode a delivery rendition: optional downscale height, and either a
+/// target bitrate or a fixed CRF (quality). `crf` wins when set; otherwise
+/// `bitrate_kbps` applies; otherwise libx264's default. `source()` reproduces
+/// the pre-ABR encode exactly.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct EncodeProfile {
-    pub height: Option<u32>,
+    pub height:       Option<u32>,
     pub bitrate_kbps: Option<u32>,
-    pub crf: Option<u32>,
+    pub crf:          Option<u32>,
 }
 
 impl EncodeProfile {
@@ -40,9 +46,10 @@ impl EncodeProfile {
     }
 }
 
-/// Encode the given ordered frame blobs into one CMAF segment. `frame_rate` is the ffmpeg
-/// fraction string from the manifest (e.g. "10/1"); `frame_ext` is the frames' image format
-/// extension ("png" or "jxl") so ffmpeg decodes them correctly.
+/// Encode the given ordered frame blobs into one CMAF segment. `frame_rate` is
+/// the ffmpeg fraction string from the manifest (e.g. "10/1"); `frame_ext` is
+/// the frames' image format extension ("png" or "jxl") so ffmpeg decodes them
+/// correctly.
 pub fn encode_cmaf_segment(
     frame_blobs: &[Vec<u8>],
     frame_rate: &str,
@@ -70,15 +77,28 @@ pub fn encode_cmaf_segment(
     if let Some(h) = profile.height {
         cmd.args(["-vf", &format!("scale=-2:{h}")]);
     }
-    cmd.args(["-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p", "-sc_threshold", "0", "-an"]);
+    cmd.args([
+        "-c:v",
+        "libx264",
+        "-preset",
+        "veryfast",
+        "-pix_fmt",
+        "yuv420p",
+        "-sc_threshold",
+        "0",
+        "-an",
+    ]);
     // CRF (quality) wins when set; otherwise an optional target bitrate.
     if let Some(crf) = profile.crf {
         cmd.args(["-crf", &crf.to_string()]);
     } else if let Some(kbps) = profile.bitrate_kbps {
         cmd.args([
-            "-b:v", &format!("{kbps}k"),
-            "-maxrate", &format!("{kbps}k"),
-            "-bufsize", &format!("{}k", kbps * 2),
+            "-b:v",
+            &format!("{kbps}k"),
+            "-maxrate",
+            &format!("{kbps}k"),
+            "-bufsize",
+            &format!("{}k", kbps * 2),
         ]);
     }
     cmd.args(["-movflags", "+empty_moov+frag_keyframe+default_base_moof", "-f", "mp4"]);
@@ -95,14 +115,16 @@ pub fn encode_cmaf_segment(
     split_fmp4(&bytes)
 }
 
-/// Split a fragmented-MP4 byte stream into `(init, media)` at the first `moof` box.
-/// Init = everything before the first `moof` (`ftyp`+`moov`); media = first `moof` to EOF.
+/// Split a fragmented-MP4 byte stream into `(init, media)` at the first `moof`
+/// box. Init = everything before the first `moof` (`ftyp`+`moov`); media =
+/// first `moof` to EOF.
 pub fn split_fmp4(bytes: &[u8]) -> Result<CmafSegment> {
     let mut off = 0usize;
     let mut first_moof: Option<usize> = None;
     let mut saw_ftyp = false;
     while off + 8 <= bytes.len() {
-        let size = u32::from_be_bytes([bytes[off], bytes[off + 1], bytes[off + 2], bytes[off + 3]]) as usize;
+        let size = u32::from_be_bytes([bytes[off], bytes[off + 1], bytes[off + 2], bytes[off + 3]])
+            as usize;
         let typ = &bytes[off + 4..off + 8];
         if typ == b"ftyp" {
             saw_ftyp = true;
@@ -112,22 +134,24 @@ pub fn split_fmp4(bytes: &[u8]) -> Result<CmafSegment> {
             break;
         }
         if size < 8 || off + size > bytes.len() {
-            bail!("malformed mp4 box (type {:?}, size {size}) at offset {off}", String::from_utf8_lossy(typ));
+            bail!(
+                "malformed mp4 box (type {:?}, size {size}) at offset {off}",
+                String::from_utf8_lossy(typ)
+            );
         }
         off += size;
     }
-    let split = first_moof.context("ffmpeg did not produce a fragmented mp4 (no moof box found)")?;
+    let split =
+        first_moof.context("ffmpeg did not produce a fragmented mp4 (no moof box found)")?;
     if !saw_ftyp || split == 0 {
         bail!("fragmented mp4 missing init (ftyp/moov) before first moof");
     }
-    Ok(CmafSegment {
-        init: bytes[..split].to_vec(),
-        media: bytes[split..].to_vec(),
-    })
+    Ok(CmafSegment { init: bytes[..split].to_vec(), media: bytes[split..].to_vec() })
 }
 
-/// Locate a 4-byte box-type tag within `region`, returning the index of the tag itself
-/// (i.e. box_start + 4). Used to find child boxes inside an already-bounded parent box.
+/// Locate a 4-byte box-type tag within `region`, returning the index of the tag
+/// itself (i.e. box_start + 4). Used to find child boxes inside an
+/// already-bounded parent box.
 fn find_tag(region: &[u8], tag: &[u8; 4]) -> Option<usize> {
     region.windows(4).position(|w| w == tag)
 }
@@ -140,9 +164,10 @@ fn first_box_size(bytes: &[u8]) -> Option<usize> {
     Some(u32::from_be_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]) as usize)
 }
 
-/// Read the per-frame (per-sample) duration in track-timescale ticks from a media fragment's
-/// `tfhd default_sample_duration`. Searches only inside the leading `moof` box (before `mdat`)
-/// so it cannot false-match on compressed sample bytes. Returns None if absent.
+/// Read the per-frame (per-sample) duration in track-timescale ticks from a
+/// media fragment's `tfhd default_sample_duration`. Searches only inside the
+/// leading `moof` box (before `mdat`) so it cannot false-match on compressed
+/// sample bytes. Returns None if absent.
 pub fn frame_duration_ticks(media: &[u8]) -> Option<u32> {
     let moof_end = first_box_size(media)?.min(media.len());
     let moof = &media[..moof_end];
@@ -161,11 +186,14 @@ pub fn frame_duration_ticks(media: &[u8]) -> Option<u32> {
     None
 }
 
-/// Set the media fragment's `tfdt baseMediaDecodeTime` to `bmdt` (track-timescale ticks),
-/// placing the fragment at a continuous position on the global timeline. In-place overwrite
-/// (fixed-width field), so no box sizes change. Searches only inside the leading `moof`.
+/// Set the media fragment's `tfdt baseMediaDecodeTime` to `bmdt`
+/// (track-timescale ticks), placing the fragment at a continuous position on
+/// the global timeline. In-place overwrite (fixed-width field), so no box sizes
+/// change. Searches only inside the leading `moof`.
 pub fn set_base_media_decode_time(media: &mut [u8], bmdt: u64) -> Result<()> {
-    let moof_end = first_box_size(media).context("media has no leading box")?.min(media.len());
+    let moof_end = first_box_size(media)
+        .context("media has no leading box")?
+        .min(media.len());
     let i = find_tag(&media[..moof_end], b"tfdt").context("no tfdt box in media fragment")?;
     let version = media[i + 4];
     if version == 1 {
@@ -182,7 +210,8 @@ pub fn set_base_media_decode_time(media: &mut [u8], bmdt: u64) -> Result<()> {
     Ok(())
 }
 
-/// Probe an fMP4 (init+media concatenated) blob: true if ffprobe reads it as a video stream.
+/// Probe an fMP4 (init+media concatenated) blob: true if ffprobe reads it as a
+/// video stream.
 #[cfg(test)]
 pub fn probe_fmp4_is_video(init: &[u8], media: &[u8]) -> bool {
     let tmp = std::env::temp_dir().join(format!("dits-probe-{}.mp4", uuid::Uuid::new_v4()));
@@ -193,8 +222,14 @@ pub fn probe_fmp4_is_video(init: &[u8], media: &[u8]) -> bool {
     }
     let ok = Command::new("ffprobe")
         .args([
-            "-v", "error", "-select_streams", "v:0",
-            "-show_entries", "stream=codec_name", "-of", "csv=p=0",
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_entries",
+            "stream=codec_name",
+            "-of",
+            "csv=p=0",
         ])
         .arg(&tmp)
         .output()
@@ -209,7 +244,11 @@ mod tests {
     use super::*;
 
     fn ffmpeg_available() -> bool {
-        Command::new("ffmpeg").arg("-version").output().map(|o| o.status.success()).unwrap_or(false)
+        Command::new("ffmpeg")
+            .arg("-version")
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false)
     }
 
     /// Make N tiny distinct PNG frames via ffmpeg testsrc.
@@ -219,9 +258,15 @@ mod tests {
         let pat = dir.join("f_%08d.png");
         Command::new("ffmpeg")
             .args([
-                "-v", "error", "-y", "-f", "lavfi", "-i",
+                "-v",
+                "error",
+                "-y",
+                "-f",
+                "lavfi",
+                "-i",
                 &format!("testsrc=duration={}:size=64x48:rate=10", (n as f64 / 10.0).max(0.1)),
-                "-frames:v", &n.to_string(),
+                "-frames:v",
+                &n.to_string(),
             ])
             .arg(&pat)
             .status()
@@ -260,8 +305,14 @@ mod tests {
         std::fs::write(&tmp, &buf).unwrap();
         let h = Command::new("ffprobe")
             .args([
-                "-v", "error", "-select_streams", "v:0",
-                "-show_entries", "stream=height", "-of", "csv=p=0",
+                "-v",
+                "error",
+                "-select_streams",
+                "v:0",
+                "-show_entries",
+                "stream=height",
+                "-of",
+                "csv=p=0",
             ])
             .arg(&tmp)
             .output()
@@ -280,7 +331,8 @@ mod tests {
         }
         // 64x48 source frames; a rung at height 24 should produce a 24-high segment.
         let frames = make_png_frames(10);
-        let profile = EncodeProfile { height: Some(24), bitrate_kbps: Some(100), crf: None };
+        let profile =
+            EncodeProfile { height: Some(24), bitrate_kbps: Some(100), crf: None };
         let seg = encode_cmaf_segment(&frames, "10/1", "png", &profile).unwrap();
         assert_eq!(probe_height(&seg.init, &seg.media), 24);
     }
@@ -291,7 +343,8 @@ mod tests {
             eprintln!("skipping: no ffmpeg");
             return;
         }
-        // The shared-init + reuse model depends on this: same frames -> identical init AND media.
+        // The shared-init + reuse model depends on this: same frames -> identical init
+        // AND media.
         let frames = make_png_frames(20);
         let a = encode_cmaf_segment(&frames, "10/1", "png", &EncodeProfile::source()).unwrap();
         let b = encode_cmaf_segment(&frames, "10/1", "png", &EncodeProfile::source()).unwrap();
@@ -329,8 +382,15 @@ mod tests {
     fn count_frames(path: &std::path::Path) -> u32 {
         Command::new("ffprobe")
             .args([
-                "-v", "error", "-count_frames", "-select_streams", "v:0",
-                "-show_entries", "stream=nb_read_frames", "-of", "csv=p=0",
+                "-v",
+                "error",
+                "-count_frames",
+                "-select_streams",
+                "v:0",
+                "-show_entries",
+                "stream=nb_read_frames",
+                "-of",
+                "csv=p=0",
             ])
             .arg(path)
             .output()
@@ -345,9 +405,10 @@ mod tests {
             eprintln!("skipping: no ffmpeg");
             return;
         }
-        // Two independent 10-frame segments. Without patching they both sit at t=0 and overlap
-        // (only 10 frames decode). Patching segment 1's bMDT to 10 frames places it after
-        // segment 0 -> the concatenation decodes to the full 20 frames.
+        // Two independent 10-frame segments. Without patching they both sit at t=0 and
+        // overlap (only 10 frames decode). Patching segment 1's bMDT to 10
+        // frames places it after segment 0 -> the concatenation decodes to the
+        // full 20 frames.
         let f0 = make_png_frames(10);
         let f1 = make_png_frames(10);
         let s0 = encode_cmaf_segment(&f0, "10/1", "png", &EncodeProfile::source()).unwrap();

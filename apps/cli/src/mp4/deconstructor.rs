@@ -4,13 +4,19 @@
 //! efficient versioning. Metadata changes can be stored separately
 //! without re-chunking the entire media data.
 
-use super::atoms::AtomType;
-use super::offset_patcher::read_moov_data;
-use super::parser::{Mp4Parser, Mp4Structure, ParseError};
-use std::fs::File;
-use std::io::{self, Read, Seek, SeekFrom};
-use std::path::Path;
+use std::{
+    fs::File,
+    io::{self, Read, Seek, SeekFrom},
+    path::Path,
+};
+
 use thiserror::Error;
+
+use super::{
+    atoms::AtomType,
+    offset_patcher::read_moov_data,
+    parser::{Mp4Parser, Mp4Structure, ParseError},
+};
 
 /// Errors during deconstruction.
 #[derive(Error, Debug)]
@@ -29,19 +35,19 @@ pub enum DeconstructError {
 #[derive(Debug)]
 pub struct DeconstructedMp4 {
     /// Original file structure info.
-    pub structure: Mp4Structure,
+    pub structure:        Mp4Structure,
     /// ftyp atom data (file type).
-    pub ftyp_data: Vec<u8>,
+    pub ftyp_data:        Vec<u8>,
     /// Normalized moov data (offsets relative to mdat start).
-    pub moov_data: Vec<u8>,
+    pub moov_data:        Vec<u8>,
     /// Other atoms (uuid, free, etc.) - stored but not modified.
-    pub other_atoms: Vec<(AtomType, Vec<u8>)>,
+    pub other_atoms:      Vec<(AtomType, Vec<u8>)>,
     /// mdat header (we store this separately from data).
-    pub mdat_header: Vec<u8>,
+    pub mdat_header:      Vec<u8>,
     /// Offset where mdat data starts in original file.
     pub mdat_data_offset: u64,
     /// Size of mdat data (for streaming/chunking).
-    pub mdat_data_size: u64,
+    pub mdat_data_size:   u64,
 }
 
 /// MP4 Deconstructor that splits files into components.
@@ -89,7 +95,7 @@ impl Deconstructor {
                     file.seek(SeekFrom::Start(atom.start))?;
                     file.read_exact(&mut data)?;
                     other_atoms.push((atom.atom_type, data));
-                }
+                },
             }
         }
 
@@ -198,8 +204,6 @@ impl DeconstructedMp4 {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test_deconstructor_compiles() {
         // Basic compilation test

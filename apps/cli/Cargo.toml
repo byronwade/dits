@@ -112,3 +112,12 @@ strip = true
 
 [features]
 fuser = ["dep:fuser"]
+
+# On macOS and Linux, build OpenSSL from source so cross-target builds
+# (e.g. x86_64-apple-darwin on an arm64 runner) don't require a system
+# OpenSSL that pkg-config can't locate for the cross target. On Windows,
+# git2 uses native Windows SSL (SChannel) and doesn't need OpenSSL at all,
+# and the MSVC toolchain lacks the NASM assembler that the OpenSSL source
+# build requires.
+[target.'cfg(not(target_os = "windows"))'.dependencies]
+git2 = { version = "0.19", features = ["vendored-openssl"] }

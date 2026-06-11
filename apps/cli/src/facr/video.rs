@@ -1,26 +1,31 @@
 //! Real video ingest/reconstruction for FACR via ffmpeg.
 //!
-//! `ingest_video` decodes a real video file into individual lossless frames (PNG),
-//! stores each one content-addressed in a [`FrameStore`] (so identical frames dedup),
-//! and returns a [`ClipManifest`]. `reconstruct_video` does the reverse: it materializes
-//! the manifest's frames and re-muxes them into a playable video.
+//! `ingest_video` decodes a real video file into individual lossless frames
+//! (PNG), stores each one content-addressed in a [`FrameStore`] (so identical
+//! frames dedup), and returns a [`ClipManifest`]. `reconstruct_video` does the
+//! reverse: it materializes the manifest's frames and re-muxes them into a
+//! playable video.
 //!
 //! Audio is preserved: the track is extracted stream-copied (lossless), stored
-//! content-addressed (deduped like frames), and muxed back on reconstruction. Frames are
-//! stored in a configurable lossless codec ([`FrameImageCodec`] — WebP by default, ~30%
-//! smaller than PNG). All codecs must be deterministic so identical frames dedup.
+//! content-addressed (deduped like frames), and muxed back on reconstruction.
+//! Frames are stored in a configurable lossless codec ([`FrameImageCodec`] —
+//! WebP by default, ~30% smaller than PNG). All codecs must be deterministic so
+//! identical frames dedup.
 
-use super::manifest::{AudioTrack, ClipManifest, FrameRef};
-use super::store::FrameStore;
+use std::{path::Path, process::Command};
+
 use anyhow::{bail, Context, Result};
-use std::path::Path;
-use std::process::Command;
+
+use super::{
+    manifest::{AudioTrack, ClipManifest, FrameRef},
+    store::FrameStore,
+};
 
 /// Probed properties of a source video.
 #[derive(Clone, Debug)]
 pub struct VideoInfo {
-    pub width: u32,
-    pub height: u32,
+    pub width:      u32,
+    pub height:     u32,
     /// Frame rate exactly as ffprobe reports it, e.g. "30000/1001".
     pub frame_rate: String,
 }
@@ -31,7 +36,9 @@ pub fn check_ffmpeg() -> Result<()> {
         Command::new(tool)
             .arg("-version")
             .output()
-            .with_context(|| format!("{tool} not found. Install FFmpeg to use FACR video commands."))?;
+            .with_context(|| {
+                format!("{tool} not found. Install FFmpeg to use FACR video commands.")
+            })?;
     }
     Ok(())
 }
@@ -40,10 +47,14 @@ pub fn check_ffmpeg() -> Result<()> {
 pub fn probe_video(path: &Path) -> Result<VideoInfo> {
     let out = Command::new("ffprobe")
         .args([
-            "-v", "error",
-            "-select_streams", "v:0",
-            "-show_entries", "stream=width,height,r_frame_rate",
-            "-of", "default=noprint_wrappers=1",
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_entries",
+            "stream=width,height,r_frame_rate",
+            "-of",
+            "default=noprint_wrappers=1",
         ])
         .arg(path)
         .output()
@@ -73,15 +84,20 @@ pub fn probe_video(path: &Path) -> Result<VideoInfo> {
     Ok(VideoInfo { width, height, frame_rate })
 }
 
-/// Whether the source has at least one audio stream. Used to decide whether to extract
-/// and store an audio track (which `ingest_video` then preserves) and to inform the user.
+/// Whether the source has at least one audio stream. Used to decide whether to
+/// extract and store an audio track (which `ingest_video` then preserves) and
+/// to inform the user.
 pub fn source_has_audio(path: &Path) -> bool {
     Command::new("ffprobe")
         .args([
-            "-v", "error",
-            "-select_streams", "a",
-            "-show_entries", "stream=index",
-            "-of", "csv=p=0",
+            "-v",
+            "error",
+            "-select_streams",
+            "a",
+            "-show_entries",
+            "stream=index",
+            "-of",
+            "csv=p=0",
         ])
         .arg(path)
         .output()
@@ -89,20 +105,23 @@ pub fn source_has_audio(path: &Path) -> bool {
         .unwrap_or(false)
 }
 
-/// Per-frame image codec used to store decoded frames. All options must be DETERMINISTIC
-/// (identical input -> identical bytes) so frames content-address and dedup.
+/// Per-frame image codec used to store decoded frames. All options must be
+/// DETERMINISTIC (identical input -> identical bytes) so frames content-address
+/// and dedup.
 ///
 /// - `Png`: lossless, max tool compatibility, largest.
 /// - `Webp`: lossless, ~30% smaller than PNG.
-/// - `WebpVl`: **visually-lossless** (lossy q90) — the mezzanine tier, ~85% smaller than
-///   PNG on real footage. Not bit-exact to the source, but visually indistinguishable.
+/// - `WebpVl`: **visually-lossless** (lossy q90) — the mezzanine tier, ~85%
+///   smaller than PNG on real footage. Not bit-exact to the source, but
+///   visually indistinguishable.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FrameImageCodec {
     Png,
     Webp,
     WebpVl,
-    /// JPEG-XL canonical frames (visually-lossless at distance 1). `-threads 1` keeps
-    /// libjxl byte-deterministic so frames still content-address and dedup.
+    /// JPEG-XL canonical frames (visually-lossless at distance 1). `-threads 1`
+    /// keeps libjxl byte-deterministic so frames still content-address and
+    /// dedup.
     Jxl,
     /// JPEG-XL, mathematically lossless (distance 0).
     JxlLossless,
@@ -137,23 +156,25 @@ impl FrameImageCodec {
             Self::Jxl | Self::JxlLossless => "jxl",
         }
     }
-    /// ffmpeg encode args (codec selection + bit-exact). Empty for PNG (image2 default).
+    /// ffmpeg encode args (codec selection + bit-exact). Empty for PNG (image2
+    /// default).
     pub(crate) fn encode_args(self) -> &'static [&'static str] {
         match self {
             Self::Png => &[],
             Self::Webp => &["-c:v", "libwebp", "-lossless", "1", "-fflags", "+bitexact"],
-            Self::WebpVl => &[
-                "-c:v", "libwebp", "-lossless", "0", "-quality", "90", "-fflags", "+bitexact",
-            ],
+            Self::WebpVl => {
+                &["-c:v", "libwebp", "-lossless", "0", "-quality", "90", "-fflags", "+bitexact"]
+            },
             Self::Jxl => &["-c:v", "libjxl", "-distance", "1", "-threads", "1"],
             Self::JxlLossless => &["-c:v", "libjxl", "-distance", "0", "-threads", "1"],
         }
     }
 }
 
-/// Output video codec used when reconstructing/exporting a clip. ProRes and DNxHR are
-/// the visually-lossless intra-only mezzanines editors drop straight into an NLE (use a
-/// `.mov` output). H.264 is the small, universally-playable default.
+/// Output video codec used when reconstructing/exporting a clip. ProRes and
+/// DNxHR are the visually-lossless intra-only mezzanines editors drop straight
+/// into an NLE (use a `.mov` output). H.264 is the small, universally-playable
+/// default.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum OutputCodec {
     H264,
@@ -189,8 +210,13 @@ pub(crate) fn frame_ext(codec: &str) -> &str {
     }
 }
 
-/// Decode `path` into content-addressed frames stored in `store`, returning a manifest.
-pub fn ingest_video(path: &Path, store: &FrameStore, codec: FrameImageCodec) -> Result<ClipManifest> {
+/// Decode `path` into content-addressed frames stored in `store`, returning a
+/// manifest.
+pub fn ingest_video(
+    path: &Path,
+    store: &FrameStore,
+    codec: FrameImageCodec,
+) -> Result<ClipManifest> {
     check_ffmpeg()?;
     let info = probe_video(path)?;
 
@@ -228,8 +254,9 @@ pub fn ingest_video(path: &Path, store: &FrameStore, codec: FrameImageCodec) -> 
         manifest.push_frame(FrameRef { hash, pts: i as i64, duration: 1 });
     }
 
-    // Extract the audio track (stream-copied, lossless) and store it content-addressed
-    // so it dedups across versions and can be muxed back on reconstruction.
+    // Extract the audio track (stream-copied, lossless) and store it
+    // content-addressed so it dedups across versions and can be muxed back on
+    // reconstruction.
     if source_has_audio(path) {
         let audio_path = work.join("audio.mka");
         // `-fflags +bitexact` / `-map_metadata -1` make the muxed output deterministic
@@ -239,8 +266,15 @@ pub fn ingest_video(path: &Path, store: &FrameStore, codec: FrameImageCodec) -> 
             .args(["-v", "error", "-y", "-i"])
             .arg(path)
             .args([
-                "-vn", "-c:a", "copy", "-map_metadata", "-1",
-                "-fflags", "+bitexact", "-flags:a", "+bitexact",
+                "-vn",
+                "-c:a",
+                "copy",
+                "-map_metadata",
+                "-1",
+                "-fflags",
+                "+bitexact",
+                "-flags:a",
+                "+bitexact",
             ])
             .arg(&audio_path)
             .output()
@@ -305,14 +339,12 @@ pub fn reconstruct_video(
     }
     cmd.args(out_codec.video_args());
     if audio_file.is_some() {
-        // Stream-copy the audio (lossless) and map both streams; -shortest guards against
-        // tiny duration mismatches between the re-encoded video and the copied audio.
+        // Stream-copy the audio (lossless) and map both streams; -shortest guards
+        // against tiny duration mismatches between the re-encoded video and the
+        // copied audio.
         cmd.args(["-c:a", "copy", "-map", "0:v:0", "-map", "1:a:0", "-shortest"]);
     }
-    let out = cmd
-        .arg(output)
-        .output()
-        .context("running ffmpeg encode")?;
+    let out = cmd.arg(output).output().context("running ffmpeg encode")?;
     let _ = std::fs::remove_dir_all(&work);
     if !out.status.success() {
         bail!("ffmpeg encode failed: {}", String::from_utf8_lossy(&out.stderr));
@@ -404,7 +436,16 @@ mod tests {
 
     fn has_audio_stream(path: &Path) -> bool {
         Command::new("ffprobe")
-            .args(["-v", "error", "-select_streams", "a", "-show_entries", "stream=index", "-of", "csv=p=0"])
+            .args([
+                "-v",
+                "error",
+                "-select_streams",
+                "a",
+                "-show_entries",
+                "stream=index",
+                "-of",
+                "csv=p=0",
+            ])
             .arg(path)
             .output()
             .map(|o| !o.stdout.is_empty())
@@ -477,9 +518,6 @@ mod tests {
         let out = dir.path().join("rebuilt.mp4");
         reconstruct_video(&manifest, &store, &out, OutputCodec::H264).unwrap();
 
-        assert!(
-            has_audio_stream(&out),
-            "FACR reconstruction must preserve the audio track"
-        );
+        assert!(has_audio_stream(&out), "FACR reconstruction must preserve the audio track");
     }
 }

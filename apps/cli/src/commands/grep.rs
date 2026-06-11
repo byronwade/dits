@@ -1,38 +1,40 @@
 //! Search tracked file contents for a pattern (`dits grep`).
 
-use crate::store::Repository;
+use std::path::Path;
+
 use anyhow::{Context, Result};
 use console::style;
 use regex::RegexBuilder;
-use std::path::Path;
+
+use crate::store::Repository;
 
 /// Options controlling a grep search.
 #[derive(Clone, Debug, Default)]
 pub struct GrepOptions {
     /// Pattern to search for (regex unless `fixed_strings`).
-    pub pattern: String,
+    pub pattern:            String,
     /// Show 1-based line numbers.
-    pub line_number: bool,
+    pub line_number:        bool,
     /// Case-insensitive search.
-    pub ignore_case: bool,
+    pub ignore_case:        bool,
     /// Match whole words only.
-    pub word_regexp: bool,
+    pub word_regexp:        bool,
     /// Show only a per-file match count.
-    pub count: bool,
+    pub count:              bool,
     /// Show only the names of files containing matches.
     pub files_with_matches: bool,
     /// Treat the pattern as a literal string (no regex).
-    pub fixed_strings: bool,
+    pub fixed_strings:      bool,
     /// Restrict the search to these path prefixes (relative to repo root).
-    pub paths: Vec<String>,
+    pub paths:              Vec<String>,
 }
 
 /// A single matching line.
 #[derive(Clone, Debug)]
 pub struct GrepMatch {
-    pub path: String,
+    pub path:        String,
     pub line_number: usize,
-    pub line: String,
+    pub line:        String,
 }
 
 /// Result of a grep search.
@@ -65,7 +67,9 @@ pub fn grep(options: &GrepOptions) -> Result<GrepResult> {
 
     for rel_path in repo.list_files()? {
         if !options.paths.is_empty()
-            && !options.paths.iter().any(|p| rel_path == *p || rel_path.starts_with(&format!("{}/", p.trim_end_matches('/'))))
+            && !options.paths.iter().any(|p| {
+                rel_path == *p || rel_path.starts_with(&format!("{}/", p.trim_end_matches('/')))
+            })
         {
             continue;
         }
@@ -84,9 +88,9 @@ pub fn grep(options: &GrepOptions) -> Result<GrepResult> {
         for (idx, line) in text.lines().enumerate() {
             if re.is_match(line) {
                 result.matches.push(GrepMatch {
-                    path: rel_path.clone(),
+                    path:        rel_path.clone(),
                     line_number: idx + 1,
-                    line: line.to_string(),
+                    line:        line.to_string(),
                 });
             }
         }
@@ -120,12 +124,7 @@ pub fn print_results(result: &GrepResult, options: &GrepOptions) {
 
     for m in &result.matches {
         if options.line_number {
-            println!(
-                "{}:{}:{}",
-                style(&m.path).magenta(),
-                style(m.line_number).green(),
-                m.line
-            );
+            println!("{}:{}:{}", style(&m.path).magenta(), style(m.line_number).green(), m.line);
         } else {
             println!("{}:{}", style(&m.path).magenta(), m.line);
         }

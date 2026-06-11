@@ -474,7 +474,7 @@ export default function SecurityPage() {
               <div>
                 <h4 className="font-semibold text-sm mb-2">Usage Statistics</h4>
                 <ul className="text-xs space-y-1 text-muted-foreground">
-                  <li>Command usage frequency (e.g., "add", "commit", "push")</li>
+                  <li>Command usage frequency (e.g., &quot;add&quot;, &quot;commit&quot;, &quot;push&quot;)</li>
                   <li>Performance metrics (operation duration, file sizes)</li>
                   <li>Error occurrences (anonymized error types)</li>
                   <li>Platform information (OS, architecture)</li>
@@ -531,7 +531,7 @@ export default function SecurityPage() {
         <CardHeader>
           <CardTitle>Telemetry vs Git</CardTitle>
           <CardDescription>
-            Understanding how Dits telemetry differs from Git's approach
+            Understanding how Dits telemetry differs from Git&apos;s approach
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -562,7 +562,7 @@ export default function SecurityPage() {
                 <TableCell>Distributed, offline-first</TableCell>
                 <TableCell>Hybrid (local + optional cloud)</TableCell>
                 <TableCell className="text-sm">
-                  Ditshub provides hosted collaboration features that Git doesn't offer.
+                  Ditshub provides hosted collaboration features that Git doesn&apos;t offer.
                 </TableCell>
               </TableRow>
               <TableRow>

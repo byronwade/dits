@@ -1,29 +1,36 @@
 //! Show command - display commit details.
 
-use crate::store::Repository;
-use crate::util::{format_bytes, format_size_change};
-use anyhow::{Context, Result};
-use console::style;
 use std::path::Path;
 
+use anyhow::{Context, Result};
+use console::style;
+
+use crate::{
+    store::Repository,
+    util::{format_bytes, format_size_change},
+};
+
 /// Show details of a commit or object.
-pub fn show(object: &str, stat: bool, name_only: bool, name_status: bool, no_patch: bool) -> Result<()> {
+pub fn show(
+    object: &str,
+    stat: bool,
+    name_only: bool,
+    name_status: bool,
+    no_patch: bool,
+) -> Result<()> {
     let repo = Repository::open(Path::new("."))
         .context("Not a Dits repository (or any parent directory)")?;
 
     // Resolve the object reference
-    let hash = repo.resolve_ref_or_prefix(object)?
+    let hash = repo
+        .resolve_ref_or_prefix(object)?
         .with_context(|| format!("Could not resolve '{}' to a commit", object))?;
 
     let commit = repo.load_commit(&hash)?;
     let manifest = repo.load_manifest(&commit.manifest)?;
 
     // Print commit header
-    println!(
-        "{} {}",
-        style("commit").yellow(),
-        style(commit.hash.to_hex()).yellow()
-    );
+    println!("{} {}", style("commit").yellow(), style(commit.hash.to_hex()).yellow());
 
     // Show parent if exists
     if let Some(parent) = commit.parent {
@@ -118,11 +125,7 @@ pub fn show(object: &str, stat: bool, name_only: bool, name_status: bool, no_pat
             } else if name_status {
                 println!("{}\t{}", style("D").red(), path);
             } else {
-                println!(
-                    " {} {} | (deleted)",
-                    style("D").red(),
-                    style(path).cyan()
-                );
+                println!(" {} {} | (deleted)", style("D").red(), style(path).cyan());
             }
         }
 
@@ -159,11 +162,7 @@ pub fn show(object: &str, stat: bool, name_only: bool, name_status: bool, no_pat
             };
 
             println!(" {} {}", status, style(path).cyan());
-            println!(
-                "   Chunks: {} total, Size: {}",
-                entry.chunks.len(),
-                format_bytes(entry.size)
-            );
+            println!("   Chunks: {} total, Size: {}", entry.chunks.len(), format_bytes(entry.size));
         }
 
         // Show deleted files
@@ -178,4 +177,3 @@ pub fn show(object: &str, stat: bool, name_only: bool, name_status: bool, no_pat
 
     Ok(())
 }
-

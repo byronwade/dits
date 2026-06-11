@@ -1,11 +1,14 @@
 //! Reset command implementation.
 
-use crate::core::{FileStatus, Index, IndexEntry};
-use crate::store::Repository;
+use std::{fs, path::Path};
+
 use anyhow::{Context, Result};
 use console::style;
-use std::fs;
-use std::path::Path;
+
+use crate::{
+    core::{FileStatus, Index, IndexEntry},
+    store::Repository,
+};
 
 /// Reset mode determines what gets reset.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -47,18 +50,10 @@ fn reset_paths(repo: &Repository, paths: &[String]) -> Result<()> {
             if entry.status != FileStatus::Unchanged {
                 entry.status = FileStatus::Unchanged;
                 unstaged += 1;
-                println!(
-                    "{} Unstaged '{}'",
-                    style("U").yellow().bold(),
-                    style(path).cyan()
-                );
+                println!("{} Unstaged '{}'", style("U").yellow().bold(), style(path).cyan());
             }
         } else {
-            println!(
-                "{} Path '{}' not in index",
-                style("!").yellow().bold(),
-                path
-            );
+            println!("{} Path '{}' not in index", style("!").yellow().bold(), path);
         }
     }
 
@@ -84,8 +79,7 @@ fn reset_to_commit(repo: &Repository, target: Option<&str>, mode: ResetMode) -> 
         repo.resolve_ref_or_prefix(ref_str)?
             .with_context(|| format!("Could not resolve '{}' to a commit", ref_str))?
     } else {
-        repo.head()?
-            .context("No commits yet")?
+        repo.head()?.context("No commits yet")?
     };
 
     let target_commit = repo.objects().load_commit(&target_hash)?;
@@ -104,7 +98,7 @@ fn reset_to_commit(repo: &Repository, target: Option<&str>, mode: ResetMode) -> 
                 style("->").green().bold(),
                 &target_hash.to_hex()[..8]
             );
-        }
+        },
 
         ResetMode::Mixed => {
             // Move HEAD and reset index
@@ -140,7 +134,7 @@ fn reset_to_commit(repo: &Repository, target: Option<&str>, mode: ResetMode) -> 
                 style("->").green().bold(),
                 &target_hash.to_hex()[..8]
             );
-        }
+        },
 
         ResetMode::Hard => {
             // Move HEAD, reset index, and reset working tree
@@ -163,13 +157,10 @@ fn reset_to_commit(repo: &Repository, target: Option<&str>, mode: ResetMode) -> 
                 result.files_restored,
                 if result.files_restored == 1 { "" } else { "s" }
             );
-        }
+        },
     }
 
-    println!(
-        "   {}",
-        style(&target_commit.message).dim()
-    );
+    println!("   {}", style(&target_commit.message).dim());
 
     Ok(())
 }

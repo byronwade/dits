@@ -1,18 +1,24 @@
-//! Frame-native edit: re-grade (brightness) a contiguous frame range, producing a
-//! new manifest where ONLY those frames have new content hashes. This is the move
-//! that dodges the "re-export re-quantizes everything" problem.
+//! Frame-native edit: re-grade (brightness) a contiguous frame range, producing
+//! a new manifest where ONLY those frames have new content hashes. This is the
+//! move that dodges the "re-export re-quantizes everything" problem.
 
-use crate::core::Hash;
-use crate::facr::manifest::{ClipManifest, FrameRef};
-use crate::facr::store::FrameStore;
-use crate::facr::video::FrameImageCodec;
+use std::{ops::Range, process::Command};
+
 use anyhow::{bail, Context, Result};
-use std::ops::Range;
-use std::process::Command;
 
-/// Apply a brightness delta (`-1.0..=1.0`, e.g. 0.3) to frames in `range`, store the
-/// new PNGs, and return a manifest identical to `base` except those frames point at
-/// new hashes. Frames outside `range` keep their original `FrameRef` (same hash).
+use crate::{
+    core::Hash,
+    facr::{
+        manifest::{ClipManifest, FrameRef},
+        store::FrameStore,
+        video::FrameImageCodec,
+    },
+};
+
+/// Apply a brightness delta (`-1.0..=1.0`, e.g. 0.3) to frames in `range`,
+/// store the new PNGs, and return a manifest identical to `base` except those
+/// frames point at new hashes. Frames outside `range` keep their original
+/// `FrameRef` (same hash).
 pub fn regrade_range(
     base: &ClipManifest,
     store: &FrameStore,
@@ -35,8 +41,8 @@ pub fn regrade_range(
     Ok(out)
 }
 
-/// Delete frames `[range)` from the clip, shifting the tail left. PTS are renumbered 0..n so the
-/// result is a contiguous timeline.
+/// Delete frames `[range)` from the clip, shifting the tail left. PTS are
+/// renumbered 0..n so the result is a contiguous timeline.
 pub fn trim_range(base: &ClipManifest, range: Range<usize>) -> Result<ClipManifest> {
     if range.start > range.end || range.end > base.frames.len() {
         bail!("trim range {:?} out of bounds (clip has {} frames)", range, base.frames.len());
@@ -47,7 +53,8 @@ pub fn trim_range(base: &ClipManifest, range: Range<usize>) -> Result<ClipManife
     Ok(out)
 }
 
-/// Insert `frames` (already content-addressed in the store) at index `at`, shifting the tail right.
+/// Insert `frames` (already content-addressed in the store) at index `at`,
+/// shifting the tail right.
 pub fn insert_frames(base: &ClipManifest, at: usize, frames: &[FrameRef]) -> Result<ClipManifest> {
     if at > base.frames.len() {
         bail!("insert index {at} out of bounds (clip has {} frames)", base.frames.len());
@@ -66,8 +73,9 @@ fn renumber(m: &mut ClipManifest) {
     }
 }
 
-/// Brighten a single frame via ffmpeg's `eq` filter, re-encoding in the same still format
-/// (`fmt`). Deterministic, so the graded frame has a stable content hash.
+/// Brighten a single frame via ffmpeg's `eq` filter, re-encoding in the same
+/// still format (`fmt`). Deterministic, so the graded frame has a stable
+/// content hash.
 fn brighten_frame(frame: &[u8], brightness: f32, fmt: FrameImageCodec) -> Result<Vec<u8>> {
     let dir = std::env::temp_dir().join(format!("dits-grade-{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&dir).context("grade temp dir")?;
@@ -94,16 +102,26 @@ fn brighten_frame(frame: &[u8], brightness: f32, fmt: FrameImageCodec) -> Result
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::facr::diff::diff_manifests;
-    use crate::facr::video::{check_ffmpeg, ingest_video};
     use std::path::Path;
+
+    use super::*;
+    use crate::facr::{
+        diff::diff_manifests,
+        video::{check_ffmpeg, ingest_video},
+    };
 
     fn make_test_video(path: &Path) -> bool {
         Command::new("ffmpeg")
             .args([
-                "-v", "error", "-y", "-f", "lavfi", "-i",
-                "testsrc=duration=10:size=64x48:rate=10", "-pix_fmt", "yuv420p",
+                "-v",
+                "error",
+                "-y",
+                "-f",
+                "lavfi",
+                "-i",
+                "testsrc=duration=10:size=64x48:rate=10",
+                "-pix_fmt",
+                "yuv420p",
             ])
             .arg(path)
             .status()
@@ -149,7 +167,11 @@ mod tests {
     }
 
     fn fr(label: &str, pts: i64) -> FrameRef {
-        FrameRef { hash: Hash::from_slice(blake3::hash(label.as_bytes()).as_bytes()), pts, duration: 1 }
+        FrameRef {
+            hash: Hash::from_slice(blake3::hash(label.as_bytes()).as_bytes()),
+            pts,
+            duration: 1,
+        }
     }
 
     fn manifest_of(labels: &[&str]) -> ClipManifest {
@@ -177,7 +199,16 @@ mod tests {
         let ins = [fr("X", 0), fr("Y", 0)];
         let r = insert_frames(&m, 1, &ins).unwrap();
         let hashes: Vec<_> = r.frames.iter().map(|f| f.hash).collect();
-        assert_eq!(hashes, vec![fr("a", 0).hash, fr("X", 0).hash, fr("Y", 0).hash, fr("b", 0).hash, fr("c", 0).hash]);
+        assert_eq!(
+            hashes,
+            vec![
+                fr("a", 0).hash,
+                fr("X", 0).hash,
+                fr("Y", 0).hash,
+                fr("b", 0).hash,
+                fr("c", 0).hash
+            ]
+        );
         assert_eq!(r.frames[3].pts, 3); // renumbered after the splice
         assert!(insert_frames(&m, 9, &ins).is_err());
     }

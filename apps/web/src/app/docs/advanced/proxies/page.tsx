@@ -34,6 +34,7 @@ export default function ProxiesPage() {
         <Card>
           <CardHeader>
             <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+              {/* eslint-disable-next-line jsx-a11y/alt-text */}
               <Image className="size-5 text-brand" />
             </div>
             <CardTitle className="text-base">Smaller Files</CardTitle>

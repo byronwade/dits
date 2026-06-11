@@ -17,7 +17,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { FolderTree, Link2, GitFork, Zap } from "lucide-react";
+import { FolderTree, Link2 } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Submodules & Monorepos",

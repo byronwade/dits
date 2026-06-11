@@ -1,12 +1,12 @@
 //! Diff command implementation.
 
-use crate::store::Repository;
-use crate::util::format_bytes;
+use std::{fs, path::Path};
+
 use anyhow::{Context, Result};
 use console::style;
 use similar::{ChangeTag, TextDiff};
-use std::fs;
-use std::path::Path;
+
+use crate::{store::Repository, util::format_bytes};
 
 /// Show differences between working tree and staged/committed changes.
 pub fn diff(staged: bool, commit: Option<&str>, file: Option<&str>) -> Result<()> {
@@ -129,11 +129,7 @@ fn show_file_diff(repo: &Repository, path: &str, _source: DiffSource) -> Result<
     let full_path = repo.root().join(path);
 
     if !full_path.exists() {
-        println!(
-            "{} {} (deleted)",
-            style("---").red(),
-            style(path).bold()
-        );
+        println!("{} {} (deleted)", style("---").red(), style(path).bold());
         return Ok(());
     }
 
@@ -151,11 +147,7 @@ fn show_file_diff(repo: &Repository, path: &str, _source: DiffSource) -> Result<
 
 /// Show diff for a staged file.
 fn show_staged_file_diff(_repo: &Repository, path: &str) -> Result<()> {
-    println!(
-        "{} {}",
-        style("diff --dits").cyan(),
-        style(format!("a/{} b/{}", path, path)).bold()
-    );
+    println!("{} {}", style("diff --dits").cyan(), style(format!("a/{} b/{}", path, path)).bold());
     println!("{}", style("(staged for commit)").dim());
     println!();
     Ok(())
@@ -163,10 +155,7 @@ fn show_staged_file_diff(_repo: &Repository, path: &str) -> Result<()> {
 
 /// Show diff for a renamed file.
 fn show_rename_diff(_repo: &Repository, old_path: &str, new_path: &str) -> Result<()> {
-    println!(
-        "{}",
-        style("diff --dits").cyan()
-    );
+    println!("{}", style("diff --dits").cyan());
     println!("{} {}", style("rename from").red(), style(old_path).bold());
     println!("{} {}", style("rename to").green(), style(new_path).bold());
     println!("{}", style("(staged for commit)").dim());
@@ -176,10 +165,7 @@ fn show_rename_diff(_repo: &Repository, old_path: &str, new_path: &str) -> Resul
 
 /// Show diff for a type-changed file.
 fn show_type_change_diff(_repo: &Repository, path: &str) -> Result<()> {
-    println!(
-        "{}",
-        style("diff --dits").cyan()
-    );
+    println!("{}", style("diff --dits").cyan());
     println!("{} {}", style("type changed").yellow(), style(path).bold());
     println!("{}", style("(staged for commit)").dim());
     println!();
@@ -188,10 +174,7 @@ fn show_type_change_diff(_repo: &Repository, path: &str) -> Result<()> {
 
 /// Show diff for a mode-changed file.
 fn show_mode_change_diff(_repo: &Repository, path: &str) -> Result<()> {
-    println!(
-        "{}",
-        style("diff --dits").cyan()
-    );
+    println!("{}", style("diff --dits").cyan());
     println!("{} {}", style("mode changed").yellow(), style(path).bold());
     println!("{}", style("(staged for commit)").dim());
     println!();
@@ -226,11 +209,7 @@ fn is_binary_file(path: &Path) -> Result<bool> {
 
 /// Show diff for binary file.
 fn show_binary_diff(repo: &Repository, path: &str, full_path: &Path) -> Result<()> {
-    println!(
-        "{} {}",
-        style("diff --dits").cyan(),
-        style(format!("a/{} b/{}", path, path)).bold()
-    );
+    println!("{} {}", style("diff --dits").cyan(), style(format!("a/{} b/{}", path, path)).bold());
     println!("{}", style("Binary file changed").yellow());
 
     // Get current file size
@@ -262,8 +241,9 @@ fn show_binary_diff(repo: &Repository, path: &str, full_path: &Path) -> Result<(
     // For MP4 files, show additional metadata
     if let Some(ext) = full_path.extension().and_then(|e| e.to_str()) {
         if ["mp4", "mov", "m4v"].contains(&ext.to_lowercase().as_str()) {
-            // MP4 metadata display is skipped for now - the parser doesn't expose duration/codec/resolution
-            // This can be implemented later with ffprobe or enhanced MP4 parsing
+            // MP4 metadata display is skipped for now - the parser doesn't
+            // expose duration/codec/resolution This can be
+            // implemented later with ffprobe or enhanced MP4 parsing
         }
     }
 
@@ -282,11 +262,7 @@ fn show_text_diff(repo: &Repository, path: &str, full_path: &Path) -> Result<()>
         return Ok(());
     }
 
-    println!(
-        "{} {}",
-        style("diff --dits").cyan(),
-        style(format!("a/{} b/{}", path, path)).bold()
-    );
+    println!("{} {}", style("diff --dits").cyan(), style(format!("a/{} b/{}", path, path)).bold());
     println!("{} a/{}", style("---").red(), path);
     println!("{} b/{}", style("+++").green(), path);
 
@@ -348,4 +324,3 @@ fn get_original_content(repo: &Repository, path: &str) -> Option<String> {
     let content = repo.reconstruct_entry_bytes(entry).ok()?;
     String::from_utf8(content).ok()
 }
-

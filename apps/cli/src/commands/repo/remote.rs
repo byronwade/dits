@@ -1,6 +1,7 @@
 //! Remote management CLI commands.
 
-use anyhow::{Context, Result, bail};
+use anyhow::{bail, Context, Result};
+
 use crate::store::remote::{Remote, RemoteStore, RemoteType};
 
 /// List all remotes.
@@ -42,7 +43,8 @@ pub fn remote_add(name: &str, url: &str) -> Result<()> {
     }
 
     let remote = Remote::new(name, url);
-    store.add(remote)
+    store
+        .add(remote)
         .context(format!("Failed to add remote '{}'", name))?;
 
     println!("Added remote '{}' with URL: {}", name, url);
@@ -54,7 +56,8 @@ pub fn remote_remove(name: &str) -> Result<()> {
     let dits_dir = find_dits_dir()?;
     let mut store = RemoteStore::new(&dits_dir);
 
-    store.remove(name)
+    store
+        .remove(name)
         .context(format!("Failed to remove remote '{}'", name))?;
 
     println!("Removed remote '{}'", name);
@@ -66,7 +69,8 @@ pub fn remote_rename(old_name: &str, new_name: &str) -> Result<()> {
     let dits_dir = find_dits_dir()?;
     let mut store = RemoteStore::new(&dits_dir);
 
-    store.rename(old_name, new_name)
+    store
+        .rename(old_name, new_name)
         .context(format!("Failed to rename remote '{}' to '{}'", old_name, new_name))?;
 
     println!("Renamed remote '{}' to '{}'", old_name, new_name);
@@ -78,7 +82,8 @@ pub fn remote_get_url(name: &str, push: bool) -> Result<()> {
     let dits_dir = find_dits_dir()?;
     let store = RemoteStore::new(&dits_dir);
 
-    let remote = store.get(name)
+    let remote = store
+        .get(name)
         .ok_or_else(|| anyhow::anyhow!("Remote '{}' not found", name))?;
 
     if push {
@@ -96,13 +101,15 @@ pub fn remote_set_url(name: &str, url: &str, push: bool) -> Result<()> {
     let mut store = RemoteStore::new(&dits_dir);
 
     if push {
-        let remote = store.get_mut(name)
+        let remote = store
+            .get_mut(name)
             .ok_or_else(|| anyhow::anyhow!("Remote '{}' not found", name))?;
         remote.push_url = Some(url.to_string());
         store.save()?;
         println!("Updated push URL for '{}' to: {}", name, url);
     } else {
-        store.set_url(name, url)
+        store
+            .set_url(name, url)
             .context(format!("Failed to set URL for remote '{}'", name))?;
         println!("Updated URL for '{}' to: {}", name, url);
     }
@@ -124,26 +131,29 @@ pub fn remote(
             let name = name.ok_or_else(|| anyhow::anyhow!("Remote name required"))?;
             let url = url.ok_or_else(|| anyhow::anyhow!("Remote URL required"))?;
             remote_add(name, url)
-        }
+        },
         Some("remove") | Some("rm") => {
             let name = name.ok_or_else(|| anyhow::anyhow!("Remote name required"))?;
             remote_remove(name)
-        }
+        },
         Some("rename") => {
             let old = name.ok_or_else(|| anyhow::anyhow!("Old remote name required"))?;
             let new = url.ok_or_else(|| anyhow::anyhow!("New remote name required"))?;
             remote_rename(old, new)
-        }
+        },
         Some("get-url") => {
             let name = name.ok_or_else(|| anyhow::anyhow!("Remote name required"))?;
             remote_get_url(name, push)
-        }
+        },
         Some("set-url") => {
             let name = name.ok_or_else(|| anyhow::anyhow!("Remote name required"))?;
             let url_val = url.ok_or_else(|| anyhow::anyhow!("URL required"))?;
             remote_set_url(name, url_val, push)
-        }
-        Some(other) => bail!("Unknown remote action: {}. Use add, remove, rename, get-url, set-url, or list.", other),
+        },
+        Some(other) => bail!(
+            "Unknown remote action: {}. Use add, remove, rename, get-url, set-url, or list.",
+            other
+        ),
     }
 }
 
@@ -170,6 +180,4 @@ fn find_dits_dir() -> Result<std::path::PathBuf> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-}
+mod tests {}

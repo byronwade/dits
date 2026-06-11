@@ -1,15 +1,19 @@
-//! Minimal OpenTimelineIO (OTIO) import: reconstruct a FACR manifest from an external timeline.
-//! An imported edit costs ~0 new frames — the timeline only says which already-stored source frames
-//! appear, and in what order. Combined with content-defined boundaries, importing a cut/reorder/trim
-//! reuses almost everything.
+//! Minimal OpenTimelineIO (OTIO) import: reconstruct a FACR manifest from an
+//! external timeline. An imported edit costs ~0 new frames — the timeline only
+//! says which already-stored source frames appear, and in what order. Combined
+//! with content-defined boundaries, importing a cut/reorder/trim reuses almost
+//! everything.
 //!
-//! We parse only the subset we need (tracks → clips → source_range over a named media reference) and
-//! ignore the rest of the schema (tags, effects, markers, transitions).
+//! We parse only the subset we need (tracks → clips → source_range over a named
+//! media reference) and ignore the rest of the schema (tags, effects, markers,
+//! transitions).
 
-use crate::facr::manifest::{ClipManifest, FrameRef};
+use std::collections::HashMap;
+
 use anyhow::{bail, Context, Result};
 use serde::Deserialize;
-use std::collections::HashMap;
+
+use crate::facr::manifest::{ClipManifest, FrameRef};
 
 #[derive(Deserialize)]
 struct Timeline {
@@ -28,13 +32,14 @@ struct Track {
     children: Vec<Item>,
 }
 
-/// A track item. Clips carry a media reference + source range; gaps/others are tolerated and skipped.
+/// A track item. Clips carry a media reference + source range; gaps/others are
+/// tolerated and skipped.
 #[derive(Deserialize)]
 struct Item {
     #[serde(default)]
     media_reference: Option<MediaRef>,
     #[serde(default)]
-    source_range: Option<TimeRange>,
+    source_range:    Option<TimeRange>,
 }
 
 #[derive(Deserialize)]
@@ -46,7 +51,7 @@ struct MediaRef {
 #[derive(Deserialize)]
 struct TimeRange {
     start_time: RationalTime,
-    duration: RationalTime,
+    duration:   RationalTime,
 }
 
 #[derive(Deserialize)]
@@ -58,11 +63,12 @@ struct RationalTime {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ImportClip {
     pub source: String,
-    pub start: usize,
-    pub count: usize,
+    pub start:  usize,
+    pub count:  usize,
 }
 
-/// Parse an OTIO JSON document into the ordered clips of its first clip-bearing video track.
+/// Parse an OTIO JSON document into the ordered clips of its first clip-bearing
+/// video track.
 pub fn parse_otio(json: &str) -> Result<Vec<ImportClip>> {
     let tl: Timeline = serde_json::from_str(json).context("parse OTIO json")?;
     // Use the first track that actually contains clips (the primary video track).
@@ -91,9 +97,9 @@ pub fn parse_otio(json: &str) -> Result<Vec<ImportClip>> {
     Ok(Vec::new())
 }
 
-/// Reconstruct a manifest by concatenating each clip's source frame range, in order. Frames are
-/// reused FrameRefs (already content-addressed in the store) — the reconstruction stores no new
-/// frame content.
+/// Reconstruct a manifest by concatenating each clip's source frame range, in
+/// order. Frames are reused FrameRefs (already content-addressed in the store)
+/// — the reconstruction stores no new frame content.
 pub fn timeline_to_manifest(
     clips: &[ImportClip],
     sources: &HashMap<String, &ClipManifest>,
@@ -141,8 +147,8 @@ mod tests {
         let mut m = ClipManifest::new(64, 48, "png", 1);
         for i in 0..n {
             m.push_frame(FrameRef {
-                hash: Hash::from_slice(blake3::hash(format!("src-{i}").as_bytes()).as_bytes()),
-                pts: i as i64,
+                hash:     Hash::from_slice(blake3::hash(format!("src-{i}").as_bytes()).as_bytes()),
+                pts:      i as i64,
                 duration: 1,
             });
         }

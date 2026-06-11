@@ -1,10 +1,14 @@
 //! .ditsignore file parsing and pattern matching.
 //!
-//! Implements gitignore-style pattern matching for excluding files from version control.
+//! Implements gitignore-style pattern matching for excluding files from version
+//! control.
+
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
 use globset::{Glob, GlobSet, GlobSetBuilder};
-use std::fs;
-use std::path::{Path, PathBuf};
 
 /// Ignore pattern matcher for filtering files.
 #[derive(Debug)]
@@ -14,7 +18,7 @@ pub struct IgnoreMatcher {
     /// Negation patterns (files to include despite matching ignore).
     negate_set: GlobSet,
     /// Root directory for relative pattern matching.
-    root: PathBuf,
+    root:       PathBuf,
 }
 
 impl IgnoreMatcher {
@@ -42,7 +46,7 @@ impl IgnoreMatcher {
         Self {
             ignore_set: builder.build().unwrap_or_else(|_| GlobSet::empty()),
             negate_set: negate_builder.build().unwrap_or_else(|_| GlobSet::empty()),
-            root: root.to_path_buf(),
+            root:       root.to_path_buf(),
         }
     }
 
@@ -88,15 +92,14 @@ impl IgnoreMatcher {
         let pattern = pattern.trim_end_matches('/');
 
         // If pattern starts with /, it's anchored to root
-        if pattern.starts_with('/') {
-            let p = &pattern[1..];
+        if let Some(p) = pattern.strip_prefix('/') {
             patterns.push(p.to_string());
             // Also match as directory pattern
             patterns.push(format!("{}/**", p));
         } else {
             // Pattern can match anywhere in the tree
             patterns.push(format!("**/{}", pattern));
-            patterns.push(format!("{}", pattern));
+            patterns.push(pattern.to_string());
             // Also match as directory pattern
             patterns.push(format!("**/{}/**", pattern));
             patterns.push(format!("{}/**", pattern));
@@ -140,9 +143,11 @@ impl Default for IgnoreMatcher {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::io::Write;
+
     use tempfile::TempDir;
+
+    use super::*;
 
     fn create_test_ignore(dir: &Path, content: &str) {
         let ignore_file = dir.join(".ditsignore");
@@ -237,7 +242,9 @@ mod tests {
     #[test]
     fn test_common_media_patterns() {
         let dir = TempDir::new().unwrap();
-        create_test_ignore(dir.path(), r#"
+        create_test_ignore(
+            dir.path(),
+            r#"
 # Build artifacts
 *.o
 *.a
@@ -255,7 +262,8 @@ Thumbs.db
 # Generated renders
 renders/
 exports/
-"#);
+"#,
+        );
         let matcher = IgnoreMatcher::new(dir.path());
 
         assert!(matcher.is_ignored_str("main.o"));

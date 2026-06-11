@@ -23,9 +23,6 @@ import {
   Server,
   Cloud,
   Shield,
-  Database,
-  Users,
-  Settings,
   CheckCircle
 } from "lucide-react";
 

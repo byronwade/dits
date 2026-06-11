@@ -1,29 +1,35 @@
 //! Stash command implementation.
 
-use crate::core::{chunk_data_with_refs, ChunkerConfig, FileStatus, Hash, Hasher, Index, IndexEntry, Manifest, ManifestEntry};
-use crate::store::Repository;
+use std::{fs, path::Path};
+
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use console::style;
 use serde::{Deserialize, Serialize};
-use std::fs;
-use std::path::Path;
+
+use crate::{
+    core::{
+        chunk_data_with_refs, ChunkerConfig, FileStatus, Hash, Hasher, Index, IndexEntry, Manifest,
+        ManifestEntry,
+    },
+    store::Repository,
+};
 
 /// A stash entry stores uncommitted changes.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StashEntry {
     /// Unique identifier for this stash.
-    pub id: u64,
+    pub id:                u64,
     /// When the stash was created.
-    pub timestamp: DateTime<Utc>,
+    pub timestamp:         DateTime<Utc>,
     /// User-provided message (optional).
-    pub message: Option<String>,
+    pub message:           Option<String>,
     /// The commit HEAD was at when stash was created.
-    pub base_commit: Option<Hash>,
+    pub base_commit:       Option<Hash>,
     /// The branch that was active when stash was created.
-    pub branch: Option<String>,
+    pub branch:            Option<String>,
     /// Manifest hash for the stashed index state.
-    pub index_manifest: Hash,
+    pub index_manifest:    Hash,
     /// Manifest hash for the stashed working tree state.
     pub worktree_manifest: Hash,
 }
@@ -89,11 +95,7 @@ impl StashList {
 }
 
 /// Stash command: save, pop, list, or drop stashed changes.
-pub fn stash(
-    action: Option<&str>,
-    message: Option<&str>,
-    index: Option<usize>,
-) -> Result<()> {
+pub fn stash(action: Option<&str>, message: Option<&str>, index: Option<usize>) -> Result<()> {
     let repo = Repository::open(Path::new("."))
         .context("Not a Dits repository (or any parent directory)")?;
 
@@ -103,38 +105,41 @@ pub fn stash(
         None | Some("push") | Some("save") => {
             // Save current changes to stash
             stash_push(&repo, &stash_path, message)?;
-        }
+        },
         Some("pop") => {
             // Apply and remove top stash
             let idx = index.unwrap_or(0);
             stash_pop(&repo, &stash_path, idx)?;
-        }
+        },
         Some("apply") => {
             // Apply stash without removing it
             let idx = index.unwrap_or(0);
             stash_apply(&repo, &stash_path, idx, false)?;
-        }
+        },
         Some("list") => {
             // List all stashes
             stash_list(&stash_path)?;
-        }
+        },
         Some("drop") => {
             // Drop a specific stash
             let idx = index.unwrap_or(0);
             stash_drop(&stash_path, idx)?;
-        }
+        },
         Some("clear") => {
             // Clear all stashes
             stash_clear(&stash_path)?;
-        }
+        },
         Some("show") => {
             // Show stash contents
             let idx = index.unwrap_or(0);
             stash_show(&repo, &stash_path, idx)?;
-        }
+        },
         Some(other) => {
-            anyhow::bail!("Unknown stash action: {}. Use push, pop, apply, list, drop, clear, or show.", other);
-        }
+            anyhow::bail!(
+                "Unknown stash action: {}. Use push, pop, apply, list, drop, clear, or show.",
+                other
+            );
+        },
     }
 
     Ok(())
@@ -147,7 +152,10 @@ fn stash_push(repo: &Repository, stash_path: &Path, message: Option<&str>) -> Re
     let index = Index::from_json(&json)?;
 
     // Check if there are any changes to stash
-    let has_staged = index.entries.values().any(|e| e.status != FileStatus::Unchanged);
+    let has_staged = index
+        .entries
+        .values()
+        .any(|e| e.status != FileStatus::Unchanged);
 
     // Check for unstaged changes in working tree
     let head_hash = repo.head()?;
@@ -206,12 +214,8 @@ fn stash_push(repo: &Repository, stash_path: &Path, message: Option<&str>) -> Re
                 repo.objects().store_chunk(chunk)?;
             }
 
-            let manifest_entry = ManifestEntry::new(
-                path.clone(),
-                data.len() as u64,
-                content_hash,
-                chunk_refs,
-            );
+            let manifest_entry =
+                ManifestEntry::new(path.clone(), data.len() as u64, content_hash, chunk_refs);
             worktree_manifest.add(manifest_entry);
         }
     }
@@ -220,12 +224,12 @@ fn stash_push(repo: &Repository, stash_path: &Path, message: Option<&str>) -> Re
     // Load stash list and add new entry
     let mut stash_list = StashList::load(stash_path)?;
     let entry = StashEntry {
-        id: stash_list.next_id,
-        timestamp: Utc::now(),
-        message: message.map(String::from),
-        base_commit: head_hash,
-        branch: repo.current_branch()?,
-        index_manifest: index_manifest_hash,
+        id:                stash_list.next_id,
+        timestamp:         Utc::now(),
+        message:           message.map(String::from),
+        base_commit:       head_hash,
+        branch:            repo.current_branch()?,
+        index_manifest:    index_manifest_hash,
         worktree_manifest: worktree_manifest_hash,
     };
     stash_list.next_id += 1;
@@ -283,11 +287,7 @@ fn stash_push(repo: &Repository, stash_path: &Path, message: Option<&str>) -> Re
     }
 
     let msg = message.unwrap_or("WIP on stash");
-    println!(
-        "{} Saved working directory and index state: {}",
-        style("->").green().bold(),
-        msg
-    );
+    println!("{} Saved working directory and index state: {}", style("->").green().bold(), msg);
 
     Ok(())
 }
@@ -326,11 +326,7 @@ fn stash_apply(repo: &Repository, stash_path: &Path, index: usize, remove: bool)
         fs::write(&full_path, &data)?;
         restored += 1;
 
-        println!(
-            "{} Restored '{}'",
-            style("R").green().bold(),
-            style(path).cyan()
-        );
+        println!("{} Restored '{}'", style("R").green().bold(), style(path).cyan());
     }
 
     // Load and apply index manifest changes
@@ -388,7 +384,8 @@ fn stash_list(stash_path: &Path) -> Result<()> {
 
     for (i, entry) in stash_list.entries.iter().enumerate() {
         let branch_info = entry.branch.as_deref().unwrap_or("(no branch)");
-        let commit_info = entry.base_commit
+        let commit_info = entry
+            .base_commit
             .map(|h| h.to_hex()[..8].to_string())
             .unwrap_or_else(|| "(no commit)".to_string());
 
@@ -412,11 +409,7 @@ fn stash_drop(stash_path: &Path, index: usize) -> Result<()> {
 
     if stash_list.drop(index).is_some() {
         stash_list.save(stash_path)?;
-        println!(
-            "{} Dropped stash@{{{}}}",
-            style("->").green().bold(),
-            index
-        );
+        println!("{} Dropped stash@{{{}}}", style("->").green().bold(), index);
     } else {
         anyhow::bail!("stash@{{{}}}: No stash found", index);
     }
@@ -451,14 +444,11 @@ fn stash_clear(stash_path: &Path) -> Result<()> {
 fn stash_show(repo: &Repository, stash_path: &Path, index: usize) -> Result<()> {
     let stash_list = StashList::load(stash_path)?;
 
-    let entry = stash_list.get(index)
+    let entry = stash_list
+        .get(index)
         .with_context(|| format!("stash@{{{}}}: No stash found", index))?;
 
-    println!(
-        "{} stash@{{{}}}",
-        style("Stash:").bold(),
-        index
-    );
+    println!("{} stash@{{{}}}", style("Stash:").bold(), index);
 
     if let Some(ref msg) = entry.message {
         println!("  Message: {}", msg);

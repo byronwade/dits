@@ -2,14 +2,15 @@
 //!
 //! These tests cover the full workflow of the version control system.
 
-use dits::core::{
-    chunk_data_with_refs, Author, Chunk, ChunkRef, ChunkerConfig, Commit, FileType, Hash,
-    Hasher, Index, IndexEntry, Manifest, ManifestEntry,
+use std::{fs, io::Write, path::Path};
+
+use dits::{
+    core::{
+        chunk_data_with_refs, Author, Chunk, ChunkRef, ChunkerConfig, Commit, FileType, Hash,
+        Hasher, Index, IndexEntry, Manifest, ManifestEntry,
+    },
+    store::Repository,
 };
-use dits::store::Repository;
-use std::fs;
-use std::io::Write;
-use std::path::Path;
 use tempfile::TempDir;
 
 // ============================================================================
@@ -111,7 +112,7 @@ mod hash_tests {
     #[test]
     fn test_hash_short() {
         let hash = Hasher::hash(b"test");
-        let short = hash.short();  // short() returns first 8 chars
+        let short = hash.short(); // short() returns first 8 chars
         assert_eq!(short.len(), 8);
         assert!(hash.to_hex().starts_with(&short));
     }
@@ -246,7 +247,7 @@ mod manifest_tests {
             vec![ChunkRef::new(Hash::ZERO, 0, 100)],
         );
 
-        manifest.add(entry);  // add takes just the entry
+        manifest.add(entry); // add takes just the entry
         let retrieved = manifest.get("test.txt").unwrap();
         assert_eq!(retrieved.size, 100);
     }
@@ -271,7 +272,7 @@ mod manifest_tests {
             vec![ChunkRef::new(Hasher::hash(b"chunk"), 0, 100)],
         ));
 
-        let json = manifest.to_json();  // returns String, not Result
+        let json = manifest.to_json(); // returns String, not Result
         let parsed = Manifest::from_json(&json).unwrap();
 
         assert_eq!(manifest.len(), parsed.len());
@@ -293,14 +294,14 @@ mod index_tests {
             "test.txt".to_string(),
             Hasher::hash(b"content"),
             100,
-            0,  // mtime
+            0, // mtime
             0o644,
             FileType::Regular,
             String::new(),
-            vec![],  // chunks
+            vec![], // chunks
         );
 
-        index.stage(entry);  // stage takes just the entry, not (path, entry)
+        index.stage(entry); // stage takes just the entry, not (path, entry)
         assert!(index.get("test.txt").is_some());
     }
 
@@ -312,15 +313,15 @@ mod index_tests {
             "file.txt".to_string(),
             Hasher::hash(b"data"),
             50,
-            0,  // mtime
+            0, // mtime
             0o644,
             FileType::Regular,
             String::new(),
-            vec![],  // chunks
+            vec![], // chunks
         );
         index.stage(entry);
 
-        let json = index.to_json();  // returns String, not Result
+        let json = index.to_json(); // returns String, not Result
         let loaded = Index::from_json(&json).unwrap();
 
         assert_eq!(index.get("file.txt").unwrap().size, loaded.get("file.txt").unwrap().size);
@@ -338,10 +339,10 @@ mod commit_tests {
     fn test_commit_creation() {
         let manifest_hash = Hasher::hash(b"manifest");
         let commit = Commit::new(
-            None,                        // parent
-            manifest_hash,               // manifest
-            "Initial commit",            // message
-            Author::default(),           // author
+            None,              // parent
+            manifest_hash,     // manifest
+            "Initial commit",  // message
+            Author::default(), // author
         );
 
         assert_eq!(commit.manifest, manifest_hash);
@@ -355,10 +356,10 @@ mod commit_tests {
         let manifest_hash = Hasher::hash(b"manifest");
 
         let commit = Commit::new(
-            Some(parent_hash),           // parent
-            manifest_hash,               // manifest
-            "Second commit",             // message
-            Author::default(),           // author
+            Some(parent_hash), // parent
+            manifest_hash,     // manifest
+            "Second commit",   // message
+            Author::default(), // author
         );
 
         assert_eq!(commit.parent, Some(parent_hash));
@@ -367,13 +368,13 @@ mod commit_tests {
     #[test]
     fn test_commit_json_roundtrip() {
         let commit = Commit::new(
-            Some(Hasher::hash(b"p")),    // parent
-            Hasher::hash(b"m"),          // manifest
-            "Message",                   // message
-            Author::default(),           // author
+            Some(Hasher::hash(b"p")), // parent
+            Hasher::hash(b"m"),       // manifest
+            "Message",                // message
+            Author::default(),        // author
         );
 
-        let json = commit.to_json();  // returns String, not Result
+        let json = commit.to_json(); // returns String, not Result
         let parsed = Commit::from_json(&json).unwrap();
 
         assert_eq!(commit.manifest, parsed.manifest);
@@ -495,11 +496,7 @@ mod workflow_tests {
         repo.add("clip.mov").unwrap();
         repo.commit("initial").unwrap();
 
-        fs::rename(
-            temp.path().join("clip.mov"),
-            temp.path().join("clip_renamed.mov"),
-        )
-        .unwrap();
+        fs::rename(temp.path().join("clip.mov"), temp.path().join("clip_renamed.mov")).unwrap();
 
         let status = repo.status().unwrap();
         assert_eq!(
@@ -522,10 +519,7 @@ mod workflow_tests {
 
         let status = repo.status().unwrap();
         assert!(status.staged_renamed.is_empty());
-        assert!(status
-            .staged_new
-            .iter()
-            .any(|p| p == "base_copy.txt"));
+        assert!(status.staged_new.iter().any(|p| p == "base_copy.txt"));
     }
 
     #[test]
@@ -663,9 +657,9 @@ mod integrity_tests {
 // ============================================================================
 
 mod concurrent_tests {
+    use std::{sync::Arc, thread};
+
     use super::*;
-    use std::sync::Arc;
-    use std::thread;
 
     #[test]
     fn test_concurrent_reads() {
@@ -711,11 +705,7 @@ mod edge_case_tests {
     #[test]
     fn test_deeply_nested_file() {
         let (temp, repo) = create_test_repo();
-        create_file(
-            temp.path(),
-            "a/b/c/d/e/f/g/h/i/j/deep.txt",
-            b"Deep content",
-        );
+        create_file(temp.path(), "a/b/c/d/e/f/g/h/i/j/deep.txt", b"Deep content");
 
         let result = repo.add("a/b/c/d/e/f/g/h/i/j/deep.txt");
         assert!(result.is_ok());
@@ -758,8 +748,9 @@ mod edge_case_tests {
 // ============================================================================
 
 mod performance_tests {
-    use super::*;
     use std::time::Instant;
+
+    use super::*;
 
     #[test]
     fn test_chunking_performance() {
@@ -782,7 +773,8 @@ mod performance_tests {
         let elapsed = start.elapsed();
 
         // BLAKE3 is fast, but debug builds are slower
-        // Allow generous time - actual performance testing should be done in release mode
+        // Allow generous time - actual performance testing should be done in release
+        // mode
         assert!(
             elapsed.as_secs() < 2,
             "Hashing 10MB should complete in under 2 seconds even in debug mode"
@@ -818,7 +810,11 @@ mod log_tests {
         let (temp, repo) = create_test_repo();
 
         for i in 0..5 {
-            create_file(temp.path(), &format!("file{}.txt", i), format!("Content {}", i).as_bytes());
+            create_file(
+                temp.path(),
+                &format!("file{}.txt", i),
+                format!("Content {}", i).as_bytes(),
+            );
             repo.add(&format!("file{}.txt", i)).unwrap();
             repo.commit(&format!("Commit {}", i)).unwrap();
         }

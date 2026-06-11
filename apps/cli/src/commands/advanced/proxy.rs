@@ -2,11 +2,13 @@
 //!
 //! Commands for generating and managing video proxy files.
 
-use dits::proxy::{ProxyConfig, ProxyGenerator, ProxyStore, ProxyResolution, ProxyCodec};
-use dits::store::Repository;
-use dits::core::Hasher;
-use anyhow::{Context, Result, bail};
+use anyhow::{bail, Context, Result};
 use console::style;
+use dits::{
+    core::Hasher,
+    proxy::{ProxyCodec, ProxyConfig, ProxyGenerator, ProxyResolution, ProxyStore},
+    store::Repository,
+};
 use indicatif::{ProgressBar, ProgressStyle};
 
 /// Generate proxies for video files.
@@ -21,12 +23,11 @@ pub fn proxy_generate(
     let repo = Repository::open(&cwd).context("Not a dits repository")?;
 
     // Check FFmpeg availability
-    let ffmpeg_version = ProxyGenerator::check_ffmpeg()
-        .context("FFmpeg is required for proxy generation")?;
+    let ffmpeg_version =
+        ProxyGenerator::check_ffmpeg().context("FFmpeg is required for proxy generation")?;
     println!("{} FFmpeg: {}", style("✓").green(), ffmpeg_version);
 
-    ProxyGenerator::check_ffprobe()
-        .context("FFprobe is required for proxy generation")?;
+    ProxyGenerator::check_ffprobe().context("FFprobe is required for proxy generation")?;
 
     // Initialize proxy store
     let proxy_store = ProxyStore::new(repo.dits_dir());
@@ -69,7 +70,7 @@ pub fn proxy_generate(
 
     for file_path in &video_files {
         let display_path = if file_path.len() > 50 {
-            format!("...{}", &file_path[file_path.len()-47..])
+            format!("...{}", &file_path[file_path.len() - 47..])
         } else {
             file_path.clone()
         };
@@ -77,11 +78,7 @@ pub fn proxy_generate(
         // Check if file exists
         let full_path = cwd.join(file_path);
         if !full_path.exists() {
-            println!(
-                "  {} {} (file not found)",
-                style("✗").red(),
-                display_path
-            );
+            println!("  {} {} (file not found)", style("✗").red(), display_path);
             error_count += 1;
             continue;
         }
@@ -91,7 +88,7 @@ pub fn proxy_generate(
         pb.set_style(
             ProgressStyle::default_spinner()
                 .template("{spinner:.blue} {msg}")
-                .unwrap()
+                .unwrap(),
         );
         pb.set_message(format!("Generating proxy for {}...", display_path));
         pb.enable_steady_tick(std::time::Duration::from_millis(100));
@@ -135,17 +132,12 @@ pub fn proxy_generate(
                     result.proxy_duration
                 );
                 success_count += 1;
-            }
+            },
             Err(e) => {
                 pb.finish_and_clear();
-                println!(
-                    "  {} {} ({})",
-                    style("✗").red(),
-                    display_path,
-                    e
-                );
+                println!("  {} {} ({})", style("✗").red(), display_path, e);
                 error_count += 1;
-            }
+            },
         }
     }
 
@@ -278,16 +270,13 @@ pub fn proxy_delete(files: &[String], all: bool) -> Result<()> {
             proxy_store.delete(&variant.parent_hash, variant.variant_type)?;
         }
 
-        println!(
-            "{} Deleted {} proxy variant(s)",
-            style("✓").green(),
-            count
-        );
+        println!("{} Deleted {} proxy variant(s)", style("✓").green(), count);
     } else if files.is_empty() {
         bail!("No files specified. Use --all to delete all proxies.");
     } else {
         // Delete proxies for specific files
-        // We need to find the content hash of the original file to match with proxy parent_hash
+        // We need to find the content hash of the original file to match with proxy
+        // parent_hash
         let mut deleted_count = 0;
 
         for file_path in files {
@@ -320,14 +309,10 @@ pub fn proxy_delete(files: &[String], all: bool) -> Result<()> {
                 .collect();
 
             if matching.is_empty() {
-                println!(
-                    "  {} {} (no proxies found)",
-                    style("!").yellow(),
-                    file_path
-                );
+                println!("  {} {} (no proxies found)", style("!").yellow(), file_path);
             } else {
                 for variant in &matching {
-                    proxy_store.delete(&variant.parent_hash, variant.variant_type.clone())?;
+                    proxy_store.delete(&variant.parent_hash, variant.variant_type)?;
                     deleted_count += 1;
                 }
                 println!(
@@ -405,8 +390,8 @@ fn find_all_video_files(repo: &Repository) -> Result<Vec<String>> {
 
     let video_files: Vec<String> = manifest
         .entries
-        .iter()
-        .filter_map(|(path, _entry)| {
+        .keys()
+        .filter_map(|path| {
             let path_lower = path.to_lowercase();
             if video_extensions.iter().any(|ext| path_lower.ends_with(ext)) {
                 Some(path.clone())

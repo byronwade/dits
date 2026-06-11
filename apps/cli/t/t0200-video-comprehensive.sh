@@ -17,6 +17,7 @@ This test covers every aspect of video handling including:
 '
 
 . ./test-lib.sh
+. "$TEST_DIRECTORY/lib-video.sh"
 
 # ============================================================================
 # BASIC VIDEO FORMAT SUPPORT

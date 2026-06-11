@@ -1,8 +1,10 @@
 //! Cache statistics command.
 
-use crate::store::Repository;
-use anyhow::Result;
 use std::path::Path;
+
+use anyhow::Result;
+
+use crate::store::Repository;
 
 /// Show cache statistics.
 pub fn cache_stats() -> Result<()> {
@@ -24,13 +26,11 @@ pub fn cache_stats() -> Result<()> {
     let mut total_size = 0u64;
     let mut file_count = 0u64;
 
-    for entry in walkdir::WalkDir::new(&cache_dir) {
-        if let Ok(entry) = entry {
-            if entry.file_type().is_file() {
-                if let Ok(meta) = entry.metadata() {
-                    total_size += meta.len();
-                    file_count += 1;
-                }
+    for entry in walkdir::WalkDir::new(&cache_dir).into_iter().flatten() {
+        if entry.file_type().is_file() {
+            if let Ok(meta) = entry.metadata() {
+                total_size += meta.len();
+                file_count += 1;
             }
         }
     }

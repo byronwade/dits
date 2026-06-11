@@ -1,9 +1,11 @@
 //! Create a commit.
 
-use crate::store::Repository;
+use std::path::Path;
+
 use anyhow::{Context, Result};
 use console::style;
-use std::path::Path;
+
+use crate::store::Repository;
 
 /// Create a commit from staged changes.
 pub fn commit(message: &str) -> Result<()> {
@@ -25,21 +27,17 @@ pub fn commit(message: &str) -> Result<()> {
 
             // Get stats
             let stats = repo.stats()?;
-            println!(
-                "  {} file(s) committed, {} total chunks",
-                files_committed,
-                stats.chunk_count
-            );
+            println!("  {} file(s) committed, {} total chunks", files_committed, stats.chunk_count);
 
             Ok(())
-        }
+        },
         Err(crate::store::repository::RepoError::NothingToCommit) => {
             println!(
                 "{} Nothing to commit (use \"dits add\" to stage files)",
                 style("!").yellow().bold()
             );
             Ok(())
-        }
+        },
         Err(e) => Err(e.into()),
     }
 }

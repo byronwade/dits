@@ -1,12 +1,14 @@
 //! `dits facr-demo` — live demonstration of FACR frame-level deduplication.
 //!
-//! Builds a synthetic clip, commits it into a content-addressed frame store, re-grades
-//! a few frames, commits again, and reports how little storage the second version cost.
-//! This makes the FACR thesis tangible without needing ffmpeg or real footage.
+//! Builds a synthetic clip, commits it into a content-addressed frame store,
+//! re-grades a few frames, commits again, and reports how little storage the
+//! second version cost. This makes the FACR thesis tangible without needing
+//! ffmpeg or real footage.
 
-use crate::facr::{commit_clip, diff_manifests, DeflateRawCodec, FrameCodec, RawFrame};
 use anyhow::{Context, Result};
 use console::style;
+
+use crate::facr::{commit_clip, diff_manifests, DeflateRawCodec, FrameCodec, RawFrame};
 
 fn synthetic_frames(n: usize, regraded: &[usize]) -> Vec<RawFrame> {
     (0..n)
@@ -19,11 +21,7 @@ fn synthetic_frames(n: usize, regraded: &[usize]) -> Vec<RawFrame> {
             if regraded.contains(&i) {
                 data[4] = 0xFF;
             }
-            RawFrame {
-                width: 8,
-                height: 8,
-                data,
-            }
+            RawFrame { width: 8, height: 8, data }
         })
         .collect()
 }
@@ -31,7 +29,9 @@ fn synthetic_frames(n: usize, regraded: &[usize]) -> Vec<RawFrame> {
 /// Run the FACR dedup demonstration.
 pub fn facr_demo(frames: usize, regrade: usize) -> Result<()> {
     let regrade = regrade.min(frames);
-    let regraded: Vec<usize> = (0..regrade).map(|k| (k * frames / regrade.max(1)).min(frames.saturating_sub(1))).collect();
+    let regraded: Vec<usize> = (0..regrade)
+        .map(|k| (k * frames / regrade.max(1)).min(frames.saturating_sub(1)))
+        .collect();
 
     let dir = std::env::temp_dir().join(format!("dits-facr-demo-{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&dir).context("create temp store dir")?;

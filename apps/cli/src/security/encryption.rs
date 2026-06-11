@@ -1,11 +1,12 @@
 //! Convergent chunk encryption using AES-256-GCM.
 
 use aes_gcm::{
-    Aes256Gcm, Nonce, KeyInit,
-    aead::{Aead, generic_array::GenericArray},
+    aead::{generic_array::GenericArray, Aead},
+    Aes256Gcm, KeyInit, Nonce,
 };
 use serde::{Deserialize, Serialize};
-use super::keys::{UserSecret, derive_dek, generate_random_bytes};
+
+use super::keys::{derive_dek, generate_random_bytes, UserSecret};
 use crate::core::Hash;
 
 /// Encrypted chunk with all necessary data for decryption.
@@ -14,9 +15,9 @@ pub struct EncryptedChunk {
     /// BLAKE3 hash of plaintext (used for deduplication lookup).
     pub content_hash: Hash,
     /// Random 12-byte nonce for GCM.
-    pub nonce: [u8; 12],
+    pub nonce:        [u8; 12],
     /// Encrypted data (ciphertext + GCM auth tag).
-    pub ciphertext: Vec<u8>,
+    pub ciphertext:   Vec<u8>,
 }
 
 impl EncryptedChunk {
@@ -96,7 +97,7 @@ pub fn decrypt_chunk(
     if computed_hash.as_bytes() != encrypted.content_hash.as_bytes() {
         return Err(EncryptionError::HashMismatch {
             expected: encrypted.content_hash.to_hex(),
-            actual: hex::encode(computed_hash.as_bytes()),
+            actual:   hex::encode(computed_hash.as_bytes()),
         });
     }
 
@@ -151,7 +152,6 @@ pub enum EncryptionError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::security::keys::Argon2Params;
 
     fn test_user_secret() -> UserSecret {
         UserSecret::from_bytes([42u8; 32])

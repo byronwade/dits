@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Proxy codec options.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ProxyCodec {
     /// ProRes 422 Proxy - Apple ecosystem, excellent quality
     #[serde(rename = "prores_proxy")]
@@ -19,6 +19,7 @@ pub enum ProxyCodec {
     DnxhrSQ,
     /// H.264 - Universal compatibility, smaller files
     #[serde(rename = "h264")]
+    #[default]
     H264,
     /// H.265/HEVC - Better compression than H.264
     #[serde(rename = "h265")]
@@ -45,16 +46,8 @@ impl ProxyCodec {
             ProxyCodec::ProResLT => vec![("-profile:v", "1")],    // LT profile
             ProxyCodec::DnxhrLB => vec![("-profile:v", "dnxhr_lb")],
             ProxyCodec::DnxhrSQ => vec![("-profile:v", "dnxhr_sq")],
-            ProxyCodec::H264 => vec![
-                ("-preset", "fast"),
-                ("-crf", "23"),
-                ("-pix_fmt", "yuv420p"),
-            ],
-            ProxyCodec::H265 => vec![
-                ("-preset", "fast"),
-                ("-crf", "28"),
-                ("-pix_fmt", "yuv420p"),
-            ],
+            ProxyCodec::H264 => vec![("-preset", "fast"), ("-crf", "23"), ("-pix_fmt", "yuv420p")],
+            ProxyCodec::H265 => vec![("-preset", "fast"), ("-crf", "28"), ("-pix_fmt", "yuv420p")],
         }
     }
 
@@ -80,18 +73,12 @@ impl ProxyCodec {
     }
 }
 
-impl Default for ProxyCodec {
-    fn default() -> Self {
-        // H.264 is the most universally compatible
-        ProxyCodec::H264
-    }
-}
-
 /// Proxy resolution options.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ProxyResolution {
     /// 1920x1080 (Full HD)
     #[serde(rename = "1080p")]
+    #[default]
     HD1080,
     /// 1280x720 (HD)
     #[serde(rename = "720p")]
@@ -109,7 +96,8 @@ pub enum ProxyResolution {
 
 impl ProxyResolution {
     /// Get FFmpeg scale filter for this resolution.
-    /// Returns None for relative resolutions (Half, Quarter) which need source dimensions.
+    /// Returns None for relative resolutions (Half, Quarter) which need source
+    /// dimensions.
     pub fn ffmpeg_scale(&self) -> Option<&'static str> {
         match self {
             ProxyResolution::HD1080 => Some("scale=1920:1080:force_original_aspect_ratio=decrease"),
@@ -120,7 +108,8 @@ impl ProxyResolution {
         }
     }
 
-    /// Get FFmpeg scale filter for relative resolutions given source dimensions.
+    /// Get FFmpeg scale filter for relative resolutions given source
+    /// dimensions.
     pub fn ffmpeg_scale_relative(&self, width: u32, height: u32) -> String {
         match self {
             ProxyResolution::Half => format!("scale={}:{}", width / 2, height / 2),
@@ -149,12 +138,6 @@ impl ProxyResolution {
             ProxyResolution::Half => "half",
             ProxyResolution::Quarter => "quarter",
         }
-    }
-}
-
-impl Default for ProxyResolution {
-    fn default() -> Self {
-        ProxyResolution::HD1080
     }
 }
 
@@ -212,14 +195,14 @@ fn default_duration_tolerance() -> u32 {
 impl Default for ProxyConfig {
     fn default() -> Self {
         Self {
-            codec: ProxyCodec::default(),
-            resolution: ProxyResolution::default(),
-            preserve_timecode: true,
-            copy_audio: true,
-            lut_path: None,
-            force_cfr: false,
-            generate_thumbnail: true,
-            thumbnail_position: -1.0,
+            codec:                 ProxyCodec::default(),
+            resolution:            ProxyResolution::default(),
+            preserve_timecode:     true,
+            copy_audio:            true,
+            lut_path:              None,
+            force_cfr:             false,
+            generate_thumbnail:    true,
+            thumbnail_position:    -1.0,
             duration_tolerance_ms: 1,
         }
     }
@@ -228,11 +211,7 @@ impl Default for ProxyConfig {
 impl ProxyConfig {
     /// Create a config optimized for fast editing (smaller files).
     pub fn fast_edit() -> Self {
-        Self {
-            codec: ProxyCodec::H264,
-            resolution: ProxyResolution::HD720,
-            ..Default::default()
-        }
+        Self { codec: ProxyCodec::H264, resolution: ProxyResolution::HD720, ..Default::default() }
     }
 
     /// Create a config optimized for quality (ProRes).
@@ -246,11 +225,7 @@ impl ProxyConfig {
 
     /// Create a config for offline editing (smallest files).
     pub fn offline() -> Self {
-        Self {
-            codec: ProxyCodec::H264,
-            resolution: ProxyResolution::QHD540,
-            ..Default::default()
-        }
+        Self { codec: ProxyCodec::H264, resolution: ProxyResolution::QHD540, ..Default::default() }
     }
 }
 

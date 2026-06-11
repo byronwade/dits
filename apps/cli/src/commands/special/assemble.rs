@@ -1,9 +1,10 @@
 //! Assemble command - reassemble video from segments.
 
-use crate::segment::{Segmenter, VideoManifest};
+use std::{fs, path::Path};
+
 use anyhow::{bail, Result};
-use std::fs;
-use std::path::Path;
+
+use crate::segment::{Segmenter, VideoManifest};
 
 pub fn assemble(segments_dir: &str, output: &str) -> Result<()> {
     let segments_path = Path::new(segments_dir);

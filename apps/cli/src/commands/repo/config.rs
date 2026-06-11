@@ -1,11 +1,13 @@
 //! Config command implementation.
 
-use dits::config::{Config, global_config_path};
-use dits::store::Repository;
+use std::{fs, path::Path};
+
 use anyhow::Result;
 use console::style;
-use std::fs;
-use std::path::Path;
+use dits::{
+    config::{global_config_path, Config},
+    store::Repository,
+};
 
 /// Get the local config path (repository-specific).
 fn local_config_path(repo: &Repository) -> std::path::PathBuf {
@@ -39,13 +41,12 @@ pub fn config(
                     fs::create_dir_all(parent)?;
                 }
                 path
-            }
+            },
             Err(e) => return Err(e.into()),
         }
     };
 
-    let mut config = Config::load(&config_path)
-        .map_err(|e| anyhow::anyhow!("{}", e))?;
+    let mut config = Config::load(&config_path).map_err(|e| anyhow::anyhow!("{}", e))?;
 
     if list {
         // List all config values
@@ -64,50 +65,37 @@ pub fn config(
         (Some(k), Some(v), false) => {
             // Set value
             config.set(k, v).map_err(|e| anyhow::anyhow!("{}", e))?;
-            config.save(&config_path).map_err(|e| anyhow::anyhow!("{}", e))?;
-            println!(
-                "{} Set {}={}",
-                style("->").green().bold(),
-                style(k).cyan(),
-                v
-            );
-        }
+            config
+                .save(&config_path)
+                .map_err(|e| anyhow::anyhow!("{}", e))?;
+            println!("{} Set {}={}", style("->").green().bold(), style(k).cyan(), v);
+        },
         (Some(_), Some(_), true) => {
             // Can't both set and unset
             anyhow::bail!("Cannot both set and unset a value");
-        }
+        },
         (Some(k), None, true) => {
             // Unset value
             if config.unset(k).map_err(|e| anyhow::anyhow!("{}", e))? {
-                config.save(&config_path).map_err(|e| anyhow::anyhow!("{}", e))?;
-                println!(
-                    "{} Unset {}",
-                    style("->").green().bold(),
-                    style(k).cyan()
-                );
+                config
+                    .save(&config_path)
+                    .map_err(|e| anyhow::anyhow!("{}", e))?;
+                println!("{} Unset {}", style("->").green().bold(), style(k).cyan());
             } else {
-                println!(
-                    "{} Key '{}' was not set",
-                    style("!").yellow().bold(),
-                    k
-                );
+                println!("{} Key '{}' was not set", style("!").yellow().bold(), k);
             }
-        }
+        },
         (Some(k), None, false) => {
             // Get value
             if let Some(v) = config.get(k) {
                 println!("{}", v);
             } else {
-                println!(
-                    "{} Key '{}' not found",
-                    style("!").yellow().bold(),
-                    k
-                );
+                println!("{} Key '{}' not found", style("!").yellow().bold(), k);
             }
-        }
+        },
         (None, Some(_), _) => {
             anyhow::bail!("Key required when setting a value");
-        }
+        },
         (None, None, _) => {
             // List all (same as --list)
             let items = config.list();
@@ -118,7 +106,7 @@ pub fn config(
                     println!("{}={}", style(&k).cyan(), v);
                 }
             }
-        }
+        },
     }
 
     Ok(())

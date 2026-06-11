@@ -150,7 +150,6 @@ export function CommitGraph({ commits, className }: CommitGraphProps) {
                 <div className="relative z-10">
                     {commits.map((commit, index) => {
                         const topOffset = TOP_PADDING + index * NODE_SPACING;
-                        const nodeY = getNodeY(index);
                         const isHead = commit.labels?.some(l => l.includes("HEAD"));
                         
                         return (

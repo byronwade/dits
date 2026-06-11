@@ -92,7 +92,7 @@ export function BenchmarkTable({
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {rows.map((row, idx) => (
+                    {rows.map((row) => (
                         <TableRow
                             key={row.label}
                             className={cn(

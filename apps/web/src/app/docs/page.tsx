@@ -166,7 +166,7 @@ export default function DocsPage() {
               <li>Git LFS is a bandaid, not a solution</li>
               <li>Large files get re-uploaded entirely for tiny changes</li>
               <li>No deduplication across versions or projects</li>
-              <li>Manual versioning with "final_v27.mp4" files</li>
+              <li>Manual versioning with &quot;final_v27.mp4&quot; files</li>
               <li>No proper branching/merging for creative assets</li>
               <li>Binary conflicts require manual resolution</li>
               <li>1TB+ projects overwhelm traditional systems</li>
@@ -401,7 +401,7 @@ dits clone /path/to/repo my-project`}
       <h2>Open Source & Community</h2>
       <p>
         Dits is proudly open source and welcomes contributions from the community.
-        Whether you're a developer, creative professional, or just curious about version control for large files,
+        Whether you&apos;re a developer, creative professional, or just curious about version control for large files,
         there are many ways to get involved:
       </p>
       <ul>

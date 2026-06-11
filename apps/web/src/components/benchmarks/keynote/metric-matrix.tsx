@@ -29,7 +29,7 @@ export function MetricMatrix({ records }: { records: CompRecord[] }) {
       if (!byWorkload.has(r.workload)) byWorkload.set(r.workload, []);
       byWorkload.get(r.workload)!.push(r);
     }
-    return [...byWorkload.entries()].map(([wl, recs]) => ({
+    return [...byWorkload.entries()].map(([, recs]) => ({
       label: recs[0].workload_label,
       cells: recs.map((r) => ({
         tool: r.tool,

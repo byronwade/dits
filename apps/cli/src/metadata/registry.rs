@@ -1,8 +1,11 @@
 //! Metadata extractor registry.
 
-use super::extractor::{MetadataExtractor, BasicFileExtractor, VideoFFprobeExtractor, PhotoExifExtractor};
-use super::FileMetadata;
 use std::path::Path;
+
+use super::{
+    extractor::{BasicFileExtractor, MetadataExtractor, PhotoExifExtractor, VideoFFprobeExtractor},
+    FileMetadata,
+};
 
 /// Registry of metadata extractors.
 pub struct MetadataRegistry {
@@ -18,9 +21,7 @@ impl Default for MetadataRegistry {
 impl MetadataRegistry {
     /// Create a new registry with default extractors.
     pub fn new() -> Self {
-        let mut registry = Self {
-            extractors: Vec::new(),
-        };
+        let mut registry = Self { extractors: Vec::new() };
 
         // Add specialized extractors first (higher priority)
         registry.register(Box::new(VideoFFprobeExtractor));
@@ -38,7 +39,11 @@ impl MetadataRegistry {
     }
 
     /// Find the best extractor for a file.
-    pub fn find_extractor(&self, path: &Path, mime: Option<&str>) -> Option<&dyn MetadataExtractor> {
+    pub fn find_extractor(
+        &self,
+        path: &Path,
+        mime: Option<&str>,
+    ) -> Option<&dyn MetadataExtractor> {
         for extractor in &self.extractors {
             if extractor.supports(path, mime) {
                 return Some(extractor.as_ref());
@@ -61,15 +66,18 @@ impl MetadataRegistry {
     /// Guess MIME type from path.
     fn guess_mime(&self, path: &Path) -> Option<String> {
         let ext = path.extension()?.to_str()?;
-        Some(match ext.to_lowercase().as_str() {
-            "mp4" | "m4v" => "video/mp4",
-            "mov" => "video/quicktime",
-            "mkv" => "video/x-matroska",
-            "jpg" | "jpeg" => "image/jpeg",
-            "png" => "image/png",
-            "gif" => "image/gif",
-            _ => return None,
-        }.to_string())
+        Some(
+            match ext.to_lowercase().as_str() {
+                "mp4" | "m4v" => "video/mp4",
+                "mov" => "video/quicktime",
+                "mkv" => "video/x-matroska",
+                "jpg" | "jpeg" => "image/jpeg",
+                "png" => "image/png",
+                "gif" => "image/gif",
+                _ => return None,
+            }
+            .to_string(),
+        )
     }
 
     /// List available extractors.

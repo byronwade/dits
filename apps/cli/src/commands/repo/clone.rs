@@ -1,9 +1,16 @@
 //! Clone command - clone a repository from a source.
 
-use anyhow::{Context, Result, bail};
-use crate::store::{Repository, remote::{Remote, RemoteStore, RemoteType}};
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
+
+use anyhow::{bail, Context, Result};
+
+use crate::store::{
+    remote::{Remote, RemoteStore, RemoteType},
+    Repository,
+};
 
 /// Clone a repository.
 ///
@@ -12,17 +19,14 @@ pub fn clone(source: &str, dest: Option<&str>, branch: Option<&str>) -> Result<(
     let source_type = RemoteType::parse(source);
 
     match source_type {
-        RemoteType::Local(source_path) => {
-            clone_local(&source_path, dest, branch)
-        }
+        RemoteType::Local(source_path) => clone_local(&source_path, dest, branch),
         RemoteType::Http(url) | RemoteType::Dits(url) | RemoteType::Ssh(url) => {
             bail!(
-                "Network cloning not yet implemented.\n\
-                 URL: {}\n\n\
-                 For now, use local paths or copy the repository manually.",
+                "Network cloning not yet implemented.\nURL: {}\n\nFor now, use local paths or \
+                 copy the repository manually.",
                 url
             )
-        }
+        },
     }
 }
 
@@ -46,8 +50,9 @@ fn clone_local(source: &Path, dest: Option<&str>, branch: Option<&str>) -> Resul
         PathBuf::from(d)
     } else {
         // Use source directory name
-        source_path.file_name()
-            .map(|n| PathBuf::from(n))
+        source_path
+            .file_name()
+            .map(PathBuf::from)
             .ok_or_else(|| anyhow::anyhow!("Cannot determine destination name from source"))?
     };
 
@@ -62,8 +67,8 @@ fn clone_local(source: &Path, dest: Option<&str>, branch: Option<&str>) -> Resul
     fs::create_dir_all(&dest_path)?;
 
     // Initialize new repository
-    let _repo = Repository::init(&dest_path)
-        .context("Failed to initialize destination repository")?;
+    let _repo =
+        Repository::init(&dest_path).context("Failed to initialize destination repository")?;
 
     // Copy objects
     println!("Copying objects...");
@@ -89,7 +94,8 @@ fn clone_local(source: &Path, dest: Option<&str>, branch: Option<&str>) -> Resul
     // Set up origin remote
     let dest_dits = dest_path.join(".dits");
     let mut remotes = RemoteStore::new(&dest_dits);
-    let abs_source = source_path.canonicalize()
+    let abs_source = source_path
+        .canonicalize()
         .unwrap_or_else(|_| source_path.clone());
     remotes.add(Remote::new("origin", abs_source.to_string_lossy().to_string()))?;
 
@@ -97,30 +103,29 @@ fn clone_local(source: &Path, dest: Option<&str>, branch: Option<&str>) -> Resul
     let target_branch = branch.unwrap_or("main");
 
     // Check if target branch exists
-    let branch_ref = dest_path.join(".dits").join("refs").join("heads").join(target_branch);
+    let branch_ref = dest_path
+        .join(".dits")
+        .join("refs")
+        .join("heads")
+        .join(target_branch);
     if branch_ref.exists() {
         // Set HEAD to the branch
         let head_content = format!("ref: refs/heads/{}\n", target_branch);
         fs::write(&dest_head, head_content)?;
 
         // Re-open repository to perform checkout
-        let repo = Repository::open(&dest_path)
-            .context("Failed to open cloned repository")?;
+        let repo = Repository::open(&dest_path).context("Failed to open cloned repository")?;
 
         // Checkout the files
         println!("Checking out branch '{}'...", target_branch);
         match repo.checkout_branch(target_branch) {
             Ok(result) => {
-                println!(
-                    "Cloned into '{}': {} files",
-                    dest_path.display(),
-                    result.files_restored
-                );
-            }
+                println!("Cloned into '{}': {} files", dest_path.display(), result.files_restored);
+            },
             Err(e) => {
                 println!("Warning: Could not checkout files: {}", e);
                 println!("Repository cloned, but working tree is empty.");
-            }
+            },
         }
     } else {
         // No commits yet or branch doesn't exist
@@ -157,7 +162,6 @@ fn copy_dir_recursive(src: &Path, dst: &Path) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::tempdir;
 
     #[test]
     fn test_clone_nonexistent_source() {

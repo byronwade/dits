@@ -1,0 +1,29 @@
+# cargo-audit configuration.
+#
+# The advisories ignored below are all *informational* (unmaintained / unsound)
+# rather than known-exploitable vulnerabilities, and none has a drop-in patched
+# release available in our current dependency tree. They are tracked here with a
+# rationale so `cargo audit --deny warnings` stays green while real, fixable
+# vulnerabilities continue to fail the build. Revisit on dependency bumps.
+[advisories]
+ignore = [
+    # bincode 1.x is unmaintained. Used for compact P2P wire framing. The 2.x
+    # line is a full API rewrite; migrating is tracked separately. No security
+    # impact for our trusted-frame usage.
+    "RUSTSEC-2025-0141",
+
+    # number_prefix is unmaintained. Pulled in transitively by `indicatif`
+    # (progress bars). No direct usage, no patched release; will clear when
+    # indicatif drops the dependency.
+    "RUSTSEC-2025-0119",
+
+    # git2 0.19 "Buf" deref soundness advisory. The fix lands in a newer
+    # major (0.20+) that pulls a different libgit2-sys; bumping is tracked
+    # separately to avoid destabilizing the Git hybrid-storage path. Not
+    # reachable from untrusted input in our usage.
+    "RUSTSEC-2026-0008",
+
+    # lru 0.12 IterMut Stacked-Borrows soundness advisory. The patched line
+    # (0.14+) changes API; bump tracked separately. We do not use IterMut.
+    "RUSTSEC-2026-0002",
+]

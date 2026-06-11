@@ -1,9 +1,10 @@
 //! Push command - push changes to a remote repository.
 
-use anyhow::{Context, Result, bail};
+use std::{fs, path::Path};
+
+use anyhow::{bail, Context, Result};
+
 use crate::store::remote::{RemoteStore, RemoteType};
-use std::fs;
-use std::path::Path;
 
 /// Push changes to a remote.
 pub async fn push(
@@ -21,18 +22,17 @@ pub async fn push(
 
     // Get the remote
     let remote_name = remote_name.unwrap_or("origin");
-    let remote = remotes.get(remote_name)
+    let remote = remotes
+        .get(remote_name)
         .ok_or_else(|| anyhow::anyhow!("Remote '{}' not found", remote_name))?;
 
     let remote_type = RemoteType::parse(&remote.url);
 
     match remote_type {
-        RemoteType::Local(remote_path) => {
-            push_local(&remote_path, branch, force, all)
-        }
+        RemoteType::Local(remote_path) => push_local(&remote_path, branch, force, all),
         RemoteType::Http(url) | RemoteType::Dits(url) | RemoteType::Ssh(url) => {
             push_network(remote_name, &url, branch, force, all).await
-        }
+        },
     }
 }
 
@@ -67,12 +67,7 @@ async fn push_http(
 }
 
 /// Push to a local remote.
-pub fn push_local(
-    remote_path: &Path,
-    branch: Option<&str>,
-    force: bool,
-    all: bool,
-) -> Result<()> {
+pub fn push_local(remote_path: &Path, branch: Option<&str>, force: bool, all: bool) -> Result<()> {
     // Verify remote is a dits repo
     let remote_dits = remote_path.join(".dits");
     if !remote_dits.exists() {
@@ -100,8 +95,8 @@ pub fn push_local(
             b.to_string()
         } else {
             // Get current branch from HEAD
-            let head_content = fs::read_to_string(local_dits.join("HEAD"))
-                .context("Failed to read HEAD")?;
+            let head_content =
+                fs::read_to_string(local_dits.join("HEAD")).context("Failed to read HEAD")?;
             if let Some(refname) = head_content.strip_prefix("ref: refs/heads/") {
                 refname.trim().to_string()
             } else {
@@ -122,8 +117,8 @@ pub fn push_local(
     let mut objects_copied = 0;
 
     for branch_name in &branches {
-        let local_ref = local_dits.join("refs").join("heads").join(&branch_name);
-        let remote_ref = remote_dits.join("refs").join("heads").join(&branch_name);
+        let local_ref = local_dits.join("refs").join("heads").join(branch_name);
+        let remote_ref = remote_dits.join("refs").join("heads").join(branch_name);
 
         if !local_ref.exists() {
             println!("  ! Branch '{}' does not exist locally", branch_name);
@@ -143,7 +138,10 @@ pub fn push_local(
             // In a real implementation, we'd check if this is a fast-forward
             // For now, just warn about potential non-fast-forward
             if !force {
-                println!("  Warning: {} may not be a fast-forward push. Use --force to override.", branch_name);
+                println!(
+                    "  Warning: {} may not be a fast-forward push. Use --force to override.",
+                    branch_name
+                );
             }
         }
 
@@ -163,10 +161,7 @@ pub fn push_local(
     }
 
     if pushed_count > 0 {
-        println!(
-            "\nPushed {} branch(es), {} objects copied.",
-            pushed_count, objects_copied
-        );
+        println!("\nPushed {} branch(es), {} objects copied.", pushed_count, objects_copied);
     } else {
         println!("\nNothing to push (everything up-to-date).");
     }
@@ -183,7 +178,8 @@ fn copy_missing_objects(local_objects: &Path, remote_objects: &Path) -> Result<u
 
     let mut count = 0;
 
-    // Handle the dits objects directory structure: blobs/, chunks/, commits/, manifests/
+    // Handle the dits objects directory structure: blobs/, chunks/, commits/,
+    // manifests/
     for category in &["blobs", "chunks", "commits", "manifests"] {
         let local_category = local_objects.join(category);
         let remote_category = remote_objects.join(category);
@@ -231,6 +227,4 @@ fn copy_missing_objects(local_objects: &Path, remote_objects: &Path) -> Result<u
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-}
+mod tests {}

@@ -107,7 +107,7 @@ export default function TroubleshootingPage() {
       <div className="prose dark:prose-invert max-w-none">
       <DocPageHeader eyebrow="Community" title="Troubleshooting Guide" />
       <p>
-        Common issues and their solutions. If you can't find your issue here,
+        Common issues and their solutions. If you can&apos;t find your issue here,
         check the <Link href="https://github.com/byronwade/dits/issues">GitHub Issues</Link> or
         join our <Link href="https://github.com/byronwade/dits/discussions">community discussions</Link>.
       </p>
@@ -170,7 +170,7 @@ cargo --version`}
         <TabsContent value="basic-usage" className="mt-6">
           <h2>Basic Usage Issues</h2>
 
-          <h3>"Repository not found" error</h3>
+          <h3>&quot;Repository not found&quot; error</h3>
           <Callout type="note" title="Solution" className="not-prose my-4">
               <p>You need to initialize a Dits repository first:</p>
               <CodeBlock

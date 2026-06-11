@@ -2,11 +2,14 @@
 //!
 //! This module determines whether a file should be stored using:
 //! - **GitText**: libgit2 for text files (line-based diff, 3-way merge, blame)
-//! - **DitsChunk**: FastCDC chunking for binary/media files (deduplication, keyframe alignment)
-//! - **Hybrid**: Both engines for NLE projects (Git for metadata, Dits for payload)
+//! - **DitsChunk**: FastCDC chunking for binary/media files (deduplication,
+//!   keyframe alignment)
+//! - **Hybrid**: Both engines for NLE projects (Git for metadata, Dits for
+//!   payload)
+
+use std::path::Path;
 
 use serde::{Deserialize, Serialize};
-use std::path::Path;
 
 /// Storage strategy for a file.
 ///
@@ -135,7 +138,7 @@ impl FileClassifier {
             // Documentation
             "txt" | "md" | "markdown" | "rst" | "adoc" | "asciidoc" | "org" | "tex" | "rtf" => {
                 Some(StorageStrategy::GitText)
-            }
+            },
 
             // Data formats
             "json" | "yaml" | "yml" | "toml" | "xml" | "csv" | "tsv" | "ini" | "cfg" | "conf"
@@ -144,7 +147,7 @@ impl FileClassifier {
             // Web
             "html" | "htm" | "xhtml" | "css" | "scss" | "sass" | "less" | "styl" | "svg" => {
                 Some(StorageStrategy::GitText)
-            }
+            },
 
             // JavaScript ecosystem
             "js" | "mjs" | "cjs" | "jsx" | "ts" | "tsx" | "mts" | "cts" | "vue" | "svelte"
@@ -158,7 +161,7 @@ impl FileClassifier {
             "py" | "pyi" | "pyw" | "rb" | "rbw" | "pl" | "pm" | "t" | "php" | "php3" | "php4"
             | "php5" | "phtml" | "lua" | "tcl" | "r" | "rmd" | "jl" => {
                 Some(StorageStrategy::GitText)
-            }
+            },
 
             // Shell
             "sh" | "bash" | "zsh" | "fish" | "ksh" | "csh" | "tcsh" | "ps1" | "psm1" | "psd1"
@@ -171,22 +174,22 @@ impl FileClassifier {
             // .NET
             "cs" | "csx" | "fs" | "fsx" | "fsi" | "vb" | "vbs" | "cshtml" | "razor" => {
                 Some(StorageStrategy::GitText)
-            }
+            },
 
             // Functional
             "hs" | "lhs" | "ml" | "mli" | "elm" | "ex" | "exs" | "erl" | "hrl" => {
                 Some(StorageStrategy::GitText)
-            }
+            },
 
             // Query languages
             "sql" | "psql" | "mysql" | "pgsql" | "graphql" | "gql" => {
                 Some(StorageStrategy::GitText)
-            }
+            },
 
             // Schema/Protocol
             "proto" | "protobuf" | "thrift" | "avsc" | "avro" | "fbs" => {
                 Some(StorageStrategy::GitText)
-            }
+            },
 
             // Build/Config
             "makefile" | "cmake" | "mak" | "mk" | "ninja" | "dockerfile" | "containerfile"
@@ -199,7 +202,7 @@ impl FileClassifier {
             // Git-specific
             "gitignore" | "gitattributes" | "gitmodules" | "mailmap" => {
                 Some(StorageStrategy::GitText)
-            }
+            },
 
             // Editor configs
             "editorconfig" | "prettierrc" | "eslintrc" | "stylelintrc" | "babelrc" | "swcrc"
@@ -208,13 +211,13 @@ impl FileClassifier {
             // DevOps
             "tf" | "tfvars" | "hcl" | "nomad" | "sentinel" | "workflow" | "action" => {
                 Some(StorageStrategy::GitText)
-            }
+            },
 
             // Licenses and legal
             "license" | "licence" | "copying" | "authors" | "contributors" | "changelog"
             | "history" | "news" | "readme" | "todo" | "fixme" | "hack" => {
                 Some(StorageStrategy::GitText)
-            }
+            },
 
             // ===================
             // BINARY FILES (Dits)
@@ -222,14 +225,14 @@ impl FileClassifier {
 
             // Video (Note: "ts" TypeScript is handled above, "mts" video is .m2ts)
             "mp4" | "m4v" | "mov" | "mkv" | "avi" | "webm" | "wmv" | "flv" | "mxf" | "r3d"
-            | "braw" | "ari" | "dpx" | "exr" | "prores" | "3gp" | "3g2" | "m2ts"
-            | "vob" | "ogv" | "m2v" | "mpg" | "mpeg" => Some(StorageStrategy::DitsChunk),
+            | "braw" | "ari" | "dpx" | "exr" | "prores" | "3gp" | "3g2" | "m2ts" | "vob"
+            | "ogv" | "m2v" | "mpg" | "mpeg" => Some(StorageStrategy::DitsChunk),
 
             // Audio
             "mp3" | "wav" | "aiff" | "aif" | "flac" | "aac" | "m4a" | "ogg" | "oga" | "wma"
             | "opus" | "alac" | "ape" | "wv" | "mka" | "ac3" | "dts" | "mid" | "midi" => {
                 Some(StorageStrategy::DitsChunk)
-            }
+            },
 
             // Image
             "png" | "jpg" | "jpeg" | "gif" | "webp" | "bmp" | "tiff" | "tif" | "ico" | "icns"
@@ -258,12 +261,12 @@ impl FileClassifier {
             "pdf" | "doc" | "docx" | "xls" | "xlsx" | "ppt" | "pptx" | "odt" | "ods" | "odp"
             | "odg" | "pages" | "numbers" | "key" | "epub" | "mobi" | "azw" | "azw3" | "djvu" => {
                 Some(StorageStrategy::DitsChunk)
-            }
+            },
 
             // Fonts
             "ttf" | "otf" | "woff" | "woff2" | "eot" | "pfb" | "pfm" | "fon" | "fnt" => {
                 Some(StorageStrategy::DitsChunk)
-            }
+            },
 
             // Database files
             "db" | "sqlite" | "sqlite3" | "mdb" | "accdb" | "frm" | "myd" | "myi" | "ibd"
@@ -305,13 +308,13 @@ impl FileClassifier {
             // Editor configs
             ".vimrc" | ".gvimrc" | ".exrc" | ".nanorc" | ".emacs" | ".spacemacs" => {
                 Some(StorageStrategy::GitText)
-            }
+            },
 
             // Tool configs
             ".gitconfig" | ".gitignore" | ".gitattributes" | ".npmrc" | ".yarnrc" | ".nvmrc"
             | ".python-version" | ".ruby-version" | ".node-version" | ".tool-versions" => {
                 Some(StorageStrategy::GitText)
-            }
+            },
 
             // Security (text-based)
             ".htpasswd" | ".htaccess" | ".htgroups" => Some(StorageStrategy::GitText),
@@ -325,13 +328,16 @@ impl FileClassifier {
             | "go.sum" | "gemfile" | "gemfile.lock" | "pipfile" | "pipfile.lock"
             | "poetry.lock" | "pyproject.toml" | "requirements.txt" | "setup.py" | "setup.cfg" => {
                 Some(StorageStrategy::GitText)
-            }
+            },
 
             // CI/CD
-            ".travis.yml" | ".circleci" | "appveyor.yml" | "azure-pipelines.yml"
-            | "bitbucket-pipelines.yml" | "jenkinsfile" | ".gitlab-ci.yml" => {
-                Some(StorageStrategy::GitText)
-            }
+            ".travis.yml"
+            | ".circleci"
+            | "appveyor.yml"
+            | "azure-pipelines.yml"
+            | "bitbucket-pipelines.yml"
+            | "jenkinsfile"
+            | ".gitlab-ci.yml" => Some(StorageStrategy::GitText),
 
             // Dits-specific
             ".ditsignore" | ".ditsattributes" => Some(StorageStrategy::GitText),
@@ -389,22 +395,10 @@ mod tests {
         let classifier = FileClassifier::new();
 
         // Common text files
-        assert_eq!(
-            classifier.classify(Path::new("README.md"), None),
-            StorageStrategy::GitText
-        );
-        assert_eq!(
-            classifier.classify(Path::new("config.json"), None),
-            StorageStrategy::GitText
-        );
-        assert_eq!(
-            classifier.classify(Path::new("src/main.rs"), None),
-            StorageStrategy::GitText
-        );
-        assert_eq!(
-            classifier.classify(Path::new("script.py"), None),
-            StorageStrategy::GitText
-        );
+        assert_eq!(classifier.classify(Path::new("README.md"), None), StorageStrategy::GitText);
+        assert_eq!(classifier.classify(Path::new("config.json"), None), StorageStrategy::GitText);
+        assert_eq!(classifier.classify(Path::new("src/main.rs"), None), StorageStrategy::GitText);
+        assert_eq!(classifier.classify(Path::new("script.py"), None), StorageStrategy::GitText);
         // Makefile has no extension, so needs content analysis
         assert_eq!(
             classifier.classify(Path::new("Makefile"), Some(b"CC=gcc\nall:\n\t$(CC) main.c")),
@@ -417,22 +411,10 @@ mod tests {
         let classifier = FileClassifier::new();
 
         // Binary files
-        assert_eq!(
-            classifier.classify(Path::new("video.mp4"), None),
-            StorageStrategy::DitsChunk
-        );
-        assert_eq!(
-            classifier.classify(Path::new("image.png"), None),
-            StorageStrategy::DitsChunk
-        );
-        assert_eq!(
-            classifier.classify(Path::new("model.blend"), None),
-            StorageStrategy::DitsChunk
-        );
-        assert_eq!(
-            classifier.classify(Path::new("archive.zip"), None),
-            StorageStrategy::DitsChunk
-        );
+        assert_eq!(classifier.classify(Path::new("video.mp4"), None), StorageStrategy::DitsChunk);
+        assert_eq!(classifier.classify(Path::new("image.png"), None), StorageStrategy::DitsChunk);
+        assert_eq!(classifier.classify(Path::new("model.blend"), None), StorageStrategy::DitsChunk);
+        assert_eq!(classifier.classify(Path::new("archive.zip"), None), StorageStrategy::DitsChunk);
     }
 
     #[test]
@@ -440,18 +422,9 @@ mod tests {
         let classifier = FileClassifier::new();
 
         // NLE project files
-        assert_eq!(
-            classifier.classify(Path::new("project.prproj"), None),
-            StorageStrategy::Hybrid
-        );
-        assert_eq!(
-            classifier.classify(Path::new("comp.aep"), None),
-            StorageStrategy::Hybrid
-        );
-        assert_eq!(
-            classifier.classify(Path::new("timeline.drp"), None),
-            StorageStrategy::Hybrid
-        );
+        assert_eq!(classifier.classify(Path::new("project.prproj"), None), StorageStrategy::Hybrid);
+        assert_eq!(classifier.classify(Path::new("comp.aep"), None), StorageStrategy::Hybrid);
+        assert_eq!(classifier.classify(Path::new("timeline.drp"), None), StorageStrategy::Hybrid);
     }
 
     #[test]
@@ -477,18 +450,9 @@ mod tests {
     fn test_dotfile_classification() {
         let classifier = FileClassifier::new();
 
-        assert_eq!(
-            classifier.classify(Path::new(".gitignore"), None),
-            StorageStrategy::GitText
-        );
-        assert_eq!(
-            classifier.classify(Path::new(".bashrc"), None),
-            StorageStrategy::GitText
-        );
-        assert_eq!(
-            classifier.classify(Path::new("package.json"), None),
-            StorageStrategy::GitText
-        );
+        assert_eq!(classifier.classify(Path::new(".gitignore"), None), StorageStrategy::GitText);
+        assert_eq!(classifier.classify(Path::new(".bashrc"), None), StorageStrategy::GitText);
+        assert_eq!(classifier.classify(Path::new("package.json"), None), StorageStrategy::GitText);
     }
 
     #[test]

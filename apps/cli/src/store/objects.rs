@@ -19,13 +19,17 @@
 //!     └── branches/
 //! ```
 
-use crate::core::{Chunk, Commit, Hash, Hasher, Manifest};
-use crate::security::{encrypt_chunk, decrypt_chunk, EncryptedChunk, UserSecret};
-use bincode;
-use std::fs;
-use std::io;
-use std::path::{Path, PathBuf};
+use std::{
+    fs, io,
+    path::{Path, PathBuf},
+};
+
 use thiserror::Error;
+
+use crate::{
+    core::{Chunk, Commit, Hash, Hasher, Manifest},
+    security::{decrypt_chunk, encrypt_chunk, EncryptedChunk, UserSecret},
+};
 
 /// Errors from the object store.
 #[derive(Debug, Error)]
@@ -74,7 +78,7 @@ impl ObjectType {
 /// Object store for the local .dits directory.
 pub struct ObjectStore {
     /// Root path of the objects directory.
-    root: PathBuf,
+    root:       PathBuf,
     /// Encryption configuration (if enabled).
     encryption: Option<EncryptionConfig>,
 }
@@ -89,16 +93,13 @@ pub struct EncryptionConfig {
 impl ObjectStore {
     /// Create a new object store.
     pub fn new(dits_dir: &Path) -> Self {
-        Self {
-            root: dits_dir.join("objects"),
-            encryption: None,
-        }
+        Self { root: dits_dir.join("objects"), encryption: None }
     }
 
     /// Create a new object store with encryption enabled.
     pub fn new_with_encryption(dits_dir: &Path, user_secret: UserSecret) -> Self {
         Self {
-            root: dits_dir.join("objects"),
+            root:       dits_dir.join("objects"),
             encryption: Some(EncryptionConfig { user_secret }),
         }
     }
@@ -134,8 +135,9 @@ impl ObjectStore {
 
     // ========== Chunk Operations ==========
 
-    /// Store a chunk. Returns true if it was newly stored, false if it already existed.
-    /// If encryption is enabled, the chunk data will be encrypted before storage.
+    /// Store a chunk. Returns true if it was newly stored, false if it already
+    /// existed. If encryption is enabled, the chunk data will be encrypted
+    /// before storage.
     pub fn store_chunk(&self, chunk: &Chunk) -> Result<bool, ObjectError> {
         let path = self.object_path(ObjectType::Chunk, &chunk.hash);
 
@@ -151,12 +153,14 @@ impl ObjectStore {
 
         // Encrypt chunk if encryption is enabled
         let data_to_store = if let Some(config) = &self.encryption {
-            let encrypted = encrypt_chunk(&chunk.data, &config.user_secret)
-                .map_err(|e| ObjectError::SerializationError(format!("Encryption failed: {}", e)))?;
+            let encrypted = encrypt_chunk(&chunk.data, &config.user_secret).map_err(|e| {
+                ObjectError::SerializationError(format!("Encryption failed: {}", e))
+            })?;
 
             // Store as EncryptedChunk
-            bincode::serialize(&encrypted)
-                .map_err(|e| ObjectError::SerializationError(format!("Serialization failed: {}", e)))?
+            bincode::serialize(&encrypted).map_err(|e| {
+                ObjectError::SerializationError(format!("Serialization failed: {}", e))
+            })?
         } else {
             // Store plaintext
             chunk.data.clone()
@@ -168,7 +172,8 @@ impl ObjectStore {
     }
 
     /// Load a chunk by hash.
-    /// If encryption is enabled, the chunk data will be decrypted after loading.
+    /// If encryption is enabled, the chunk data will be decrypted after
+    /// loading.
     pub fn load_chunk(&self, hash: &Hash) -> Result<Chunk, ObjectError> {
         let path = self.object_path(ObjectType::Chunk, hash);
 
@@ -184,13 +189,14 @@ impl ObjectStore {
             match bincode::deserialize::<EncryptedChunk>(&stored_data) {
                 Ok(encrypted_chunk) => {
                     // Decrypt the chunk
-                    decrypt_chunk(&encrypted_chunk, &config.user_secret)
-                        .map_err(|e| ObjectError::SerializationError(format!("Decryption failed: {}", e)))?
-                }
+                    decrypt_chunk(&encrypted_chunk, &config.user_secret).map_err(|e| {
+                        ObjectError::SerializationError(format!("Decryption failed: {}", e))
+                    })?
+                },
                 Err(_) => {
                     // Fall back to treating as plaintext (backwards compatibility)
                     stored_data
-                }
+                },
             }
         } else {
             // No encryption - data is stored as plaintext
@@ -202,7 +208,7 @@ impl ObjectStore {
         if computed != *hash {
             return Err(ObjectError::ChecksumMismatch {
                 expected: hash.to_hex(),
-                actual: computed.to_hex(),
+                actual:   computed.to_hex(),
             });
         }
 
@@ -256,7 +262,7 @@ impl ObjectStore {
         if computed != *hash {
             return Err(ObjectError::ChecksumMismatch {
                 expected: hash.to_hex(),
-                actual: computed.to_hex(),
+                actual:   computed.to_hex(),
             });
         }
 
@@ -311,7 +317,8 @@ impl ObjectStore {
     }
 
     /// Load a manifest by hash.
-    /// Supports both binary format (Phase 6+) and legacy JSON format for backwards compatibility.
+    /// Supports both binary format (Phase 6+) and legacy JSON format for
+    /// backwards compatibility.
     pub fn load_manifest(&self, hash: &Hash) -> Result<Manifest, ObjectError> {
         let path = self.object_path(ObjectType::Manifest, hash);
 
@@ -326,11 +333,12 @@ impl ObjectStore {
         if computed != *hash {
             return Err(ObjectError::ChecksumMismatch {
                 expected: hash.to_hex(),
-                actual: computed.to_hex(),
+                actual:   computed.to_hex(),
             });
         }
 
-        // Try binary format first (Phase 6+), fall back to JSON for backwards compatibility
+        // Try binary format first (Phase 6+), fall back to JSON for backwards
+        // compatibility
         match bincode::deserialize::<Manifest>(&data) {
             Ok(manifest) => Ok(manifest),
             Err(bincode_err) => {
@@ -339,16 +347,30 @@ impl ObjectStore {
                     Ok(json) => match Manifest::from_json(&json) {
                         Ok(manifest) => Ok(manifest),
                         Err(json_err) => {
-                            eprintln!("Warning: Manifest file appears to be corrupted (bincode error: {}, JSON error: {}). This may indicate repository corruption.", bincode_err, json_err);
-                            Err(ObjectError::SerializationError(format!("Manifest file corrupted: {}", json_err)))
-                        }
+                            eprintln!(
+                                "Warning: Manifest file appears to be corrupted (bincode error: \
+                                 {}, JSON error: {}). This may indicate repository corruption.",
+                                bincode_err, json_err
+                            );
+                            Err(ObjectError::SerializationError(format!(
+                                "Manifest file corrupted: {}",
+                                json_err
+                            )))
+                        },
                     },
                     Err(utf8_err) => {
-                        eprintln!("Warning: Manifest file contains invalid UTF-8 data (bincode error: {}, UTF-8 error: {}). This may indicate repository corruption.", bincode_err, utf8_err);
-                        Err(ObjectError::SerializationError(format!("Manifest file contains invalid UTF-8: {}", utf8_err)))
-                    }
+                        eprintln!(
+                            "Warning: Manifest file contains invalid UTF-8 data (bincode error: \
+                             {}, UTF-8 error: {}). This may indicate repository corruption.",
+                            bincode_err, utf8_err
+                        );
+                        Err(ObjectError::SerializationError(format!(
+                            "Manifest file contains invalid UTF-8: {}",
+                            utf8_err
+                        )))
+                    },
                 }
-            }
+            },
         }
     }
 
@@ -386,7 +408,7 @@ impl ObjectStore {
         if commit.hash != *hash {
             return Err(ObjectError::ChecksumMismatch {
                 expected: hash.to_hex(),
-                actual: commit.hash.to_hex(),
+                actual:   commit.hash.to_hex(),
             });
         }
 
@@ -435,8 +457,9 @@ impl ObjectStore {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use tempfile::tempdir;
+
+    use super::*;
 
     #[test]
     fn test_store_and_load_chunk() {
@@ -488,12 +511,8 @@ mod tests {
         store.init().unwrap();
 
         use crate::core::Author;
-        let commit = Commit::new(
-            None,
-            Hash::ZERO,
-            "Test commit",
-            Author::new("Test", "test@test.com"),
-        );
+        let commit =
+            Commit::new(None, Hash::ZERO, "Test commit", Author::new("Test", "test@test.com"));
 
         store.store_commit(&commit).unwrap();
         let loaded = store.load_commit(&commit.hash).unwrap();

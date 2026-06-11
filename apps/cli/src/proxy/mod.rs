@@ -15,7 +15,7 @@ mod generator;
 mod store;
 mod variant;
 
-pub use config::{ProxyConfig, ProxyCodec, ProxyResolution};
-pub use generator::{ProxyGenerator, ProxyResult, GenerationError};
+pub use config::{ProxyCodec, ProxyConfig, ProxyResolution};
+pub use generator::{GenerationError, ProxyGenerator, ProxyResult};
 pub use store::ProxyStore;
 pub use variant::{ProxyVariant, VariantType};

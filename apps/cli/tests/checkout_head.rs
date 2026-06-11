@@ -1,8 +1,10 @@
 //! Regression test: `dits checkout HEAD` must resolve the symbolic HEAD ref and
-//! restore tracked files. Previously it fell through to "pathspec did not match".
+//! restore tracked files. Previously it fell through to "pathspec did not
+//! match".
+
+use std::fs;
 
 use assert_cmd::Command;
-use std::fs;
 use tempfile::TempDir;
 
 fn dits(dir: &std::path::Path) -> Command {

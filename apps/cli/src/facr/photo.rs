@@ -1,17 +1,20 @@
-//! Photo path: store the source image once, version edits as a non-destructive log.
+//! Photo path: store the source image once, version edits as a non-destructive
+//! log.
 //!
-//! The photo equivalent of frame-addressable video. The original (RAW/JPEG/PNG) is
-//! stored exactly once, content-addressed. A *version* of a photo is `base hash + an
-//! ordered list of edits`. Applying 200 edits costs one stored image plus a few KB of
-//! instructions — not 200 copies. Rendering applies the edit log to the base via
-//! ffmpeg to produce a deliverable, which is never stored as a version.
+//! The photo equivalent of frame-addressable video. The original (RAW/JPEG/PNG)
+//! is stored exactly once, content-addressed. A *version* of a photo is `base
+//! hash + an ordered list of edits`. Applying 200 edits costs one stored image
+//! plus a few KB of instructions — not 200 copies. Rendering applies the edit
+//! log to the base via ffmpeg to produce a deliverable, which is never stored
+//! as a version.
+
+use std::{path::Path, process::Command};
+
+use anyhow::{bail, Context, Result};
+use serde::{Deserialize, Serialize};
 
 use super::store::FrameStore;
 use crate::core::Hash;
-use anyhow::{bail, Context, Result};
-use serde::{Deserialize, Serialize};
-use std::path::Path;
-use std::process::Command;
 
 /// A single non-destructive edit. Order matters; edits compose left-to-right.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -35,25 +38,19 @@ pub enum PhotoEdit {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PhotoVersion {
     /// Content hash of the stored source image (shared across all versions).
-    pub base: Hash,
+    pub base:          Hash,
     /// Source width/height in pixels.
-    pub width: u32,
-    pub height: u32,
+    pub width:         u32,
+    pub height:        u32,
     /// Source file extension (e.g. "jpg", "png", "dng"), used on render.
     pub source_format: String,
     /// Ordered, non-destructive edits.
-    pub edits: Vec<PhotoEdit>,
+    pub edits:         Vec<PhotoEdit>,
 }
 
 impl PhotoVersion {
     pub fn new(base: Hash, width: u32, height: u32, source_format: impl Into<String>) -> Self {
-        Self {
-            base,
-            width,
-            height,
-            source_format: source_format.into(),
-            edits: Vec::new(),
-        }
+        Self { base, width, height, source_format: source_format.into(), edits: Vec::new() }
     }
 
     /// Return a new version with `edit` appended — the original is untouched.
@@ -76,10 +73,14 @@ impl PhotoVersion {
 fn probe_image(path: &Path) -> Result<(u32, u32)> {
     let out = Command::new("ffprobe")
         .args([
-            "-v", "error",
-            "-select_streams", "v:0",
-            "-show_entries", "stream=width,height",
-            "-of", "default=noprint_wrappers=1",
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_entries",
+            "stream=width,height",
+            "-of",
+            "default=noprint_wrappers=1",
         ])
         .arg(path)
         .output()
@@ -100,12 +101,13 @@ fn probe_image(path: &Path) -> Result<(u32, u32)> {
     Ok((w, h))
 }
 
-/// Store a source image once (content-addressed) and return a base `PhotoVersion`.
+/// Store a source image once (content-addressed) and return a base
+/// `PhotoVersion`.
 pub fn ingest_photo(path: &Path, store: &FrameStore) -> Result<PhotoVersion> {
     anyhow::ensure!(path.exists(), "image not found: {}", path.display());
     // Validate it's actually a readable image BEFORE storing anything.
-    let (width, height) = probe_image(path)
-        .with_context(|| format!("not a readable image: {}", path.display()))?;
+    let (width, height) =
+        probe_image(path).with_context(|| format!("not a readable image: {}", path.display()))?;
     anyhow::ensure!(
         width > 0 && height > 0,
         "{} is not a valid image (no decodable video/image stream)",
@@ -131,21 +133,21 @@ fn build_filter_chain(edits: &[PhotoEdit]) -> Option<String> {
         match edit {
             PhotoEdit::Crop { x, y, width, height } => {
                 parts.push(format!("crop={width}:{height}:{x}:{y}"));
-            }
+            },
             PhotoEdit::Exposure { stops } => {
                 parts.push(format!("exposure=exposure={stops}"));
-            }
+            },
             PhotoEdit::Contrast { amount } => {
                 parts.push(format!("eq=contrast={amount}"));
-            }
+            },
             PhotoEdit::Saturation { amount } => {
                 parts.push(format!("eq=saturation={amount}"));
-            }
+            },
             PhotoEdit::WhiteBalance { kelvin } => {
                 // colortemperature expects Kelvin; clamp to the filter's supported range.
                 let k = kelvin.clamp(1000.0, 40000.0);
                 parts.push(format!("colortemperature=temperature={k}"));
-            }
+            },
             PhotoEdit::Rotate { degrees } => {
                 let f = match degrees % 360 {
                     90 => "transpose=1",
@@ -154,7 +156,7 @@ fn build_filter_chain(edits: &[PhotoEdit]) -> Option<String> {
                     _ => continue,
                 };
                 parts.push(f.to_string());
-            }
+            },
         }
     }
     if parts.is_empty() {
@@ -192,7 +194,6 @@ pub fn render_photo(version: &PhotoVersion, store: &FrameStore, output: &Path) -
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::Hasher;
 
     #[test]
     fn many_edits_share_one_stored_source() {
@@ -212,7 +213,8 @@ mod tests {
         let v4 = v3.with_edit(PhotoEdit::Saturation { amount: 0.8 });
         let v5 = v4.with_edit(PhotoEdit::Rotate { degrees: 90 });
 
-        // Editing is non-destructive and stores NOTHING new: 5 versions, 1 stored image.
+        // Editing is non-destructive and stores NOTHING new: 5 versions, 1 stored
+        // image.
         assert_eq!(store.count().unwrap(), 1, "all versions share one stored source");
         assert_eq!(v0.edits.len(), 0);
         assert_eq!(v5.edits.len(), 5);

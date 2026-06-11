@@ -14,31 +14,6 @@ import {
   ArrowDown,
 } from "lucide-react";
 
-interface DiagramBoxProps {
-  children: React.ReactNode;
-  className?: string;
-  variant?: "primary" | "secondary" | "accent";
-}
-
-function DiagramBox({ children, className, variant = "primary" }: DiagramBoxProps) {
-  const variants = {
-    primary: "bg-brand/10 border-brand/30 text-brand",
-    secondary: "bg-muted border-border text-foreground",
-    accent: "bg-accent/10 border-accent/30 text-accent-foreground",
-  };
-
-  return (
-    <div
-      className={cn(
-        "rounded-lg border-2 px-4 py-3 text-center font-medium transition-colors",
-        variants[variant],
-        className
-      )}
-    >
-      {children}
-    </div>
-  );
-}
 
 function ConnectorLine({ className }: { className?: string }) {
   return (

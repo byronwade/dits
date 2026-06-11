@@ -245,7 +245,7 @@ dits 0.1.2`}
 
         <Callout type="note" title="Hybrid Storage System" className="not-prose my-4">
           Dits automatically classifies files and uses the optimal storage method.
-          Text files get Git's powerful operations, while binary assets benefit from Dits' deduplication.
+          Text files get Git&apos;s powerful operations, while binary assets benefit from Dits&apos; deduplication.
           Everything works together in a unified repository structure.
         </Callout>
 
@@ -272,7 +272,7 @@ dits init
         />
 
         <Callout type="tip" title="Future Enhancement" className="not-prose my-4">
-          We're considering adding a <code>dits init --with-git</code> flag to initialize both systems together
+          We&apos;re considering adding a <code>dits init --with-git</code> flag to initialize both systems together
           in a single command. This would streamline the setup process for new projects.
         </Callout>
 

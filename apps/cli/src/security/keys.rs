@@ -1,11 +1,11 @@
 //! Key derivation and management.
 
-use argon2::{Argon2, password_hash::SaltString};
+use argon2::{password_hash::SaltString, Argon2};
 use hmac::{Hmac, Mac};
-use sha2::Sha256;
-use zeroize::{Zeroize, ZeroizeOnDrop};
 use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
+use sha2::Sha256;
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 type HmacSha256 = Hmac<Sha256>;
 
@@ -15,7 +15,7 @@ pub struct Argon2Params {
     /// Memory cost in KiB (default: 256 MB = 262144 KiB).
     pub memory_cost: u32,
     /// Time cost (iterations, default: 3).
-    pub time_cost: u32,
+    pub time_cost:   u32,
     /// Parallelism (default: 4).
     pub parallelism: u32,
 }
@@ -24,7 +24,7 @@ impl Default for Argon2Params {
     fn default() -> Self {
         Self {
             memory_cost: 262144, // 256 MB
-            time_cost: 3,
+            time_cost:   3,
             parallelism: 4,
         }
     }
@@ -35,7 +35,7 @@ impl Argon2Params {
     pub fn fast() -> Self {
         Self {
             memory_cost: 4096, // 4 MB
-            time_cost: 1,
+            time_cost:   1,
             parallelism: 1,
         }
     }
@@ -76,7 +76,7 @@ impl UserSecret {
 /// Bundle of derived keys for encryption operations.
 pub struct KeyBundle {
     /// User secret for convergent chunk encryption.
-    pub user_secret: UserSecret,
+    pub user_secret:  UserSecret,
     /// Metadata key for encrypting manifests/paths.
     pub metadata_key: [u8; 32],
     /// Recovery key for key escrow.
@@ -86,7 +86,7 @@ pub struct KeyBundle {
 /// Serializable version of KeyBundle for caching.
 #[derive(Serialize, Deserialize)]
 pub struct SerializableKeyBundle {
-    pub user_secret: [u8; 32],
+    pub user_secret:  [u8; 32],
     pub metadata_key: [u8; 32],
     pub recovery_key: [u8; 32],
 }
@@ -94,7 +94,7 @@ pub struct SerializableKeyBundle {
 impl From<&KeyBundle> for SerializableKeyBundle {
     fn from(bundle: &KeyBundle) -> Self {
         Self {
-            user_secret: *bundle.user_secret.as_bytes(),
+            user_secret:  *bundle.user_secret.as_bytes(),
             metadata_key: bundle.metadata_key,
             recovery_key: bundle.recovery_key,
         }
@@ -104,7 +104,7 @@ impl From<&KeyBundle> for SerializableKeyBundle {
 impl From<SerializableKeyBundle> for KeyBundle {
     fn from(bundle: SerializableKeyBundle) -> Self {
         Self {
-            user_secret: UserSecret::from_bytes(bundle.user_secret),
+            user_secret:  UserSecret::from_bytes(bundle.user_secret),
             metadata_key: bundle.metadata_key,
             recovery_key: bundle.recovery_key,
         }
@@ -143,16 +143,15 @@ pub fn derive_keys(
             params.time_cost,
             params.parallelism,
             Some(32), // Output length
-        ).map_err(|e| KeyDerivationError::InvalidParams(e.to_string()))?,
+        )
+        .map_err(|e| KeyDerivationError::InvalidParams(e.to_string()))?,
     );
 
     // Derive root key
     let mut root_key_bytes = [0u8; 32];
-    argon2.hash_password_into(
-        password.as_bytes(),
-        salt,
-        &mut root_key_bytes,
-    ).map_err(|e| KeyDerivationError::Argon2Error(e.to_string()))?;
+    argon2
+        .hash_password_into(password.as_bytes(), salt, &mut root_key_bytes)
+        .map_err(|e| KeyDerivationError::Argon2Error(e.to_string()))?;
 
     let root_key = RootKey::from_bytes(root_key_bytes);
 
@@ -161,11 +160,7 @@ pub fn derive_keys(
     let metadata_key = hkdf_expand(root_key.as_bytes(), b"dits-metadata-key-v1")?;
     let recovery_key = hkdf_expand(root_key.as_bytes(), b"dits-recovery-key-v1")?;
 
-    Ok(KeyBundle {
-        user_secret: UserSecret::from_bytes(user_secret),
-        metadata_key,
-        recovery_key,
-    })
+    Ok(KeyBundle { user_secret: UserSecret::from_bytes(user_secret), metadata_key, recovery_key })
 }
 
 /// Simple HKDF-like key expansion using HMAC-SHA256.

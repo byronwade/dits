@@ -1,22 +1,25 @@
 //! P2P file transfer for DITS
-//!
+#![allow(dead_code)]
 //! Handles sending and receiving files between peers.
 
-use std::collections::HashMap;
-use std::io::{Read, Write};
-use std::path::Path;
-use std::sync::Arc;
+use std::{
+    collections::HashMap,
+    io::{Read, Write},
+    path::Path,
+    sync::Arc,
+};
+
 use tokio::sync::Mutex;
 
 /// Zero-copy file operations using memory mapping
 pub mod zero_copy {
+    use std::{fs::File, path::Path};
+
     use memmap2::{Mmap, MmapMut};
-    use std::fs::File;
-    use std::path::Path;
 
     /// Memory-mapped file reader for zero-copy chunk access
     pub struct MmapChunkReader {
-        mmap: Mmap,
+        mmap:       Mmap,
         chunk_size: usize,
     }
 
@@ -41,13 +44,13 @@ pub mod zero_copy {
 
         /// Get total number of chunks
         pub fn chunk_count(&self) -> u32 {
-            ((self.mmap.len() + self.chunk_size - 1) / self.chunk_size) as u32
+            self.mmap.len().div_ceil(self.chunk_size) as u32
         }
     }
 
     /// Memory-mapped file writer for zero-copy chunk storage
     pub struct MmapChunkWriter {
-        mmap: MmapMut,
+        mmap:       MmapMut,
         chunk_size: usize,
     }
 
@@ -57,6 +60,7 @@ pub mod zero_copy {
                 .read(true)
                 .write(true)
                 .create(true)
+                .truncate(false)
                 .open(path)?;
 
             file.set_len(total_size)?;
@@ -85,18 +89,15 @@ pub mod zero_copy {
     #[cfg(target_os = "linux")]
     pub mod sendfile {
         use std::fs::File;
-        use std::os::unix::io::AsRawFd;
-        use std::path::Path;
 
-        /// Send file chunk directly from disk to network without copying to userspace
+        /// Send file chunk directly from disk to network without copying to
+        /// userspace
         pub async fn send_chunk_zero_copy(
             file: &File,
             offset: u64,
             size: usize,
             stream: &mut quinn::SendStream,
         ) -> std::io::Result<()> {
-            use tokio::io::AsyncWriteExt;
-
             // For now, fall back to regular read + write
             // In a full implementation, this would use sendfile or splice
             let mut buffer = vec![0u8; size];
@@ -119,9 +120,11 @@ pub mod zero_copy {
     }
 }
 
-use crate::p2p::crypto::{checksum, StreamingHasher};
-use crate::p2p::types::{ContentHash, TransferProgress};
-use crate::p2p::P2P_CHUNK_SIZE;
+use crate::p2p::{
+    crypto::{checksum, StreamingHasher},
+    types::{ContentHash, TransferProgress},
+    P2P_CHUNK_SIZE,
+};
 
 /// Transfer state
 #[derive(Debug, Clone)]
@@ -140,27 +143,34 @@ pub struct TransferManager {
 
 /// Multi-peer transfer manager for parallel downloads from multiple sources
 pub struct MultiPeerTransferManager {
-    chunk_size: usize,
+    chunk_size:          usize,
+    #[allow(dead_code)]
     max_peers_per_chunk: usize,
+}
+
+impl Default for MultiPeerTransferManager {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl MultiPeerTransferManager {
     pub fn new() -> Self {
         Self {
-            chunk_size: P2P_CHUNK_SIZE,
+            chunk_size:          P2P_CHUNK_SIZE,
             max_peers_per_chunk: 3, // Download each chunk from up to 3 peers
         }
     }
 
     /// Start parallel download from multiple peers
-pub async fn download_parallel(
+    pub async fn download_parallel(
         &self,
         file_path: &Path,
         file_size: u64,
         file_hash: ContentHash,
         peers: Vec<TransferPeer>,
     ) -> Result<(), TransferError> {
-        let chunk_count = ((file_size as usize + self.chunk_size - 1) / self.chunk_size) as u32;
+        let chunk_count = (file_size as usize).div_ceil(self.chunk_size) as u32;
 
         // Create download session
         let session = Arc::new(MultiPeerDownloadSession::new(
@@ -178,9 +188,10 @@ pub async fn download_parallel(
             let session_clone = session.clone();
             let peer_clone = peer.clone();
 
-            let task = tokio::spawn(async move {
-                Self::download_from_peer(session_clone, peer_clone).await
-            });
+            let task =
+                tokio::spawn(
+                    async move { Self::download_from_peer(session_clone, peer_clone).await },
+                );
             tasks.push(task);
         }
 
@@ -207,7 +218,7 @@ pub async fn download_parallel(
                 Some(index) => {
                     let chunk = Self::request_chunk_from_peer(&peer, index).await?;
                     session.store_chunk(index, chunk).await?;
-                }
+                },
                 None => break, // No more chunks
             }
         }
@@ -227,18 +238,21 @@ pub async fn download_parallel(
 /// Peer information for multi-peer transfers.
 #[derive(Clone, Debug)]
 pub struct TransferPeer {
-    pub address: String,
+    pub address:     String,
     pub fingerprint: String,
 }
 
 /// Multi-peer download session
 pub struct MultiPeerDownloadSession {
-    file_path: std::path::PathBuf,
-    file_size: u64,
-    file_hash: ContentHash,
-    chunk_count: u32,
-    peers: Vec<TransferPeer>,
+    file_path:         std::path::PathBuf,
+    #[allow(dead_code)]
+    file_size:         u64,
+    file_hash:         ContentHash,
+    #[allow(dead_code)]
+    chunk_count:       u32,
+    peers:             Vec<TransferPeer>,
     downloaded_chunks: Mutex<Vec<Option<ChunkData>>>,
+    #[allow(dead_code)]
     chunk_assignments: Mutex<HashMap<u32, Vec<TransferPeer>>>,
 }
 
@@ -304,23 +318,29 @@ impl MultiPeerDownloadSession {
 
 /// Performance monitor for adaptive scheduling
 pub struct PerformanceMonitor {
-    start_time: std::time::Instant,
-    bytes_transferred: u64,
-    chunks_completed: u32,
+    start_time:         std::time::Instant,
+    bytes_transferred:  u64,
+    chunks_completed:   u32,
     active_connections: u32,
-    rtt_samples: Vec<f64>,
-    bandwidth_samples: Vec<f64>,
+    rtt_samples:        Vec<f64>,
+    bandwidth_samples:  Vec<f64>,
+}
+
+impl Default for PerformanceMonitor {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl PerformanceMonitor {
     pub fn new() -> Self {
         Self {
-            start_time: std::time::Instant::now(),
-            bytes_transferred: 0,
-            chunks_completed: 0,
+            start_time:         std::time::Instant::now(),
+            bytes_transferred:  0,
+            chunks_completed:   0,
             active_connections: 0,
-            rtt_samples: Vec::new(),
-            bandwidth_samples: Vec::new(),
+            rtt_samples:        Vec::new(),
+            bandwidth_samples:  Vec::new(),
         }
     }
 
@@ -379,7 +399,7 @@ impl PerformanceMonitor {
             0.25
         };
 
-        ((base_concurrency as f64 * latency_factor) as usize).max(1).min(256)
+        ((base_concurrency as f64 * latency_factor) as usize).clamp(1, 256)
     }
 
     /// Get optimal chunk size for current conditions
@@ -396,7 +416,7 @@ impl PerformanceMonitor {
             2 * 1024 * 1024 // 2MB
         } else if latency < 50.0 {
             // Low latency: medium chunks
-            1 * 1024 * 1024 // 1MB
+            1024 * 1024 // 1MB
         } else {
             // High latency or low bandwidth: small chunks
             256 * 1024 // 256KB
@@ -427,13 +447,13 @@ impl PerformanceMonitor {
 /// Transfer statistics
 #[derive(Debug, Clone)]
 pub struct TransferStats {
-    pub elapsed_seconds: f64,
-    pub bytes_transferred: u64,
-    pub chunks_completed: u32,
-    pub throughput_mbps: f64,
+    pub elapsed_seconds:        f64,
+    pub bytes_transferred:      u64,
+    pub chunks_completed:       u32,
+    pub throughput_mbps:        f64,
     pub current_bandwidth_mbps: f64,
-    pub current_latency_ms: f64,
-    pub active_connections: u32,
+    pub current_latency_ms:     f64,
+    pub active_connections:     u32,
 }
 
 /// Transfer errors
@@ -468,9 +488,7 @@ impl From<std::io::Error> for TransferError {
 
 impl TransferManager {
     pub fn new() -> Self {
-        Self {
-            chunk_size: P2P_CHUNK_SIZE,
-        }
+        Self { chunk_size: P2P_CHUNK_SIZE }
     }
 
     /// Set custom chunk size
@@ -499,14 +517,9 @@ impl TransferManager {
         }
 
         let file_hash = hasher.finalize();
-        let chunk_count = ((file_size as usize + self.chunk_size - 1) / self.chunk_size) as u32;
+        let chunk_count = (file_size as usize).div_ceil(self.chunk_size) as u32;
 
-        Ok(FileInfo {
-            path: path.to_path_buf(),
-            size: file_size,
-            hash: file_hash,
-            chunk_count,
-        })
+        Ok(FileInfo { path: path.to_path_buf(), size: file_size, hash: file_hash, chunk_count })
     }
 
     /// Read a specific chunk from a file
@@ -523,11 +536,7 @@ impl TransferManager {
 
         let chunk_hash = checksum(&buffer);
 
-        Ok(ChunkData {
-            index: chunk_index,
-            data: buffer,
-            hash: chunk_hash,
-        })
+        Ok(ChunkData { index: chunk_index, data: buffer, hash: chunk_hash })
     }
 
     /// Write a chunk to a file
@@ -535,6 +544,7 @@ impl TransferManager {
         let mut file = std::fs::OpenOptions::new()
             .write(true)
             .create(true)
+            .truncate(false)
             .open(path)?;
 
         let offset = (chunk_index as usize) * self.chunk_size;
@@ -561,9 +571,9 @@ impl Default for TransferManager {
 /// File information for transfer
 #[derive(Debug, Clone)]
 pub struct FileInfo {
-    pub path: std::path::PathBuf,
-    pub size: u64,
-    pub hash: ContentHash,
+    pub path:        std::path::PathBuf,
+    pub size:        u64,
+    pub hash:        ContentHash,
     pub chunk_count: u32,
 }
 
@@ -571,26 +581,21 @@ pub struct FileInfo {
 #[derive(Debug, Clone)]
 pub struct ChunkData {
     pub index: u32,
-    pub data: Vec<u8>,
-    pub hash: ContentHash,
+    pub data:  Vec<u8>,
+    pub hash:  ContentHash,
 }
 
 /// Outgoing transfer session
 pub struct OutgoingTransfer {
     transfer_id: u64,
-    file_info: FileInfo,
+    file_info:   FileInfo,
     chunks_sent: u32,
-    bytes_sent: u64,
+    bytes_sent:  u64,
 }
 
 impl OutgoingTransfer {
     pub fn new(transfer_id: u64, file_info: FileInfo) -> Self {
-        Self {
-            transfer_id,
-            file_info,
-            chunks_sent: 0,
-            bytes_sent: 0,
-        }
+        Self { transfer_id, file_info, chunks_sent: 0, bytes_sent: 0 }
     }
 
     pub fn transfer_id(&self) -> u64 {
@@ -603,11 +608,11 @@ impl OutgoingTransfer {
 
     pub fn progress(&self) -> TransferProgress {
         TransferProgress {
-            transfer_id: self.transfer_id,
-            bytes_transferred: self.bytes_sent,
-            total_bytes: self.file_info.size,
-            chunks_completed: self.chunks_sent,
-            total_chunks: self.file_info.chunk_count,
+            transfer_id:         self.transfer_id,
+            bytes_transferred:   self.bytes_sent,
+            total_bytes:         self.file_info.size,
+            chunks_completed:    self.chunks_sent,
+            total_chunks:        self.file_info.chunk_count,
             speed_bytes_per_sec: 0, // TODO: Calculate actual speed
         }
     }
@@ -624,13 +629,13 @@ impl OutgoingTransfer {
 
 /// Incoming transfer session
 pub struct IncomingTransfer {
-    transfer_id: u64,
-    file_path: std::path::PathBuf,
-    file_size: u64,
-    file_hash: ContentHash,
-    chunk_count: u32,
+    transfer_id:     u64,
+    file_path:       std::path::PathBuf,
+    file_size:       u64,
+    file_hash:       ContentHash,
+    chunk_count:     u32,
     chunks_received: Vec<bool>,
-    bytes_received: u64,
+    bytes_received:  u64,
 }
 
 impl IncomingTransfer {

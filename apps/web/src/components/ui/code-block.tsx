@@ -18,7 +18,6 @@ interface CodeBlockProps {
 export function CodeBlock({
     code,
     language = "bash",
-    showLineNumbers = false,
     className,
 }: CodeBlockProps) {
     const [copied, setCopied] = React.useState(false);
@@ -76,7 +75,6 @@ export function CodeBlock({
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const lines = code.split("\n");
 
     // Single pre element with no extra wrappers
     return (

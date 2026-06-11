@@ -11,7 +11,7 @@ import { Callout } from "@/components/ui/callout";
 import { DocPageHeader } from "@/components/doc-page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CodeBlock } from "@/components/ui/code-block";
-import { Users, User, Building, GitBranch, Check } from "lucide-react";
+import { Users, User, Building, Check } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Workflows - Common Patterns",

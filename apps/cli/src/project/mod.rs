@@ -6,5 +6,5 @@
 mod graph;
 mod store;
 
-pub use graph::{ProjectGraph, Track, Clip, TrackType};
+pub use graph::{Clip, ProjectGraph, Track, TrackType};
 pub use store::ProjectStore;

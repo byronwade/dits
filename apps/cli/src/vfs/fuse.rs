@@ -3,28 +3,31 @@
 //! This module provides a read-only FUSE filesystem that exposes
 //! a repository commit as a virtual directory structure.
 
-use super::cache::{CacheConfig, SyncChunkCache};
-use super::entry::{VfsEntry, VfsEntryType, VfsTree};
-use crate::core::{Hash, Manifest, Mp4Metadata};
-use crate::store::ObjectStore;
+use std::{ffi::OsStr, path::Path, sync::Arc, time::Duration};
+
 use byteorder::{BigEndian, ByteOrder};
 use fuser::{
-    FileAttr, FileType, Filesystem, ReplyAttr, ReplyData, ReplyDirectory, ReplyEntry,
-    Request, FUSE_ROOT_ID,
+    FileAttr, FileType, Filesystem, ReplyAttr, ReplyData, ReplyDirectory, ReplyEntry, Request,
 };
-use libc::{ENOENT, ENOTDIR, EISDIR};
-use std::ffi::OsStr;
-use std::path::Path;
-use std::sync::Arc;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use libc::{EISDIR, ENOENT, ENOTDIR};
+
+use super::{
+    cache::{CacheConfig, SyncChunkCache},
+    entry::{VfsEntry, VfsEntryType, VfsTree},
+};
+use crate::{
+    core::{Hash, Manifest, Mp4Metadata},
+    store::ObjectStore,
+};
 
 /// TTL for cached attributes.
 const TTL: Duration = Duration::from_secs(60);
 
 /// Patch stco/co64 offsets in moov data to denormalize them.
 ///
-/// The moov is stored with offsets normalized to 0 (relative to mdat data start).
-/// When serving via FUSE, we need to add the actual mdat data position to each offset.
+/// The moov is stored with offsets normalized to 0 (relative to mdat data
+/// start). When serving via FUSE, we need to add the actual mdat data position
+/// to each offset.
 fn patch_moov_offsets(moov_data: &mut [u8], meta: &Mp4Metadata, mdat_data_start: u64) {
     if !meta.needs_offset_patching {
         return;
@@ -42,7 +45,10 @@ fn patch_moov_offsets(moov_data: &mut [u8], meta: &Mp4Metadata, mdat_data_start:
             let new_value = current + mdat_data_start;
             // Write back (assuming it fits in 32 bits)
             if new_value <= u32::MAX as u64 {
-                BigEndian::write_u32(&mut moov_data[entry_offset..entry_offset + 4], new_value as u32);
+                BigEndian::write_u32(
+                    &mut moov_data[entry_offset..entry_offset + 4],
+                    new_value as u32,
+                );
             }
         }
     }
@@ -79,7 +85,7 @@ fn entry_to_attr(entry: &VfsEntry) -> FileAttr {
     FileAttr {
         ino: entry.inode,
         size: entry.size,
-        blocks: (entry.size + 511) / 512,
+        blocks: entry.size.div_ceil(512),
         atime: entry.atime,
         mtime: entry.mtime,
         ctime: entry.ctime,
@@ -98,11 +104,11 @@ fn entry_to_attr(entry: &VfsEntry) -> FileAttr {
 /// Dits FUSE filesystem handler.
 pub struct DitsFS {
     /// Virtual filesystem tree.
-    tree: VfsTree,
+    tree:             VfsTree,
     /// Chunk cache.
-    cache: SyncChunkCache,
+    cache:            SyncChunkCache,
     /// Object store for blob data (ftyp, moov).
-    object_store: Arc<ObjectStore>,
+    object_store:     Arc<ObjectStore>,
     /// Read buffer size.
     read_buffer_size: usize,
 }
@@ -138,9 +144,10 @@ impl DitsFS {
         let ranges = entry.chunks_for_range(offset, actual_size as u64);
 
         // Prefetch upcoming chunks
-        if ranges.len() > 0 {
+        if !ranges.is_empty() {
             let chunk_idx = ranges.last().unwrap().0;
-            let prefetch_hashes: Vec<Hash> = entry.chunks
+            let prefetch_hashes: Vec<Hash> = entry
+                .chunks
                 .iter()
                 .skip(chunk_idx + 1)
                 .take(4)
@@ -154,10 +161,13 @@ impl DitsFS {
             let chunk_data = match self.cache.get(&chunk_ref.hash) {
                 Some(data) => data,
                 None => {
-                    eprintln!("Chunk not found: {} (expected size {})",
-                             chunk_ref.hash.to_hex(), chunk_ref.size);
+                    eprintln!(
+                        "Chunk not found: {} (expected size {})",
+                        chunk_ref.hash.to_hex(),
+                        chunk_ref.size
+                    );
                     return None;
-                }
+                },
             };
 
             // Extract the needed portion
@@ -181,7 +191,8 @@ impl DitsFS {
         Some(result)
     }
 
-    /// Read MP4 file data, reconstructing the full structure from ftyp + moov + mdat.
+    /// Read MP4 file data, reconstructing the full structure from ftyp + moov +
+    /// mdat.
     fn read_mp4_file(&self, entry: &VfsEntry, offset: u64, size: u32) -> Option<Vec<u8>> {
         let meta = entry.mp4_metadata.as_ref()?;
 
@@ -194,7 +205,8 @@ impl DitsFS {
         let mut current_offset = offset;
         let mut remaining = actual_size;
 
-        // Structure: ftyp (32 bytes) + moov + mdat header (8 bytes) + mdat data (chunks)
+        // Structure: ftyp (32 bytes) + moov + mdat header (8 bytes) + mdat data
+        // (chunks)
         let ftyp_size: u64 = 32;
         let moov_end = ftyp_size + meta.moov_size;
         let mdat_header_end = moov_end + 8;
@@ -236,7 +248,12 @@ impl DitsFS {
                         remaining -= to_read;
                         current_offset += to_read as u64;
                     } else {
-                        eprintln!("moov data too short: {} vs {}..{}", patched_moov.len(), moov_offset, end);
+                        eprintln!(
+                            "moov data too short: {} vs {}..{}",
+                            patched_moov.len(),
+                            moov_offset,
+                            end
+                        );
                         return None;
                     }
                 } else {
@@ -286,7 +303,7 @@ impl DitsFS {
                     None => {
                         eprintln!("MP4 chunk not found: {}", chunk_ref.hash.to_hex());
                         return None;
-                    }
+                    },
                 };
 
                 let start = chunk_off as usize;
@@ -294,7 +311,12 @@ impl DitsFS {
                 if end <= chunk_data.len() {
                     result.extend_from_slice(&chunk_data[start..end]);
                 } else {
-                    eprintln!("MP4 chunk data too short: {} vs {}..{}", chunk_data.len(), start, end);
+                    eprintln!(
+                        "MP4 chunk data too short: {} vs {}..{}",
+                        chunk_data.len(),
+                        start,
+                        end
+                    );
                     return None;
                 }
             }
@@ -425,14 +447,14 @@ impl Filesystem for DitsFS {
     /// Get filesystem statistics.
     fn statfs(&mut self, _req: &Request, _ino: u64, reply: fuser::ReplyStatfs) {
         reply.statfs(
-            0,           // blocks
-            0,           // bfree
-            0,           // bavail
+            0,                      // blocks
+            0,                      // bfree
+            0,                      // bavail
             self.tree.len() as u64, // files
-            0,           // ffree
-            4096,        // bsize
-            255,         // namelen
-            4096,        // frsize
+            0,                      // ffree
+            4096,                   // bsize
+            255,                    // namelen
+            4096,                   // frsize
         );
     }
 }
@@ -458,10 +480,11 @@ pub fn mount(
 
     // Mount options
     let options = vec![
-        fuser::MountOption::RO,           // Read-only
+        fuser::MountOption::RO, // Read-only
         fuser::MountOption::FSName("dits".to_string()),
-        fuser::MountOption::AutoUnmount,  // Unmount on process exit
-        fuser::MountOption::AllowOther,   // Allow other users (requires user_allow_other in fuse.conf)
+        fuser::MountOption::AutoUnmount, // Unmount on process exit
+        fuser::MountOption::AllowOther,  /* Allow other users (requires user_allow_other in
+                                          * fuse.conf) */
     ];
 
     println!("Mounting Dits filesystem at {}", mount_point.display());
@@ -524,9 +547,10 @@ pub fn unmount(mount_point: &Path) -> Result<(), super::VfsError> {
 
 #[cfg(test)]
 mod tests {
+    use tempfile::tempdir;
+
     use super::*;
     use crate::core::{Chunk, ChunkRef, ManifestEntry};
-    use tempfile::tempdir;
 
     fn create_test_manifest() -> (Manifest, ObjectStore, tempfile::TempDir) {
         let temp = tempdir().unwrap();
@@ -548,10 +572,7 @@ mod tests {
             "test.txt".to_string(),
             1500,
             Hash::ZERO,
-            vec![
-                ChunkRef::new(chunk1.hash, 0, 1000),
-                ChunkRef::new(chunk2.hash, 1000, 500),
-            ],
+            vec![ChunkRef::new(chunk1.hash, 0, 1000), ChunkRef::new(chunk2.hash, 1000, 500)],
         ));
         manifest.add(ManifestEntry::new(
             "dir/nested.txt".to_string(),
@@ -574,7 +595,7 @@ mod tests {
 
     #[test]
     fn test_tree_structure() {
-        let (manifest, store, _temp) = create_test_manifest();
+        let (manifest, _store, _temp) = create_test_manifest();
         let tree = VfsTree::from_manifest(&manifest);
 
         // Check root

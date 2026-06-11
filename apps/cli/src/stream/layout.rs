@@ -6,8 +6,12 @@ pub fn parse_fps(s: &str) -> f64 {
         Some((n, d)) => {
             let n: f64 = n.trim().parse().unwrap_or(30.0);
             let d: f64 = d.trim().parse().unwrap_or(1.0);
-            if d == 0.0 { 30.0 } else { n / d }
-        }
+            if d == 0.0 {
+                30.0
+            } else {
+                n / d
+            }
+        },
         None => s.trim().parse().unwrap_or(30.0),
     }
 }
@@ -15,7 +19,7 @@ pub fn parse_fps(s: &str) -> f64 {
 /// Fixed-duration segmentation layout: each segment is `segment_seconds` long.
 #[derive(Clone, Debug)]
 pub struct SegmentLayout {
-    pub fps: f64,
+    pub fps:             f64,
     pub segment_seconds: f64,
 }
 
@@ -29,9 +33,12 @@ impl SegmentLayout {
         ((self.fps * self.segment_seconds).round() as usize).max(1)
     }
 
-    /// Total segment count for `frame_count` frames (last segment may be short).
+    /// Total segment count for `frame_count` frames (last segment may be
+    /// short).
     pub fn segment_count(&self, frame_count: usize) -> usize {
-        if frame_count == 0 { return 0; }
+        if frame_count == 0 {
+            return 0;
+        }
         frame_count.div_ceil(self.frames_per_segment())
     }
 
@@ -40,7 +47,8 @@ impl SegmentLayout {
         frame_idx / self.frames_per_segment()
     }
 
-    /// The half-open frame range `[start, end)` covered by a segment, clamped to `frame_count`.
+    /// The half-open frame range `[start, end)` covered by a segment, clamped
+    /// to `frame_count`.
     pub fn frame_range(&self, segment_idx: usize, frame_count: usize) -> std::ops::Range<usize> {
         let fps_seg = self.frames_per_segment();
         let start = (segment_idx * fps_seg).min(frame_count);

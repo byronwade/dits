@@ -24,10 +24,26 @@ fn golden_buffer() -> Vec<u8> {
 fn golden_matches_pre_extraction_cli() {
     // (offset, size, blake3_hex) captured from apps/cli before extraction.
     let expected: &[(u64, u64, &str)] = &[
-        (0, 70929, "8978a66833daad5e84929e2bbe0c57e5db7a8d0a5fd575c51b8ec10f51f221cc"),
-        (70929, 63867, "d9ed96f2100507b1e4e023547df92f153387175f0d02bac69d2691f0b9ea6aa9"),
-        (134796, 112090, "d0fe5f0c6351af0069b64809fee2c52e49428d4f30afb42bab1c1bcc764ccc53"),
-        (246886, 53114, "26077d705f927b8453ea190c10fad0863e74462a156ac877411c3471a8a689cd"),
+        (
+            0,
+            70929,
+            "8978a66833daad5e84929e2bbe0c57e5db7a8d0a5fd575c51b8ec10f51f221cc",
+        ),
+        (
+            70929,
+            63867,
+            "d9ed96f2100507b1e4e023547df92f153387175f0d02bac69d2691f0b9ea6aa9",
+        ),
+        (
+            134796,
+            112090,
+            "d0fe5f0c6351af0069b64809fee2c52e49428d4f30afb42bab1c1bcc764ccc53",
+        ),
+        (
+            246886,
+            53114,
+            "26077d705f927b8453ea190c10fad0863e74462a156ac877411c3471a8a689cd",
+        ),
     ];
 
     let (_chunks, refs) = chunk_data_with_refs(&golden_buffer(), &ChunkerConfig::default());

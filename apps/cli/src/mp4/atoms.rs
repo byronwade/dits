@@ -1,7 +1,8 @@
 //! MP4 Atom definitions and utilities.
 //!
-//! MP4/MOV files are structured as a hierarchy of "atoms" (also called "boxes").
-//! Each atom has a 4-byte size, 4-byte type tag, and optional payload.
+//! MP4/MOV files are structured as a hierarchy of "atoms" (also called
+//! "boxes"). Each atom has a 4-byte size, 4-byte type tag, and optional
+//! payload.
 
 use std::fmt;
 
@@ -66,6 +67,7 @@ impl AtomType {
     }
 
     /// Convert atom type to 4-byte tag.
+    #[allow(clippy::wrong_self_convention)]
     pub fn to_tag(&self) -> [u8; 4] {
         match self {
             AtomType::Ftyp => *b"ftyp",
@@ -154,7 +156,7 @@ impl AtomType {
                     tag[i] = *byte;
                 }
                 AtomType::Unknown(tag)
-            }
+            },
         }
     }
 }
@@ -169,17 +171,17 @@ impl fmt::Display for AtomType {
 #[derive(Debug, Clone)]
 pub struct Atom {
     /// The type of this atom.
-    pub atom_type: AtomType,
+    pub atom_type:   AtomType,
     /// Byte offset where this atom starts in the file.
-    pub start: u64,
+    pub start:       u64,
     /// Total length of the atom (including header).
-    pub length: u64,
+    pub length:      u64,
     /// Offset to the atom's data (after header).
-    pub data_start: u64,
+    pub data_start:  u64,
     /// Length of the atom's data (excluding header).
     pub data_length: u64,
     /// Child atoms (if this is a container).
-    pub children: Vec<Atom>,
+    pub children:    Vec<Atom>,
 }
 
 impl Atom {
@@ -188,14 +190,7 @@ impl Atom {
         let data_start = start + header_size as u64;
         let data_length = length.saturating_sub(header_size as u64);
 
-        Self {
-            atom_type,
-            start,
-            length,
-            data_start,
-            data_length,
-            children: Vec::new(),
-        }
+        Self { atom_type, start, length, data_start, data_length, children: Vec::new() }
     }
 
     /// Get the end position of this atom.
@@ -244,13 +239,8 @@ mod tests {
 
     #[test]
     fn test_atom_type_roundtrip() {
-        let types = [
-            AtomType::Ftyp,
-            AtomType::Moov,
-            AtomType::Mdat,
-            AtomType::Stco,
-            AtomType::Co64,
-        ];
+        let types =
+            [AtomType::Ftyp, AtomType::Moov, AtomType::Mdat, AtomType::Stco, AtomType::Co64];
 
         for t in types {
             let tag = t.to_tag();

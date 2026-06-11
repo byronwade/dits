@@ -147,7 +147,7 @@ test_expect_success 'System handles bit flip corruption' '
 
 	# Introduce random bit flips (simulated)
 	perl -e "
-		open(F, '+<', 'bitflip.bin') or die;
+		open(F, \"+<\", \"bitflip.bin\") or die;
 		seek(F, 50000, 0);
 		read(F, \$data, 1);
 		\$flipped = chr(ord(\$data) ^ 0x01);  # Flip one bit

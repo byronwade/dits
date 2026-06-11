@@ -1,12 +1,15 @@
 //! Content-addressed frame store.
 //!
 //! Each encoded frame is addressed by `blake3(encoded_bytes)` and stored once.
-//! Storing the same frame twice is a no-op, so identical frames across versions of
-//! a clip dedup automatically.
+//! Storing the same frame twice is a no-op, so identical frames across versions
+//! of a clip dedup automatically.
+
+use std::{
+    io,
+    path::{Path, PathBuf},
+};
 
 use crate::core::{Hash, Hasher};
-use std::io;
-use std::path::{Path, PathBuf};
 
 /// A content-addressed store of encoded frames on disk.
 pub struct FrameStore {
@@ -27,8 +30,8 @@ impl FrameStore {
         self.root.join(&hex[..2]).join(&hex)
     }
 
-    /// Store an encoded frame, returning its content hash. Idempotent: storing the
-    /// same bytes again is a no-op (automatic dedup).
+    /// Store an encoded frame, returning its content hash. Idempotent: storing
+    /// the same bytes again is a no-op (automatic dedup).
     pub fn store_frame(&self, data: &[u8]) -> io::Result<Hash> {
         let hash = Hasher::hash(data);
         let path = self.path_for(&hash);

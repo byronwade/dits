@@ -2,9 +2,10 @@
 //!
 //! Shows detailed chunk-level deduplication stats for a tracked file.
 
-use crate::store::Repository;
 use anyhow::{Context, Result};
 use console::style;
+
+use crate::store::Repository;
 
 /// Inspect a tracked file's deduplication statistics.
 pub fn inspect_file(path: &str, show_chunks: bool) -> Result<()> {
@@ -16,7 +17,7 @@ pub fn inspect_file(path: &str, show_chunks: bool) -> Result<()> {
         .head()?
         .context("No commits yet - nothing to inspect")?;
 
-    let commit = repo.load_commit(&head)?;
+    let _commit = repo.load_commit(&head)?;
 
     // Get file dedup stats
     let stats = repo
@@ -24,57 +25,29 @@ pub fn inspect_file(path: &str, show_chunks: bool) -> Result<()> {
         .context("Failed to compute file stats")?;
 
     // Print header
-    println!(
-        "{} {}",
-        style("Inspecting:").bold(),
-        style(path).yellow()
-    );
+    println!("{} {}", style("Inspecting:").bold(), style(path).yellow());
     println!();
 
     // File info
     println!("{}", style("File Information:").bold().underlined());
-    println!(
-        "  Path:         {}",
-        stats.path
-    );
-    println!(
-        "  Commit:       {}",
-        style(&head.to_hex()[..12]).cyan()
-    );
-    println!(
-        "  Manifest:     {}",
-        style(&stats.manifest_hash.to_hex()[..12]).dim()
-    );
-    println!(
-        "  Content hash: {}",
-        style(&stats.content_hash.to_hex()[..12]).dim()
-    );
+    println!("  Path:         {}", stats.path);
+    println!("  Commit:       {}", style(&head.to_hex()[..12]).cyan());
+    println!("  Manifest:     {}", style(&stats.manifest_hash.to_hex()[..12]).dim());
+    println!("  Content hash: {}", style(&stats.content_hash.to_hex()[..12]).dim());
     if stats.is_mp4 {
-        println!(
-            "  Type:         {}",
-            style("MP4 (structure-aware)").green()
-        );
+        println!("  Type:         {}", style("MP4 (structure-aware)").green());
     }
     println!();
 
     // Size info
     println!("{}", style("Size:").bold().underlined());
-    println!(
-        "  Logical size:          {}",
-        format_bytes(stats.logical_size)
-    );
-    println!(
-        "  Estimated unique size: {}",
-        format_bytes(stats.estimated_unique_bytes)
-    );
+    println!("  Logical size:          {}", format_bytes(stats.logical_size));
+    println!("  Estimated unique size: {}", format_bytes(stats.estimated_unique_bytes));
     println!();
 
     // Chunk breakdown
     println!("{}", style("Chunk Breakdown:").bold().underlined());
-    println!(
-        "  Total chunks:  {}",
-        stats.chunk_count
-    );
+    println!("  Total chunks:  {}", stats.chunk_count);
     println!(
         "  Shared chunks: {} ({:.1}%)",
         style(stats.shared_chunk_count).green(),
@@ -90,7 +63,9 @@ pub fn inspect_file(path: &str, show_chunks: bool) -> Result<()> {
     // Dedup interpretation
     println!("{}", style("Deduplication Analysis:").bold().underlined());
     if stats.shared_chunk_count > 0 {
-        let savings = stats.logical_size.saturating_sub(stats.estimated_unique_bytes);
+        let savings = stats
+            .logical_size
+            .saturating_sub(stats.estimated_unique_bytes);
         println!(
             "  This file shares {} chunks with other files in the repo.",
             style(stats.shared_chunk_count).green()
@@ -101,10 +76,7 @@ pub fn inspect_file(path: &str, show_chunks: bool) -> Result<()> {
             (savings as f64 / stats.logical_size as f64) * 100.0
         );
     } else {
-        println!(
-            "  {}",
-            style("All chunks are unique to this file.").yellow()
-        );
+        println!("  {}", style("All chunks are unique to this file.").yellow());
         println!("  Consider adding similar files to increase deduplication.");
     }
 

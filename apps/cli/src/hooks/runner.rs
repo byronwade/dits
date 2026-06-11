@@ -1,8 +1,11 @@
 //! Hook runner - Execute hook scripts.
 
+use std::{
+    path::Path,
+    process::{Command, Stdio},
+};
+
 use anyhow::{Context, Result};
-use std::path::Path;
-use std::process::{Command, Stdio};
 
 use super::{get_hooks_dir, hook_exists, HookType};
 
@@ -10,24 +13,19 @@ use super::{get_hooks_dir, hook_exists, HookType};
 #[derive(Debug)]
 pub struct HookResult {
     /// Whether the hook succeeded (exit code 0)
-    pub success: bool,
+    pub success:   bool,
     /// Exit code
     pub exit_code: i32,
     /// Standard output
-    pub stdout: String,
+    pub stdout:    String,
     /// Standard error
-    pub stderr: String,
+    pub stderr:    String,
 }
 
 impl HookResult {
     /// Create a success result (for when hook doesn't exist)
     pub fn skipped() -> Self {
-        Self {
-            success: true,
-            exit_code: 0,
-            stdout: String::new(),
-            stderr: String::new(),
-        }
+        Self { success: true, exit_code: 0, stdout: String::new(), stderr: String::new() }
     }
 }
 
@@ -45,24 +43,29 @@ pub fn run_hook(
     if !hook_exists(repo_root, hook_type) {
         return Ok(HookResult::skipped());
     }
-    
+
     let hooks_dir = get_hooks_dir(repo_root);
     let hook_path = hooks_dir.join(hook_type.filename());
-    
+
     // Build command
     let mut cmd = Command::new(&hook_path);
     cmd.args(args)
         .current_dir(repo_root)
         .env("DITS_DIR", repo_root.join(".dits"))
         .env("DITS_HOOK", hook_type.filename())
-        .stdin(if stdin.is_some() { Stdio::piped() } else { Stdio::null() })
+        .stdin(if stdin.is_some() {
+            Stdio::piped()
+        } else {
+            Stdio::null()
+        })
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
-    
+
     // Spawn process
-    let mut child = cmd.spawn()
+    let mut child = cmd
+        .spawn()
         .with_context(|| format!("Failed to execute hook: {}", hook_path.display()))?;
-    
+
     // Write stdin if provided
     if let Some(input) = stdin {
         use std::io::Write;
@@ -70,13 +73,14 @@ pub fn run_hook(
             stdin_pipe.write_all(input.as_bytes())?;
         }
     }
-    
+
     // Wait for completion
-    let output = child.wait_with_output()
+    let output = child
+        .wait_with_output()
         .with_context(|| format!("Failed to wait for hook: {}", hook_path.display()))?;
-    
+
     let exit_code = output.status.code().unwrap_or(-1);
-    
+
     Ok(HookResult {
         success: output.status.success(),
         exit_code,
@@ -93,7 +97,7 @@ pub fn run_hook_or_fail(
     stdin: Option<&str>,
 ) -> Result<()> {
     let result = run_hook(repo_root, hook_type, args, stdin)?;
-    
+
     if !result.success {
         // Print hook output
         if !result.stdout.is_empty() {
@@ -102,37 +106,34 @@ pub fn run_hook_or_fail(
         if !result.stderr.is_empty() {
             eprintln!("{}", result.stderr);
         }
-        
-        anyhow::bail!(
-            "Hook '{}' failed with exit code {}",
-            hook_type.filename(),
-            result.exit_code
-        );
+
+        anyhow::bail!("Hook '{}' failed with exit code {}", hook_type.filename(), result.exit_code);
     }
-    
+
     // Print output even on success
     if !result.stdout.is_empty() {
         print!("{}", result.stdout);
     }
-    
+
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use std::{fs, io::Write};
+
     use tempfile::TempDir;
-    use std::fs;
-    use std::io::Write;
+
+    use super::*;
 
     fn create_hook(dir: &Path, hook_type: HookType, script: &str) {
         let hooks_dir = dir.join(".dits").join("hooks");
         fs::create_dir_all(&hooks_dir).unwrap();
-        
+
         let hook_path = hooks_dir.join(hook_type.filename());
         let mut file = fs::File::create(&hook_path).unwrap();
         file.write_all(script.as_bytes()).unwrap();
-        
+
         // Make executable
         #[cfg(unix)]
         {
@@ -155,9 +156,9 @@ mod tests {
     fn test_run_hook_success() {
         let temp = TempDir::new().unwrap();
         fs::create_dir_all(temp.path().join(".dits")).unwrap();
-        
+
         create_hook(temp.path(), HookType::PreCommit, "#!/bin/sh\necho 'Hello'");
-        
+
         let result = run_hook(temp.path(), HookType::PreCommit, &[], None).unwrap();
         assert!(result.success);
         assert!(result.stdout.contains("Hello"));
@@ -168,9 +169,9 @@ mod tests {
     fn test_run_hook_failure() {
         let temp = TempDir::new().unwrap();
         fs::create_dir_all(temp.path().join(".dits")).unwrap();
-        
+
         create_hook(temp.path(), HookType::PreCommit, "#!/bin/sh\nexit 1");
-        
+
         let result = run_hook(temp.path(), HookType::PreCommit, &[], None).unwrap();
         assert!(!result.success);
         assert_eq!(result.exit_code, 1);
@@ -180,7 +181,7 @@ mod tests {
     fn test_run_hook_not_exists() {
         let temp = TempDir::new().unwrap();
         fs::create_dir_all(temp.path().join(".dits")).unwrap();
-        
+
         let result = run_hook(temp.path(), HookType::PreCommit, &[], None).unwrap();
         assert!(result.success); // Skipped hooks are considered success
     }

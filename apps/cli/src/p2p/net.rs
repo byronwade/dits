@@ -1,23 +1,22 @@
 //! QUIC networking layer for DITS P2P
-//!
+#![allow(dead_code)]
 //! Handles connection establishment and message framing over QUIC.
 
-use std::net::SocketAddr;
-use std::sync::Arc;
-use std::time::Duration;
+use std::{collections::HashMap, net::SocketAddr, sync::Arc, time::Duration};
 
 use quinn::{
     ClientConfig, Connection, Endpoint, RecvStream, SendStream, ServerConfig, TransportConfig,
     VarInt,
 };
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
-use std::collections::HashMap;
 use tokio::sync::Mutex;
 use tracing::{debug, info, warn};
 
-use crate::p2p::protocol::{deserialize_message, serialize_message, NetMessage, ProtocolError};
-use crate::p2p::types::CertFingerprint;
-use crate::p2p::MAX_MESSAGE_SIZE;
+use crate::p2p::{
+    protocol::{deserialize_message, serialize_message, NetMessage, ProtocolError},
+    types::CertFingerprint,
+    MAX_MESSAGE_SIZE,
+};
 
 /// NAT-friendly keepalive interval (25 seconds is typically safe for most NATs)
 pub const NAT_KEEPALIVE_INTERVAL: Duration = Duration::from_secs(25);
@@ -134,7 +133,7 @@ pub async fn recv_message(stream: &mut RecvStream) -> Result<NetMessage, Connect
     if len > MAX_MESSAGE_SIZE {
         return Err(ConnectionError::Protocol(ProtocolError::MessageTooLarge {
             size: len,
-            max: MAX_MESSAGE_SIZE,
+            max:  MAX_MESSAGE_SIZE,
         }));
     }
 
@@ -167,21 +166,16 @@ pub fn compute_cert_fingerprint(cert: &CertificateDer<'_>) -> CertFingerprint {
 }
 
 /// Generate self-signed certificate and return its fingerprint
-pub fn generate_self_signed_cert_with_fingerprint() -> (
-    Vec<CertificateDer<'static>>,
-    PrivateKeyDer<'static>,
-    CertFingerprint,
-) {
+pub fn generate_self_signed_cert_with_fingerprint(
+) -> (Vec<CertificateDer<'static>>, PrivateKeyDer<'static>, CertFingerprint) {
     let (certs, key) = generate_self_signed_cert();
     let fingerprint = compute_cert_fingerprint(&certs[0]);
-    debug!(
-        "Generated certificate with fingerprint: {}",
-        hex::encode(fingerprint)
-    );
+    debug!("Generated certificate with fingerprint: {}", hex::encode(fingerprint));
     (certs, key, fingerprint)
 }
 
-/// Create high-throughput transport configuration optimized for P2P file transfers
+/// Create high-throughput transport configuration optimized for P2P file
+/// transfers
 pub fn create_high_throughput_transport_config() -> TransportConfig {
     let mut transport = TransportConfig::default();
 
@@ -198,7 +192,7 @@ pub fn create_high_throughput_transport_config() -> TransportConfig {
 
     // Large flow control windows for high bandwidth
     transport.receive_window(VarInt::from_u32(16 * 1024 * 1024)); // 16MB
-    transport.send_window(16 * 1024 * 1024);    // 16MB
+    transport.send_window(16 * 1024 * 1024); // 16MB
     transport.stream_receive_window(VarInt::from_u32(4 * 1024 * 1024)); // 4MB per stream
     transport.max_concurrent_bidi_streams(VarInt::from_u32(500));
 
@@ -219,10 +213,7 @@ pub fn create_client_endpoint_with_pinned_cert(
     port: u16,
     expected_fingerprint: CertFingerprint,
 ) -> Result<Endpoint, ConnectionError> {
-    debug!(
-        "Creating client endpoint with pinned cert: {}",
-        hex::encode(expected_fingerprint)
-    );
+    debug!("Creating client endpoint with pinned cert: {}", hex::encode(expected_fingerprint));
     let bind_addr: SocketAddr = format!("0.0.0.0:{}", port).parse().unwrap();
     let mut endpoint =
         Endpoint::client(bind_addr).map_err(|e| ConnectionError::Connect(e.to_string()))?;
@@ -284,10 +275,7 @@ pub fn create_server_endpoint(
     let endpoint =
         Endpoint::server(config, bind_addr).map_err(|e| ConnectionError::Connect(e.to_string()))?;
 
-    info!(
-        "Server endpoint created with cert fingerprint: {}",
-        hex::encode(fingerprint)
-    );
+    info!("Server endpoint created with cert fingerprint: {}", hex::encode(fingerprint));
     Ok((endpoint, fingerprint))
 }
 
@@ -315,9 +303,7 @@ struct PinnedCertVerifier {
 
 impl PinnedCertVerifier {
     fn new(expected_fingerprint: CertFingerprint) -> Self {
-        Self {
-            expected_fingerprint,
-        }
+        Self { expected_fingerprint }
     }
 }
 
@@ -333,10 +319,7 @@ impl rustls::client::danger::ServerCertVerifier for PinnedCertVerifier {
         let actual_fingerprint = compute_cert_fingerprint(end_entity);
 
         if actual_fingerprint == self.expected_fingerprint {
-            debug!(
-                "Certificate fingerprint verified: {}",
-                hex::encode(actual_fingerprint)
-            );
+            debug!("Certificate fingerprint verified: {}", hex::encode(actual_fingerprint));
             Ok(rustls::client::danger::ServerCertVerified::assertion())
         } else {
             warn!(
@@ -344,9 +327,7 @@ impl rustls::client::danger::ServerCertVerifier for PinnedCertVerifier {
                 hex::encode(self.expected_fingerprint),
                 hex::encode(actual_fingerprint)
             );
-            Err(rustls::Error::General(
-                "certificate fingerprint mismatch".into(),
-            ))
+            Err(rustls::Error::General("certificate fingerprint mismatch".into()))
         }
     }
 
@@ -391,8 +372,9 @@ struct SkipServerVerification;
 /// Connection pool for efficient P2P connections
 #[derive(Clone)]
 pub struct ConnectionPool {
-    endpoint: Endpoint,
-    connections: Arc<Mutex<HashMap<String, QuicConnection>>>,
+    endpoint:      Endpoint,
+    connections:   Arc<Mutex<HashMap<String, QuicConnection>>>,
+    #[allow(dead_code)]
     max_idle_time: Duration,
 }
 
@@ -405,7 +387,10 @@ impl ConnectionPool {
         }
     }
 
-    pub async fn get_connection(&self, addr: SocketAddr) -> Result<QuicConnection, ConnectionError> {
+    pub async fn get_connection(
+        &self,
+        addr: SocketAddr,
+    ) -> Result<QuicConnection, ConnectionError> {
         let key = addr.to_string();
 
         // Check for existing connection

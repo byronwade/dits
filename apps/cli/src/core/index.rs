@@ -7,11 +7,11 @@
 //! - `StorageStrategy::DitsChunk` → stores `chunks` (BLAKE3)
 //! - `StorageStrategy::Hybrid` → stores both
 
-use crate::core::chunk::ChunkRef;
-use crate::core::hash::Hash;
-use crate::core::storage_strategy::StorageStrategy;
-use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+
+use serde::{Deserialize, Serialize};
+
+use crate::core::{chunk::ChunkRef, hash::Hash, storage_strategy::StorageStrategy};
 
 /// Status of a file in the working directory.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -38,9 +38,9 @@ pub enum FileStatus {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StoredAtom {
     /// 4-character atom type (e.g., "ftyp", "uuid", "free").
-    pub atom_type: String,
+    pub atom_type:   String,
     /// Hash of the atom data (if stored separately).
-    pub hash: Option<Hash>,
+    pub hash:        Option<Hash>,
     /// Inline data for small atoms (< 64 bytes).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub inline_data: Option<Vec<u8>>,
@@ -50,27 +50,27 @@ pub struct StoredAtom {
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
 pub struct Mp4Metadata {
     /// Hash of the ftyp atom data.
-    pub ftyp_hash: Option<Hash>,
+    pub ftyp_hash:             Option<Hash>,
     /// Hash of the normalized moov atom data.
-    pub moov_hash: Option<Hash>,
+    pub moov_hash:             Option<Hash>,
     /// Size of the moov atom.
-    pub moov_size: u64,
+    pub moov_size:             u64,
     /// Size of the mdat data (without header).
-    pub mdat_size: u64,
+    pub mdat_size:             u64,
     /// Whether offsets need patching on reconstruction.
     pub needs_offset_patching: bool,
     /// Original stco table locations (relative to moov start).
-    pub stco_offsets: Vec<(u64, u32)>, // (offset, count)
+    pub stco_offsets:          Vec<(u64, u32)>, // (offset, count)
     /// Original co64 table locations (relative to moov start).
-    pub co64_offsets: Vec<(u64, u32)>, // (offset, count)
-    /// Original atom order (ftyp, uuid, moov, free, mdat, etc.) for reconstruction.
-    /// Each entry is the 4-char atom type name.
+    pub co64_offsets:          Vec<(u64, u32)>, // (offset, count)
+    /// Original atom order (ftyp, uuid, moov, free, mdat, etc.) for
+    /// reconstruction. Each entry is the 4-char atom type name.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub atom_order: Vec<String>,
+    pub atom_order:            Vec<String>,
     /// Other atoms (uuid, free, etc.) stored separately.
     /// Keyed by their hash.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub other_atoms: Vec<StoredAtom>,
+    pub other_atoms:           Vec<StoredAtom>,
 }
 
 /// Type of file system object.
@@ -90,31 +90,30 @@ pub enum FileType {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct IndexEntry {
     /// File path.
-    pub path: String,
+    pub path:           String,
     /// Content hash of the staged version (BLAKE3).
-    pub content_hash: Hash,
+    pub content_hash:   Hash,
     /// File size.
-    pub size: u64,
+    pub size:           u64,
     /// Modification time (unix timestamp).
-    pub mtime: i64,
+    pub mtime:          i64,
     /// File permissions/mode.
-    pub mode: u32,
+    pub mode:           u32,
     /// File type (regular, symlink, directory, etc.).
-    pub file_type: FileType,
+    pub file_type:      FileType,
     /// Target path for symlinks (empty for non-symlinks).
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub symlink_target: String,
     /// Chunk references for this file (mdat chunks for MP4).
     /// Empty for GitText storage strategy.
-    pub chunks: Vec<ChunkRef>,
+    pub chunks:         Vec<ChunkRef>,
     /// Status of this entry.
-    pub status: FileStatus,
+    pub status:         FileStatus,
     /// MP4-specific metadata (None for non-MP4 files).
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub mp4_metadata: Option<Mp4Metadata>,
+    pub mp4_metadata:   Option<Mp4Metadata>,
 
     // === Phase 3.6: Hybrid Storage Fields ===
-
     /// Storage strategy for this file.
     /// Determines whether content is stored in Git or Dits.
     #[serde(default)]
@@ -128,6 +127,7 @@ pub struct IndexEntry {
 
 impl IndexEntry {
     /// Create a new index entry for a binary file (Dits storage).
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         path: String,
         content_hash: Hash,
@@ -155,6 +155,7 @@ impl IndexEntry {
     }
 
     /// Create a new index entry for an MP4 file.
+    #[allow(clippy::too_many_arguments)]
     pub fn new_mp4(
         path: String,
         content_hash: Hash,
@@ -185,6 +186,7 @@ impl IndexEntry {
     /// Create a new index entry for a text file (Git storage).
     ///
     /// Phase 3.6: Text files are stored using libgit2.
+    #[allow(clippy::too_many_arguments)]
     pub fn new_text(
         path: String,
         content_hash: Hash,
@@ -212,6 +214,7 @@ impl IndexEntry {
     }
 
     /// Create a new index entry with explicit storage strategy.
+    #[allow(clippy::too_many_arguments)]
     pub fn new_with_strategy(
         path: String,
         content_hash: Hash,
@@ -270,7 +273,7 @@ impl IndexEntry {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Index {
     /// Staged entries.
-    pub entries: BTreeMap<String, IndexEntry>,
+    pub entries:     BTreeMap<String, IndexEntry>,
     /// The commit this index is based on (HEAD).
     pub base_commit: Option<Hash>,
 }
@@ -278,18 +281,12 @@ pub struct Index {
 impl Index {
     /// Create a new empty index.
     pub fn new() -> Self {
-        Self {
-            entries: BTreeMap::new(),
-            base_commit: None,
-        }
+        Self { entries: BTreeMap::new(), base_commit: None }
     }
 
     /// Create an index based on a commit.
     pub fn from_commit(commit_hash: Hash) -> Self {
-        Self {
-            entries: BTreeMap::new(),
-            base_commit: Some(commit_hash),
-        }
+        Self { entries: BTreeMap::new(), base_commit: Some(commit_hash) }
     }
 
     /// Stage an entry.

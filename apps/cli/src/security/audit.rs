@@ -1,11 +1,14 @@
 //! Audit logging for security compliance.
 
-use serde::{Deserialize, Serialize};
-use std::fs::{self, File, OpenOptions};
-use std::io::{BufRead, BufReader, BufWriter, Write};
-use std::path::{Path, PathBuf};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    fs::{self, File, OpenOptions},
+    io::{BufRead, BufReader, BufWriter, Write},
+    path::{Path, PathBuf},
+    time::{SystemTime, UNIX_EPOCH},
+};
+
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 /// Types of auditable events.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -102,21 +105,21 @@ impl AuditOutcome {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AuditEvent {
     /// Event ID (UUID v4).
-    pub id: String,
+    pub id:             String,
     /// Timestamp (Unix seconds).
-    pub timestamp: u64,
+    pub timestamp:      u64,
     /// Human-readable timestamp.
-    pub timestamp_str: String,
+    pub timestamp_str:  String,
     /// Type of event.
-    pub event_type: AuditEventType,
+    pub event_type:     AuditEventType,
     /// Outcome of the event.
-    pub outcome: AuditOutcome,
+    pub outcome:        AuditOutcome,
     /// Resource affected (file path, branch name, etc.).
-    pub resource: Option<String>,
+    pub resource:       Option<String>,
     /// Additional metadata.
-    pub metadata: Option<serde_json::Value>,
+    pub metadata:       Option<serde_json::Value>,
     /// User identifier (if known).
-    pub user: Option<String>,
+    pub user:           Option<String>,
     /// Client version.
     pub client_version: Option<String>,
 }
@@ -168,7 +171,7 @@ impl AuditEvent {
 /// Audit log manager.
 pub struct AuditLog {
     /// Path to the audit log file.
-    log_path: PathBuf,
+    log_path:   PathBuf,
     /// Maximum number of events to keep (0 = unlimited).
     max_events: usize,
 }
@@ -177,17 +180,14 @@ impl AuditLog {
     /// Open or create an audit log in the given directory.
     pub fn open(dits_dir: &Path) -> Self {
         Self {
-            log_path: dits_dir.join("audit.log"),
+            log_path:   dits_dir.join("audit.log"),
             max_events: 10000, // Default: keep last 10k events
         }
     }
 
     /// Create an audit log at a specific path.
     pub fn at_path(path: PathBuf) -> Self {
-        Self {
-            log_path: path,
-            max_events: 10000,
-        }
+        Self { log_path: path, max_events: 10000 }
     }
 
     /// Set the maximum number of events to retain.
@@ -204,8 +204,7 @@ impl AuditLog {
         }
 
         // Serialize event to JSON line
-        let json = serde_json::to_string(event)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        let json = serde_json::to_string(event).map_err(std::io::Error::other)?;
 
         // Append to log file
         let mut file = OpenOptions::new()
@@ -224,7 +223,11 @@ impl AuditLog {
     }
 
     /// Log a successful event.
-    pub fn log_success(&self, event_type: AuditEventType, resource: Option<&str>) -> std::io::Result<()> {
+    pub fn log_success(
+        &self,
+        event_type: AuditEventType,
+        resource: Option<&str>,
+    ) -> std::io::Result<()> {
         let mut event = AuditEvent::new(event_type, AuditOutcome::Success);
         if let Some(r) = resource {
             event = event.with_resource(r);
@@ -233,8 +236,14 @@ impl AuditLog {
     }
 
     /// Log a failed event.
-    pub fn log_failure(&self, event_type: AuditEventType, reason: &str, resource: Option<&str>) -> std::io::Result<()> {
-        let mut event = AuditEvent::new(event_type, AuditOutcome::Failure { reason: reason.to_string() });
+    pub fn log_failure(
+        &self,
+        event_type: AuditEventType,
+        reason: &str,
+        resource: Option<&str>,
+    ) -> std::io::Result<()> {
+        let mut event =
+            AuditEvent::new(event_type, AuditOutcome::Failure { reason: reason.to_string() });
         if let Some(r) = resource {
             event = event.with_resource(r);
         }
@@ -242,8 +251,14 @@ impl AuditLog {
     }
 
     /// Log a denied event.
-    pub fn log_denied(&self, event_type: AuditEventType, reason: &str, resource: Option<&str>) -> std::io::Result<()> {
-        let mut event = AuditEvent::new(event_type, AuditOutcome::Denied { reason: reason.to_string() });
+    pub fn log_denied(
+        &self,
+        event_type: AuditEventType,
+        reason: &str,
+        resource: Option<&str>,
+    ) -> std::io::Result<()> {
+        let mut event =
+            AuditEvent::new(event_type, AuditOutcome::Denied { reason: reason.to_string() });
         if let Some(r) = resource {
             event = event.with_resource(r);
         }
@@ -280,7 +295,8 @@ impl AuditLog {
     /// Query events by type.
     pub fn query_by_type(&self, event_type: AuditEventType) -> std::io::Result<Vec<AuditEvent>> {
         let all = self.read_all()?;
-        Ok(all.into_iter()
+        Ok(all
+            .into_iter()
             .filter(|e| e.event_type == event_type)
             .collect())
     }
@@ -288,7 +304,8 @@ impl AuditLog {
     /// Query events by resource.
     pub fn query_by_resource(&self, resource: &str) -> std::io::Result<Vec<AuditEvent>> {
         let all = self.read_all()?;
-        Ok(all.into_iter()
+        Ok(all
+            .into_iter()
             .filter(|e| e.resource.as_deref() == Some(resource))
             .collect())
     }
@@ -296,7 +313,8 @@ impl AuditLog {
     /// Query events in a time range.
     pub fn query_by_time_range(&self, start: u64, end: u64) -> std::io::Result<Vec<AuditEvent>> {
         let all = self.read_all()?;
-        Ok(all.into_iter()
+        Ok(all
+            .into_iter()
             .filter(|e| e.timestamp >= start && e.timestamp <= end)
             .collect())
     }
@@ -340,8 +358,7 @@ impl AuditLog {
         let file = File::create(&self.log_path)?;
         let mut writer = BufWriter::new(file);
         for event in retained {
-            let json = serde_json::to_string(event)
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            let json = serde_json::to_string(event).map_err(std::io::Error::other)?;
             writeln!(writer, "{}", json)?;
         }
 
@@ -359,8 +376,7 @@ impl AuditLog {
     /// Export audit log to JSON.
     pub fn export_json(&self) -> std::io::Result<String> {
         let events = self.read_all()?;
-        serde_json::to_string_pretty(&events)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
+        serde_json::to_string_pretty(&events).map_err(std::io::Error::other)
     }
 }
 
@@ -368,17 +384,18 @@ impl AuditLog {
 #[derive(Debug, Clone, Default)]
 pub struct AuditStats {
     pub total_events: u64,
-    pub successful: u64,
-    pub failed: u64,
-    pub denied: u64,
+    pub successful:   u64,
+    pub failed:       u64,
+    pub denied:       u64,
     pub oldest_event: Option<u64>,
     pub newest_event: Option<u64>,
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use tempfile::tempdir;
+
+    use super::*;
 
     #[test]
     fn test_log_and_read() {
@@ -386,9 +403,12 @@ mod tests {
         let log = AuditLog::open(dir.path());
 
         // Log some events
-        log.log_success(AuditEventType::RepoInit, Some("/test/repo")).unwrap();
-        log.log_success(AuditEventType::FileAdded, Some("test.txt")).unwrap();
-        log.log_failure(AuditEventType::Login, "Invalid password", None).unwrap();
+        log.log_success(AuditEventType::RepoInit, Some("/test/repo"))
+            .unwrap();
+        log.log_success(AuditEventType::FileAdded, Some("test.txt"))
+            .unwrap();
+        log.log_failure(AuditEventType::Login, "Invalid password", None)
+            .unwrap();
 
         // Read events
         let events = log.read_all().unwrap();
@@ -406,9 +426,12 @@ mod tests {
         let dir = tempdir().unwrap();
         let log = AuditLog::open(dir.path());
 
-        log.log_success(AuditEventType::FileAdded, Some("a.txt")).unwrap();
-        log.log_success(AuditEventType::FileAdded, Some("b.txt")).unwrap();
-        log.log_success(AuditEventType::CommitCreated, Some("abc123")).unwrap();
+        log.log_success(AuditEventType::FileAdded, Some("a.txt"))
+            .unwrap();
+        log.log_success(AuditEventType::FileAdded, Some("b.txt"))
+            .unwrap();
+        log.log_success(AuditEventType::CommitCreated, Some("abc123"))
+            .unwrap();
 
         let file_events = log.query_by_type(AuditEventType::FileAdded).unwrap();
         assert_eq!(file_events.len(), 2);
@@ -421,7 +444,8 @@ mod tests {
 
         // Log more than max events
         for i in 0..10 {
-            log.log_success(AuditEventType::FileAccessed, Some(&format!("file{}.txt", i))).unwrap();
+            log.log_success(AuditEventType::FileAccessed, Some(&format!("file{}.txt", i)))
+                .unwrap();
         }
 
         // Should only have last 5
@@ -437,8 +461,10 @@ mod tests {
 
         log.log_success(AuditEventType::RepoInit, None).unwrap();
         log.log_success(AuditEventType::FileAdded, None).unwrap();
-        log.log_failure(AuditEventType::Login, "Bad password", None).unwrap();
-        log.log_denied(AuditEventType::FileAccessed, "No permission", None).unwrap();
+        log.log_failure(AuditEventType::Login, "Bad password", None)
+            .unwrap();
+        log.log_denied(AuditEventType::FileAccessed, "No permission", None)
+            .unwrap();
 
         let stats = log.stats().unwrap();
         assert_eq!(stats.total_events, 4);
@@ -452,7 +478,8 @@ mod tests {
         let dir = tempdir().unwrap();
         let log = AuditLog::open(dir.path());
 
-        log.log_success(AuditEventType::RepoInit, Some("/test")).unwrap();
+        log.log_success(AuditEventType::RepoInit, Some("/test"))
+            .unwrap();
 
         let json = log.export_json().unwrap();
         assert!(json.contains("repo_init"));

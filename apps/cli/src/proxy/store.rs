@@ -1,10 +1,13 @@
 //! Proxy variant storage.
 
-use crate::core::Hash;
+use std::{
+    collections::HashMap,
+    fs,
+    path::{Path, PathBuf},
+};
+
 use super::variant::{ProxyVariant, VariantType};
-use std::collections::HashMap;
-use std::fs;
-use std::path::{Path, PathBuf};
+use crate::core::Hash;
 
 /// Storage for proxy variants.
 pub struct ProxyStore {
@@ -15,9 +18,7 @@ pub struct ProxyStore {
 impl ProxyStore {
     /// Create a new proxy store.
     pub fn new(dits_dir: &Path) -> Self {
-        Self {
-            base_dir: dits_dir.join("proxies"),
-        }
+        Self { base_dir: dits_dir.join("proxies") }
     }
 
     /// Initialize the proxy store directory structure.
@@ -160,7 +161,7 @@ impl ProxyStore {
                 let file_entry = file_entry?;
                 let path = file_entry.path();
 
-                if path.extension().map_or(false, |e| e == "json") {
+                if path.extension().is_some_and(|e| e == "json") {
                     if let Ok(json) = fs::read_to_string(&path) {
                         if let Ok(variant) = ProxyVariant::from_json(&json) {
                             variants.push(variant);
@@ -174,11 +175,7 @@ impl ProxyStore {
     }
 
     /// Delete a proxy variant.
-    pub fn delete(
-        &self,
-        parent_hash: &Hash,
-        variant_type: VariantType,
-    ) -> std::io::Result<bool> {
+    pub fn delete(&self, parent_hash: &Hash, variant_type: VariantType) -> std::io::Result<bool> {
         let path = self.variant_path(parent_hash, variant_type);
 
         if !path.exists() {
@@ -225,7 +222,10 @@ impl ProxyStore {
 
         // Count by type
         for variant in &variants {
-            *stats.by_type.entry(format!("{:?}", variant.variant_type)).or_insert(0) += 1;
+            *stats
+                .by_type
+                .entry(format!("{:?}", variant.variant_type))
+                .or_insert(0) += 1;
         }
 
         Ok(stats)
@@ -238,11 +238,11 @@ pub struct ProxyStoreStats {
     /// Number of variant metadata files.
     pub variant_count: usize,
     /// Number of proxy data files.
-    pub data_files: usize,
+    pub data_files:    usize,
     /// Total size of proxy data in bytes.
-    pub data_size: u64,
+    pub data_size:     u64,
     /// Counts by variant type.
-    pub by_type: HashMap<String, usize>,
+    pub by_type:       HashMap<String, usize>,
 }
 
 impl ProxyStoreStats {
@@ -260,9 +260,10 @@ impl ProxyStoreStats {
 
 #[cfg(test)]
 mod tests {
+    use tempfile::TempDir;
+
     use super::*;
     use crate::core::Hasher;
-    use tempfile::TempDir;
 
     #[test]
     fn test_proxy_store_init() {

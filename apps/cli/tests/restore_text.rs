@@ -1,9 +1,11 @@
-//! Regression test: `dits restore` must bring a text (git-stored) file back to its
-//! committed content, not blank it. Same root cause as the stash bug: reconstructing
-//! from Dits chunks only blanks GitText files (whose content lives in the git engine).
+//! Regression test: `dits restore` must bring a text (git-stored) file back to
+//! its committed content, not blank it. Same root cause as the stash bug:
+//! reconstructing from Dits chunks only blanks GitText files (whose content
+//! lives in the git engine).
+
+use std::fs;
 
 use assert_cmd::Command;
-use std::fs;
 use tempfile::TempDir;
 
 fn dits(dir: &std::path::Path) -> Command {
@@ -28,7 +30,8 @@ fn restore_brings_back_committed_text() {
 
     let after = fs::read(dir.join("code.txt")).unwrap();
     assert_eq!(
-        after, b"line one\nline two\nline three\n",
+        after,
+        b"line one\nline two\nline three\n",
         "restore must recover committed content, got {:?}",
         String::from_utf8_lossy(&after)
     );

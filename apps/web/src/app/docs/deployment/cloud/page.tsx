@@ -10,7 +10,7 @@ import {
 import { Callout } from "@/components/ui/callout";
 import { DocPageHeader } from "@/components/doc-page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Cloud, Zap, Shield } from "lucide-react";
+import { Zap, Shield } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Cloud Provider Deployment",

@@ -11,7 +11,7 @@ import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
 import { Video, Image, FileArchive, HardDrive, Settings, Check, X } from "lucide-react";
 
-import { generateMetadata as genMeta, generateArticleSchema, generateHowToSchema, generateBreadcrumbSchema } from "@/lib/seo";
+import { generateMetadata as genMeta, generateArticleSchema, generateBreadcrumbSchema } from "@/lib/seo";
 import Script from "next/script";
 
 export const metadata: Metadata = genMeta({
@@ -111,6 +111,7 @@ export default function LargeFilesPage() {
                 <Card>
                     <CardHeader>
                         <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                            {/* eslint-disable-next-line jsx-a11y/alt-text */}
                             <Image className="size-5 text-brand" />
                         </div>
                         <CardTitle className="text-base">Images</CardTitle>

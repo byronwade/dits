@@ -20,25 +20,26 @@
 // CLI keeps its existing import paths unchanged.
 pub use dits_core::{chunk, hash};
 
-mod filetype;
-mod manifest;
 mod commit;
-mod index;
+mod filetype;
 mod ignore;
+mod index;
+mod manifest;
 mod storage_strategy;
 
 // Storage Strategy Layer (Phase 3.6)
-pub use storage_strategy::{StorageStrategy, FileClassifier};
-
-// Universal Layer exports
-pub use hash::{Hash, Hasher};
 #[allow(unused_imports)]
-pub use chunk::{Chunk, ChunkRef, ChunkerConfig, chunk_data, chunk_data_with_refs, chunk_data_parallel, chunk_data_with_refs_parallel};
-pub use manifest::{Manifest, ManifestEntry, FileMode};
-pub use commit::{Commit, Author};
-pub use index::{Index, IndexEntry, FileStatus, FileType, Mp4Metadata, StoredAtom};
-pub use ignore::IgnoreMatcher;
-
+pub use chunk::{
+    chunk_data, chunk_data_parallel, chunk_data_with_refs, chunk_data_with_refs_parallel, Chunk,
+    ChunkRef, ChunkerConfig,
+};
+pub use commit::{Author, Commit};
 // Smart Layer exports
 #[allow(unused_imports)]
 pub use filetype::{FileCategory, FileHandling};
+// Universal Layer exports
+pub use hash::{Hash, Hasher};
+pub use ignore::IgnoreMatcher;
+pub use index::{FileStatus, FileType, Index, IndexEntry, Mp4Metadata, StoredAtom};
+pub use manifest::{FileMode, Manifest, ManifestEntry};
+pub use storage_strategy::{FileClassifier, StorageStrategy};

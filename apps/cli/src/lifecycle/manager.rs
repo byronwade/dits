@@ -1,22 +1,28 @@
 //! Lifecycle manager for freeze/thaw operations.
 
-use crate::core::Hash;
-use super::tier::StorageTier;
-use super::tracker::{AccessTracker, AccessStats};
-use super::policy::{LifecyclePolicy, TierTransition};
+use std::{
+    fs::{self, File},
+    io::{self, BufReader, BufWriter, Read, Write},
+    path::{Path, PathBuf},
+};
+
 use serde::{Deserialize, Serialize};
-use std::fs::{self, File};
-use std::io::{self, BufReader, BufWriter, Read, Write};
-use std::path::{Path, PathBuf};
+
+use super::{
+    policy::{LifecyclePolicy, TierTransition},
+    tier::StorageTier,
+    tracker::{AccessStats, AccessTracker},
+};
+use crate::core::Hash;
 
 /// Lifecycle manager handles freeze/thaw operations.
 pub struct LifecycleManager {
     /// Repository .dits directory.
-    dits_dir: PathBuf,
+    dits_dir:   PathBuf,
     /// Access tracker.
-    tracker: AccessTracker,
+    tracker:    AccessTracker,
     /// Lifecycle policy.
-    policy: LifecyclePolicy,
+    policy:     LifecyclePolicy,
     /// Pending thaw requests.
     thaw_queue: ThawQueue,
 }
@@ -28,12 +34,7 @@ impl LifecycleManager {
         let policy = Self::load_policy(dits_dir).unwrap_or_default();
         let thaw_queue = ThawQueue::load(dits_dir)?;
 
-        Ok(Self {
-            dits_dir: dits_dir.to_path_buf(),
-            tracker,
-            policy,
-            thaw_queue,
-        })
+        Ok(Self { dits_dir: dits_dir.to_path_buf(), tracker, policy, thaw_queue })
     }
 
     /// Load policy from config file.
@@ -53,8 +54,7 @@ impl LifecycleManager {
         let policy_path = self.dits_dir.join("lifecycle-policy.json");
         let file = File::create(&policy_path)?;
         let writer = BufWriter::new(file);
-        serde_json::to_writer_pretty(writer, &self.policy)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+        serde_json::to_writer_pretty(writer, &self.policy).map_err(io::Error::other)
     }
 
     /// Get access statistics.
@@ -94,7 +94,11 @@ impl LifecycleManager {
     }
 
     /// Freeze chunks (move to colder tier).
-    pub fn freeze(&mut self, hashes: &[Hash], target_tier: StorageTier) -> io::Result<FreezeResult> {
+    pub fn freeze(
+        &mut self,
+        hashes: &[Hash],
+        target_tier: StorageTier,
+    ) -> io::Result<FreezeResult> {
         let mut result = FreezeResult::default();
         let objects_dir = self.dits_dir.join("objects");
 
@@ -105,7 +109,7 @@ impl LifecycleManager {
                 None => {
                     result.not_found.push(*hash);
                     continue;
-                }
+                },
             };
 
             // Check if already at or below target tier
@@ -165,7 +169,7 @@ impl LifecycleManager {
                 None => {
                     result.not_found.push(*hash);
                     continue;
-                }
+                },
             };
 
             // Check if already hot
@@ -215,8 +219,8 @@ impl LifecycleManager {
         for hash in hashes {
             let Some(record) = self.tracker.get(hash) else {
                 statuses.push(ThawStatus {
-                    hash: *hash,
-                    status: ThawState::NotFound,
+                    hash:        *hash,
+                    status:      ThawState::NotFound,
                     eta_seconds: None,
                 });
                 continue;
@@ -225,23 +229,23 @@ impl LifecycleManager {
             if record.tier != StorageTier::Archive {
                 // Not archived, can thaw immediately
                 statuses.push(ThawStatus {
-                    hash: *hash,
-                    status: ThawState::Ready,
+                    hash:        *hash,
+                    status:      ThawState::Ready,
                     eta_seconds: Some(0),
                 });
             } else if self.thaw_queue.is_pending(hash) {
                 // Already requested
                 statuses.push(ThawStatus {
-                    hash: *hash,
-                    status: ThawState::Pending,
+                    hash:        *hash,
+                    status:      ThawState::Pending,
                     eta_seconds: self.thaw_queue.eta_seconds(hash),
                 });
             } else {
                 // Add to queue
                 self.thaw_queue.add(*hash, record.size);
                 statuses.push(ThawStatus {
-                    hash: *hash,
-                    status: ThawState::Requested,
+                    hash:        *hash,
+                    status:      ThawState::Requested,
                     eta_seconds: Some(60), // Simulated for local storage
                 });
             }
@@ -279,7 +283,8 @@ impl LifecycleManager {
         let mut combined = FreezeResult::default();
 
         // Group by target tier
-        let mut by_tier: std::collections::HashMap<StorageTier, Vec<Hash>> = std::collections::HashMap::new();
+        let mut by_tier: std::collections::HashMap<StorageTier, Vec<Hash>> =
+            std::collections::HashMap::new();
         for t in transitions {
             by_tier.entry(t.to_tier).or_default().push(t.hash);
         }
@@ -329,7 +334,8 @@ impl LifecycleManager {
 
     /// Check if a chunk requires thaw.
     pub fn requires_thaw(&self, hash: &Hash) -> bool {
-        self.tracker.get(hash)
+        self.tracker
+            .get(hash)
             .map(|r| r.tier.requires_thaw())
             .unwrap_or(false)
     }
@@ -339,15 +345,15 @@ impl LifecycleManager {
 #[derive(Debug, Default, Clone)]
 pub struct FreezeResult {
     /// Successfully frozen chunks.
-    pub frozen: Vec<Hash>,
+    pub frozen:         Vec<Hash>,
     /// Chunks that were protected (proxy/manifest).
-    pub protected: Vec<Hash>,
+    pub protected:      Vec<Hash>,
     /// Chunks not found.
-    pub not_found: Vec<Hash>,
+    pub not_found:      Vec<Hash>,
     /// Chunks already at target tier.
     pub already_frozen: Vec<Hash>,
     /// Total bytes moved.
-    pub bytes_moved: u64,
+    pub bytes_moved:    u64,
 }
 
 impl FreezeResult {
@@ -360,11 +366,11 @@ impl FreezeResult {
 #[derive(Debug, Default, Clone)]
 pub struct ThawResult {
     /// Successfully thawed chunks.
-    pub thawed: Vec<Hash>,
+    pub thawed:         Vec<Hash>,
     /// Chunks not found.
-    pub not_found: Vec<Hash>,
+    pub not_found:      Vec<Hash>,
     /// Chunks already hot.
-    pub already_hot: Vec<Hash>,
+    pub already_hot:    Vec<Hash>,
     /// Total bytes restored.
     pub bytes_restored: u64,
 }
@@ -378,8 +384,8 @@ impl ThawResult {
 /// Status of a thaw request.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ThawStatus {
-    pub hash: Hash,
-    pub status: ThawState,
+    pub hash:        Hash,
+    pub status:      ThawState,
     pub eta_seconds: Option<u64>,
 }
 
@@ -406,11 +412,11 @@ struct ThawQueue {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct ThawRequest {
-    hash: Hash,
-    size: u64,
+    hash:         Hash,
+    size:         u64,
     requested_at: u64,
     #[serde(default)]
-    ready_at: Option<u64>,
+    ready_at:     Option<u64>,
 }
 
 impl ThawQueue {
@@ -429,8 +435,7 @@ impl ThawQueue {
         let path = dits_dir.join("thaw-queue.json");
         let file = File::create(&path)?;
         let writer = BufWriter::new(file);
-        serde_json::to_writer_pretty(writer, self)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+        serde_json::to_writer_pretty(writer, self).map_err(io::Error::other)
     }
 
     fn add(&mut self, hash: Hash, size: u64) {
@@ -459,7 +464,8 @@ impl ThawQueue {
             .map(|d| d.as_secs())
             .unwrap_or(0);
 
-        self.requests.iter()
+        self.requests
+            .iter()
             .find(|r| &r.hash == hash)
             .and_then(|r| r.ready_at)
             .map(|ready| ready.saturating_sub(now))
@@ -471,7 +477,8 @@ impl ThawQueue {
             .map(|d| d.as_secs())
             .unwrap_or(0);
 
-        self.requests.iter()
+        self.requests
+            .iter()
             .filter(|r| r.ready_at.map(|t| t <= now).unwrap_or(false))
             .map(|r| r.hash)
             .collect()
@@ -486,17 +493,14 @@ impl ThawQueue {
 
 fn chunk_path(objects_dir: &Path, hash: &Hash) -> PathBuf {
     let hex = hash.to_hex();
-    objects_dir
-        .join("chunks")
-        .join(&hex[..2])
-        .join(&hex[2..])  // Filename is hash without prefix
+    objects_dir.join("chunks").join(&hex[..2]).join(&hex[2..]) // Filename is
+                                                               // hash without
+                                                               // prefix
 }
 
 fn tier_chunk_path(tier_dir: &Path, hash: &Hash) -> PathBuf {
     let hex = hash.to_hex();
-    tier_dir
-        .join(&hex[..2])
-        .join(&hex[2..])  // Filename is hash without prefix
+    tier_dir.join(&hex[..2]).join(&hex[2..]) // Filename is hash without prefix
 }
 
 fn tier_colder_or_equal(a: StorageTier, b: StorageTier) -> bool {
@@ -510,8 +514,7 @@ fn tier_colder_or_equal(a: StorageTier, b: StorageTier) -> bool {
 }
 
 fn compress_chunk(src: &Path, dest: &Path) -> io::Result<()> {
-    use flate2::write::GzEncoder;
-    use flate2::Compression;
+    use flate2::{write::GzEncoder, Compression};
 
     let mut input = File::open(src)?;
     let output = File::create(dest)?;
@@ -542,7 +545,6 @@ fn decompress_chunk(src: &Path, dest: &Path) -> io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::tempdir;
 
     #[test]
     fn test_tier_ordering() {

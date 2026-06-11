@@ -1,14 +1,15 @@
 //! Commit objects that represent snapshots.
 
-use crate::core::hash::{Hash, Hasher};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+
+use crate::core::hash::{Hash, Hasher};
 
 /// Author/committer information.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Author {
     /// Name of the author.
-    pub name: String,
+    pub name:  String,
     /// Email of the author.
     pub email: String,
 }
@@ -16,10 +17,7 @@ pub struct Author {
 impl Author {
     /// Create a new author.
     pub fn new(name: impl Into<String>, email: impl Into<String>) -> Self {
-        Self {
-            name: name.into(),
-            email: email.into(),
-        }
+        Self { name: name.into(), email: email.into() }
     }
 
     /// Create author from environment or defaults.
@@ -47,20 +45,20 @@ impl Default for Author {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Commit {
     /// Hash of this commit (computed from contents).
-    pub hash: Hash,
+    pub hash:      Hash,
     /// Hash of the parent commit (None for initial commit).
     /// For merge commits, this is the first parent (our branch).
-    pub parent: Option<Hash>,
+    pub parent:    Option<Hash>,
     /// Additional parent hashes (for merge commits).
     /// Empty for regular commits.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub parents: Vec<Hash>,
+    pub parents:   Vec<Hash>,
     /// Hash of the manifest (tree) for this commit.
-    pub manifest: Hash,
+    pub manifest:  Hash,
     /// Commit message.
-    pub message: String,
+    pub message:   String,
     /// Author of the commit.
-    pub author: Author,
+    pub author:    Author,
     /// Committer (may differ from author).
     pub committer: Author,
     /// Timestamp when the commit was created.

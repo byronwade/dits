@@ -1,14 +1,15 @@
 //! Storage tier definitions and configuration.
 
+use std::{fmt, path::PathBuf};
+
 use serde::{Deserialize, Serialize};
-use std::fmt;
-use std::path::PathBuf;
 
 /// Storage temperature tier.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum StorageTier {
     /// Hot: actively editing, instant access (NVMe/SSD).
+    #[default]
     Hot,
     /// Warm: recently used (≤30 days), fast access.
     Warm,
@@ -20,6 +21,7 @@ pub enum StorageTier {
 
 impl StorageTier {
     /// Get tier from string.
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "hot" => Some(Self::Hot),
@@ -97,23 +99,17 @@ impl fmt::Display for StorageTier {
     }
 }
 
-impl Default for StorageTier {
-    fn default() -> Self {
-        Self::Hot
-    }
-}
-
 /// Configuration for a storage tier.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TierConfig {
     /// The tier this config applies to.
-    pub tier: StorageTier,
+    pub tier:            StorageTier,
     /// Base path for this tier's storage.
-    pub path: PathBuf,
+    pub path:            PathBuf,
     /// Maximum size in bytes (0 = unlimited).
-    pub max_size: u64,
+    pub max_size:        u64,
     /// Whether this tier is enabled.
-    pub enabled: bool,
+    pub enabled:         bool,
     /// Days of inactivity before transition to colder tier.
     pub transition_days: Option<u32>,
 }
@@ -122,19 +118,13 @@ impl TierConfig {
     /// Create a new tier config.
     pub fn new(tier: StorageTier, path: PathBuf) -> Self {
         let transition_days = match tier {
-            StorageTier::Hot => Some(30),      // Move to warm after 30 days
-            StorageTier::Warm => Some(180),    // Move to cold after 6 months
-            StorageTier::Cold => Some(730),    // Move to archive after 2 years
-            StorageTier::Archive => None,      // Final tier
+            StorageTier::Hot => Some(30),   // Move to warm after 30 days
+            StorageTier::Warm => Some(180), // Move to cold after 6 months
+            StorageTier::Cold => Some(730), // Move to archive after 2 years
+            StorageTier::Archive => None,   // Final tier
         };
 
-        Self {
-            tier,
-            path,
-            max_size: 0,
-            enabled: true,
-            transition_days,
-        }
+        Self { tier, path, max_size: 0, enabled: true, transition_days }
     }
 
     /// Create default tier configs for a repository.
@@ -152,15 +142,15 @@ impl TierConfig {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct TierStats {
     /// Number of chunks in this tier.
-    pub chunk_count: u64,
+    pub chunk_count:  u64,
     /// Total size in bytes.
-    pub total_size: u64,
+    pub total_size:   u64,
     /// Number of unique files referencing these chunks.
-    pub file_count: u64,
+    pub file_count:   u64,
     /// Oldest chunk age in days.
-    pub oldest_days: u32,
+    pub oldest_days:  u32,
     /// Newest chunk age in days.
-    pub newest_days: u32,
+    pub newest_days:  u32,
     /// Average chunk age in days.
     pub average_days: f64,
 }

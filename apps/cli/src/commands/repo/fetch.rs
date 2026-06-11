@@ -1,16 +1,13 @@
 //! Fetch command - download objects and refs from a remote repository.
 
-use anyhow::{Result, bail};
+use std::{fs, path::Path};
+
+use anyhow::{bail, Result};
+
 use crate::store::remote::{RemoteStore, RemoteType};
-use std::fs;
-use std::path::Path;
 
 /// Fetch from a remote.
-pub async fn fetch(
-    remote_name: Option<&str>,
-    all: bool,
-    prune: bool,
-) -> Result<()> {
+pub async fn fetch(remote_name: Option<&str>, all: bool, prune: bool) -> Result<()> {
     let dits_dir = std::path::Path::new(".dits");
     if !dits_dir.exists() {
         bail!("Not a dits repository");
@@ -36,7 +33,8 @@ pub async fn fetch(
         }
     } else {
         let remote_name = remote_name.unwrap_or("origin");
-        let remote = remotes.get(remote_name)
+        let remote = remotes
+            .get(remote_name)
             .ok_or_else(|| anyhow::anyhow!("Remote '{}' not found", remote_name))?;
 
         println!("Fetching from {} ...", remote_name);
@@ -87,12 +85,10 @@ pub async fn fetch_from_remote(remote_name: &str, url: &str, prune: bool) -> Res
     let remote_type = RemoteType::parse(url);
 
     match remote_type {
-        RemoteType::Local(remote_path) => {
-            fetch_local(remote_name, &remote_path, prune).await
-        }
+        RemoteType::Local(remote_path) => fetch_local(remote_name, &remote_path, prune).await,
         RemoteType::Http(url) | RemoteType::Dits(url) | RemoteType::Ssh(url) => {
             fetch_network(remote_name, &url, prune).await
-        }
+        },
     }
 }
 
@@ -183,11 +179,7 @@ async fn fetch_local(remote_name: &str, remote_path: &Path, prune: bool) -> Resu
 
                 if !remote_ref.exists() {
                     fs::remove_file(entry.path())?;
-                    println!(
-                        "  - [deleted] {}/{}",
-                        remote_name,
-                        branch_name.to_string_lossy()
-                    );
+                    println!("  - [deleted] {}/{}", remote_name, branch_name.to_string_lossy());
                 }
             }
         }
@@ -214,7 +206,8 @@ fn copy_missing_objects(remote_objects: &Path, local_objects: &Path) -> Result<u
 
     let mut count = 0;
 
-    // Handle the dits objects directory structure: blobs/, chunks/, commits/, manifests/
+    // Handle the dits objects directory structure: blobs/, chunks/, commits/,
+    // manifests/
     for category in &["blobs", "chunks", "commits", "manifests"] {
         let remote_category = remote_objects.join(category);
         let local_category = local_objects.join(category);
@@ -262,6 +255,4 @@ fn copy_missing_objects(remote_objects: &Path, local_objects: &Path) -> Result<u
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-}
+mod tests {}

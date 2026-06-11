@@ -1,7 +1,8 @@
 //! Project graph data structures.
 
-use crate::core::Hash;
 use serde::{Deserialize, Serialize};
+
+use crate::core::Hash;
 
 /// Type of track.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -28,20 +29,20 @@ impl std::fmt::Display for TrackType {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Clip {
     /// Unique clip ID.
-    pub id: String,
+    pub id:          String,
     /// Path to source file in repository.
-    pub file_path: String,
+    pub file_path:   String,
     /// Manifest hash of the specific file version.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub manifest_id: Option<String>,
     /// In-point (seconds from start of source).
     #[serde(rename = "in")]
-    pub in_point: f64,
+    pub in_point:    f64,
     /// Out-point (seconds from start of source).
     #[serde(rename = "out")]
-    pub out_point: f64,
+    pub out_point:   f64,
     /// Timeline start position (seconds).
-    pub start: f64,
+    pub start:       f64,
 }
 
 impl Clip {
@@ -78,29 +79,26 @@ impl Clip {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Track {
     /// Track ID.
-    pub id: String,
+    pub id:         String,
     /// Track type.
     #[serde(rename = "type")]
     pub track_type: TrackType,
     /// Clips in this track.
-    pub clips: Vec<Clip>,
+    pub clips:      Vec<Clip>,
 }
 
 impl Track {
     /// Create a new track.
     pub fn new(id: &str, track_type: TrackType) -> Self {
-        Self {
-            id: id.to_string(),
-            track_type,
-            clips: Vec::new(),
-        }
+        Self { id: id.to_string(), track_type, clips: Vec::new() }
     }
 
     /// Add a clip to this track.
     pub fn add_clip(&mut self, clip: Clip) {
         self.clips.push(clip);
         // Sort clips by start time
-        self.clips.sort_by(|a, b| a.start.partial_cmp(&b.start).unwrap());
+        self.clips
+            .sort_by(|a, b| a.start.partial_cmp(&b.start).unwrap());
     }
 
     /// Get total duration of the track.
@@ -120,16 +118,16 @@ pub struct ProjectGraph {
     /// Object type identifier.
     pub object_type: String,
     /// Schema version.
-    pub version: u32,
+    pub version:     u32,
     /// Kind of project (video_timeline, etc.).
-    pub kind: String,
+    pub kind:        String,
     /// Project name.
-    pub name: String,
+    pub name:        String,
     /// Tracks in this timeline.
-    pub tracks: Vec<Track>,
+    pub tracks:      Vec<Track>,
     /// Hash of this project (computed on store).
     #[serde(skip)]
-    pub hash: Option<Hash>,
+    pub hash:        Option<Hash>,
 }
 
 impl ProjectGraph {
@@ -137,11 +135,11 @@ impl ProjectGraph {
     pub fn new_video_timeline(name: &str) -> Self {
         Self {
             object_type: "project_graph".to_string(),
-            version: 1,
-            kind: "video_timeline".to_string(),
-            name: name.to_string(),
-            tracks: Vec::new(),
-            hash: None,
+            version:     1,
+            kind:        "video_timeline".to_string(),
+            name:        name.to_string(),
+            tracks:      Vec::new(),
+            hash:        None,
         }
     }
 
@@ -163,10 +161,20 @@ impl ProjectGraph {
     /// Get or create a video track.
     pub fn get_or_create_video_track(&mut self) -> &mut Track {
         if !self.tracks.iter().any(|t| t.track_type == TrackType::Video) {
-            let id = format!("v{}", self.tracks.iter().filter(|t| t.track_type == TrackType::Video).count() + 1);
+            let id = format!(
+                "v{}",
+                self.tracks
+                    .iter()
+                    .filter(|t| t.track_type == TrackType::Video)
+                    .count()
+                    + 1
+            );
             self.add_track(Track::new(&id, TrackType::Video));
         }
-        self.tracks.iter_mut().find(|t| t.track_type == TrackType::Video).unwrap()
+        self.tracks
+            .iter_mut()
+            .find(|t| t.track_type == TrackType::Video)
+            .unwrap()
     }
 
     /// Generate next track ID for a given type.
@@ -177,7 +185,11 @@ impl ProjectGraph {
             TrackType::Graphics => "g",
             TrackType::Subtitle => "s",
         };
-        let count = self.tracks.iter().filter(|t| t.track_type == track_type).count();
+        let count = self
+            .tracks
+            .iter()
+            .filter(|t| t.track_type == track_type)
+            .count();
         format!("{}{}", prefix, count + 1)
     }
 

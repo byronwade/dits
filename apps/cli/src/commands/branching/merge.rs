@@ -1,11 +1,14 @@
 //! Merge command implementation.
 
-use crate::core::{Author, Commit, Hash, Manifest, ManifestEntry};
-use crate::store::{GitTextEngine, Repository};
+use std::{collections::HashSet, path::Path};
+
 use anyhow::{Context, Result};
 use console::style;
-use std::collections::HashSet;
-use std::path::Path;
+
+use crate::{
+    core::{Author, Commit, Hash, Manifest, ManifestEntry},
+    store::{GitTextEngine, Repository},
+};
 
 /// Merge result types.
 #[derive(Debug)]
@@ -24,7 +27,7 @@ pub enum MergeResult {
 #[derive(Debug)]
 pub struct MergeConflict {
     /// Path of the conflicting file.
-    pub path: String,
+    pub path:          String,
     /// Type of conflict.
     pub conflict_type: ConflictType,
 }
@@ -63,10 +66,7 @@ pub fn merge(branch: &str, message: Option<&str>) -> Result<()> {
 
     // Check if already up to date
     if our_hash == their_hash {
-        println!(
-            "{} Already up to date.",
-            style("!").yellow().bold()
-        );
+        println!("{} Already up to date.", style("!").yellow().bold());
         return Ok(());
     }
 
@@ -81,10 +81,7 @@ pub fn merge(branch: &str, message: Option<&str>) -> Result<()> {
         }
         if *base == their_hash {
             // We're ahead - already up to date
-            println!(
-                "{} Already up to date.",
-                style("!").yellow().bold()
-            );
+            println!("{} Already up to date.", style("!").yellow().bold());
             return Ok(());
         }
     }
@@ -115,23 +112,24 @@ pub fn merge(branch: &str, message: Option<&str>) -> Result<()> {
                 ConflictType::ModifyDelete => "modify/delete",
                 ConflictType::BothAdded => "both added",
             };
-            println!(
-                "  {} ({})",
-                style(&conflict.path).cyan(),
-                style(conflict_desc).yellow(),
-            );
+            println!("  {} ({})", style(&conflict.path).cyan(), style(conflict_desc).yellow(),);
         }
         println!();
         if marked > 0 {
             println!(
-                "{} Wrote conflict markers into {} text file(s). Edit them, then `dits add` + `dits commit`.",
+                "{} Wrote conflict markers into {} text file(s). Edit them, then `dits add` + \
+                 `dits commit`.",
                 style("→").cyan(),
                 marked
             );
         }
         println!(
             "{}",
-            style("Automatic merge failed. Resolve conflicts, or use `dits checkout --ours/--theirs <file>` for binary files.").red()
+            style(
+                "Automatic merge failed. Resolve conflicts, or use `dits checkout --ours/--theirs \
+                 <file>` for binary files."
+            )
+            .red()
         );
         return Ok(());
     }
@@ -170,11 +168,7 @@ fn fast_forward_merge(
         style(current_branch).cyan(),
         style(target_branch).cyan()
     );
-    println!(
-        "   {} commit{} merged",
-        commits_merged,
-        if commits_merged == 1 { "" } else { "s" }
-    );
+    println!("   {} commit{} merged", commits_merged, if commits_merged == 1 { "" } else { "s" });
 
     Ok(())
 }
@@ -230,10 +224,7 @@ fn three_way_merge(
         style(their_branch).cyan(),
         style(current_branch).cyan()
     );
-    println!(
-        "   Merge commit: {}",
-        &commit.hash.to_hex()[..8]
-    );
+    println!("   Merge commit: {}", &commit.hash.to_hex()[..8]);
 
     Ok(())
 }
@@ -307,8 +298,9 @@ fn count_commits_between(repo: &Repository, from: &Hash, to: &Hash) -> Result<us
 
 /// Detect merge conflicts between two branches.
 /// For each text conflict, run a 3-way line merge and write the result (with
-/// `<<<<<<< / ======= / >>>>>>>` markers) into the working tree. Returns how many files
-/// were marked. Binary conflicts are skipped (resolve with `--ours`/`--theirs`).
+/// `<<<<<<< / ======= / >>>>>>>` markers) into the working tree. Returns how
+/// many files were marked. Binary conflicts are skipped (resolve with
+/// `--ours`/`--theirs`).
 fn write_conflict_markers(
     repo: &Repository,
     base: Option<&Hash>,
@@ -322,11 +314,17 @@ fn write_conflict_markers(
         Some(e) => e,
         None => return Ok(0),
     };
-    let our_manifest = repo.objects().load_manifest(&repo.objects().load_commit(ours)?.manifest)?;
-    let their_manifest =
-        repo.objects().load_manifest(&repo.objects().load_commit(theirs)?.manifest)?;
+    let our_manifest = repo
+        .objects()
+        .load_manifest(&repo.objects().load_commit(ours)?.manifest)?;
+    let their_manifest = repo
+        .objects()
+        .load_manifest(&repo.objects().load_commit(theirs)?.manifest)?;
     let base_manifest = match base {
-        Some(b) => Some(repo.objects().load_manifest(&repo.objects().load_commit(b)?.manifest)?),
+        Some(b) => Some(
+            repo.objects()
+                .load_manifest(&repo.objects().load_commit(b)?.manifest)?,
+        ),
         None => None,
     };
 
@@ -362,7 +360,9 @@ fn write_conflict_markers(
             .and_then(|e| e.git_oid.as_ref())
             .and_then(|s| GitTextEngine::parse_oid(s).ok());
 
-        if let Ok(result) = engine.merge_blobs(base_oid, our_oid, their_oid, ours_label, theirs_label) {
+        if let Ok(result) =
+            engine.merge_blobs(base_oid, our_oid, their_oid, ours_label, theirs_label)
+        {
             let full_path = repo.work_dir().join(&conflict.path);
             if let Some(parent) = full_path.parent() {
                 let _ = std::fs::create_dir_all(parent);
@@ -418,42 +418,42 @@ fn detect_conflicts(
 
                 if our_changed && their_changed && !same_result {
                     conflicts.push(MergeConflict {
-                        path: path.clone(),
+                        path:          path.clone(),
                         conflict_type: ConflictType::BothModified,
                     });
                 }
-            }
+            },
 
             // One deleted, other modified
             (Some(base_entry), Some(our_entry), None) => {
                 if our_entry.content_hash != base_entry.content_hash {
                     conflicts.push(MergeConflict {
-                        path: path.clone(),
+                        path:          path.clone(),
                         conflict_type: ConflictType::ModifyDelete,
                     });
                 }
-            }
+            },
             (Some(base_entry), None, Some(their_entry)) => {
                 if their_entry.content_hash != base_entry.content_hash {
                     conflicts.push(MergeConflict {
-                        path: path.clone(),
+                        path:          path.clone(),
                         conflict_type: ConflictType::ModifyDelete,
                     });
                 }
-            }
+            },
 
             // Both added (no base)
-            (None, Some(our_entry), Some(their_entry)) => {
-                if our_entry.content_hash != their_entry.content_hash {
-                    conflicts.push(MergeConflict {
-                        path: path.clone(),
-                        conflict_type: ConflictType::BothAdded,
-                    });
-                }
-            }
+            (None, Some(our_entry), Some(their_entry))
+                if our_entry.content_hash != their_entry.content_hash =>
+            {
+                conflicts.push(MergeConflict {
+                    path:          path.clone(),
+                    conflict_type: ConflictType::BothAdded,
+                });
+            },
 
             // No conflict cases
-            _ => {}
+            _ => {},
         }
     }
 
@@ -502,7 +502,7 @@ fn merge_manifests(
                     (false, false) => Some(o), // Neither changed
                     (true, true) => Some(o),   // Both changed (conflict should have been caught)
                 }
-            }
+            },
 
             // File deleted on one side, unchanged on other - delete
             (Some(b), Some(o), None) if o.content_hash == b.content_hash => None,

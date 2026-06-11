@@ -1,14 +1,15 @@
 //! Permanent CLI data-integrity guards.
 //!
-//! These run the real `dits` binary on real files and assert the properties that
-//! matter most for a VCS: that committing and restoring content — text, binary,
-//! encrypted — is byte-exact, and that the porcelain (diff/blame/archive/stash)
-//! handles BOTH storage strategies (GitText + chunks). This whole class of bugs
-//! existed because real files were never run through the real binary.
+//! These run the real `dits` binary on real files and assert the properties
+//! that matter most for a VCS: that committing and restoring content — text,
+//! binary, encrypted — is byte-exact, and that the porcelain
+//! (diff/blame/archive/stash) handles BOTH storage strategies (GitText +
+//! chunks). This whole class of bugs existed because real files were never run
+//! through the real binary.
+
+use std::{fs, path::Path};
 
 use assert_cmd::Command;
-use std::fs;
-use std::path::Path;
 use tempfile::TempDir;
 
 fn dits(dir: &Path) -> Command {
@@ -26,7 +27,9 @@ fn init_repo() -> TempDir {
 const TEXT: &[u8] = b"line one\nline two\nline three\n";
 fn binary_blob() -> Vec<u8> {
     // Deterministic ~3 MB blob that spans many chunks (no rng -> reproducible).
-    (0..3_000_000u32).map(|i| (i.wrapping_mul(2654435761) >> 13) as u8).collect()
+    (0..3_000_000u32)
+        .map(|i| (i.wrapping_mul(2654435761) >> 13) as u8)
+        .collect()
 }
 
 #[test]
@@ -101,7 +104,8 @@ fn archive_default_head_contains_correct_content() {
         "archive must contain the text file's real content"
     );
     assert!(
-        tar.windows(b"BINARYDATA123".len()).any(|w| w == b"BINARYDATA123"),
+        tar.windows(b"BINARYDATA123".len())
+            .any(|w| w == b"BINARYDATA123"),
         "archive must contain the binary file's content"
     );
 }
@@ -126,7 +130,10 @@ fn stash_resets_then_pop_restores() {
 fn encrypted_roundtrip_is_byte_exact_and_leaks_no_plaintext() {
     let tmp = init_repo();
     let dir = tmp.path();
-    dits(dir).args(["encrypt-init", "-p", "testpass123"]).assert().success();
+    dits(dir)
+        .args(["encrypt-init", "-p", "testpass123"])
+        .assert()
+        .success();
 
     let secret = b"top secret payroll figures\nrow2,row3\n";
     fs::write(dir.join("secret.txt"), secret).unwrap();
@@ -135,7 +142,11 @@ fn encrypted_roundtrip_is_byte_exact_and_leaks_no_plaintext() {
 
     fs::remove_file(dir.join("secret.txt")).unwrap();
     dits(dir).args(["checkout", "HEAD"]).assert().success();
-    assert_eq!(fs::read(dir.join("secret.txt")).unwrap(), secret, "encrypted round-trip byte-exact");
+    assert_eq!(
+        fs::read(dir.join("secret.txt")).unwrap(),
+        secret,
+        "encrypted round-trip byte-exact"
+    );
 
     // The plaintext must not appear anywhere under .dits/ (objects are encrypted).
     let mut leaked = false;

@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/table";
 import { Callout } from "@/components/ui/callout";
 import { DocPageHeader } from "@/components/doc-page-header";
-import { Badge } from "@/components/ui/badge";
 import { Clapperboard, Scissors, Combine, RotateCcw, Play } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 

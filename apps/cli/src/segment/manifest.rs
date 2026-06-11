@@ -1,22 +1,24 @@
 //! Video manifest for segmented storage.
 
-use crate::core::Hash;
-use serde::{Deserialize, Serialize};
 use std::path::Path;
+
+use serde::{Deserialize, Serialize};
+
+use crate::core::Hash;
 
 /// A single video segment.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Segment {
     /// Segment index (0-based).
-    pub index: u32,
+    pub index:      u32,
     /// Filename of the segment.
-    pub filename: String,
+    pub filename:   String,
     /// Content hash of the segment file.
-    pub hash: Hash,
+    pub hash:       Hash,
     /// Size in bytes.
-    pub size: u64,
+    pub size:       u64,
     /// Duration in seconds.
-    pub duration: f64,
+    pub duration:   f64,
     /// Start time in the original video.
     pub start_time: f64,
 }
@@ -25,25 +27,25 @@ pub struct Segment {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct VideoManifest {
     /// Manifest format version.
-    pub version: u32,
+    pub version:          u32,
     /// Original source filename.
-    pub source: String,
+    pub source:           String,
     /// Target segment duration in seconds.
     pub segment_duration: f64,
     /// Total video duration.
-    pub total_duration: f64,
+    pub total_duration:   f64,
     /// Video width.
-    pub width: u32,
+    pub width:            u32,
     /// Video height.
-    pub height: u32,
+    pub height:           u32,
     /// Frame rate (as fraction string like "30/1").
-    pub frame_rate: String,
+    pub frame_rate:       String,
     /// Video codec.
-    pub video_codec: String,
+    pub video_codec:      String,
     /// Audio codec (if present).
-    pub audio_codec: Option<String>,
+    pub audio_codec:      Option<String>,
     /// List of segments in order.
-    pub segments: Vec<Segment>,
+    pub segments:         Vec<Segment>,
 }
 
 impl VideoManifest {
@@ -130,11 +132,11 @@ mod tests {
         assert_eq!(manifest.segment_count(), 0);
 
         manifest.add_segment(Segment {
-            index: 0,
-            filename: "seg_000.mp4".to_string(),
-            hash: Hash::ZERO,
-            size: 1000,
-            duration: 2.0,
+            index:      0,
+            filename:   "seg_000.mp4".to_string(),
+            hash:       Hash::ZERO,
+            size:       1000,
+            duration:   2.0,
             start_time: 0.0,
         });
 
@@ -147,20 +149,20 @@ mod tests {
         let mut manifest = VideoManifest::new("test.mp4", 2.0);
 
         manifest.add_segment(Segment {
-            index: 0,
-            filename: "seg_000.mp4".to_string(),
-            hash: Hash::ZERO,
-            size: 1000,
-            duration: 2.0,
+            index:      0,
+            filename:   "seg_000.mp4".to_string(),
+            hash:       Hash::ZERO,
+            size:       1000,
+            duration:   2.0,
             start_time: 0.0,
         });
 
         manifest.add_segment(Segment {
-            index: 1,
-            filename: "seg_001.mp4".to_string(),
-            hash: Hash::ZERO,
-            size: 1000,
-            duration: 2.0,
+            index:      1,
+            filename:   "seg_001.mp4".to_string(),
+            hash:       Hash::ZERO,
+            size:       1000,
+            duration:   2.0,
             start_time: 2.0,
         });
 

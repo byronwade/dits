@@ -1,24 +1,34 @@
 //! `dits stream-demo` — end-to-end FACR incremental-streaming proof.
 //!
-//! Ingests (or generates) a short clip, builds v1 HLS, re-grades a time window to make
-//! v2, rebuilds v2 reusing unchanged segments, prints the headline, and serves a browser
-//! player. See docs/superpowers/specs/2026-06-02-facr-incremental-streaming-slice-design.md.
+//! Ingests (or generates) a short clip, builds v1 HLS, re-grades a time window
+//! to make v2, rebuilds v2 reusing unchanged segments, prints the headline, and
+//! serves a browser player. See
+//! docs/superpowers/specs/2026-06-02-facr-incremental-streaming-slice-design.
+//! md.
 
-use crate::facr::store::FrameStore;
-use crate::facr::video::{check_ffmpeg, ingest_video, FrameImageCodec};
-use crate::stream::incremental::{build_full, build_incremental, plan};
-use crate::stream::ladder::{default_ladder, Rendition};
-use crate::stream::layout::SegmentLayout;
-use crate::stream::origin::{LocalDiskOrigin, SegmentOrigin};
-use crate::stream::quic_origin::{push_delta, serve_quic_origin, QuicOriginClient};
-use crate::stream::serve::{serve, ServeState, Ladder};
+use std::{path::PathBuf, process::Command, sync::Arc};
+
 use anyhow::{Context, Result};
-use std::path::PathBuf;
-use std::process::Command;
-use std::sync::Arc;
 
-/// Async because the binary runs under `#[tokio::main]`; nesting a runtime would panic.
-/// The ingest/encode work is blocking (shells out to ffmpeg) but runs once at startup.
+use crate::{
+    facr::{
+        store::FrameStore,
+        video::{check_ffmpeg, ingest_video, FrameImageCodec},
+    },
+    stream::{
+        incremental::{build_full, build_incremental, plan},
+        ladder::{default_ladder, Rendition},
+        layout::SegmentLayout,
+        origin::{LocalDiskOrigin, SegmentOrigin},
+        quic_origin::{push_delta, serve_quic_origin, QuicOriginClient},
+        serve::{serve, Ladder, ServeState},
+    },
+};
+
+/// Async because the binary runs under `#[tokio::main]`; nesting a runtime
+/// would panic. The ingest/encode work is blocking (shells out to ffmpeg) but
+/// runs once at startup.
+#[allow(clippy::too_many_arguments)]
 pub async fn stream_demo(
     input: Option<PathBuf>,
     grade_start: f64,
@@ -47,8 +57,15 @@ pub async fn stream_demo(
             let p = work.join("source.mp4");
             let ok = Command::new("ffmpeg")
                 .args([
-                    "-v", "error", "-y", "-f", "lavfi", "-i",
-                    "testsrc=duration=10:size=1280x720:rate=10", "-pix_fmt", "yuv420p",
+                    "-v",
+                    "error",
+                    "-y",
+                    "-f",
+                    "lavfi",
+                    "-i",
+                    "testsrc=duration=10:size=1280x720:rate=10",
+                    "-pix_fmt",
+                    "yuv420p",
                 ])
                 .arg(&p)
                 .status()
@@ -56,24 +73,32 @@ pub async fn stream_demo(
                 .unwrap_or(false);
             anyhow::ensure!(ok, "failed to generate test clip");
             p
-        }
+        },
     };
 
-    // 2. Ingest -> v1 manifest -> v1 HLS. Canonical frames are JPEG-XL (deterministic, so
-    //    content-addressing/reuse hold) at visually-lossless distance 1 (or lossless distance 0).
-    let codec = if lossless { FrameImageCodec::JxlLossless } else { FrameImageCodec::Jxl };
+    // 2. Ingest -> v1 manifest -> v1 HLS. Canonical frames are JPEG-XL
+    //    (deterministic, so content-addressing/reuse hold) at visually-lossless
+    //    distance 1 (or lossless distance 0).
+    let codec = if lossless {
+        FrameImageCodec::JxlLossless
+    } else {
+        FrameImageCodec::Jxl
+    };
     let v1m = ingest_video(&video, &store, codec).context("ingest video")?;
     let layout = SegmentLayout::new(&v1m.frame_rate, segment_seconds);
 
-    // P4 #2: content-defined boundaries make reuse survive trim/insert edits. Objective report only.
+    // P4 #2: content-defined boundaries make reuse survive trim/insert edits.
+    // Objective report only.
     if let Some(kind) = edit.as_deref() {
         return cdc_edit_demo(kind, &v1m, &store, &origin, layout.fps).await;
     }
-    // P4 #3: reconstruct an edit from an OpenTimelineIO timeline (generated, or a real --import file).
+    // P4 #3: reconstruct an edit from an OpenTimelineIO timeline (generated, or a
+    // real --import file).
     if otio || import.is_some() {
         return otio_demo(&v1m, import.as_deref(), &work).await;
     }
-    // P5 #1: AES-128 segment encryption (deterministic, so reuse + delta-push survive).
+    // P5 #1: AES-128 segment encryption (deterministic, so reuse + delta-push
+    // survive).
     if encrypt {
         return encrypt_demo(&v1m, &store, &layout).await;
     }
@@ -97,8 +122,9 @@ pub async fn stream_demo(
 
     // 4. Plan once (rendition-independent), then build for v1 and v2.
     let p = plan(&v1m, &v2m, &layout);
-    // VMAF mode: a single source-resolution rendition whose per-segment CRF is chosen to hit the
-    // quality target (Netflix-style). Otherwise the fixed-bitrate ABR ladder.
+    // VMAF mode: a single source-resolution rendition whose per-segment CRF is
+    // chosen to hit the quality target (Netflix-style). Otherwise the
+    // fixed-bitrate ABR ladder.
     let ladder = if vmaf.is_some() {
         vec![Rendition { name: "source".into(), height: v1m.height, bitrate_kbps: 0 }]
     } else {
@@ -113,14 +139,19 @@ pub async fn stream_demo(
     let mut v1_ladder = Vec::new();
     let mut v2_ladder = Vec::new();
     for rend in &ladder {
-        let prof = if vmaf.is_some() { crate::stream::encode::EncodeProfile::source() } else { rend.profile() };
+        let prof = if vmaf.is_some() {
+            crate::stream::encode::EncodeProfile::source()
+        } else {
+            rend.profile()
+        };
         let sv1 = build_full(&v1m, &store, &layout, &origin, &prof, vmaf)?;
         let sv2 = build_incremental(&sv1, &v2m, &store, &layout, &origin, &p, &prof, vmaf)?;
         v1_ladder.push((rend.clone(), sv1));
         v2_ladder.push((rend.clone(), sv2));
     }
 
-    // 5. Byte accounting across every rung of v2: naive (all segments) vs incremental (only changed).
+    // 5. Byte accounting across every rung of v2: naive (all segments) vs
+    //    incremental (only changed).
     let mut bytes_total = 0u64;
     let mut bytes_reencoded = 0u64;
     let mut total_segs = 0usize;
@@ -143,8 +174,15 @@ pub async fn stream_demo(
     };
 
     println!("\n  -- FACR incremental result (across {} renditions) --", ladder.len());
-    println!("  segments total : {total_segs}  ({} per rung x {} rungs)", p.reused.len() + p.reencoded.len(), ladder.len());
-    println!("  re-encoded     : {reencoded_segs}  (changed segment(s) {:?} x each rung)", p.reencoded);
+    println!(
+        "  segments total : {total_segs}  ({} per rung x {} rungs)",
+        p.reused.len() + p.reencoded.len(),
+        ladder.len()
+    );
+    println!(
+        "  re-encoded     : {reencoded_segs}  (changed segment(s) {:?} x each rung)",
+        p.reencoded
+    );
     println!("  reused (0 xfer): {}  ({:.1}% reused)", total_segs - reencoded_segs, reuse_pct);
     println!(
         "  re-delivered   : {:.1} KB   (naive full re-encode: {:.1} KB)",
@@ -153,16 +191,22 @@ pub async fn stream_demo(
     );
     if let Some(t) = vmaf {
         println!(
-            "  VMAF           : every segment's CRF chosen to hit >= {t}; total {:.1} KB at target quality",
+            "  VMAF           : every segment's CRF chosen to hit >= {t}; total {:.1} KB at \
+             target quality",
             bytes_total as f64 / 1024.0
         );
     }
 
-    // 5b. Optional: delta-push to a remote QUIC origin — only changed segments cross the network.
+    // 5b. Optional: delta-push to a remote QUIC origin — only changed segments
+    // cross the network.
     if push {
         let remote_backing = Arc::new(LocalDiskOrigin::new(&work.join("remote"))?);
-        let (addr, fp, _task) =
-            serve_quic_origin("127.0.0.1:0".parse().unwrap(), remote_backing, "dits-demo-token".to_string()).await?;
+        let (addr, fp, _task) = serve_quic_origin(
+            "127.0.0.1:0".parse().unwrap(),
+            remote_backing,
+            "dits-demo-token".to_string(),
+        )
+        .await?;
         let client = QuicOriginClient::connect(addr, fp, "dits-demo-token").await?;
         println!("\n  -- QUIC delta-push to remote origin ({addr}) --");
 
@@ -185,7 +229,8 @@ pub async fn stream_demo(
         println!("  => only the changed segments crossed the network.");
     }
 
-    // 6. Serve the browser proof (hls.js loads the master playlist and adapts between rungs).
+    // 6. Serve the browser proof (hls.js loads the master playlist and adapts
+    //    between rungs).
     let state = ServeState {
         v1: v1_ladder,
         v2: v2_ladder,
@@ -197,23 +242,27 @@ pub async fn stream_demo(
     Ok(())
 }
 
-/// Segment-encryption demo: build encrypted segments deterministically (so reuse holds), prove
-/// they decrypt back to valid media, and emit an AES-128 EXT-X-KEY playlist.
+/// Segment-encryption demo: build encrypted segments deterministically (so
+/// reuse holds), prove they decrypt back to valid media, and emit an AES-128
+/// EXT-X-KEY playlist.
 async fn encrypt_demo(
     v1m: &crate::facr::manifest::ClipManifest,
     store: &FrameStore,
     layout: &SegmentLayout,
 ) -> Result<()> {
-    use crate::stream::crypto::{decrypt_segment, derive_iv, encrypt_segment, iv_hex, SegmentKey};
-    use crate::stream::encode::{encode_cmaf_segment, EncodeProfile};
-    use crate::stream::playlist::to_hls_encrypted;
+    use crate::stream::{
+        crypto::{decrypt_segment, derive_iv, encrypt_segment, iv_hex, SegmentKey},
+        encode::{encode_cmaf_segment, EncodeProfile},
+        playlist::to_hls_encrypted,
+    };
 
     let key = SegmentKey::from_passphrase("dits-demo-key");
     let ext = crate::facr::video::frame_ext(&v1m.codec);
     let n = v1m.frames.len();
     let seg_count = layout.segment_count(n);
 
-    // Build + encrypt each segment; keep the first segment's init + ciphertext for verification.
+    // Build + encrypt each segment; keep the first segment's init + ciphertext for
+    // verification.
     let mut entries: Vec<(crate::core::Hash, u64, String)> = Vec::new();
     let mut total_ct = 0u64;
     let mut sample: Option<(Vec<u8>, Vec<u8>, [u8; 16])> = None; // (init, ciphertext, iv)
@@ -240,15 +289,21 @@ async fn encrypt_demo(
         entries.push((ct_hash, dur_ms, iv_hex(&iv)));
     }
 
-    // Determinism / reuse: re-encrypting the same first segment yields the identical ciphertext hash.
+    // Determinism / reuse: re-encrypting the same first segment yields the
+    // identical ciphertext hash.
     let range0 = layout.frame_range(0, n);
-    let pngs0: Vec<Vec<u8>> = range0.map(|i| store.load_frame(&v1m.frames[i].hash)).collect::<std::io::Result<_>>()?;
+    let pngs0: Vec<Vec<u8>> = range0
+        .map(|i| store.load_frame(&v1m.frames[i].hash))
+        .collect::<std::io::Result<_>>()?;
     let cm0 = encode_cmaf_segment(&pngs0, &v1m.frame_rate, ext, &EncodeProfile::source())?;
     let iv0 = derive_iv(&crate::core::Hash::from_slice(blake3::hash(&cm0.media).as_bytes()));
-    let ct0_hash = crate::core::Hash::from_slice(blake3::hash(&encrypt_segment(&cm0.media, &key, &iv0)).as_bytes());
+    let ct0_hash = crate::core::Hash::from_slice(
+        blake3::hash(&encrypt_segment(&cm0.media, &key, &iv0)).as_bytes(),
+    );
     let reuse_stable = ct0_hash == first_ct_hash;
 
-    // Objective verification: decrypt the sample segment and confirm init+plaintext probes as h264.
+    // Objective verification: decrypt the sample segment and confirm init+plaintext
+    // probes as h264.
     let (init, ct, iv) = sample.context("no segments")?;
     let pt = decrypt_segment(&ct, &key, &iv)?;
     let tmp = std::env::temp_dir().join(format!("dits-encdec-{}.mp4", uuid::Uuid::new_v4()));
@@ -256,7 +311,16 @@ async fn encrypt_demo(
     buf.extend_from_slice(&pt);
     std::fs::write(&tmp, &buf)?;
     let probe_ok = Command::new("ffprobe")
-        .args(["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=codec_name", "-of", "csv=p=0"])
+        .args([
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_entries",
+            "stream=codec_name",
+            "-of",
+            "csv=p=0",
+        ])
         .arg(&tmp)
         .output()
         .map(|o| String::from_utf8_lossy(&o.stdout).contains("h264"))
@@ -265,26 +329,46 @@ async fn encrypt_demo(
 
     let m3u8 = to_hls_encrypted(&init_hash, &entries, "/seg/", "/key");
     println!("\n  -- FACR segment encryption (AES-128) --");
-    println!("  segments encrypted     : {seg_count}  ({:.1} KB ciphertext)", total_ct as f64 / 1024.0);
-    println!("  deterministic (reuse)  : {}  (same plaintext -> identical ciphertext hash)", if reuse_stable { "yes" } else { "NO" });
-    println!("  decrypt -> valid h264  : {}  (sample segment round-trips to playable media)", if probe_ok { "yes" } else { "NO" });
-    println!("  playlist               : {} EXT-X-KEY lines, key at /key (the license-gated point)", m3u8.matches("#EXT-X-KEY").count());
-    println!("  => segments are encrypted at rest/in transit; deterministic IV keeps them content-addressable (reuse + QUIC delta-push intact).");
+    println!(
+        "  segments encrypted     : {seg_count}  ({:.1} KB ciphertext)",
+        total_ct as f64 / 1024.0
+    );
+    println!(
+        "  deterministic (reuse)  : {}  (same plaintext -> identical ciphertext hash)",
+        if reuse_stable { "yes" } else { "NO" }
+    );
+    println!(
+        "  decrypt -> valid h264  : {}  (sample segment round-trips to playable media)",
+        if probe_ok { "yes" } else { "NO" }
+    );
+    println!(
+        "  playlist               : {} EXT-X-KEY lines, key at /key (the license-gated point)",
+        m3u8.matches("#EXT-X-KEY").count()
+    );
+    println!(
+        "  => segments are encrypted at rest/in transit; deterministic IV keeps them \
+         content-addressable (reuse + QUIC delta-push intact)."
+    );
     Ok(())
 }
 
-/// OTIO import demo: reconstruct an edit from an OpenTimelineIO timeline (a generated trim+reorder,
-/// or a real `--import` file) and show it costs 0 new frames, with CDC segment reuse.
+/// OTIO import demo: reconstruct an edit from an OpenTimelineIO timeline (a
+/// generated trim+reorder, or a real `--import` file) and show it costs 0 new
+/// frames, with CDC segment reuse.
 async fn otio_demo(
     source: &crate::facr::manifest::ClipManifest,
     import: Option<&str>,
     work: &std::path::Path,
 ) -> Result<()> {
-    use crate::stream::cdc::{plan_cdc, CdcParams};
-    use crate::stream::otio::{parse_otio, timeline_to_manifest};
     use std::collections::HashMap;
 
-    // Get an OTIO document: a real file, or a generated trim+reorder of the ingested source.
+    use crate::stream::{
+        cdc::{plan_cdc, CdcParams},
+        otio::{parse_otio, timeline_to_manifest},
+    };
+
+    // Get an OTIO document: a real file, or a generated trim+reorder of the
+    // ingested source.
     let doc = match import {
         Some(p) => std::fs::read_to_string(p).with_context(|| format!("read OTIO file {p}"))?,
         None => {
@@ -298,11 +382,12 @@ async fn otio_demo(
             std::fs::write(&path, &doc)?;
             println!("generated OTIO timeline -> {}", path.display());
             doc
-        }
+        },
     };
 
     let clips = parse_otio(&doc).context("parse OTIO")?;
-    // Map every referenced source name onto the single ingested source (demo uses one source).
+    // Map every referenced source name onto the single ingested source (demo uses
+    // one source).
     let mut sources: HashMap<String, &crate::facr::manifest::ClipManifest> = HashMap::new();
     for c in &clips {
         sources.insert(c.source.clone(), source);
@@ -311,22 +396,40 @@ async fn otio_demo(
 
     // Zero new content: how many output frame hashes are absent from the source?
     let src_hashes: std::collections::HashSet<_> = source.frames.iter().map(|f| f.hash).collect();
-    let new_frames = edited.frames.iter().filter(|f| !src_hashes.contains(&f.hash)).count();
+    let new_frames = edited
+        .frames
+        .iter()
+        .filter(|f| !src_hashes.contains(&f.hash))
+        .count();
 
     let plan = plan_cdc(source, &edited, &CdcParams::default());
     let total = plan.reused.len() + plan.reencoded.len();
-    let reuse_pct = if total == 0 { 0.0 } else { plan.reused.len() as f64 / total as f64 * 100.0 };
+    let reuse_pct = if total == 0 {
+        0.0
+    } else {
+        plan.reused.len() as f64 / total as f64 * 100.0
+    };
 
     println!("\n  -- FACR OTIO import --");
     println!("  clips imported        : {}", clips.len());
-    println!("  frames reconstructed  : {}  (source had {})", edited.frames.len(), source.frames.len());
-    println!("  NEW frames stored     : {new_frames}  (the whole edit is a re-arrangement of existing frames)");
+    println!(
+        "  frames reconstructed  : {}  (source had {})",
+        edited.frames.len(),
+        source.frames.len()
+    );
+    println!(
+        "  NEW frames stored     : {new_frames}  (the whole edit is a re-arrangement of existing \
+         frames)"
+    );
     println!("  CDC segments reused   : {}/{}  ({reuse_pct:.1}%)", plan.reused.len(), total);
-    println!("  => importing an external edit costs ~0 new frames; interior segments reuse by content.");
+    println!(
+        "  => importing an external edit costs ~0 new frames; interior segments reuse by content."
+    );
     Ok(())
 }
 
-/// Build a minimal one-track OTIO JSON document from `(start, count)` source ranges (in frames).
+/// Build a minimal one-track OTIO JSON document from `(start, count)` source
+/// ranges (in frames).
 fn generate_otio(source: &str, rate: f64, ranges: &[(usize, usize)]) -> String {
     let clips: Vec<String> = ranges
         .iter()
@@ -342,9 +445,10 @@ fn generate_otio(source: &str, rate: f64, ranges: &[(usize, usize)]) -> String {
     )
 }
 
-/// CDC edit demo: build v1 with content-defined segments, apply a trim/insert, rebuild v2 reusing
-/// segments by content id, and report reuse vs the fixed-boundary baseline. Objective (byte/segment
-/// counts), like the QUIC proof.
+/// CDC edit demo: build v1 with content-defined segments, apply a trim/insert,
+/// rebuild v2 reusing segments by content id, and report reuse vs the
+/// fixed-boundary baseline. Objective (byte/segment counts), like the QUIC
+/// proof.
 async fn cdc_edit_demo(
     kind: &str,
     v1m: &crate::facr::manifest::ClipManifest,
@@ -352,15 +456,21 @@ async fn cdc_edit_demo(
     origin: &LocalDiskOrigin,
     fps: f64,
 ) -> Result<()> {
-    use crate::stream::cdc::{cdc_segments, CdcParams};
-    use crate::stream::encode::{encode_cmaf_segment, EncodeProfile};
     use std::collections::HashMap;
+
+    use crate::stream::{
+        cdc::{cdc_segments, CdcParams},
+        encode::{encode_cmaf_segment, EncodeProfile},
+    };
 
     let params = CdcParams::default();
     let ext = crate::facr::video::frame_ext(&v1m.codec);
 
-    // Encode one content-defined segment and store its media; returns (media_hash, bytes).
-    let encode_seg = |range: std::ops::Range<usize>, m: &crate::facr::manifest::ClipManifest| -> Result<(crate::core::Hash, u64)> {
+    // Encode one content-defined segment and store its media; returns (media_hash,
+    // bytes).
+    let encode_seg = |range: std::ops::Range<usize>,
+                      m: &crate::facr::manifest::ClipManifest|
+     -> Result<(crate::core::Hash, u64)> {
         let pngs: Vec<Vec<u8>> = range
             .clone()
             .map(|i| store.load_frame(&m.frames[i].hash))
@@ -395,9 +505,13 @@ async fn cdc_edit_demo(
             // Insert a short clip (a copy of the opening frames) at the midpoint.
             let inserted: Vec<_> = v1m.frames[0..k.min(v1m.frames.len())].to_vec();
             crate::stream::edit::insert_frames(v1m, mid, &inserted)?
-        }
+        },
     };
-    println!("edit: {kind} {k} frames at frame {mid}  ({} -> {} frames)", v1m.frames.len(), v2m.frames.len());
+    println!(
+        "edit: {kind} {k} frames at frame {mid}  ({} -> {} frames)",
+        v1m.frames.len(),
+        v2m.frames.len()
+    );
 
     // v2: reuse segments whose content id is already known; encode the rest.
     let v2segs = cdc_segments(&v2m, &params);
@@ -416,36 +530,43 @@ async fn cdc_edit_demo(
 
     // Fixed-boundary contrast: how many would survive with equal-size chunks?
     let chunk = ((fps * 2.0).round() as usize).max(1);
-    let fixed_ids = |m: &crate::facr::manifest::ClipManifest| -> std::collections::HashSet<crate::core::Hash> {
-        m.frames
-            .chunks(chunk)
-            .map(|c| {
-                let mut h = blake3::Hasher::new();
-                for f in c {
-                    h.update(f.hash.as_bytes());
-                }
-                crate::core::Hash::from_slice(h.finalize().as_bytes())
-            })
-            .collect()
-    };
+    let fixed_ids =
+        |m: &crate::facr::manifest::ClipManifest| -> std::collections::HashSet<crate::core::Hash> {
+            m.frames
+                .chunks(chunk)
+                .map(|c| {
+                    let mut h = blake3::Hasher::new();
+                    for f in c {
+                        h.update(f.hash.as_bytes());
+                    }
+                    crate::core::Hash::from_slice(h.finalize().as_bytes())
+                })
+                .collect()
+        };
     let f1 = fixed_ids(v1m);
     let f2 = fixed_ids(&v2m);
     let fixed_reused = f2.iter().filter(|x| f1.contains(x)).count();
 
-    let reuse_pct = if v2segs.is_empty() { 0.0 } else { reused as f64 / v2segs.len() as f64 * 100.0 };
+    let reuse_pct = if v2segs.is_empty() {
+        0.0
+    } else {
+        reused as f64 / v2segs.len() as f64 * 100.0
+    };
     println!("\n  -- FACR edit-resilient reuse ({kind}) --");
     println!("  v2 content-defined segments : {}", v2segs.len());
     println!("  reused (content match)      : {reused}  ({reuse_pct:.1}% reused)");
     println!("  re-encoded                  : {reencoded}  ({:.1} KB)", bytes_re as f64 / 1024.0);
     println!(
-        "  fixed-boundary baseline     : {fixed_reused}/{} chunks reused (collapses after the edit)",
+        "  fixed-boundary baseline     : {fixed_reused}/{} chunks reused (collapses after the \
+         edit)",
         f2.len()
     );
     println!("  => content-defined boundaries preserve reuse across a frame-shifting edit.");
     Ok(())
 }
 
-/// All content hashes in a version's ladder: every rung's init segment plus all media segments.
+/// All content hashes in a version's ladder: every rung's init segment plus all
+/// media segments.
 fn ladder_hashes(ladder: &Ladder) -> Vec<crate::core::Hash> {
     let mut out = Vec::new();
     for (_, sv) in ladder {
@@ -455,7 +576,8 @@ fn ladder_hashes(ladder: &Ladder) -> Vec<crate::core::Hash> {
     out
 }
 
-/// Total bytes of all files under `dir` (the content-addressed frame store size).
+/// Total bytes of all files under `dir` (the content-addressed frame store
+/// size).
 fn dir_size(dir: &std::path::Path) -> u64 {
     let mut total = 0u64;
     let mut stack = vec![dir.to_path_buf()];
@@ -467,8 +589,8 @@ fn dir_size(dir: &std::path::Path) -> u64 {
                     Ok(ft) if ft.is_dir() => stack.push(path),
                     Ok(ft) if ft.is_file() => {
                         total += e.metadata().map(|m| m.len()).unwrap_or(0);
-                    }
-                    _ => {}
+                    },
+                    _ => {},
                 }
             }
         }
