@@ -576,6 +576,10 @@ impl Repository {
 
     /// Add a file to the staging area.
     pub fn add(&self, path: &str) -> Result<AddResult, RepoError> {
+        // Store repository-relative paths with `/` on every platform so manifests
+        // and commit hashes match across Windows and Unix. `Path::join` accepts
+        // `/` on Windows, so normalizing up front is safe.
+        let path = &crate::util::normalize_separators(path);
         let full_path = self.work_dir.join(path);
 
         if !full_path.exists() {
@@ -599,12 +603,13 @@ impl Repository {
                 .filter_map(|e| e.ok())
                 .filter(|e| e.file_type().is_file() || e.file_type().is_symlink())
             {
-                let rel_path = entry
-                    .path()
-                    .strip_prefix(&self.work_dir)
-                    .unwrap()
-                    .to_string_lossy()
-                    .to_string();
+                let rel_path = crate::util::normalize_separators(
+                    &entry
+                        .path()
+                        .strip_prefix(&self.work_dir)
+                        .unwrap()
+                        .to_string_lossy(),
+                );
 
                 // Skip ignored files (includes .dits directory)
                 if self.ignore.is_ignored_str(&rel_path) {
@@ -1207,12 +1212,13 @@ impl Repository {
             .filter_map(|e| e.ok())
             .filter(|e| e.file_type().is_file())
         {
-            let rel_path = entry
-                .path()
-                .strip_prefix(&self.work_dir)
-                .unwrap()
-                .to_string_lossy()
-                .replace('\\', "/"); // Normalize path separators
+            let rel_path = crate::util::normalize_separators(
+                &entry
+                    .path()
+                    .strip_prefix(&self.work_dir)
+                    .unwrap()
+                    .to_string_lossy(),
+            ); // Normalize path separators (no-op on Unix; preserves literal '\' in names)
 
             // Skip ignored files (includes .dits directory)
             if self.ignore.is_ignored_str(&rel_path) {
@@ -1228,7 +1234,7 @@ impl Repository {
 
             for (new_path, new_hash) in &staged_added {
                 let mut rename_source = None;
-                let new_path_norm = new_path.replace('\\', "/");
+                let new_path_norm = crate::util::normalize_separators(new_path);
 
                 for (head_path, head_entry) in manifest.iter() {
                     if matched_old_paths.contains(head_path) {
@@ -1238,7 +1244,7 @@ impl Repository {
                         continue;
                     }
 
-                    let head_path_norm = head_path.replace('\\', "/");
+                    let head_path_norm = crate::util::normalize_separators(head_path);
                     if head_path_norm == new_path_norm {
                         continue;
                     }
