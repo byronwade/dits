@@ -49,3 +49,6 @@ debug/
 tmp/corpus/
 
 .superpowers/
+
+# Local scratch / manual test repos — never commit
+/tmp/
