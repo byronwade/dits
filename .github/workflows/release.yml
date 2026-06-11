@@ -80,6 +80,12 @@ jobs:
       - name: Build (native)
         if: "!matrix.cross"
         working-directory: apps/cli
+        env:
+          # Statically link the MSVC runtime on Windows so the published binary
+          # runs on a clean machine without the VC++ Redistributable (otherwise
+          # it depends on vcruntime140.dll and fails to start where that isn't
+          # installed). No-op on macOS/Linux.
+          RUSTFLAGS: ${{ runner.os == 'Windows' && '-C target-feature=+crt-static' || '' }}
         run: cargo build --release --target ${{ matrix.target }}
 
       - name: Strip binary (Unix)
