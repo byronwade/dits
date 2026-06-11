@@ -377,11 +377,41 @@ jobs:
         with:
           category: "/language:javascript"
 
+  # Docker image build — guards the Dockerfile and the from-source build path so
+  # a dependency or compiler change can't silently break `docker build` again
+  # (regression guard for the "Binary not found" / build-break reports).
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: dits:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test the image
+        run: |
+          set -euo pipefail
+          docker run --rm dits:ci --version
+          tmp="$(mktemp -d)"
+          docker run --rm -v "$tmp:/data" dits:ci init
+          test -d "$tmp/.dits"
+          echo "Docker image smoke test passed"
+
   # Final status check
   ci-success:
     name: CI Success
     runs-on: ubuntu-latest
-    needs: [security, lint-rust, test-rust, test-integration, build-cli, lint-web, test-web, benchmark, dependency-scan, codeql]
+    needs: [security, lint-rust, test-rust, test-integration, build-cli, docker-build, lint-web, test-web, benchmark, dependency-scan, codeql]
     if: always()
     steps:
       - name: Check all jobs
@@ -400,6 +430,10 @@ jobs:
           fi
           if [[ "${{ needs.test-integration.result }}" != "success" ]]; then
             echo "Integration tests failed"
+            exit 1
+          fi
+          if [[ "${{ needs.docker-build.result }}" != "success" ]]; then
+            echo "Docker build failed"
             exit 1
           fi
           if [[ "${{ needs.lint-web.result }}" != "success" ]]; then
