@@ -1,5 +1,26 @@
 //! Common utilities for formatting and display.
 
+/// Normalize a repository-relative path's separators to forward slashes.
+///
+/// Dits stores repository-relative paths with `/` on every platform (the same
+/// convention Git uses), so manifests, indexes, and the content/commit hashes
+/// derived from them are byte-for-byte identical across Windows and Unix, and a
+/// repository created on one platform checks out correctly on the other.
+///
+/// On Unix this is a no-op: `/` is already the separator, and a literal `\` is a
+/// valid filename character that must be preserved. On Windows the `\` that
+/// `Path`/`strip_prefix` produce are path separators and are rewritten to `/`.
+pub fn normalize_separators(path: &str) -> String {
+    #[cfg(windows)]
+    {
+        path.replace('\\', "/")
+    }
+    #[cfg(not(windows))]
+    {
+        path.to_string()
+    }
+}
+
 /// Format bytes as human-readable string with consistent formatting.
 /// Uses 2 decimal places for MB/GB, 0 for KB/bytes for consistency.
 pub fn format_bytes(bytes: u64) -> String {
