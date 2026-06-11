@@ -151,7 +151,10 @@ test_prereq() {
 			command -v convert >/dev/null 2>&1
 			;;
 		LARGE_DISK)
-			# Check if we have at least 10GB free space
+			# Never run multi-GB file stress tests on GitHub Actions: they exhaust
+			# the runner's disk and the job is SIGTERM-killed. Gate on GITHUB_ACTIONS
+			# in addition to free space (runners can exceed the size heuristic).
+			test -z "$GITHUB_ACTIONS" || return 1
 			local free_kb=$(df -k . | tail -1 | awk '{print $4}')
 			test $free_kb -gt 10000000  # 10GB in KB
 			;;
