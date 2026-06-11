@@ -21,7 +21,6 @@ use crate::store::{GitTextEngine, ObjectStore, RefStore};
 use bincode;
 use std::fs::{self, File};
 use std::io::{self, BufWriter, Read, Seek, SeekFrom, Write};
-use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use thiserror::Error;
@@ -30,6 +29,23 @@ use walkdir::WalkDir;
 /// Minimum file size to use parallel chunking (1 MB).
 /// Below this threshold, sequential chunking is faster due to lower overhead.
 const PARALLEL_CHUNK_THRESHOLD: usize = 1024 * 1024;
+
+/// POSIX permission bits for a file's metadata.
+///
+/// Windows has no POSIX mode, so on non-Unix platforms this returns the
+/// conventional default for a regular file (`0o644`). This keeps the CLI and
+/// its manifests building and running on Windows; executable-bit fidelity is a
+/// Unix-only concern and is only meaningful where the OS records it.
+#[cfg(unix)]
+fn permission_mode(metadata: &fs::Metadata) -> u32 {
+    use std::os::unix::fs::PermissionsExt;
+    metadata.permissions().mode()
+}
+
+#[cfg(not(unix))]
+fn permission_mode(_metadata: &fs::Metadata) -> u32 {
+    0o644
+}
 
 /// Repository errors.
 #[derive(Debug, Error)]
@@ -669,7 +685,7 @@ impl Repository {
                     .as_secs() as i64
             })
             .unwrap_or(0);
-        let mode = metadata.permissions().mode();
+        let mode = permission_mode(&metadata);
         let file_type = if metadata.is_dir() {
             FileType::Directory
         } else if metadata.is_symlink() {
@@ -795,7 +811,7 @@ impl Repository {
                     .as_secs() as i64
             })
             .unwrap_or(0);
-        let mode = metadata.permissions().mode();
+        let mode = permission_mode(&metadata);
         let file_type = if metadata.is_dir() {
             FileType::Directory
         } else if metadata.is_symlink() {
@@ -1003,7 +1019,7 @@ impl Repository {
                     .as_secs() as i64
             })
             .unwrap_or(0);
-        let mode = metadata.permissions().mode();
+        let mode = permission_mode(&metadata);
         let file_type = if metadata.is_dir() {
             FileType::Directory
         } else if metadata.is_symlink() {
@@ -1092,7 +1108,7 @@ impl Repository {
             .unwrap_or(0);
 
         // Get file mode and type
-        let mode = metadata.permissions().mode();
+        let mode = permission_mode(&metadata);
         let file_type = if metadata.is_dir() {
             FileType::Directory
         } else if metadata.file_type().is_symlink() {
@@ -1248,7 +1264,7 @@ impl Repository {
                 if manifest.contains(rel_path) {
                     // File exists in HEAD - check various change types
                     let metadata = fs::metadata(full_path)?;
-                    let current_mode = metadata.permissions().mode();
+                    let current_mode = permission_mode(&metadata);
                     let current_file_type = if metadata.is_dir() {
                         FileType::Directory
                     } else if metadata.is_symlink() {
@@ -1533,7 +1549,7 @@ impl Repository {
             // Get file metadata if possible
             let (mode, file_type, symlink_target) = if full_path.exists() {
                 if let Ok(metadata) = fs::metadata(&full_path) {
-                    let mode = metadata.permissions().mode();
+                    let mode = permission_mode(&metadata);
                     let file_type = if metadata.is_dir() {
                         FileType::Directory
                     } else if metadata.is_symlink() {
