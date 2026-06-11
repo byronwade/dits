@@ -356,6 +356,41 @@ cargo build --release
 # Binary is at target/release/dits
 ```
 
+### Docker (any platform, incl. Windows)
+
+If `npm install -g @byronwade/dits` reports `Binary not found for your
+platform` (no prebuilt binary for your OS/arch yet), use the Docker image. It
+builds `dits` from source and runs anywhere Docker does:
+
+```bash
+git clone https://github.com/byronwade/dits.git
+cd dits
+docker build -t dits .
+
+# Run dits against the current directory (mounted at /data):
+docker run --rm -v "$PWD:/data" dits init
+docker run --rm -v "$PWD:/data" dits status
+```
+
+On Windows PowerShell, use `${PWD}` for the mount:
+
+```powershell
+docker run --rm -v "${PWD}:/data" dits status
+```
+
+By default files are created as `root`. To create them as your host user
+(Linux/macOS), add `--user`:
+
+```bash
+docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/data" dits init
+```
+
+Tip: add a shell alias so `dits ...` transparently runs the container:
+
+```bash
+alias dits='docker run --rm -v "$PWD:/data" dits'
+```
+
 ---
 
 ### Getting Started
