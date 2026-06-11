@@ -1,0 +1,10 @@
+# Runtime test scratch. The sharness-style harness (test-lib.sh) runs each test
+# inside trash.$$ and removes it on exit, but stray/older runs can leave repo
+# working directories here. None of these belong in version control — one of
+# them (extreme-path-test) created a 600+ character path that exceeds Windows
+# MAX_PATH and broke `git checkout` on Windows runners, so no win32 binary was
+# ever published.
+/trash.*/
+/test-results/
+/*-test/
+/test-repo/
