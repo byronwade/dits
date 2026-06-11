@@ -155,8 +155,12 @@ test_prereq() {
 			command -v convert >/dev/null 2>&1
 			;;
 		LARGE_DISK)
-			# Require 50GB free to avoid running large-file tests in constrained
-			# environments (e.g. GitHub Actions runners with ~14 GB free disk).
+			# Multi-GB file stress tests must never run on GitHub Actions: writing
+			# a 10GB file exhausts the runner's disk and the job is SIGTERM-killed
+			# (exit 143). The old 50GB free-space heuristic was meant to gate these
+			# out of CI, but current runners can exceed it, so gate explicitly on
+			# GITHUB_ACTIONS as well. Locally, still require a genuinely large disk.
+			test -z "$GITHUB_ACTIONS" || return 1
 			local free_kb=$(df -k . | tail -1 | awk '{print $4}')
 			test $free_kb -gt 50000000  # 50GB in KB
 			;;
