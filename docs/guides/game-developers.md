@@ -71,7 +71,7 @@ Result with Git:
 ✅ Game engine format awareness: Unity, Unreal, Godot native support
 ✅ Git-compatible workflow: Familiar commands, branching, merging
 ✅ Binary asset collaboration: Locks prevent conflicts
-✅ Tested with 80+ file formats: Production-ready reliability
+✅ Tested with 80+ file formats (alpha software — expect rough edges)
 ✅ Git recovery on binaries: Diff, merge, blame work on game assets
 ✅ 1TB+ repository support: Handles massive game projects
 ✅ Cross-platform: Windows/macOS/Linux game development
@@ -425,7 +425,7 @@ dits switch art/character-update
 dits add Assets/Models/Character_Hero.fbx
 dits add Assets/Textures/Character/
 dits commit -m "Update hero character: new armor variant"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Programmer workflow
 git branch feature/character-abilities

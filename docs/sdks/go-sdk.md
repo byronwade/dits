@@ -1,15 +1,16 @@
 # Go SDK Guide
 
-> ⚠️ These SDKs target a quarantined/legacy backend service (legacy/backend-crates), not the current local-first CLI. Retained as design reference.
+> 🚧 **Roadmap — not yet available.** There is **no published Go module** (`dits-go` does not exist — `go get` 404s) and **no hosted REST API** (`api.dits.io` does not exist). Dits ships today as a local-first CLI — install the CLI with `npm install -g @byronwade/dits` (or bun/pnpm). This SDK targeted a quarantined/legacy backend service (`legacy/backend-crates`) and is retained as illustrative/planned design only, not a shipped product. Source: `github.com/byronwade/dits`. See `docs/STATUS.md`.
 
-Complete guide to using the Dits Go SDK.
+Complete guide to using the planned Dits Go SDK.
 
 ---
 
 ## Installation
 
 ```bash
-go get github.com/dits-io/dits-go
+# (module not yet published — this path 404s today)
+go get github.com/byronwade/dits-go
 ```
 
 **Requirements**: Go 1.21+
@@ -26,7 +27,7 @@ import (
     "fmt"
     "log"
 
-    "github.com/dits-io/dits-go"
+    "github.com/byronwade/dits-go"
 )
 
 func main() {
@@ -65,7 +66,7 @@ func main() {
 ### From Environment
 
 ```go
-import "github.com/dits-io/dits-go"
+import "github.com/byronwade/dits-go"
 
 // Reads DITS_TOKEN and DITS_ENDPOINT from environment
 client, err := dits.NewClientFromEnv()
@@ -76,11 +77,11 @@ client, err := dits.NewClientFromEnv()
 ```go
 import (
     "time"
-    "github.com/dits-io/dits-go"
+    "github.com/byronwade/dits-go"
 )
 
 client, err := dits.NewClient(
-    dits.WithEndpoint("https://api.dits.io"),
+    dits.WithEndpoint("https://api.example.com"), // roadmap: no hosted API exists yet
     dits.WithToken("dits_token_xxx"),
     dits.WithTimeout(30*time.Second),
     dits.WithMaxConnections(8),
@@ -162,7 +163,7 @@ client, err := dits.NewClient(
 ### OAuth Flow
 
 ```go
-import "github.com/dits-io/dits-go/auth"
+import "github.com/byronwade/dits-go/auth"
 
 // Start OAuth flow
 flow := auth.NewOAuthFlow(auth.ProviderGitHub)
@@ -231,7 +232,7 @@ repo, err := client.OpenRepository("./project")
 repo, err := dits.InitRepository("./new-project")
 
 // Add remote
-err = repo.RemoteAdd(ctx, "origin", "https://dits.io/myorg/new-project")
+err = repo.RemoteAdd(ctx, "origin", "https://example.com/myorg/new-project") // roadmap placeholder
 ```
 
 ### Repository Info
@@ -579,7 +580,7 @@ if lock != nil {
 ### Error Types
 
 ```go
-import "github.com/dits-io/dits-go/errors"
+import "github.com/byronwade/dits-go/errors"
 
 err := repo.Push(ctx)
 if err != nil {
@@ -608,7 +609,7 @@ if err != nil {
 ### Retry Logic
 
 ```go
-import "github.com/dits-io/dits-go/retry"
+import "github.com/byronwade/dits-go/retry"
 
 err := retry.Do(ctx, func() error {
     return repo.Push(ctx)
@@ -826,7 +827,7 @@ func main() {
 ### Mock Client
 
 ```go
-import "github.com/dits-io/dits-go/testing"
+import "github.com/byronwade/dits-go/testing"
 
 func TestPush(t *testing.T) {
     client := testing.NewMockClient()
@@ -912,7 +913,7 @@ import (
     "log"
     "os"
 
-    "github.com/dits-io/dits-go"
+    "github.com/byronwade/dits-go"
 )
 
 func main() {
@@ -975,5 +976,5 @@ func main() {
 - All operations accept context.Context for cancellation
 - Implements idiomatic Go error handling
 - Thread-safe for concurrent use
-- Full documentation at pkg.go.dev/github.com/dits-io/dits-go
+- Planned module (not yet published); source at github.com/byronwade/dits
 

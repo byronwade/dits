@@ -103,10 +103,9 @@ dits commit -m "Initial commit"
 
 ### Do I need an account to use Dits?
 
-No! Dits works entirely locally without any account. You only need an account if you want to:
-- Use DitsHub cloud hosting
-- Access team collaboration features
-- Use remote backup services
+No! Dits works entirely locally without any account. (Hosted cloud, team collaboration,
+and remote backup are **roadmap** features that do not exist yet — see the roadmap notice
+at the top.)
 
 ### How do I configure my identity?
 
@@ -133,7 +132,9 @@ Typical savings depend on your use case:
 ### How does deduplication work?
 
 When you add a file, Dits:
-1. **Chunks** the file into ~1MB pieces based on content patterns
+1. **Chunks** the file into content-defined pieces using FastCDC. Chunk sizes depend on the
+   active profile — e.g. the `default` profile targets 16KB/64KB/256KB (min/avg/max), and
+   the `media` profile targets 64KB/256KB/1MB.
 2. **Hashes** each chunk with BLAKE3
 3. **Stores** only unique chunks
 4. **Creates a manifest** listing which chunks make up the file
@@ -206,10 +207,10 @@ dits p2p share
 dits p2p connect ABC-123 ./project
 ```
 
-**Option 2: Remote server (DitsHub or self-hosted)**
+**Option 2: Remote server (roadmap)**
 ```bash
 # Add remote
-dits remote add origin https://ditshub.com/team/project
+dits remote add origin https://example.com/team/project
 
 # Push
 dits push -u origin main

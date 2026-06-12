@@ -1,8 +1,8 @@
 # Rate Limiting & Quotas
 
-> ⚠️ Some of this describes a quarantined/legacy backend design (now in legacy/backend-crates), not the current local-first architecture. The live architecture is the modules under apps/cli/src/ (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands).
+> ⚠️ **Not the current product.** This documents the quarantined backend service (see `legacy/backend-crates`) and/or a planned hosted offering. Dits today is a local-first CLI — there is no hosted API, no server-side rate limiting, no quotas, and no networked sync (`push`/`pull`/`fetch`/network `clone` print placeholders and transfer no data). The `dits quota` / `dits rate-limit` commands shown below are illustrative and not part of the shipping CLI. The live architecture is the modules under `apps/cli/src/`. Retained as design reference. See `docs/STATUS.md`.
 
-Request throttling, resource quotas, and fair usage policies.
+Request throttling, resource quotas, and fair usage policies for a planned hosted service.
 
 ---
 
@@ -847,4 +847,4 @@ dits rate-limit status
 - Authenticated requests have higher limits than anonymous
 - Enterprise customers can request custom limits
 - Burst mode provides temporary limit increases
-- All limits are documented at docs.dits.io/limits
+- All limits are documented at example.com/limits

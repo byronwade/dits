@@ -1,8 +1,8 @@
 # Authentication & Authorization Architecture
 
-> ⚠️ Some of this describes a quarantined/legacy backend design (now in legacy/backend-crates), not the current local-first architecture. The live architecture is the modules under apps/cli/src/ (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands).
+> ⚠️ **Not the current product.** This documents server-side authentication for the quarantined backend service (see `legacy/backend-crates`) and/or a planned hosted offering — JWT/OAuth/API-key flows, a REST API, and a database that do not exist today. Dits today is a local-first CLI: `login`/`logout`/`change-password` operate on local repo state only, and there is no hosted API or networked sync (`push`/`pull`/`fetch`/network `clone` print placeholders and transfer no data). The live architecture is the modules under `apps/cli/src/` (including `security`). Retained as design reference. See `docs/STATUS.md`.
 
-Complete specification for Dits authentication flows, token management, and authorization.
+Complete specification for the planned Dits hosted-service authentication flows, token management, and authorization.
 
 ---
 

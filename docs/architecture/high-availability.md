@@ -757,7 +757,7 @@ aws route53 change-resource-record-sets \
 
 # 5. Verify services
 echo "Verifying services..."
-curl -f https://api-$RESTORE_REGION.dits.io/health
+curl -f https://api-$RESTORE_REGION.example.com/health
 
 # 6. Notify team
 echo "Sending notifications..."

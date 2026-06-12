@@ -886,16 +886,16 @@ dits commit -m "Merge: Combined laptop and desktop work"
 
 ```bash
 # Share project via P2P (no cloud account needed)
-dits p2p share
+dits p2p share   # 🚧 roadmap — scaffolding, prints a placeholder, transfers no data today
 
 # Share the join code with retoucher
 # Code: ABC-123-XYZ
 
 # Retoucher connects:
-dits p2p connect ABC-123-XYZ ./client-project
+dits p2p connect ABC-123-XYZ ./client-project   # 🚧 roadmap — scaffolding, no data transfer today
 
 # After retoucher finishes and shares back:
-dits pull  # Get their changes
+dits pull  # Get their changes   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ---
@@ -942,7 +942,5 @@ alias dlks='dits locks'
 
 ## Getting Help
 
-- **Documentation**: [docs.dits.io](https://docs.dits.io)
-- **Photography Community**: [discord.gg/dits](https://discord.gg/dits) #photographers channel
-- **Video Tutorials**: [youtube.com/@dits](https://youtube.com/@dits)
-- **Email Support**: support@dits.io
+- **Source & issues**: [github.com/byronwade/dits](https://github.com/byronwade/dits)
+- **Install**: `npm install -g @byronwade/dits` (or bun/pnpm), or build from source with `cargo build --release`
