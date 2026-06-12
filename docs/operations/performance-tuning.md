@@ -1,6 +1,8 @@
 # Performance Tuning Guide
 
 > ⚠️ Describes the quarantined backend service (see legacy/backend-crates), NOT the current product. Dits today is a local-first CLI — no server or database required. This doc is retained as design reference for a future hosted offering.
+>
+> 🚧 **Networked commands are not implemented.** `push`, `pull`, `fetch`, `sync`, and network `clone` print placeholders and **transfer no data today**. QUIC delta transport exists only as a library/demo and is **not wired into push/pull**; multi-peer resolution is not done. Any tuning advice below about API servers, PostgreSQL, Redis, CDN, or network sync is roadmap/illustrative only. See `docs/STATUS.md`.
 
 Complete guide to optimizing Dits performance for production workloads.
 
@@ -826,7 +828,7 @@ alerts:
 | High latency | p99 > 1s | Check connection pools, add caching |
 | **OOM errors** | **Pods restarting** | **✅ Resolved: Streaming chunking eliminates memory limits** |
 | Slow queries | DB CPU high | Add indexes, optimize queries |
-| **Low throughput** | **Transfer slow** | **✅ Resolved: QUIC high-throughput + multi-peer downloads** |
+| **Low throughput** | **Transfer slow** | 🚧 **Roadmap — not done.** QUIC delta transport exists only as a library/demo and is **not wired into push/pull**; multi-peer downloads are not implemented. Networked transfer moves no data today. |
 | Cache thrashing | Low hit rate | Increase cache size, review TTLs |
 | **Slow chunking** | **High CPU usage on large files** | **✅ Resolved: Parallel processing + zero-copy I/O** |
 

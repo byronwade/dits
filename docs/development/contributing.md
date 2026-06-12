@@ -31,7 +31,7 @@ Violations may result in:
 2. Temporary ban from the project
 3. Permanent ban
 
-Report violations to: conduct@dits.io
+Report violations to: the project maintainers via GitHub
 
 ---
 
@@ -62,21 +62,21 @@ git clone https://github.com/YOUR_USERNAME/dits.git
 cd dits
 
 # 3. Add upstream remote
-git remote add upstream https://github.com/dits-io/dits.git
+git remote add upstream https://github.com/byronwade/dits.git
 
-# 4. Install dependencies
-cargo build
+# 4. Build the CLI (the canonical product lives at apps/cli)
+cargo build --release
+# To enable VFS mount support (local-only):
+cargo build --release --features fuser
 
-# 5. Set up the database
-docker-compose up -d postgres
-cargo run --bin dits-migrate
-
-# 6. Run tests to verify setup
+# 5. Run tests to verify setup (469 passing)
 cargo test
-
-# 7. Start development server
-cargo run --bin dits-server
 ```
+
+> The `dits-migrate` / `dits-server` binaries and the PostgreSQL/`docker-compose` setup
+> belonged to the quarantined backend (`legacy/backend-crates`) and are **not** part of the
+> current architecture. The product is the local-first CLI at `apps/cli`; no database or
+> server is required to build, test, or run it.
 
 ### Repository Structure
 
@@ -594,7 +594,7 @@ Update `CHANGELOG.md` for user-facing changes:
 - **GitHub Issues**: Bug reports, feature requests
 - **GitHub Discussions**: Questions, ideas, show & tell
 - **Discord**: Real-time chat (#dev channel)
-- **Email**: dev@dits.io
+- **Email**: GitHub Issues (https://github.com/byronwade/dits/issues)
 
 ### Finding Issues to Work On
 

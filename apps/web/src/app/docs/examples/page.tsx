@@ -198,10 +198,10 @@ dits merge code
 # Build game
 # (Unity build process...)
 dits add Builds/  # Add built executables
-dits commit -m "Build v0.1.2 - Windows + Mac"
+dits commit -m "Build v0.1.5 - Windows + Mac"
 
 # Tag release
-dits tag release-0.1.2`}
+dits tag release-0.1.5`}
                   />
                 </div>
 

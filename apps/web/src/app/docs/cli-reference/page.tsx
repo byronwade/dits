@@ -227,8 +227,8 @@ const commandCategories = [
 const allCommands = [
   // Repository
   { name: "init", description: "Initialize a new repository", category: "Repository", status: "stable" },
-  { name: "clone", description: "Clone a repository", category: "Repository", status: "stable" },
-  { name: "remote", description: "Manage remote repositories", category: "Repository", status: "stable" },
+  { name: "clone", description: "Clone a repository (networked — roadmap, prints a placeholder)", category: "Repository", status: "roadmap" },
+  { name: "remote", description: "Manage remote repositories (networked — roadmap)", category: "Repository", status: "roadmap" },
   { name: "status", description: "Show working tree status", category: "Repository", status: "stable" },
   // Files
   { name: "add", description: "Add files to staging area", category: "Files", status: "stable" },
@@ -263,10 +263,10 @@ const allCommands = [
   { name: "maintenance", description: "Run maintenance tasks", category: "Advanced Git", status: "stable" },
   { name: "completions", description: "Generate shell completions", category: "Advanced Git", status: "stable" },
   // Remotes
-  { name: "push", description: "Push changes to remote", category: "Remotes", status: "stable" },
-  { name: "pull", description: "Fetch and integrate changes", category: "Remotes", status: "stable" },
-  { name: "fetch", description: "Download objects and refs", category: "Remotes", status: "stable" },
-  { name: "sync", description: "Bi-directional sync", category: "Remotes", status: "beta" },
+  { name: "push", description: "Push changes to remote (networked — roadmap, prints a placeholder and transfers no data)", category: "Remotes", status: "roadmap" },
+  { name: "pull", description: "Fetch and integrate changes (networked — roadmap, prints a placeholder and transfers no data)", category: "Remotes", status: "roadmap" },
+  { name: "fetch", description: "Download objects and refs (networked — roadmap, prints a placeholder and transfers no data)", category: "Remotes", status: "roadmap" },
+  { name: "sync", description: "Bi-directional sync (networked — roadmap, prints a placeholder and transfers no data)", category: "Remotes", status: "roadmap" },
   // Locks
   { name: "lock", description: "Lock files for exclusive editing", category: "Locks", status: "stable" },
   { name: "unlock", description: "Release file locks", category: "Locks", status: "stable" },
@@ -405,9 +405,14 @@ export default function CLIReferencePage() {
         description="Complete reference for all 60+ Dits commands covering core Git operations, creative workflows, enterprise features, and advanced version control for large binary assets."
       />
 
-      <Callout type="tip" title="Production-Ready Implementation" className="not-prose my-6">
-        All 60+ commands are fully implemented with 120+ automated tests covering 80+ file formats.
-        Includes Git-compatible operations, creative workflows, enterprise security, and comprehensive testing.
+      <Callout type="important" className="not-prose my-6">
+        <strong>Local commands work today; networked commands are roadmap.</strong>{" "}
+        The local Dits CLI (init, add, commit, branch, diff, log, VFS, video, and the
+        rest) is implemented and covered by 469 automated tests. The networked
+        commands &mdash; <code>push</code>, <code>pull</code>, <code>fetch</code>,{" "}
+        <code>sync</code>, <code>clone</code>, <code>remote</code>, and p2p &mdash; are
+        on the roadmap and not built: they print placeholders and transfer no data.
+        Rows marked <code>roadmap</code> in the table below are not yet available.
       </Callout>
 
       <h2>Global Options</h2>

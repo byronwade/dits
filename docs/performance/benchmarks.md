@@ -12,7 +12,7 @@ Measured performance metrics for Dits operations on various file sizes and types
 | RAM | 16GB+ |
 | Storage | NVMe SSD (3GB/s+ read/write) |
 | OS | macOS 14+ / Linux 6.x |
-| Dits Version | 0.1.0 (Phases 1-3.5 complete) |
+| Dits Version | 0.1.5 (Phases 1-3.5 complete) |
 
 ---
 
@@ -141,7 +141,12 @@ Overhead consists of:
 
 ### Chunk Size Distribution
 
-Default FastCDC parameters: min=128KB, avg=1MB, max=4MB
+FastCDC uses named profiles (see `docs/algorithms/fastcdc.md`). The chunk-size distribution
+below is illustrative of the **`large`** profile (min 256KB / avg 1MB / max 4MB). The
+**`default`** profile is min 16KB / avg 64KB / max 256KB; **`media`** is 64KB/256KB/1MB;
+**`project`** is 4KB/16KB/64KB.
+
+Distribution for the `large` profile (avg 1MB):
 
 | Percentile | Chunk Size |
 |------------|------------|

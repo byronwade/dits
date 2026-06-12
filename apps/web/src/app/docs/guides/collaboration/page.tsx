@@ -35,6 +35,18 @@ export default function CollaborationPage() {
                 description="Effective strategies for teams working together on creative projects. From small studios to enterprise productions, Dits scales with your team."
             />
 
+            <Callout type="important" title="Roadmap — networked collaboration is not yet functional">
+                The collaboration models below depend on capabilities that are
+                still being built: networked <code>push</code>/<code>pull</code>,
+                hosted Ditshub, and all <code>dits p2p</code> sync. P2P today is{" "}
+                <strong>scaffolding</strong> &mdash; it prints placeholders and
+                transfers no data. What works now is the local VCS, file locking,
+                and local-filesystem <code>clone</code>/<code>push</code>. The
+                networked and P2P workflows here describe the <em>planned</em>{" "}
+                design. See the <Link href="/docs/roadmap">roadmap</Link> for
+                status.
+            </Callout>
+
             <h2>Collaboration Models</h2>
 
             <div className="not-prose grid gap-6 md:grid-cols-3 my-8">
@@ -209,32 +221,23 @@ Unlocked 'project.prproj'.`}
                 doing. Unlock as soon as you&apos;re done, even if you haven&apos;t committed yet.
             </Callout>
 
-            <h2>Real-Time Sync with P2P</h2>
+            <h2>Real-Time Sync with P2P (planned)</h2>
+
+            <p>
+                In the planned P2P design, one teammate shares a directory and
+                others connect with a join code. The example output below is
+                illustrative &mdash; the commands print placeholders and transfer
+                no data today.
+            </p>
 
             <CodeBlock
                 language="bash"
-                code={`# Enable P2P discovery on local network
-$ dits p2p start
-P2P node started
-  Peer ID: QmYb2...xyz
-  Listening: 0.0.0.0:9001
+                code={`# Computer A — share a directory on the local network
+$ dits p2p share ./project --local
+Connect with: dits p2p connect ABC-123 --local
 
-# Discover teammates
-$ dits p2p discover
-Found peers:
-  alice-macbook (QmAbc...) - 192.168.1.10
-  bob-workstation (QmDef...) - 192.168.1.11
-
-# Sync directly with peer
-$ dits p2p sync alice-macbook
-Syncing with alice-macbook...
-  Receiving: 45 chunks (234 MB)
-  Sending: 12 chunks (56 MB)
-Sync complete.
-
-# Auto-sync mode
-$ dits p2p auto-sync --interval 5m
-Auto-sync enabled every 5 minutes.`}
+# Computer B — connect with the join code
+$ dits p2p connect ABC-123 --local`}
             />
 
             <h2>Conflict Resolution</h2>

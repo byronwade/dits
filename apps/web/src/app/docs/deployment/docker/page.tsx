@@ -30,11 +30,16 @@ export default function DockerPage() {
       <DocPageHeader
         eyebrow="Deployment"
         title="Docker Deployment"
-        description="Deploy Dits using Docker for quick setup and easy management. Perfect for development, testing, and small production deployments."
+        description="A planned guide for deploying a hosted Dits server with Docker and Docker Compose."
       />
 
-      <Callout type="tip" title="Quick Start" className="not-prose my-6">
-        Get Dits running in under 5 minutes with Docker Compose.
+      <Callout type="important" className="not-prose my-6">
+        <strong>Planned &mdash; not yet available.</strong> There is no
+        <code>dits/dits-server</code> Docker image to run today &mdash; the server
+        component is part of the roadmap and has not been built. Dits today is a
+        local-first Rust CLI; install it with
+        <code>npm install -g @byronwade/dits</code>. The Compose files and commands
+        below are illustrative of the intended design, not working instructions.
       </Callout>
 
       <h2>Prerequisites</h2>

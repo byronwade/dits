@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Callout } from "@/components/ui/callout";
 import { DocPageHeader } from "@/components/doc-page-header";
 import { CodeBlock } from "@/components/ui/code-block";
 import {
@@ -42,8 +43,18 @@ export default function SDKsPage() {
       <DocPageHeader
         eyebrow="API & Integration"
         title="Official SDKs"
-        description="Integrate Dits version control into your applications with our official SDKs. Available for JavaScript/TypeScript, Python, Go, and Rust."
+        description="Planned official SDKs for integrating Dits into your applications, intended for JavaScript/TypeScript, Python, Go, and Rust."
       />
+
+      <Callout type="important" className="not-prose my-6">
+        <strong>Planned &mdash; not yet available.</strong> The SDKs on this page
+        do not exist yet. None of the packages (<code>@dits/sdk</code>,
+        <code>dits-sdk</code>, the Go module, or the Rust crate) are published, and
+        there is no hosted <code>api.dits.io</code> service for them to talk to.
+        Dits today is a local-first Rust CLI. The install commands, code samples,
+        and feature tables below describe the intended design and may change. Do
+        not depend on them yet.
+      </Callout>
 
       <div className="not-prose grid gap-6 md:grid-cols-2 lg:grid-cols-4 my-8">
         <Card className="border-info/20">

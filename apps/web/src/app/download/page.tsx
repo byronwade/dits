@@ -35,7 +35,7 @@ import { generateMetadata as genMeta } from "@/lib/seo";
 
 export const metadata: Metadata = genMeta({
   title: "Download Dits - Version Control for Video & Large Files",
-  description: "Download Dits for macOS, Linux, and Windows. Install via npm, Homebrew, Cargo, or download binaries directly. Free and open source version control for video production.",
+  description: "Download Dits for macOS, Linux, and Windows. Install via npm, bun, pnpm, the install script, or download prebuilt binaries directly. Free and open source version control for video production.",
   canonical: "https://dits.dev/download",
   keywords: [
     "download dits",
@@ -138,7 +138,7 @@ export default function DownloadPage() {
           </div>
           <div className="container">
             <div className="mx-auto max-w-4xl text-center">
-              <Badge variant="secondary" className="mb-6 font-mono">v0.1.2</Badge>
+              <Badge variant="secondary" className="mb-6 font-mono">v0.1.5</Badge>
               <h1 id="download-heading" className="text-4xl font-bold tracking-tight md:text-6xl">
                 Download <span className="text-gradient-brand">Dits</span>
               </h1>
@@ -200,29 +200,34 @@ export default function DownloadPage() {
                 <TabsContent value="brew" className="mt-4">
                   <Card className="rounded-2xl border bg-card shadow-card">
                     <CardHeader>
-                      <CardTitle className="text-lg">Homebrew</CardTitle>
-                      <CardDescription>For macOS and Linux</CardDescription>
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-lg">Homebrew</CardTitle>
+                        <Badge variant="outline" className="text-warning">Not yet published</Badge>
+                      </div>
+                      <CardDescription>
+                        A Homebrew tap is planned but not published yet. For now, install with
+                        npm/bun/pnpm or grab a prebuilt binary below.
+                      </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <CodeBlock>
-                        brew tap byronwade/dits &amp;&amp; brew install dits
-                      </CodeBlock>
+                      <CodeBlock>npm install -g @byronwade/dits</CodeBlock>
                     </CardContent>
                   </Card>
                 </TabsContent>
                 <TabsContent value="cargo" className="mt-4">
                   <Card className="rounded-2xl border bg-card shadow-card">
                     <CardHeader>
-                      <CardTitle className="text-lg">Cargo</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-lg">Cargo</CardTitle>
+                        <Badge variant="outline" className="text-warning">Not yet published</Badge>
+                      </div>
                       <CardDescription>
-                        Build from source (requires Rust)
+                        Dits is not published to crates.io yet, so <code className="font-mono">cargo install dits</code> won&apos;t work.
+                        Install with npm/bun/pnpm, or build from the GitHub source.
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <CodeBlock>cargo install dits</CodeBlock>
-                      <p className="mt-4 text-sm text-muted-foreground">
-                        Requires Rust 1.75 or later
-                      </p>
+                      <CodeBlock>npm install -g @byronwade/dits</CodeBlock>
                     </CardContent>
                   </Card>
                 </TabsContent>
@@ -348,7 +353,7 @@ export default function DownloadPage() {
                 Verify Installation
               </h2>
               <CodeBlock>{`$ dits --version
-dits 0.1.2
+dits 0.1.5
 
 $ dits init my-project
 Initialized empty Dits repository in /home/user/my-project/.dits

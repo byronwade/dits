@@ -21,11 +21,17 @@ export default function KubernetesPage() {
             <DocPageHeader
                 eyebrow="Deployment"
                 title="Kubernetes Deployment"
-                description="Deploy Dits on Kubernetes for enterprise-grade scalability, high availability, and automated operations."
+                description="A planned guide for deploying a hosted Dits server on Kubernetes, intended for scalability, high availability, and automated operations."
             />
 
-            <Callout type="tip" title="Production Ready" className="not-prose my-6">
-                Kubernetes deployment includes auto-scaling, rolling updates, and self-healing.
+            <Callout type="important" className="not-prose my-6">
+                <strong>Planned &mdash; not yet available.</strong> There is no Dits
+                server image or Helm chart to deploy today. The <code>charts.dits.io</code>{" "}
+                repository, the <code>dits/dits-server</code> image, and the manifests
+                below are part of the roadmap and have not been built. Dits today is a
+                local-first Rust CLI &mdash; there is nothing to run on a cluster. Treat
+                this page as a design sketch of the intended architecture, not as working
+                deployment instructions. Do not depend on it yet.
             </Callout>
 
             <h2>Prerequisites</h2>

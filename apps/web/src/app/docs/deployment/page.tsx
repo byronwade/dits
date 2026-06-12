@@ -37,12 +37,16 @@ export default function DeploymentPage() {
       <DocPageHeader
         eyebrow="Deployment"
         title="Deployment Guide"
-        description="Deploy Dits in production environments with high availability, scalability, and security. Choose from Docker, Kubernetes, or cloud-managed solutions."
+        description="A planned guide for deploying a hosted Dits server, intended to support Docker, Kubernetes, and cloud-managed solutions."
       />
 
-      <Callout type="tip" title="Production Ready" className="not-prose my-6">
-        Dits is designed for production deployment with built-in monitoring,
-        backups, and scaling capabilities.
+      <Callout type="important" className="not-prose my-6">
+        <strong>Planned &mdash; not yet available.</strong> There is no Dits server
+        to deploy today. The API server, storage service, managed cloud (Ditshub),
+        and the container images and Helm charts referenced below are part of the
+        roadmap and have not been built. Dits today is a local-first Rust CLI &mdash;
+        there is nothing to host. Treat everything on this page as a design sketch of
+        the intended architecture, not as working deployment instructions.
       </Callout>
 
       <h2>Deployment Options</h2>
@@ -78,7 +82,7 @@ export default function DeploymentPage() {
               Cloud Managed
             </CardTitle>
             <CardDescription>
-              Hosted platform with Ditshub
+              Hosted platform with Ditshub (planned, not yet available)
             </CardDescription>
           </CardHeader>
           <CardContent>

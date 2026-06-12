@@ -1,6 +1,6 @@
 {
   "name": "@byronwade/dits",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Version control for video and large binary files - like Git, but optimized for large binary files",
   "license": "Apache-2.0 OR MIT",
   "author": "Byron Wade",

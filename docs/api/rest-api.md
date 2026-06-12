@@ -1,17 +1,19 @@
 # REST API Reference
 
-> ⚠️ Some of this describes a quarantined/legacy backend design (now in legacy/backend-crates), not the current local-first architecture. The live architecture is the modules under apps/cli/src/ (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands).
+> 🚧 **Roadmap — not yet available.** Dits ships today as a local-first CLI (`npm install -g @byronwade/dits`). There is **no hosted REST API** — `api.dits.io` does **not** exist, and the published SDK packages (`@dits/sdk`, `dits-sdk`, `dits-go`) do **not** exist either. This document describes the quarantined/legacy backend design (now in `legacy/backend-crates`) and intended/planned API surface, not a shipped product. The live architecture is the modules under `apps/cli/src/` (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands). See `docs/STATUS.md`.
 
-Complete API specification for the Dits server control plane.
+Complete API specification for the planned Dits server control plane.
 
 ---
 
 ## Base URL
 
+> Roadmap: these base URLs are placeholders for a planned hosted service. No such service exists today.
+
 ```
-Production: https://api.dits.io/v1
-Staging:    https://api.staging.dits.io/v1
-Self-hosted: https://{your-domain}/api/v1
+Planned (hosted):  https://api.example.com/v1
+Planned (staging): https://api.staging.example.com/v1
+Self-hosted:       https://{your-domain}/api/v1
 ```
 
 ---
@@ -266,7 +268,7 @@ List active sessions.
       "created_at": "2025-01-08T10:00:00Z",
       "last_active_at": "2025-01-08T14:30:00Z",
       "ip_address": "192.168.1.1",
-      "user_agent": "Dits CLI/1.0",
+      "user_agent": "Dits CLI/0.1.5",
       "current": true
     }
   ]
@@ -406,8 +408,8 @@ Create repository.
   "repository": {
     "id": "repo_new",
     "name": "documentary-2025",
-    "clone_url": "https://dits.io/acme-studios/documentary-2025.dits",
-    "ssh_url": "git@dits.io:acme-studios/documentary-2025.dits",
+    "clone_url": "https://example.com/acme-studios/documentary-2025.dits",
+    "ssh_url": "git@example.com:acme-studios/documentary-2025.dits",
     ...
   }
 }
@@ -428,8 +430,8 @@ Get repository details.
     "owner": { ... },
     "visibility": "private",
     "default_branch": "main",
-    "clone_url": "https://dits.io/acme-studios/commercial-q1-2025.dits",
-    "ssh_url": "git@dits.io:acme-studios/commercial-q1-2025.dits",
+    "clone_url": "https://example.com/acme-studios/commercial-q1-2025.dits",
+    "ssh_url": "git@example.com:acme-studios/commercial-q1-2025.dits",
     "settings": {
       "require_lock_for_edit": true,
       "auto_generate_proxies": true,
@@ -1378,11 +1380,13 @@ Deprecation warnings are sent via `X-API-Deprecation` header.
 
 ## SDKs
 
-Official SDKs available:
-- **Rust**: `dits-sdk` (crates.io)
-- **Python**: `dits-py` (PyPI)
-- **JavaScript**: `@dits/sdk` (npm)
-- **Go**: `github.com/dits-io/dits-go`
+> Roadmap — **no SDK packages are published**. The names below are planned/illustrative and do **not** resolve today (404).
+
+Planned SDKs (not yet published):
+- **Rust**: `dits-sdk` (crates.io) — *not yet published*
+- **Python**: `dits-py` / `dits-sdk` (PyPI) — *not yet published*
+- **JavaScript**: `@dits/sdk` (npm) — *not yet published*
+- **Go**: `github.com/byronwade/dits` (`dits-go`) — *not yet published*
 
 ---
 

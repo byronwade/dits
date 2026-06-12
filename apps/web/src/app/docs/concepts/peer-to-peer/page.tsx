@@ -24,8 +24,19 @@ export default function PeerToPeerPage() {
       <DocPageHeader
         eyebrow="Core Concepts"
         title="Peer-to-Peer Sharing"
-        description="DITS includes Wormhole-style P2P capabilities for sharing files directly between peers without uploading to a central server."
+        description="A roadmap design for Wormhole-style P2P sharing of files directly between peers without uploading to a central server."
       />
+
+      <Callout type="important" title="Roadmap — not yet functional">
+        P2P sharing is <strong>scaffolding</strong>. The <code>dits p2p</code>{" "}
+        commands print placeholder output but <strong>transfer no data</strong>:
+        there is no working discovery, no NAT traversal, and no relay or signal
+        infrastructure. This page describes the <em>planned</em> design so the
+        shape of the feature is clear &mdash; do not depend on any of it today.
+        What works now is the local VCS and local-filesystem{" "}
+        <code>clone</code>/<code>push</code>. See the{" "}
+        <Link href="/docs/roadmap">roadmap</Link> for status.
+      </Callout>
 
       <h2>What is P2P Sharing?</h2>
       <p>
@@ -164,13 +175,15 @@ export default function PeerToPeerPage() {
             <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
               <Share2 className="size-5 text-brand" />
             </div>
-            <CardTitle className="text-base text-brand">Relay (Priority 40) - No Port Forwarding!</CardTitle>
+            <CardTitle className="text-base text-brand">Relay (Priority 40) - Planned Fallback</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
-              When direct connections fail, traffic routes through the relay server.
-              <strong> 100% success rate</strong> - works through any NAT type. Data is
-              still end-to-end encrypted, the relay only sees encrypted bytes.
+              In the planned design, when direct connections fail, traffic would
+              route through a relay server so peers behind restrictive NATs can
+              still connect. Data would remain end-to-end encrypted, with the
+              relay only forwarding encrypted bytes. No relay infrastructure
+              exists today.
             </CardDescription>
           </CardContent>
         </Card>

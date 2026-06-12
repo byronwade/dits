@@ -64,6 +64,14 @@ export default function AdvancedCommandsPage() {
         description="Low-level commands for repository maintenance, debugging, and advanced operations."
       />
 
+      <Callout type="important" title="Roadmap — these inspection commands are not implemented">
+        The low-level object commands on this page (<code>cat-file</code>,{" "}
+        <code>hash-object</code>, <code>rev-parse</code>, <code>ls-tree</code>, and{" "}
+        <code>ls-files</code>) are <strong>planned</strong> design, not part of the
+        current command set. The example output is illustrative. See the{" "}
+        <Link href="/docs/roadmap">roadmap</Link> for status.
+      </Callout>
+
       <Callout type="warning" title="Advanced Use Only" className="not-prose my-6">
         These commands operate on the internal structure of Dits repositories.
         Use them carefully and make backups before running destructive operations.
@@ -182,7 +190,7 @@ $ dits prune --dry-run`}
 
       <h2>Object Inspection</h2>
 
-      <h3>dits cat-file</h3>
+      <h3>dits cat-file (planned)</h3>
       <p>Show the contents or type of a repository object.</p>
 
       <CodeBlock
@@ -221,7 +229,7 @@ $ dits cat-file -p asset:xyz789abc
 }`}
       />
 
-      <h3>dits hash-object</h3>
+      <h3>dits hash-object (planned)</h3>
       <p>Compute the hash of a file or data.</p>
 
       <CodeBlock
@@ -291,7 +299,7 @@ $ dits unpack --verify pack-abc123.pack`}
 
       <h2>Debugging</h2>
 
-      <h3>dits rev-parse</h3>
+      <h3>dits rev-parse (planned)</h3>
       <p>Parse revision specifications and show their hashes.</p>
 
       <CodeBlock
@@ -312,7 +320,7 @@ $ dits rev-parse HEAD~3
 9f8e7d6c5b4a...`}
       />
 
-      <h3>dits ls-tree</h3>
+      <h3>dits ls-tree (planned)</h3>
       <p>List the contents of a tree object.</p>
 
       <CodeBlock
@@ -332,7 +340,7 @@ $ dits ls-tree -r HEAD
 100644 asset 456defabc audio/sfx.wav`}
       />
 
-      <h3>dits ls-files</h3>
+      <h3>dits ls-files (planned)</h3>
       <p>Show information about files in the index and working tree.</p>
 
       <CodeBlock
@@ -376,7 +384,7 @@ $ dits reset --hard HEAD@{2}
 HEAD is now at b2c3d4e Lost commit 3`}
       />
 
-      <h3>dits lost-found</h3>
+      <h3>dits lost-found (planned)</h3>
       <p>Find unreachable objects that might be recoverable.</p>
 
       <CodeBlock

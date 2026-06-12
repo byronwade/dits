@@ -1,5 +1,11 @@
 # Unique Positioning: Dits Marketing Strategy
 
+> ⚠️ **Internal strategy document — NOT product status.** Aspirational positioning, not a
+> description of shipped features. Claims here (real-time multi-tool collaboration,
+> petabyte-scale instant search, "opens in 2 seconds", pricing tiers, time-saved figures)
+> are **not built/validated**. For what actually ships, see [`docs/STATUS.md`](../STATUS.md).
+> Live marketing must follow [`docs/marketing/positioning.md`](positioning.md) guardrails.
+
 ## The Core Message: "Dits is Creative Intelligence"
 
 ### Traditional Positioning (What We Were)

@@ -7,7 +7,7 @@
 # native CLI; it is OFF by default and must never be enabled for wasm builds.
 [package]
 name = "dits-core"
-version = "0.1.0"
+version = "0.1.5"
 edition = "2021"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/byronwade/dits"

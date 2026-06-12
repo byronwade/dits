@@ -1,5 +1,7 @@
 # Remote Data Structure
 
+> 🚧 **Roadmap / scaffolding — transfers no data today.** Networked remote sync (`connect`, `fetch`, `push`, `pull`, `sync`, network `clone`) is **not implemented**. `remote`/`serve` manage config/scaffolding only; the network sync commands print placeholders and **transfer no data**. `clone` works only against a **local filesystem path**. This document describes the intended design, not shipped behavior. See `docs/STATUS.md` for the authoritative status.
+
 Remote server configuration and synchronization state.
 
 ---
@@ -253,8 +255,8 @@ pub enum OperationType {
 # .dits/config - Remote configuration section
 
 [remote "origin"]
-url = "https://dits.io/myorg/myrepo"
-push_url = "https://dits.io/myorg/myrepo"
+url = "https://example.com/myorg/myrepo"
+push_url = "https://example.com/myorg/myrepo"
 fetch = "+refs/heads/*:refs/remotes/origin/*"
 push = "refs/heads/*:refs/heads/*"
 
@@ -268,7 +270,7 @@ connections = 4
 retries = 3
 
 [remote "backup"]
-url = "https://backup.dits.io/myorg/myrepo"
+url = "https://backup.example.com/myorg/myrepo"
 fetch = "+refs/heads/main:refs/remotes/backup/main"
 push = "refs/heads/main:refs/heads/main"
 ```

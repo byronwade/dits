@@ -1,6 +1,8 @@
 # Troubleshooting Guide
 
 > ⚠️ Describes the quarantined backend service (see legacy/backend-crates), NOT the current product. Dits today is a local-first CLI — no server or database required. This doc is retained as design reference for a future hosted offering.
+>
+> 🚧 **Networked commands are not implemented.** `push`, `pull`, `fetch`, `sync`, and network `clone` print placeholders and **transfer no data today**; there is no hosted API or server to connect to. Any commands below that hit `api.dits.io`, a database, or a remote server are roadmap/illustrative only. See `docs/STATUS.md`.
 
 Common issues, diagnostics, and solutions for Dits.
 

@@ -7,7 +7,7 @@ import { DocPageHeader } from "@/components/doc-page-header";
 export const metadata: Metadata = {
   title: "Installation",
   description:
-    "Install Dits via npm, bun, Homebrew, the curl script, or cargo. The AI install is identical to the engine binary.",
+    "Install Dits via npm, bun, pnpm, or the curl install script. The AI install is identical to the engine binary.",
 };
 
 export default function Page() {
@@ -16,7 +16,7 @@ export default function Page() {
       <DocPageHeader
         eyebrow="Getting Started"
         title="Installation"
-        description="One binary, five ways to get it &mdash; the same install you would use for the engine."
+        description="One binary, a few ways to get it &mdash; the same install you would use for the engine."
       />
 
       <p>
@@ -32,11 +32,8 @@ export default function Page() {
       <h2>bun</h2>
       <CodeBlock code={`bun install -g @byronwade/dits`} language="bash" />
 
-      <h2>Homebrew</h2>
-      <CodeBlock
-        code={`brew tap byronwade/dits && brew install dits`}
-        language="bash"
-      />
+      <h2>pnpm</h2>
+      <CodeBlock code={`pnpm install -g @byronwade/dits`} language="bash" />
 
       <h2>curl</h2>
       <p>The install script detects your platform and drops the binary on your path.</p>
@@ -45,9 +42,12 @@ export default function Page() {
         language="bash"
       />
 
-      <h2>cargo</h2>
-      <p>If you have a Rust toolchain, build and install from source.</p>
-      <CodeBlock code={`cargo install dits`} language="bash" />
+      <Callout type="important">
+        A Homebrew tap and a <code>crates.io</code> release (<code>cargo install dits</code>) are
+        planned but not published yet. Until then, use a Node package manager or the install script
+        above, or grab a prebuilt binary from{" "}
+        <Link href="https://github.com/byronwade/dits/releases">GitHub Releases</Link>.
+      </Callout>
 
       <h2>Verify</h2>
       <p>Confirm the install succeeded and print the version.</p>

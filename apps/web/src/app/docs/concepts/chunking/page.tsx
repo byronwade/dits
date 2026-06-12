@@ -103,7 +103,8 @@ export default function ChunkingPage() {
         </p>
         <p>
           Dits takes a different approach: it breaks files into smaller chunks
-          (typically 256KB to 4MB) and only stores unique chunks. This means:
+          (the default profile averages 64 KB; the media and large profiles use
+          bigger chunks) and only stores unique chunks. This means:
         </p>
 
         <div className="not-prose grid gap-4 md:grid-cols-3 my-8">
@@ -293,12 +294,12 @@ export default function ChunkingPage() {
 
         <CodeBlock
           language="bash"
-          code={`// Dits chunking parameters
-Minimum chunk size:  256 KB
-Average chunk size:    1 MB
-Maximum chunk size:    4 MB
+          code={`// Dits chunking parameters (named profiles: min / avg / max)
+default profile:   16 KB / 64 KB / 256 KB   <- used unless overridden
+media profile:     64 KB / 256 KB / 1 MB
+large profile:    256 KB / 1 MB / 4 MB
 
-// Example: 10GB video file
+// Example: 10GB video file with the "large" profile
 Original file:     10 GB (1 file)
 After chunking:    ~10,000 chunks
 Average chunk:     ~1 MB each`}
@@ -490,14 +491,15 @@ With Dits chunking:
 
         <h2>Chunk Parameters</h2>
         <p>
-          Dits uses carefully tuned parameters for different file types:
+          Dits ships named chunker profiles. The <strong>default</strong>{" "}
+          profile is used unless another is selected:
         </p>
 
         <div className="not-prose my-6 overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>File Type</TableHead>
+                <TableHead>Profile</TableHead>
                 <TableHead>Min Size</TableHead>
                 <TableHead>Avg Size</TableHead>
                 <TableHead>Max Size</TableHead>
@@ -506,39 +508,25 @@ With Dits chunking:
             </TableHeader>
             <TableBody>
               <TableRow>
-                <TableCell>Video (H.264/H.265)</TableCell>
+                <TableCell>default</TableCell>
+                <TableCell className="font-mono">16 KB</TableCell>
+                <TableCell className="font-mono">64 KB</TableCell>
                 <TableCell className="font-mono">256 KB</TableCell>
-                <TableCell className="font-mono">1 MB</TableCell>
-                <TableCell className="font-mono">4 MB</TableCell>
-                <TableCell className="text-muted-foreground">Keyframe-aligned</TableCell>
+                <TableCell className="text-muted-foreground">Balanced default</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Video (ProRes/DNxHR)</TableCell>
-                <TableCell className="font-mono">512 KB</TableCell>
-                <TableCell className="font-mono">2 MB</TableCell>
-                <TableCell className="font-mono">8 MB</TableCell>
-                <TableCell className="text-muted-foreground">Larger for efficiency</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Audio</TableCell>
+                <TableCell>media</TableCell>
                 <TableCell className="font-mono">64 KB</TableCell>
                 <TableCell className="font-mono">256 KB</TableCell>
                 <TableCell className="font-mono">1 MB</TableCell>
-                <TableCell className="text-muted-foreground">Smaller for precision</TableCell>
+                <TableCell className="text-muted-foreground">Large media files</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Images</TableCell>
-                <TableCell className="font-mono">64 KB</TableCell>
-                <TableCell className="font-mono">512 KB</TableCell>
-                <TableCell className="font-mono">2 MB</TableCell>
-                <TableCell className="text-muted-foreground">Standard CDC</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Other</TableCell>
+                <TableCell>large</TableCell>
                 <TableCell className="font-mono">256 KB</TableCell>
                 <TableCell className="font-mono">1 MB</TableCell>
                 <TableCell className="font-mono">4 MB</TableCell>
-                <TableCell className="text-muted-foreground">Default parameters</TableCell>
+                <TableCell className="text-muted-foreground">Maximum throughput</TableCell>
               </TableRow>
             </TableBody>
           </Table>

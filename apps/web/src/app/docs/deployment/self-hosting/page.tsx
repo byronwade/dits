@@ -30,12 +30,22 @@ export default function SelfHostingPage() {
             <DocPageHeader
                 eyebrow="Deployment"
                 title="Self-Hosting Guide"
-                description="Run Dits on your own infrastructure with complete control over your data, security, and customization."
+                description="A planned guide for running a hosted Dits server on your own infrastructure, intended to give you complete control over your data, security, and customization."
             />
 
+            <Callout type="important" className="not-prose my-6">
+                <strong>Planned &mdash; not yet available.</strong> There is no Dits
+                server to self-host today. The server binary, storage service, and the
+                container images referenced below are part of the roadmap and have not
+                been built. Dits today is a local-first Rust CLI &mdash; install it with{" "}
+                <code>npm install -g @byronwade/dits</code>. Treat this page as a design
+                sketch of the intended architecture, not as working deployment
+                instructions. Do not depend on it yet.
+            </Callout>
+
             <Callout type="note" title="Full Data Sovereignty" className="not-prose my-6">
-                Self-hosting gives you complete control over your data and compliance
-                with any regulatory requirements.
+                Self-hosting is intended to give you complete control over your data and
+                compliance with any regulatory requirements.
             </Callout>
 
             <h2>Why Self-Host?</h2>

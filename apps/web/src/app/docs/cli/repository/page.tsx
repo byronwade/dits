@@ -35,6 +35,17 @@ export default function RepositoryCommandsPage() {
         description="Create, clone, and manage Dits repositories. These foundational commands set up your version control environment for large binary files."
       />
 
+      <Callout type="important" title="What works today vs. roadmap">
+        <code>init</code> and <code>status</code> work today, and{" "}
+        <code>clone</code> works against a <strong>local path</strong> on the
+        same machine. Cloning over a <em>network</em> (<code>https://</code> /{" "}
+        <code>dits://</code> URLs), partial/on-demand hydration from a remote,
+        and remote-tracking <code>push</code>/<code>pull</code> are{" "}
+        <strong>roadmap</strong> &mdash; the wire protocol is not wired up yet.
+        Networked examples below are illustrative of the planned design. See the{" "}
+        <Link href="/docs/roadmap">roadmap</Link> for status.
+      </Callout>
+
       <Table className="not-prose my-6">
         <TableHeader>
           <TableRow>
@@ -179,7 +190,11 @@ Initialized empty bare Dits repository in /home/user/project.dits/`}
       <h3>Examples</h3>
       <CodeBlock
         language="bash"
-        code={`# Basic clone
+        code={`# Clone from a local path (works today)
+$ dits clone /srv/repos/project.dits my-copy
+Cloning into 'my-copy'...
+
+# [PLANNED] Basic clone over the network
 $ dits clone https://dits.example.com/team/project
 Cloning into 'project'...
 remote: Counting objects: 1,234
@@ -194,21 +209,22 @@ $ dits clone https://dits.example.com/team/project my-copy
 # Clone specific branch
 $ dits clone --branch feature/vfx https://dits.example.com/team/project
 
-# Shallow clone (metadata only - fastest)
+# [PLANNED] Shallow clone (metadata only - fastest)
 $ dits clone --filter blob:none https://dits.example.com/team/project
 Cloning into 'project'...
 Metadata fetched: 15 MB
-Repository ready (125 TB of files available on demand)
+Repository ready (large repositories available on demand)
 
 # Clone with limited history
 $ dits clone --depth 10 https://dits.example.com/team/project`}
       />
 
-      <Callout type="note" title="Partial Clones for Large Repositories" className="not-prose my-6">
-        For repositories with hundreds of gigabytes or terabytes of data, use
-        <code>--filter blob:none</code> to download only metadata. Files will be
-        fetched on-demand when accessed. This provides instant access without
-        waiting for full downloads.
+      <Callout type="note" title="Partial Clones for Large Repositories (planned)" className="not-prose my-6">
+        In the planned networked design, repositories with hundreds of gigabytes
+        or terabytes of data could be cloned with{" "}
+        <code>--filter blob:none</code> to download only metadata, then fetch
+        files on-demand when accessed. This partial-clone hydration is roadmap
+        &mdash; it is not implemented yet.
       </Callout>
 
       <h2 className="flex items-center gap-2">

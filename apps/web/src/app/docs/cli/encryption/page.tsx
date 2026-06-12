@@ -35,10 +35,12 @@ export default function EncryptionCommandsPage() {
         description="Encrypt repository data at rest using industry-standard AES-256-GCM. Protects sensitive content while maintaining deduplication benefits through convergent encryption."
       />
 
-      <Callout type="note" title="End-to-End Encryption" className="not-prose my-6">
-        When encryption is enabled, all file content is encrypted before leaving
-        your machine. Neither Dits servers nor storage backends can read your
-        data without the encryption key.
+      <Callout type="note" title="Encryption at Rest" className="not-prose my-6">
+        When encryption is enabled, file content is encrypted on disk in the
+        local <code>.dits</code> store using AES-256-GCM with keys derived via
+        Argon2id. Without the key, the on-disk objects cannot be read. (Hardware
+        security keys and end-to-end encryption over a network are roadmap
+        &mdash; see the notes below.)
       </Callout>
 
       <Table className="not-prose my-6">
@@ -80,10 +82,10 @@ export default function EncryptionCommandsPage() {
         language="bash"
         code={`--key-file <PATH>   Use existing key file
 --password          Use password-based encryption
---hardware-key      Use hardware security key (YubiKey, etc.)
 --algorithm <ALG>   Encryption algorithm (default: aes-256-gcm)
 --kdf <KDF>         Key derivation function (default: argon2id)
--v, --verbose       Show detailed setup`}
+-v, --verbose       Show detailed setup
+# --hardware-key    (roadmap) Use a hardware security key`}
       />
 
       <h3>Examples</h3>
@@ -116,12 +118,12 @@ $ dits encrypt-init --key-file ~/secrets/project.key
 Using key file: ~/secrets/project.key
 Encryption initialized.
 
-# Initialize with hardware key
+# [ROADMAP] Initialize with hardware key
 $ dits encrypt-init --hardware-key
 
 Waiting for hardware key...
-Touch your YubiKey...
-Hardware key detected: YubiKey 5 NFC
+Touch your security key...
+Hardware key detected.
 
 Encryption initialized with hardware key protection.`}
       />
@@ -246,11 +248,11 @@ $ dits login --ttl 24h
 Enter password: ********
 Session expires: 24 hours
 
-# Login with hardware key
+# [ROADMAP] Login with hardware key
 $ dits login
 
 Hardware key detected.
-Touch your YubiKey...
+Touch your security key...
 Logged in successfully.`}
       />
 
@@ -406,7 +408,7 @@ Trade-offs:
       <ul>
         <li><strong>Use strong passwords:</strong> At least 16 characters with mixed case, numbers, symbols</li>
         <li><strong>Back up your keys:</strong> Store recovery key in a secure, separate location</li>
-        <li><strong>Use hardware keys:</strong> For maximum security, use YubiKey or similar</li>
+        <li><strong>Use hardware keys (roadmap):</strong> Hardware security key support is planned for added protection</li>
         <li><strong>Logout when away:</strong> Clear cached keys when leaving your workstation</li>
         <li><strong>Rotate keys periodically:</strong> Consider key rotation for long-lived repositories</li>
       </ul>

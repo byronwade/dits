@@ -321,11 +321,13 @@ Let's build the Git of the heavy stuff.
 curl -fsSL https://raw.githubusercontent.com/byronwade/dits/main/install.sh | sh
 ```
 
-### Homebrew (macOS/Linux)
+### Homebrew (macOS/Linux) — *not yet published*
 
-```bash
-brew install byronwade/tap/dits
-```
+> The Homebrew tap is planned but **not published yet**. Use npm or GitHub Releases for now.
+>
+> ```bash
+> # (planned) brew install byronwade/tap/dits
+> ```
 
 ### npm / bun / pnpm
 
@@ -343,11 +345,8 @@ Download pre-built binaries from the [releases page](https://github.com/byronwad
 
 ### Build from Source
 
-```bash
-cargo install dits
-```
-
-Or build from the repository:
+> The crate is **not published to crates.io yet**, so `cargo install dits` does not work.
+> Build from the repository instead:
 
 ```bash
 git clone https://github.com/byronwade/dits.git
@@ -1029,12 +1028,19 @@ pub struct KeyframeAlignConfig {
 
 ---
 
-## Self-Hosting
-- **Docker Compose (quick start, <20 users)**:
+## Self-Hosting (roadmap — not yet available)
+
+> 🚧 **Roadmap / design reference.** There is **no hosted Dits server** to self-host today.
+> The components below (`dits-server`, `dits-migrate`, `dits-admin`, Postgres/Redis/S3, the
+> Kubernetes deployment) describe an *intended* hosted offering whose backend was quarantined
+> to `legacy/backend-crates` and is **not current architecture**. Dits today is a local-first
+> CLI (`npm install -g @byronwade/dits`). This section is retained as design intent only.
+
+- **Docker Compose (planned)**:
   - Services: `dits-server`, Postgres, Redis, MinIO (S3-compatible).
   - Env vars: `DATABASE_URL`, `REDIS_URL`, `S3_*`, `JWT_SECRET`.
   - Init: `docker-compose up -d`; `dits-migrate up`; create admin via `dits-admin`.
-- **Kubernetes (production)**:
+- **Kubernetes (planned)**:
   - Deployments with config/secret separation; horizontal replicas; probes.
   - Requires Postgres, Redis, S3-compatible storage; cache volumes.
   - Configure JWT/DB/S3 secrets; tune resources and probes.
@@ -1181,24 +1187,30 @@ just check                    # All quality checks
 ---
 
 ## Performance Targets
+*Targets, not all measured. Network rows depend on roadmap sync (not implemented).*
 - Chunk 1GB file: < 5s (FastCDC + parallel hashing).
 - Hash 1GB: < 1s (BLAKE3 parallel).
-- Local upload: saturate link; >500 MB/s on LAN.
-- Clone 10GB repo: < 2 minutes on 1 Gbps with caching.
+- Network upload / Clone 10GB over the wire *(roadmap)*: networked sync is not implemented.
 - Status check: <100ms with index/untracked cache/fsmonitor.
-- VFS open: <50ms with cached metadata and on-demand fetch.
+- VFS open (local `dits mount`): <50ms with cached metadata.
 
 ### Detailed Performance Benchmarks
+
+> **Note:** Only the local hashing/chunking rows are measured today. The networked rows
+> (chunk upload, incremental sync, remote VFS fetch) depend on networked sync/QUIC, which is
+> **roadmap and not implemented** — they are design *targets*, not measured results. Real,
+> reproducible engine numbers live in `benchmarks/latest.json` (e.g. BLAKE3 ≈ 1.8 GB/s,
+> FastCDC ≈ 1 GB/s, SHA-256 ≈ 350 MB/s on an Apple M2 Pro).
 
 | Operation | Throughput | Latency | Notes |
 |-----------|------------|---------|-------|
 | BLAKE3 hashing | 3+ GB/s | - | Single core, parallelizes to 32+ GB/s |
 | FastCDC chunking | 2+ GB/s | - | With SIMD acceleration |
-| Chunk upload (LAN) | 500+ MB/s | <1ms | Saturates gigabit links |
-| Chunk upload (WAN) | Link speed | <50ms | BBR congestion control |
-| Incremental sync | 250 MB/s | <5s for 1MB change | Bloom filter optimization |
-| VFS read (cached) | 1+ GB/s | <1ms | Memory-mapped cache |
-| VFS read (fetch) | Link speed | <50ms | On-demand chunk hydration |
+| Chunk upload (LAN) *(roadmap)* | 500+ MB/s | <1ms | Target — networked sync not implemented |
+| Chunk upload (WAN) *(roadmap)* | Link speed | <50ms | Target — networked sync not implemented |
+| Incremental sync *(roadmap)* | 250 MB/s | <5s for 1MB change | Target — networked sync not implemented |
+| VFS read (cached) | 1+ GB/s | <1ms | Memory-mapped cache (local `dits mount`) |
+| VFS read (fetch) *(roadmap)* | Link speed | <50ms | Target — remote chunk hydration not implemented |
 
 ### Hardware-Specific Optimizations
 
@@ -1935,14 +1947,15 @@ See [`docs/testing/`](docs/testing/) for complete testing framework documentatio
 ### 🔧 Developer Resources
 - **[Contributing Guide](docs/contributing.md)** - How to contribute to Dits
 - **[Development Setup](docs/development.md)** - Getting started with development
-- **[API Documentation](docs/api/)** - REST API and SDK references
-- **[CLI Reference](docs/cli-reference.md)** - Complete command reference
+- **[API Documentation](docs/api/)** - REST API and SDK references *(roadmap — the hosted API and SDK packages are not yet built/published)*
+- **[CLI Reference](docs/user-guide/cli-reference.md)** - Complete command reference
 
 ### 📋 Project Status
 - **Phase 3.6/9** - Hybrid storage and advanced features
-- **120+ Tests** - Comprehensive validation coverage
+- **469 Tests** - Comprehensive validation coverage (`cargo test --workspace`)
 - **80+ File Types** - Universal media format support
-- **Enterprise Ready** - Production-grade reliability
+- **Alpha** - Early development by a small team; the local engine works today, but networked
+  sync, P2P, and the hosted service are roadmap. Not recommended for production yet.
 
 ---
 

@@ -25,7 +25,7 @@ This folder captures the Dits Master Specification in a navigable structure. Use
 > **Honest status note:** the **local-first engine** at `apps/cli` is the canonical product and works today. A former backend crate workspace (`dits-api`, `dits-worker`, `dits-db`, `dits-storage`, etc.) was quarantined to `legacy/backend-crates` and is **not** current architecture — ignore docs that still describe it as live. **Networking (QUIC/P2P/remote push/pull/sync) is not implemented yet.**
 
 **Comprehensive Testing Infrastructure:**
-- **120+ Automated Tests**: Git-inspired shell script framework + Rust unit tests
+- **469 Passing Tests**: Git-inspired shell script framework + Rust unit tests
 - **80+ File Formats**: Creative assets, 3D models, game assets, video, audio
 - **Git Recovery**: Full Git operations on binary assets (diff/merge/blame/reset)
 - **Cross-Platform**: Windows/macOS/Linux filesystem compatibility
@@ -88,9 +88,9 @@ dits commit -m "Character model with materials"
 # Mount as virtual filesystem
 dits mount /mnt/project
 
-# Collaborate with team
-dits remote add origin https://dits.example.com/project
-dits push origin main
+# Collaborate with team (roadmap — push transfers no data today)
+dits remote add origin https://example.com/project
+dits push origin main   # 🚧 prints a placeholder; networked sync not implemented
 
 # Lock binary assets for editing
 dits lock assets/*.blend --reason "Rigging character"
@@ -210,12 +210,16 @@ Dits is engineered for maximum throughput with large media files. Our performanc
 
 ### Performance Targets
 
+> 🚧 The **Upload (LAN)** and **Clone 10GB repo** rows below depend on networked sync /
+> QUIC, which is **not implemented** — those are projected design targets, not measured.
+> Local rows (chunking, hashing, status, VFS open) reflect the working local engine.
+
 | Operation | Target | Conditions |
 |-----------|--------|------------|
 | Chunk 1GB file | < 2s | SIMD + parallel |
 | BLAKE3 hash 1GB | < 500ms | Rayon parallel |
-| Upload (LAN) | > 800 MB/s | QUIC + zero-copy |
-| Clone 10GB repo | < 90s | 1 Gbps link |
+| Upload (LAN) | > 800 MB/s | QUIC + zero-copy (roadmap — projected) |
+| Clone 10GB repo | < 90s | 1 Gbps link (roadmap — projected) |
 | Status check | < 50ms | Cached index |
 | VFS file open | < 30ms | Prefetched metadata |
 

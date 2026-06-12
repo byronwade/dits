@@ -185,18 +185,16 @@ Unlike Git (which treats binary files as opaque blobs), Dits understands video:
 ### Initial Setup
 
 ```bash
-# 1. Install Dits (macOS)
-brew tap dits-io/dits
-brew install dits
+# 1. Install Dits (npm — works today; bun/pnpm also supported)
+npm install -g @byronwade/dits
+# Or build from source: cargo build --release
+#   (Homebrew taps, cargo install, apt/dnf are not yet published.)
 
-# 2. Install VFS support
-brew install macfuse
-
-# 3. Configure your identity
+# 2. Configure your identity
 dits config --global user.name "Your Name"
 dits config --global user.email "you@yourcompany.com"
 
-# 4. Set editor-friendly defaults
+# 3. Set editor-friendly defaults
 dits config --global core.editor "code --wait"  # VS Code
 dits config --global diff.binary true
 ```
