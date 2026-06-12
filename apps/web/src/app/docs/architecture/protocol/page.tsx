@@ -23,8 +23,17 @@ export default function ProtocolPage() {
       <DocPageHeader
         eyebrow="Architecture"
         title="Network Protocol"
-        description="Dits uses a custom protocol over QUIC for efficient, resumable transfers of large datasets with delta synchronization."
+        description="A design for a custom protocol over QUIC for efficient, resumable transfers of large datasets with delta synchronization."
       />
+
+      <Callout type="important" title="Design — not yet wired into push/pull">
+        This page describes the <strong>planned</strong> wire protocol. A QUIC
+        engine exists today as a library plus a standalone demo, but it is{" "}
+        <strong>not yet wired into</strong> <code>push</code>, <code>pull</code>,
+        or <code>fetch</code> &mdash; those commands do not move data over the
+        network yet. The message formats and flows below are the target design,
+        not shipped behavior. See the <Link href="/docs/roadmap">roadmap</Link>.
+      </Callout>
 
       <h2>Transport Layer</h2>
       <p>

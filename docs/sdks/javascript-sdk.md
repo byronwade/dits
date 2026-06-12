@@ -1,14 +1,15 @@
 # JavaScript/TypeScript SDK Guide
 
-> ⚠️ These SDKs target a quarantined/legacy backend service (legacy/backend-crates), not the current local-first CLI. Retained as design reference.
+> 🚧 **Roadmap — not yet available.** There is **no published `@dits/sdk` npm package** (it 404s) and **no hosted REST API** (`api.dits.io` does not exist). Dits ships today as a local-first CLI — install the CLI with `npm install -g @byronwade/dits` (or bun/pnpm). This SDK targeted a quarantined/legacy backend service (`legacy/backend-crates`) and is retained as illustrative/planned design only, not a shipped product. Source: `github.com/byronwade/dits`. See `docs/STATUS.md`.
 
-Complete guide to using the Dits JavaScript SDK for Node.js and browser environments.
+Complete guide to using the planned Dits JavaScript SDK for Node.js and browser environments.
 
 ---
 
 ## Installation
 
 ```bash
+# (package not yet published — these names 404 today)
 # npm
 npm install @dits/sdk
 
@@ -92,7 +93,7 @@ const client = Client.fromEnv();
 import { Client, ClientConfig } from '@dits/sdk';
 
 const client = new Client({
-  endpoint: 'https://api.dits.io',
+  endpoint: 'https://api.example.com', // roadmap: no hosted API exists yet
   token: 'dits_token_xxx',
   config: {
     timeout: 30000,          // 30 seconds
@@ -221,7 +222,7 @@ const repo = await Repository.open('./project');
 const repo = await Repository.init('./new-project');
 
 // Add remote
-await repo.remoteAdd('origin', 'https://dits.io/myorg/new-project');
+await repo.remoteAdd('origin', 'https://example.com/myorg/new-project'); // roadmap placeholder
 ```
 
 ### Repository Info
@@ -930,5 +931,5 @@ processRepos([
 - Full TypeScript support with type definitions
 - Tree-shakeable for optimal bundle size
 - Works in Node.js, browsers, and Web Workers
-- Full documentation at docs.dits.io/sdk/javascript
+- Planned package (not yet published); source at github.com/byronwade/dits
 

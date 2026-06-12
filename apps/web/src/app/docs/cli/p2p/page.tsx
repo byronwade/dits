@@ -32,7 +32,7 @@ const discoveryMethods = [
   { method: "mDNS", flag: "--local", priority: "10", description: "Zero-config LAN discovery", useCase: "Same WiFi/LAN, no internet" },
   { method: "STUN", flag: "--stun", priority: "20", description: "External IP discovery", useCase: "NAT traversal, hole-punching" },
   { method: "Signal Server", flag: "--signal <URL>", priority: "30", description: "WebSocket rendezvous", useCase: "Internet sharing, NAT traversal" },
-  { method: "Relay", flag: "--relay", priority: "40", description: "Forward through relay server", useCase: "100% NAT traversal, no port forwarding" },
+  { method: "Relay", flag: "--relay", priority: "40", description: "Forward through relay server", useCase: "Planned fallback when hole-punching fails" },
 ];
 
 export default function P2PCommandsPage() {
@@ -41,12 +41,18 @@ export default function P2PCommandsPage() {
       <DocPageHeader
         eyebrow="CLI Reference"
         title="P2P Commands"
-        description="Share files directly between peers without uploading to a central server. Uses QUIC transport for fast, secure, multiplexed connections."
+        description="A roadmap design for sharing files directly between peers without uploading to a central server."
       />
 
-      <Callout type="tip" title="Zero-Config Local Sharing" className="not-prose my-6">
-        Use <code>--local</code> flag for same-network sharing. No internet required -
-        mDNS automatically discovers peers on your WiFi or LAN.
+      <Callout type="important" title="Roadmap — not yet functional">
+        The <code>dits p2p</code> commands are <strong>scaffolding</strong>. They
+        print placeholder output but <strong>transfer no data</strong>: there is
+        no working discovery, no NAT traversal, and no relay infrastructure. The
+        command surface and example output below describe the <em>planned</em>
+        design so the shape of the feature is clear — do not depend on any of it
+        today. What works now is the local VCS and local-filesystem{" "}
+        <code>clone</code>/<code>push</code>. See the{" "}
+        <Link href="/docs/roadmap">roadmap</Link> for status.
       </Callout>
 
       <Table className="not-prose my-6">
@@ -190,7 +196,7 @@ $ dits p2p share ./my-project --signal ws://localhost:8080`}
 
       <h3>Arguments</h3>
       <ul>
-        <li><code>TARGET</code> - Join code (ABC-123), URL (https://dits.byronwade.com/j/ABC-123), or direct IP:port</li>
+        <li><code>TARGET</code> - Join code (ABC-123), share URL, or direct IP:port</li>
       </ul>
 
       <h3>Options</h3>
@@ -224,7 +230,7 @@ DITS P2P - Connecting
   Target:    XYZ-789
   Mode:      relay (no port forwarding needed)
   Using relay server for NAT traversal
-  Found:     relay.dits.byronwade.com [relay] (remote)
+  Found:     &lt;relay-host&gt; [relay] (remote)
   Connected: via relay
 ============================================================
 
@@ -237,7 +243,7 @@ $ dits p2p connect 192.168.1.100:4433
   Found:     192.168.1.100:4433 [direct] (local)
 
 # Connect using share link
-$ dits p2p connect https://dits.byronwade.com/j/ABC-123`}
+$ dits p2p connect https://&lt;share-host&gt;/j/ABC-123`}
       />
 
       <h2 className="flex items-center gap-2">
@@ -297,7 +303,7 @@ DITS P2P Status
 ============================================================
   Protocol Version: 1
   Default Port:     4433
-  Signal Server:    wss://dits-signal.fly.dev
+  Signal Server:    &lt;not configured&gt;
 
   Discovery Methods:
     - direct

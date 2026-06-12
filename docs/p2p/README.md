@@ -1,16 +1,20 @@
 # DITS P2P - Peer-to-Peer File Sharing
 
-> ⚠️ Roadmap — P2P is scaffolding today (the `dits p2p` commands print placeholders and transfer no data). This describes the intended design.
+> 🚧 **Roadmap / scaffolding — transfers no data today.** The `dits p2p` commands print
+> placeholders and **transfer no data**: there is no working NAT traversal, no QUIC sync, and
+> no deployed signal/relay server. Claims of "100% NAT traversal success" and a default
+> hosted signal server are **aspirational design**, not shipped behavior. Everything below
+> documents intended design. See `docs/STATUS.md` for authoritative status.
 
-DITS includes Wormhole-style P2P file sharing capabilities, allowing direct peer-to-peer transfers without uploading to a central server.
+DITS is designed to include Wormhole-style P2P file sharing capabilities, allowing direct peer-to-peer transfers without uploading to a central server.
 
 ## Features
 
 - **Join Codes**: Simple 6-character codes (e.g., `ABC-123`) for easy sharing
 - **Multiple Discovery Methods**: mDNS (LAN), Signal Server (NAT traversal), Direct IP, STUN, Relay
 - **Zero-Config LAN Sharing**: Works on local networks without internet
-- **NAT Traversal**: Signal server for peer discovery behind firewalls
-- **Relay Mode**: Guaranteed NAT traversal - no port forwarding ever needed!
+- **NAT Traversal** (roadmap): Signal server for peer discovery behind firewalls
+- **Relay Mode** (roadmap): intended to traverse NAT without port forwarding
 - **QUIC Transport**: Fast, secure, multiplexed connections
 - **Certificate Pinning**: Secure connections with PAKE key exchange
 - **Chunked Transfers**: Efficient transfer of large files
@@ -70,8 +74,8 @@ dits p2p share ./my-project --relay
 dits p2p connect ABC-123 --relay
 ```
 
-Relay mode routes traffic through the signal server, so:
-- **100% success rate** - works through any NAT type
+Relay mode is *intended* to route traffic through the signal server so that (roadmap — not implemented, no success-rate claims are validated):
+- **Works through any NAT type** - no port forwarding needed (design goal)
 - **No router config** - no port forwarding needed
 - **Slightly higher latency** - data goes through relay server
 - **Data is still encrypted** - relay only sees encrypted bytes
@@ -102,7 +106,7 @@ DITS supports multiple peer discovery methods, tried in priority order:
 | **mDNS** | `--local` | Zero-config LAN discovery | Same WiFi/LAN, no internet |
 | **STUN** | `--stun` | External IP discovery | Hole-punching, NAT traversal |
 | **Signal Server** | `--signal <URL>` | WebSocket rendezvous | NAT traversal, internet sharing |
-| **Relay** | `--relay` | Forward through relay server | 100% NAT traversal, no port forwarding |
+| **Relay** | `--relay` | Forward through relay server | NAT traversal without port forwarding (roadmap) |
 
 ### Default Behavior (Auto Mode)
 
@@ -330,7 +334,9 @@ The signal server facilitates peer discovery for NAT traversal:
 3. Server exchanges peer addresses
 4. Direct QUIC connection established
 
-Default signal server: `wss://dits-signal.fly.dev`
+There is **no deployed default signal server** today — the previously documented
+`wss://dits-signal.fly.dev` endpoint does not exist. Peer discovery and the signal server
+are roadmap.
 
 Run your own signal server (note: the `dits-signal` crate is quarantined under `legacy/backend-crates` and is not part of the current architecture):
 

@@ -1,5 +1,7 @@
 # Pricing Model
 
+> 🚧 **Planned / not yet available.** The Ditshub hosted service and the commercial terms below are **not purchasable today**. Dits currently ships as a local-first CLI (`npm install -g @byronwade/dits`); there is no hosted SaaS, billing, or paid tier. This page documents intended design, not a product you can buy. See `docs/STATUS.md`.
+
 Detailed pricing structure, tiers, and cost calculations for Dits.
 
 ---

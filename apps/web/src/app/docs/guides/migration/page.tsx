@@ -200,8 +200,8 @@ dits import git . --full-history --include-lfs
 # LFS pointer files are automatically converted
 # to regular Dits chunks
 
-# 3. Verify large files
-dits ls-files --large  # List files > 10MB`}
+# 3. Verify large files (use your shell to list them)
+find . -type f -size +10M  # List files > 10MB`}
             />
 
             <Callout type="tip" title="No More .gitattributes" className="not-prose my-6">

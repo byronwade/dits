@@ -25,6 +25,14 @@ export default function InternalsPage() {
                 description="Low-level commands for advanced operations, scripting, and understanding how Dits works under the hood. These are the building blocks that power higher-level commands."
             />
 
+            <Callout type="important" title="Roadmap — low-level object commands are not implemented">
+                The plumbing commands shown here (<code>cat-file</code>,{" "}
+                <code>hash-object</code>, <code>rev-parse</code>, <code>ls-tree</code>, and{" "}
+                <code>ls-files</code>) are a <strong>planned</strong> design, not part of the
+                current command set. Example output is illustrative. See the{" "}
+                <Link href="/docs/roadmap">roadmap</Link> for status.
+            </Callout>
+
             <Callout type="warning" title="Advanced Usage" className="not-prose my-6">
                 These commands are intended for advanced users, scripts, and tooling.
                 For everyday work, use the high-level commands in the CLI reference.
@@ -98,7 +106,7 @@ export default function InternalsPage() {
 
             <h2>Inspecting Objects</h2>
 
-            <h3>dits cat-file</h3>
+            <h3>dits cat-file (planned)</h3>
             <p>Display object content or type:</p>
 
             <CodeBlock
@@ -131,7 +139,7 @@ $ dits cat-file -p def5678
 040000 tree 333ccc    src`}
             />
 
-            <h3>dits hash-object</h3>
+            <h3>dits hash-object (planned)</h3>
             <p>Compute hash of content:</p>
 
             <CodeBlock
@@ -169,7 +177,7 @@ abc1234 refs/heads/main
 $ dits show-ref --verify refs/heads/main && echo "exists"`}
             />
 
-            <h3>dits rev-parse</h3>
+            <h3>dits rev-parse (planned)</h3>
             <CodeBlock
                 language="bash"
                 code={`# Resolve ref to commit hash
@@ -266,7 +274,7 @@ All chunks OK.`}
 
             <h2>Index Operations</h2>
 
-            <h3>dits ls-files</h3>
+            <h3>dits ls-files (planned)</h3>
             <CodeBlock
                 language="bash"
                 code={`# List tracked files

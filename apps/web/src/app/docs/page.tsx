@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CodeBlock } from "@/components/ui/code-block";
+import { Callout } from "@/components/ui/callout";
 import { DocPageHeader } from "@/components/doc-page-header";
 import {
   BookOpen,
@@ -109,13 +110,19 @@ const implementedCommands = [
   "segment", "assemble", "roundtrip", "mount", "unmount", "inspect", "inspect-file",
   "repo-stats", "cache-stats", "fsck", "meta-scan", "meta-show", "meta-list",
 
-  // Collaboration & Security
-  "remote", "push", "pull", "fetch", "clone", "lock", "unlock", "locks",
-  "login", "logout", "change-password", "audit", "audit-stats", "audit-export", "p2p",
+  // Collaboration & Security (local)
+  "lock", "unlock", "locks",
+  "login", "logout", "change-password", "audit", "audit-stats", "audit-export",
 
   // Lifecycle & Maintenance
   "freeze-init", "freeze-status", "freeze", "thaw", "freeze-policy",
   "encrypt-init", "encrypt-status", "dep-check", "dep-graph", "dep-list", "gc", "clean",
+];
+
+// Networked commands are on the roadmap: they currently print placeholders
+// and transfer no data. See the roadmap callout below.
+const roadmapCommands = [
+  "remote", "push", "pull", "fetch", "clone", "sync", "p2p",
 ];
 
 export default function DocsPage() {
@@ -154,8 +161,20 @@ export default function DocsPage() {
       <DocPageHeader
         eyebrow="Documentation"
         title="Dits Documentation"
-        description="Welcome to the Dits documentation. Dits is a comprehensive, production-ready version control system with 120+ automated tests covering 80+ file formats. Built for creative industries with Git-like workflows for massive binary assets - from video production to game development to 3D animation. Features hybrid Git+Dits storage, Redis caching, P2P networking, and enterprise-grade security."
+        description="Welcome to the Dits documentation. Dits is a local-first, content-addressed version control system, covered by 469 automated tests. Built for creative industries with Git-like workflows for massive binary assets - from video production to game development to 3D animation. Networked features such as remote sync and P2P are on the roadmap and not yet available."
       />
+
+      <Callout type="important" className="not-prose my-8">
+        <strong>What works today vs. what is planned.</strong> Dits today is a
+        local-first Rust CLI. Local version control (init, add, commit, branch,
+        diff, log, VFS, video tooling, encryption, and more) works and is covered
+        by 469 automated tests. Networked features &mdash; <code>remote</code>,{" "}
+        <code>push</code>, <code>pull</code>, <code>fetch</code>, <code>clone</code>,{" "}
+        <code>sync</code>, and P2P &mdash; are on the roadmap: today they print
+        placeholders and transfer no data. The same applies to the hosted REST API,
+        official SDKs, Ditshub cloud, and managed deployment. Do not depend on those
+        yet.
+      </Callout>
 
       <div className="not-prose rounded-xl border border-brand/20 bg-gradient-to-br from-brand/10 to-brand/5 p-6 my-8">
         <h2 className="text-2xl font-bold mb-4">Why Dits Exists</h2>
@@ -177,15 +196,15 @@ export default function DocsPage() {
             <h3 className="font-semibold text-brand mb-3">The Dits Solution</h3>
             <ul className="space-y-1.5 text-sm text-muted-foreground list-disc list-inside">
               <li>Content-defined chunking deduplicates automatically</li>
-              <li>Only changed chunks transfer across network</li>
+              <li>Only changed chunks transfer across network (planned)</li>
               <li>Video-aware optimizations (keyframe alignment)</li>
               <li>Git-like interface familiar to developers</li>
-              <li>Local-first with optional cloud storage</li>
+              <li>Local-first; optional cloud storage on the roadmap</li>
               <li>Hybrid Git+Dits storage for optimal performance</li>
-              <li>120+ automated tests for 80+ file formats</li>
+              <li>469 automated tests across many file formats</li>
               <li>Git operations work on binary creative assets</li>
-              <li>1TB+ repository support with Redis caching</li>
-              <li>P2P networking and enterprise security</li>
+              <li>Local encryption and audit logging</li>
+              <li>P2P networking and remote sync (roadmap)</li>
             </ul>
           </div>
         </div>
@@ -255,10 +274,15 @@ dits switch main
 dits merge feature/color-grade`}
       />
 
-      <h3>Remote Operations</h3>
+      <h3>Remote Operations (roadmap)</h3>
+      <p>
+        Networked commands are not yet implemented &mdash; today they print
+        placeholders and transfer no data. The example below is illustrative of the
+        intended interface.
+      </p>
       <CodeBlock
         language="bash"
-        code={`# Add a remote
+        code={`# (planned) Add a remote
 dits remote add origin /path/to/remote
 
 # Push changes
@@ -273,13 +297,26 @@ dits clone /path/to/repo my-project`}
 
       <h2>Implementation Status</h2>
       <p>
-        Dits is production-ready with comprehensive testing and enterprise features.
-        All 60+ commands are fully implemented with 120+ automated tests covering 80+ file formats:
+        The local Dits CLI is covered by 469 automated tests. The commands below
+        work today on your machine:
       </p>
 
       <div className="not-prose flex flex-wrap gap-2 my-4">
         {implementedCommands.map((cmd) => (
           <Badge key={cmd} variant="outline" className="font-mono">
+            {cmd}
+          </Badge>
+        ))}
+      </div>
+
+      <p>
+        These commands are <strong>roadmap</strong> &mdash; networked features that
+        are not yet built. Today they print placeholders and transfer no data:
+      </p>
+
+      <div className="not-prose flex flex-wrap gap-2 my-4">
+        {roadmapCommands.map((cmd) => (
+          <Badge key={cmd} variant="secondary" className="font-mono">
             {cmd}
           </Badge>
         ))}
@@ -299,9 +336,9 @@ dits clone /path/to/repo my-project`}
           </p>
         </div>
         <div className="border border-border rounded-lg p-4">
-          <h3 className="font-semibold mb-2 text-brand flex items-center gap-2"><Check className="h-5 w-5" /> Enterprise Features</h3>
+          <h3 className="font-semibold mb-2 text-brand flex items-center gap-2"><Check className="h-5 w-5" /> Local Security &amp; Storage</h3>
           <p className="text-sm text-muted-foreground">
-            Hybrid storage, Redis caching, P2P networking, encryption, audit logging, VFS mounting, cross-platform support
+            Encryption, audit logging, VFS mounting, and cross-platform support work today. Redis caching and P2P networking are on the roadmap.
           </p>
         </div>
       </div>
@@ -310,7 +347,7 @@ dits clone /path/to/repo my-project`}
         <h3 className="text-lg font-semibold mb-4 text-foreground flex items-center gap-2"><Beaker className="h-5 w-5 text-brand" /> Testing Infrastructure</h3>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <h4 className="font-medium mb-2">120+ Automated Tests</h4>
+            <h4 className="font-medium mb-2">469 Automated Tests</h4>
             <ul className="text-sm space-y-1">
               <li>Git-inspired shell script framework</li>
               <li>Creative asset format validation</li>
@@ -347,10 +384,10 @@ dits clone /path/to/repo my-project`}
               <strong>BLAKE3 Cryptographic Hashing:</strong> Fast, parallelizable hashing for content addressing
             </li>
             <li>
-              <strong>Redis Caching Layer:</strong> Distributed caching for massive repository performance
+              <strong>Redis Caching Layer (roadmap):</strong> Distributed caching for massive repository performance
             </li>
             <li>
-              <strong>QUIC Transport:</strong> High-performance UDP-based networking with resumable transfers
+              <strong>QUIC Transport (roadmap):</strong> High-performance UDP-based networking with resumable transfers
             </li>
           </ul>
         </div>
@@ -370,7 +407,7 @@ dits clone /path/to/repo my-project`}
               <strong>Distributed Locking:</strong> Redlock algorithm prevents binary file conflicts
             </li>
             <li>
-              <strong>P2P Networking:</strong> Decentralized collaboration and asset sharing
+              <strong>P2P Networking (roadmap):</strong> Decentralized collaboration and asset sharing
             </li>
             <li>
               <strong>Enterprise Security:</strong> AES-256-GCM encryption, audit logging, RBAC
@@ -382,7 +419,7 @@ dits clone /path/to/repo my-project`}
       <h3 className="text-lg font-semibold mt-8 mb-4">Testing & Quality Assurance</h3>
       <ul>
         <li>
-          <strong>120+ Automated Tests:</strong> Git-inspired shell script framework covering all features and file formats
+          <strong>469 Automated Tests:</strong> Git-inspired shell script framework covering all features and file formats
         </li>
         <li>
           <strong>Cross-Platform Testing:</strong> Windows, macOS, Linux filesystem and path compatibility

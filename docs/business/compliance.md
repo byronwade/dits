@@ -1,5 +1,11 @@
 # Legal & Compliance
 
+> 🚧 **Planned / not yet available.** This documents the intended compliance posture for a
+> **planned hosted Dits service (Ditshub)** that is **not available today**. Dits currently
+> ships as a local-first CLI (`npm install -g @byronwade/dits`) — there is no hosted service,
+> so the certifications, DPAs, and contact channels below are aspirational, not in effect.
+> See `docs/STATUS.md`.
+
 Security certifications, data protection, and regulatory compliance documentation.
 
 ---

@@ -25,16 +25,20 @@ Dits integrates with popular CI/CD platforms to enable automated workflows for m
 
 ## Authentication in CI
 
+> 🚧 **Roadmap — not implemented yet.** There is no `dits-admin` binary, no hosted service,
+> no API tokens, and no service accounts. The real auth commands (`login` / `logout` /
+> `change-password`) manage **local encryption keys** only. The setup below is aspirational.
+
 ### Service Account Setup
 
 ```bash
-# Create a service account (admin)
+# (Roadmap) Create a service account (admin)
 dits-admin user create \
     --email ci@example.com \
     --name "CI Service Account" \
     --type service
 
-# Generate API token
+# (Roadmap) Generate API token
 dits-admin token create \
     --user ci@example.com \
     --name "CI Token" \
@@ -85,20 +89,20 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Dits
-        uses: dits-io/setup-dits@v1
-        with:
-          version: 'latest'
+        # No official setup action is published yet — install from npm.
+        run: npm install -g @byronwade/dits
 
       - name: Configure Dits
         run: |
-          dits config set user.name "GitHub Actions"
-          dits config set user.email "actions@github.com"
+          dits config user.name "GitHub Actions"
+          dits config user.email "actions@github.com"
 
       - name: Pull latest assets
         env:
           DITS_TOKEN: ${{ secrets.DITS_TOKEN }}
         run: |
-          dits clone https://dits.io/myorg/assets assets
+          # 🚧 roadmap — network clone/pull not implemented; transfers no data today
+          dits clone https://example.com/myorg/assets assets
           cd assets
           dits pull
 
@@ -134,13 +138,14 @@ jobs:
           sudo apt-get install -y ffmpeg
 
       - name: Install Dits
-        uses: dits-io/setup-dits@v1
+        run: npm install -g @byronwade/dits
 
       - name: Clone repository
         env:
           DITS_TOKEN: ${{ secrets.DITS_TOKEN }}
         run: |
-          dits clone https://dits.io/myorg/project .
+          # 🚧 roadmap — network clone not implemented; transfers no data today
+          dits clone https://example.com/myorg/project .
 
       - name: Generate proxies
         run: |
@@ -156,7 +161,7 @@ jobs:
         run: |
           dits add *_proxy.mp4
           dits commit -m "Generate proxies [ci skip]"
-          dits push
+          dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Dits Webhook Trigger
@@ -207,19 +212,20 @@ stages:
   - deploy
 
 variables:
-  DITS_ENDPOINT: https://dits.io
+  DITS_ENDPOINT: https://example.com
   DITS_REPO: myorg/project
 
 .dits-setup:
   before_script:
-    - curl -sSL https://get.dits.io | sh
-    - dits config set user.name "GitLab CI"
-    - dits config set user.email "ci@gitlab.com"
+    - npm install -g @byronwade/dits
+    - dits config user.name "GitLab CI"
+    - dits config user.email "ci@gitlab.com"
 
 sync-assets:
   stage: sync
   extends: .dits-setup
   script:
+    # 🚧 roadmap — network clone/pull not implemented; transfers no data today
     - dits clone $DITS_ENDPOINT/$DITS_REPO assets
     - cd assets && dits pull
     - dits fsck
@@ -253,7 +259,7 @@ deploy-assets:
     - cd assets
     - dits add *.mp4
     - dits commit -m "Process media from CI"
-    - dits push
+    - dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
   only:
     - main
 ```
@@ -269,12 +275,13 @@ sync-large-assets:
     GIT_STRATEGY: none
   script:
     # Use sparse checkout for specific files
+    # 🚧 roadmap — remote config only; pull transfers no data today
     - dits init
     - dits remote add origin $DITS_ENDPOINT/$DITS_REPO
-    - dits config set checkout.sparse true
+    - dits config checkout.sparse true
     - dits sparse add "*.prproj"
     - dits sparse add "Media/*.mov"
-    - dits pull
+    - dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
   timeout: 2h  # Extended timeout for large files
 ```
 
@@ -291,22 +298,23 @@ pipeline {
 
     environment {
         DITS_TOKEN = credentials('dits-token')
-        DITS_REPO = 'https://dits.io/myorg/project'
+        DITS_REPO = 'https://example.com/myorg/project'
     }
 
     stages {
         stage('Setup') {
             steps {
                 sh '''
-                    curl -sSL https://get.dits.io | sh
-                    dits config set user.name "Jenkins"
-                    dits config set user.email "jenkins@example.com"
+                    npm install -g @byronwade/dits
+                    dits config user.name "Jenkins"
+                    dits config user.email "jenkins@example.com"
                 '''
             }
         }
 
         stage('Sync') {
             steps {
+                // 🚧 roadmap — network clone/pull not implemented; transfers no data today
                 sh '''
                     dits clone $DITS_REPO assets
                     cd assets && dits pull
@@ -332,6 +340,7 @@ pipeline {
                 branch 'main'
             }
             steps {
+                // 🚧 roadmap — `dits push` prints a placeholder, transfers no data today
                 sh '''
                     cd assets
                     dits add .
@@ -362,12 +371,14 @@ def call(Map config = [:]) {
     def repo = config.repo
 
     withEnv(["DITS_TOKEN=${token}"]) {
+        // 🚧 roadmap — network clone/pull not implemented; transfers no data today
         sh "dits clone ${repo} ."
         sh "dits pull"
     }
 }
 
 def push(String message) {
+    // 🚧 roadmap — `dits push` prints a placeholder, transfers no data today
     sh """
         dits add .
         dits commit -m "${message}"
@@ -382,7 +393,7 @@ pipeline {
     stages {
         stage('Sync') {
             steps {
-                dits repo: 'https://dits.io/org/project'
+                dits repo: 'https://example.com/org/project'
             }
         }
         stage('Push') {
@@ -404,8 +415,10 @@ pipeline {
 # .circleci/config.yml
 version: 2.1
 
+# 🚧 roadmap — no official CircleCI orb is published yet; install from npm instead
+# (npm install -g @byronwade/dits). The orb usage below is aspirational.
 orbs:
-  dits: dits-io/dits@1.0
+  dits: byronwade/dits@1.0
 
 executors:
   media-processor:
@@ -463,7 +476,7 @@ jobs:
             cd assets
             dits add *.mp4
             dits commit -m "Processed by CircleCI"
-            dits push
+            dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 workflows:
   process-workflow:
@@ -510,15 +523,16 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
-                curl -sSL https://get.dits.io | sh
-                dits config set user.name "Azure DevOps"
-                dits config set user.email "azdo@example.com"
+                npm install -g @byronwade/dits
+                dits config user.name "Azure DevOps"
+                dits config user.email "azdo@example.com"
 
           - task: Bash@3
             displayName: 'Clone repository'
             inputs:
               targetType: 'inline'
               script: |
+                # 🚧 roadmap — network clone/pull not implemented; transfers no data today
                 dits clone $(DITS_REPO) assets
                 cd assets && dits pull
             env:
@@ -561,7 +575,7 @@ stages:
                       cd $(Pipeline.Workspace)/dits-assets
                       dits add .
                       dits commit -m "Azure DevOps Build $(Build.BuildNumber)"
-                      dits push
+                      dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
                   env:
                     DITS_TOKEN: $(DITS_TOKEN)
 ```
@@ -570,10 +584,13 @@ stages:
 
 ## Webhook Integration
 
+> 🚧 **Roadmap — not implemented yet.** There is no `dits webhook` command and no hosted
+> webhooks service. This entire section describes a planned feature; none of it works today.
+
 ### Setting Up Webhooks
 
 ```bash
-# Create webhook for CI triggers
+# (Roadmap) Create webhook for CI triggers
 dits webhook create \
     --repo myorg/project \
     --url https://api.github.com/repos/org/repo/dispatches \
@@ -704,8 +721,9 @@ dits commit -m "Auto-generated [skip ci]"
 # Clean up old artifacts
 - name: Cleanup
   run: |
-    dits gc --prune-old --aggressive
-    dits cache clear --older-than 7d
+    dits gc --aggressive
+    # Note: real cache command is `dits cache-stats` (read-only).
+    # `dits cache clear/prune` does not exist.
 ```
 
 ---
@@ -715,32 +733,36 @@ dits commit -m "Auto-generated [skip ci]"
 ### Common Issues
 
 **Authentication failures:**
-```bash
-# Verify token
-curl -H "Authorization: Bearer $DITS_TOKEN" \
-    https://api.dits.io/v1/user
 
-# Check token scopes
+> 🚧 Roadmap — there is no hosted API and no `dits auth status` command. The real auth
+> commands (`login` / `logout` / `change-password`) manage **local encryption keys** only.
+
+```bash
+# (Roadmap) Verify token against a hosted API
+curl -H "Authorization: Bearer $DITS_TOKEN" \
+    https://api.example.com/v1/user
+
+# (Roadmap) Check token scopes — no `dits auth` command exists today
 dits auth status
 ```
 
 **Timeouts on large files:**
 ```bash
-# Increase timeout
-dits config set transfer.timeout 30m
+# 🚧 roadmap — transfer.* settings have no effect today (no networked transfer)
+dits config transfer.timeout 30m
 
 # Use chunked transfer
-dits push --chunked
+dits push --chunked   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 **Disk space issues:**
 ```bash
 # Use sparse checkout
-dits config set checkout.sparse true
+dits config checkout.sparse true
 dits sparse add "*.prproj"
 
-# Clean cache
-dits cache clear
+# Check cache usage (there is no `dits cache clear`; real command is `dits cache-stats`)
+dits cache-stats
 ```
 
 ---

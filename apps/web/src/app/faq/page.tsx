@@ -82,7 +82,7 @@ const CATEGORIES: Category[] = [
       {
         question: "Is it really free and open source?",
         answer:
-          "Yes — Dits is open source under the MIT license. No usage limits, no file-size caps, no account required, and you can self-host everything on your own infrastructure.",
+          "Yes — Dits is open source, dual-licensed under Apache-2.0 OR MIT (pick whichever suits you). No usage limits, no file-size caps, no account required, and you can self-host everything on your own infrastructure.",
       },
       {
         question: "Do I need to know Git to use it?",
@@ -373,7 +373,7 @@ const CATEGORIES: Category[] = [
       {
         question: "How do I install it?",
         answer:
-          "One line via the install script, or Homebrew, npm/bun/pnpm, Cargo, or a prebuilt binary from GitHub Releases. Then run `dits init` in any project to get started — see the Download page for all options.",
+          "Install globally with npm, bun, or pnpm (`npm install -g @byronwade/dits`), use the one-line install script, or grab a prebuilt binary from GitHub Releases. Then run `dits init` in any project to get started — see the Download page for all options.",
       },
       {
         question: "How do I contribute or follow progress?",

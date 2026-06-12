@@ -673,7 +673,7 @@ A Git-style, content-addressed VCS engineered for large media: video, game build
 ## Contact and Links
 - Repo: https://github.com/byronwade/dits
 - Docs: see `docs/architecture/overview.md` and related files listed above.
-- Email: dev@dits.io
+- Email: GitHub Issues (github.com/byronwade/dits/issues)
 - Discord: #dev channel
 - Quick install: `curl -fsSL https://raw.githubusercontent.com/byronwade/dits/main/install.sh | sh`
 

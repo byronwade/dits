@@ -81,8 +81,17 @@ export default function GettingStartedPage() {
         <DocPageHeader
           eyebrow="Getting Started"
           title="Getting Started with Dits"
-          description="This guide will help you install Dits and create your first repository. Dits is production-ready with 120+ automated tests covering 80+ file formats for creative professionals."
+          description="This guide will help you install Dits and create your first repository. Dits is a local-first version control CLI for creative professionals, covered by 469 automated tests. Networked features such as remote sync are on the roadmap."
         />
+
+        <Callout type="important" className="not-prose my-6">
+          <strong>Install with npm.</strong> The published package is{" "}
+          <code>@byronwade/dits</code> (currently v0.1.5). The Homebrew tap is{" "}
+          <strong>not yet published</strong>. Dits today is a local-first CLI &mdash;
+          local commands work, while networked commands (push, pull, fetch, clone,
+          sync, p2p) are on the roadmap and currently print placeholders that transfer
+          no data.
+        </Callout>
 
         <h2>Installation</h2>
         <p>
@@ -118,10 +127,11 @@ export default function GettingStartedPage() {
           <TabsContent value="brew" className="mt-4">
             <CodeBlock
               language="bash"
-              code={`brew tap byronwade/dits && brew install dits`}
+              code={`# (planned, not yet available)
+brew tap byronwade/dits && brew install dits`}
             />
             <p className="text-sm text-muted-foreground mt-2">
-              Available for macOS and Linux via Homebrew.
+              Not yet published &mdash; the tap does not exist yet. Use npm for now.
             </p>
           </TabsContent>
           <TabsContent value="source" className="mt-4">
@@ -142,7 +152,7 @@ cp target/release/dits /usr/local/bin/`}
         <CodeBlock
           language="bash"
           code={`$ dits --version
-dits 0.1.2`}
+dits 0.1.5`}
         />
 
         <h2>Choose Your Workflow</h2>
@@ -297,9 +307,9 @@ git log --oneline  # Code commits
 dits log --oneline # Asset commits`}
         />
 
-        <Callout type="tip" title="Production-Ready with Comprehensive Testing" className="not-prose my-6">
-          <strong>120+ automated tests</strong> covering 80+ file formats, Git operations on binaries, cross-platform compatibility,
-          1TB+ workload simulation, and enterprise security. Every feature is thoroughly tested before release.
+        <Callout type="tip" title="Comprehensive Testing" className="not-prose my-6">
+          <strong>469 automated tests</strong> cover the local CLI across many file formats, Git operations on binaries, cross-platform compatibility,
+          1TB+ workload simulation, and local security. Every feature is thoroughly tested before release.
         </Callout>
 
         <h2>Your First Repository</h2>

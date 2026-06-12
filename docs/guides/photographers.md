@@ -150,8 +150,9 @@ dits add .
 dits commit -m "Initial repository setup with existing projects"
 
 # Connect to remote (optional)
-dits remote add origin https://ditshub.com/janesmithphoto/portfolio
-dits push -u origin main
+# 🚧 roadmap — networked remotes are not implemented yet (remote config only)
+dits remote add origin https://example.com/janesmithphoto/portfolio
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ---
@@ -249,14 +250,16 @@ dits config lock.patterns "*.psd,*.tiff,*.psb"
 dits config lock.required true
 
 # Push to remote
-dits remote add origin https://ditshub.com/studio/projects
-dits push -u origin main
+# 🚧 roadmap — networked remotes are not implemented yet (remote config only)
+dits remote add origin https://example.com/studio/projects
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 **Team Member Setup:**
 ```bash
 # Each team member clones
-dits clone https://ditshub.com/studio/projects
+# 🚧 roadmap — network clone not implemented; only a local-path clone works today
+dits clone https://example.com/studio/projects
 cd projects
 
 # Configure identity
@@ -278,13 +281,13 @@ cd 2024-06-20_Product_Shoot
 # Commit and push
 dits add .
 dits commit -m "Import: Product shoot for ABC Brand - 150 photos"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 **Retoucher Begins Work:**
 ```bash
 # Get latest
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Lock files before editing
 dits lock product_hero.psd --reason "Retouching hero image"
@@ -294,7 +297,7 @@ dits lock product_hero.psd --reason "Retouching hero image"
 # Save progress
 dits add product_hero.psd
 dits commit -m "Retouch: Hero image - skin cleanup, color grade"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Release lock when done
 dits unlock product_hero.psd
@@ -335,7 +338,7 @@ dits merge client-review-v1
 dits tag final-approved
 
 # Push everything
-dits push --all
+dits push --all   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ---
@@ -781,21 +784,23 @@ dits repo-stats
 dits gc
 
 # For very large repositories, use sparse checkout
-dits clone --filter=sparse https://ditshub.com/studio/archive
+# 🚧 roadmap — network clone (and --filter) is not implemented; only local-path clone works today
+dits clone --filter=sparse https://example.com/studio/archive
 dits sparse add 2024/Johnson_Family/
 
 # Only download what you need
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Backup Strategy
 
 ```bash
 # Remote backup (primary)
-dits remote add backup https://backup.ditshub.com/studio/projects
-dits push backup main
+# 🚧 roadmap — networked remote backup is not implemented yet (remote config only; push transfers no data today)
+dits remote add backup https://example.com/studio/projects
+dits push backup main   # 🚧 roadmap — prints a placeholder, transfers no data today
 
-# Local backup to external drive
+# Local backup to external drive (local-path clone works today)
 dits clone --mirror . /Volumes/Backup/studio-mirror
 
 # Verify backups
@@ -881,16 +886,16 @@ dits commit -m "Merge: Combined laptop and desktop work"
 
 ```bash
 # Share project via P2P (no cloud account needed)
-dits p2p share
+dits p2p share   # 🚧 roadmap — scaffolding, prints a placeholder, transfers no data today
 
 # Share the join code with retoucher
 # Code: ABC-123-XYZ
 
 # Retoucher connects:
-dits p2p connect ABC-123-XYZ ./client-project
+dits p2p connect ABC-123-XYZ ./client-project   # 🚧 roadmap — scaffolding, no data transfer today
 
 # After retoucher finishes and shares back:
-dits pull  # Get their changes
+dits pull  # Get their changes   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ---
@@ -937,7 +942,5 @@ alias dlks='dits locks'
 
 ## Getting Help
 
-- **Documentation**: [docs.dits.io](https://docs.dits.io)
-- **Photography Community**: [discord.gg/dits](https://discord.gg/dits) #photographers channel
-- **Video Tutorials**: [youtube.com/@dits](https://youtube.com/@dits)
-- **Email Support**: support@dits.io
+- **Source & issues**: [github.com/byronwade/dits](https://github.com/byronwade/dits)
+- **Install**: `npm install -g @byronwade/dits` (or bun/pnpm), or build from source with `cargo build --release`

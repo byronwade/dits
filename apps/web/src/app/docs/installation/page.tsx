@@ -152,6 +152,14 @@ export default function InstallationPage() {
         and automatically downloads the correct binary for your system.
       </p>
 
+      <Callout type="important" className="not-prose my-6">
+        <strong>Use npm.</strong> The published package is{" "}
+        <code>@byronwade/dits</code> (currently v0.1.5). The Homebrew tap and{" "}
+        <code>cargo install dits</code> options are <strong>not yet published</strong>{" "}
+        &mdash; the <code>byronwade/dits</code> tap and the <code>dits</code> crate do
+        not exist yet. Use the npm install below.
+      </Callout>
+
       <Tabs defaultValue="npm" className="not-prose my-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="npm">npm</TabsTrigger>
@@ -211,15 +219,18 @@ pnpm install -g @byronwade/dits`}
         <TabsContent value="brew" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Homebrew</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                Homebrew
+                <Badge variant="secondary">Not yet published</Badge>
+              </CardTitle>
               <CardDescription>
-                For macOS and Linux users who prefer Homebrew.
+                Planned for macOS and Linux users who prefer Homebrew. The tap does not exist yet &mdash; use npm for now.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <CodeBlock
         language="bash"
-        code={`# Add the tap
+        code={`# (planned, not yet available) Add the tap
 brew tap byronwade/dits
 
 # Install
@@ -232,9 +243,12 @@ brew install dits`}
         <TabsContent value="cargo" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Cargo</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                Cargo
+                <Badge variant="secondary">Not yet published</Badge>
+              </CardTitle>
               <CardDescription>
-                Build from source. Requires Rust 1.75 or later.
+                The <code>dits</code> crate is not yet published to crates.io. Use npm to install today.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -243,7 +257,7 @@ brew install dits`}
         code={`# Install Rust if needed
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-# Install Dits
+# (planned, not yet available) Install Dits
 cargo install dits`}
       />
             </CardContent>
@@ -289,7 +303,7 @@ cargo install dits`}
       <CodeBlock
         language="bash"
         code={`$ dits --version
-dits 0.1.2
+dits 0.1.5
 
 $ dits --help
 Dits - Distributed version control for video and large files

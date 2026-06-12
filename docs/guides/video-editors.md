@@ -5,10 +5,11 @@ This comprehensive guide covers everything video editors need to know about usin
 > 🚧 **Roadmap notice.** Dits today is **local-first**. Commands in this guide that sync
 > over a network — `push`, `pull`, `fetch`, `sync`, network `clone`, `remote`, and all
 > `p2p` sharing — are **not implemented yet**; they print placeholders and transfer no
-> data. There is also **no `dits mount` / `dits unmount`** command (the VFS is internal).
-> Everything **local** works: commits, branches, locks, MP4 tooling, and the FACR
-> frame-engine / photo commands. Treat networked and P2P examples below as the intended
-> future workflow, and use a **local-path** `clone` for local mirroring.
+> data. `dits mount` / `dits unmount` are **local-only** and require a build with
+> `--features fuser` (absent from the default npm build); there is **no remote/on-demand
+> hydration**. Everything **local** works: commits, branches, locks, MP4 tooling, and the
+> FACR frame-engine / photo commands. Treat networked and P2P examples below as the
+> intended future workflow, and use a **local-path** `clone` for local mirroring.
 
 ---
 
@@ -185,18 +186,16 @@ Unlike Git (which treats binary files as opaque blobs), Dits understands video:
 ### Initial Setup
 
 ```bash
-# 1. Install Dits (macOS)
-brew tap dits-io/dits
-brew install dits
+# 1. Install Dits (npm — works today; bun/pnpm also supported)
+npm install -g @byronwade/dits
+# Or build from source: cargo build --release
+#   (Homebrew taps, cargo install, apt/dnf are not yet published.)
 
-# 2. Install VFS support
-brew install macfuse
-
-# 3. Configure your identity
+# 2. Configure your identity
 dits config --global user.name "Your Name"
 dits config --global user.email "you@yourcompany.com"
 
-# 4. Set editor-friendly defaults
+# 3. Set editor-friendly defaults
 dits config --global core.editor "code --wait"  # VS Code
 dits config --global diff.binary true
 ```
@@ -550,7 +549,7 @@ dits commit -m "Picture lock - v1.0"
 dits tag picture-lock-v1
 
 # Share with colorist
-dits p2p share
+dits p2p share   # 🚧 roadmap — scaffolding, prints a placeholder, transfers no data today
 # → Join code: ABC-123
 ```
 
@@ -558,7 +557,7 @@ dits p2p share
 
 ```bash
 # Clone the project
-dits p2p connect ABC-123 ./documentary
+dits p2p connect ABC-123 ./documentary   # 🚧 roadmap — scaffolding, no data transfer today
 cd documentary
 
 # Create color branch
@@ -571,7 +570,7 @@ dits add 03_PROJECT/Documentary.drp
 dits commit -m "Color: Complete first pass grade"
 
 # Share back
-dits p2p share
+dits p2p share   # 🚧 roadmap — scaffolding, no data transfer today
 # → Join code: DEF-456
 ```
 
@@ -579,8 +578,8 @@ dits p2p share
 
 ```bash
 # Fetch colorist's work
-dits remote add colorist dits://peer/DEF-456
-dits fetch colorist
+dits remote add colorist dits://peer/DEF-456   # remote config only
+dits fetch colorist                            # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Review and merge
 dits merge colorist/grade/pass-1
@@ -916,7 +915,7 @@ dits add 06_EXPORTS/reviews/
 dits commit -m "Export review v1"
 
 # Share with client (they only see exports)
-# Could use DitsHub sharing or simple file share
+# 🚧 Hosted sharing (Ditshub) is roadmap; today use a simple local/file share
 
 # Receive feedback, make changes
 dits commit -m "Apply client feedback: shorten intro, add B-roll"
@@ -933,11 +932,11 @@ dits tag final-approved
 dits init
 dits add .
 dits commit -m "Initial project"
-dits p2p share
+dits p2p share   # 🚧 roadmap — scaffolding, no data transfer today
 # → ABC-123
 
 # Editor B: Clone project
-dits p2p connect ABC-123 ./project
+dits p2p connect ABC-123 ./project   # 🚧 roadmap — scaffolding, no data transfer today
 cd project
 
 # Editor A: Works on scenes 1-3
@@ -953,7 +952,7 @@ dits switch edit/scenes-4-6
 dits commit -m "Complete scenes 4-6"
 
 # Merge: Editor A merges B's work
-dits fetch origin
+dits fetch origin   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits merge origin/edit/scenes-4-6
 
 # Resolve any conflicts
@@ -988,19 +987,20 @@ For collaborators in different locations:
 
 ```bash
 # Option 1: P2P direct (both online at same time)
-dits p2p share  # Person A
-dits p2p connect ABC-123 ./project  # Person B
+dits p2p share  # Person A   # 🚧 roadmap — scaffolding, no data transfer today
+dits p2p connect ABC-123 ./project  # Person B   # 🚧 roadmap
 
-# Option 2: DitsHub cloud (async collaboration)
-dits remote add origin https://ditshub.com/team/project
-dits push -u origin main
+# Option 2: Hosted cloud (async collaboration)
+# 🚧 roadmap — hosted cloud and networked remotes are not implemented yet.
+dits remote add origin https://example.com/team/project   # remote config only
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Person B clones
-dits clone https://ditshub.com/team/project
+dits clone https://example.com/team/project   # 🚧 roadmap — network clone not implemented; local-path clone works
 
 # Regular sync
-dits pull  # Get others' changes
-dits push  # Share your changes
+dits pull  # Get others' changes   # 🚧 roadmap — no data transfer today
+dits push  # Share your changes    # 🚧 roadmap — no data transfer today
 ```
 
 ---
@@ -1022,7 +1022,7 @@ dits add 06_EXPORTS/for_color/
 dits commit -m "Color handoff: Reference with TC, EDL, and XML"
 
 # Share project
-dits p2p share
+dits p2p share   # 🚧 roadmap — scaffolding, no data transfer today
 # → ABC-123
 ```
 
@@ -1030,7 +1030,7 @@ dits p2p share
 
 ```bash
 # Clone project
-dits p2p connect ABC-123 ./project
+dits p2p connect ABC-123 ./project   # 🚧 roadmap — scaffolding, no data transfer today
 cd project
 
 # Create color branch
@@ -1049,14 +1049,14 @@ dits add 06_EXPORTS/from_color/
 dits commit -m "Color: Export graded ProRes masters"
 
 # Push back
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 **Editor receives color:**
 
 ```bash
 # Fetch colorist's work
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Review color branch
 dits diff picture-lock-v1 color/grade-v1
@@ -1099,7 +1099,7 @@ dits tag audio-handoff-v1
 
 ```bash
 # Get project
-dits clone [project-url]
+dits clone [project-url]   # 🚧 roadmap — network clone not implemented; local-path clone works
 dits branch audio/mix-v1
 dits switch audio/mix-v1
 
@@ -1108,13 +1108,13 @@ dits switch audio/mix-v1
 # Export stems and final mix
 dits add 04_AUDIO/mix/
 dits commit -m "Audio: Final mix - stereo and 5.1 stems"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 **Editor receives audio:**
 
 ```bash
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits merge audio/mix-v1
 
 # Import mix back to NLE
@@ -1157,7 +1157,7 @@ dits tag vfx/001-plate-v1
 **VFX artist works:**
 
 ```bash
-dits clone [project]
+dits clone [project]   # 🚧 roadmap — network clone not implemented; local-path clone works
 dits branch vfx/shot-001
 dits switch vfx/shot-001
 
@@ -1171,13 +1171,13 @@ dits commit -m "VFX 001: Sky replacement - first pass"
 dits commit -m "VFX 001: Adjust color match"
 dits commit -m "VFX 001: Add lens flare, final approved"
 dits tag vfx/001-final
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 **Editor receives VFX:**
 
 ```bash
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits merge vfx/shot-001
 
 # Relink VFX render in timeline
@@ -1235,8 +1235,9 @@ dits facr-trim 01_RAW/scene01.mov.facr.json --start 240 --end 1200
 dits facr-checkout 01_RAW/scene01.mov.facr.trimmed.json scene01_trim.mov
 ```
 
-> ℹ️ There is no `dits mount` command. The virtual filesystem is internal to checkout and
-> proxies; you work with reconstructed files via `facr-checkout` / `checkout`.
+> ℹ️ `dits mount` exists but requires a build with `--features fuser` (absent from the
+> default npm build) and is local-only. For frame-level work you generally use reconstructed
+> files via `facr-checkout` / `checkout` rather than the mount.
 
 ---
 
@@ -1357,11 +1358,12 @@ dits tag delivery-broadcast -m "Final broadcast master"
 
 ```bash
 # Set up remote backup
-dits remote add backup s3://my-bucket/projects/commercial-2025
-dits push backup main
+# 🚧 roadmap — networked/remote backup is not implemented yet (push transfers no data today).
+dits remote add backup s3://my-bucket/projects/commercial-2025   # remote config only
+dits push backup main   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Automated backup (add to cron/launchd)
-dits push backup --all
+dits push backup --all   # 🚧 roadmap — no data transfer today
 ```
 
 ### Project Archiving
@@ -1393,7 +1395,7 @@ dits archive verify ./commercial-2025-archive.dits
 dits archive extract ./commercial-2025-archive.dits ./restored-project
 
 # Or clone from backup
-dits clone s3://my-bucket/archives/commercial-2025
+dits clone s3://my-bucket/archives/commercial-2025   # 🚧 roadmap — network clone not implemented; local-path clone works
 ```
 
 ---
@@ -1403,11 +1405,10 @@ dits clone s3://my-bucket/archives/commercial-2025
 ### Optimizing Large Projects
 
 ```bash
-# Use shallow clones for quick access
+# 🚧 roadmap — network clone (and --depth / --filter) is not implemented yet;
+# only local-path clone works today.
 dits clone --depth 1 [url]  # Only latest version
-
-# Partial clone (metadata only)
-dits clone --filter blob:none [url]
+dits clone --filter blob:none [url]  # Partial clone (metadata only)
 
 # Enable caching
 dits config cache.size 50GB
@@ -1429,6 +1430,9 @@ dits config --global cache.path /Volumes/FastSSD/dits-cache
 ```
 
 ### Network Optimization
+
+> 🚧 Roadmap — networked transfer is not implemented yet, so these `transfer.*`
+> settings have no effect today.
 
 ```bash
 # For slow connections
@@ -1489,6 +1493,9 @@ dits status --ignored
 
 ### "Clone/pull is very slow"
 
+> 🚧 Roadmap — network clone/pull and `p2p ping` are not implemented yet (no data
+> transfer today). The commands below are the intended future workflow.
+
 ```bash
 # Use shallow clone
 dits clone --depth 1 [url]
@@ -1497,7 +1504,7 @@ dits clone --depth 1 [url]
 dits clone --filter blob:none [url]
 
 # Check network
-dits p2p ping [target]
+dits p2p ping [target]   # 🚧 roadmap — scaffolding, no data transfer today
 
 # Use local cache
 dits config cache.size 100GB
@@ -1525,8 +1532,8 @@ ls -la /dev/fuse
 # Check Dits storage usage
 dits repo-stats
 
-# Clear cache
-dits cache clear
+# Check cache usage (there is no `dits cache clear`; real command is `dits cache-stats`)
+dits cache-stats
 
 # Run garbage collection
 dits gc --aggressive
@@ -1573,7 +1580,7 @@ dits facr-trim scene01.mov.facr.json --start 0 --end 500  # Non-destructive trim
 # Utilities
 dits gc                              # Clean up
 dits fsck                            # Verify integrity
-# (No `dits mount` / `dits unmount` — the VFS is internal)
+# (dits mount / unmount require a --features fuser build and are local-only)
 ```
 
 ---

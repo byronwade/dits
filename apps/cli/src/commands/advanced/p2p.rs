@@ -193,8 +193,10 @@ pub fn share_repository(args: ShareArgs) -> Result<()> {
 
     rt.block_on(async {
         let host = start_p2p_host(config).await?;
-        println!("✅ Repository shared successfully!");
-        println!("🎯 Join code: {}", host.join_code());
+        // P2P transport is scaffolding: a join code is generated, but no QUIC endpoint
+        // or signaling/NAT traversal is active yet, so the repository is not
+        // actually reachable.
+        println!("🎯 Join code (scaffolding only — no data is served yet): {}", host.join_code());
         Ok(())
     })
 }
@@ -235,8 +237,9 @@ pub fn connect_repository(args: ConnectArgs) -> Result<()> {
 
     rt.block_on(async {
         let _client = connect_p2p_repository(config).await?;
-        println!("✅ Connected to P2P repository!");
-        println!("📁 Repository mounted at: {}", args.path.display());
+        // NOTE: P2P transport is scaffolding (no QUIC/NAT traversal yet), so nothing
+        // was actually connected or mounted. Do not print a success message
+        // here.
         Ok(())
     })
 }
@@ -360,21 +363,7 @@ pub fn ping_host(args: PingArgs) -> Result<()> {
     println!("   - Measure round-trip time");
     println!("   - Test NAT traversal");
 
-    for i in 1..=args.count {
-        println!("   Ping {}: (would send ping packet)", i);
-        if args.interval > 0 && i < args.count {
-            std::thread::sleep(std::time::Duration::from_secs(args.interval));
-        }
-    }
-
-    println!("\n   Sample output (when implemented):");
-    println!("   64 bytes from 192.168.1.100: seq=1 ttl=64 time=12.3ms");
-    println!("   64 bytes from 192.168.1.100: seq=2 ttl=64 time=11.8ms");
-    println!("   64 bytes from 192.168.1.100: seq=3 ttl=64 time=12.1ms");
-    println!("   64 bytes from 192.168.1.100: seq=4 ttl=64 time=11.9ms");
-    println!("\n   --- 192.168.1.100 ping statistics ---");
-    println!("   4 packets transmitted, 4 received, 0% packet loss");
-    println!("   round-trip min/avg/max = 11.8/12.0/12.3 ms");
+    println!("   No ping was sent (P2P transport is not wired up yet).");
 
     Ok(())
 }

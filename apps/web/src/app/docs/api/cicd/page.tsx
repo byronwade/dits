@@ -32,8 +32,19 @@ export default function CICDPage() {
       <DocPageHeader
         eyebrow="API & Integration"
         title="CI/CD Integration"
-        description="Automate your creative workflows with Dits integration in CI/CD pipelines. Trigger builds, run tests, and deploy assets automatically."
+        description="Planned CI/CD integration for Dits, intended to trigger builds, run tests, and deploy assets automatically from your creative workflows."
       />
+
+      <Callout type="important" className="not-prose my-6">
+        <strong>Planned &mdash; not yet available.</strong> The CI/CD integration on
+        this page depends on networked Dits features that do not exist yet:
+        <code>dits push</code>/<code>dits pull</code> against a remote, the hosted
+        API token (<code>DITS_TOKEN</code>), the <code>get.dits.io</code> installer,
+        and the <code>dits webhook</code> commands. Dits today is a local-first Rust
+        CLI &mdash; install it with <code>npm install -g @byronwade/dits</code>. The
+        pipelines below are illustrative of the intended design and may change. Do
+        not depend on them yet.
+      </Callout>
 
       <div className="not-prose grid gap-6 md:grid-cols-2 my-8">
         <Card>

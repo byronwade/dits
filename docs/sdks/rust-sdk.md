@@ -1,8 +1,8 @@
 # Rust SDK Guide
 
-> ⚠️ These SDKs target a quarantined/legacy backend service (legacy/backend-crates), not the current local-first CLI. Retained as design reference.
+> 🚧 **Roadmap — not yet available.** There is **no published `dits-sdk` crate** on crates.io and **no hosted REST API** (`api.dits.io` does not exist). Dits ships today as a local-first CLI — install the CLI with `npm install -g @byronwade/dits` (or bun/pnpm). This SDK targeted a quarantined/legacy backend service (`legacy/backend-crates`) and is retained as illustrative/planned design only, not a shipped product. Source: `github.com/byronwade/dits`. See `docs/STATUS.md`.
 
-Complete guide to using the Dits Rust SDK.
+Complete guide to using the planned Dits Rust SDK.
 
 ---
 
@@ -10,6 +10,7 @@ Complete guide to using the Dits Rust SDK.
 
 ```toml
 # Cargo.toml
+# (crate not yet published — dits-sdk does not resolve on crates.io today)
 [dependencies]
 dits-sdk = "0.1"
 tokio = { version = "1", features = ["full"] }
@@ -61,7 +62,7 @@ use dits_sdk::{Client, ClientConfig};
 use std::time::Duration;
 
 let client = Client::builder()
-    .endpoint("https://api.dits.io")
+    .endpoint("https://api.example.com") // roadmap: no hosted API exists yet
     .token("dits_token_xxx")
     .timeout(Duration::from_secs(30))
     .max_connections(8)
@@ -200,7 +201,7 @@ let repo = client.open_repository("./project")?;
 let repo = Repository::init("./new-project")?;
 
 // Add remote
-repo.remote_add("origin", "https://dits.io/myorg/new-project").await?;
+repo.remote_add("origin", "https://example.com/myorg/new-project").await?; // roadmap placeholder
 ```
 
 ### Repository Info
@@ -790,4 +791,4 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 - All operations are async
 - Thread-safe for concurrent use
 - Implements `Clone` for sharing across tasks
-- Full documentation at docs.rs/dits-sdk
+- Planned crate (not yet published); source at github.com/byronwade/dits

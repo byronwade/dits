@@ -1,6 +1,6 @@
 # Webhook & Event System
 
-> ⚠️ Some of this describes a quarantined/legacy backend design (now in legacy/backend-crates), not the current local-first architecture. The live architecture is the modules under apps/cli/src/ (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands).
+> 🚧 **Roadmap — not yet available.** There is **no webhooks service** and **no hosted API** in Dits today. Dits ships as a local-first CLI (`npm install -g @byronwade/dits`); `api.dits.io` does **not** exist and no SDK packages (`@dits/sdk`, `dits-sdk`, `dits-go`) are published. This describes the quarantined/legacy backend design (now in `legacy/backend-crates`) and intended/planned behavior. The live architecture is the modules under `apps/cli/src/` (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands). See `docs/STATUS.md`.
 
 Real-time notifications and event-driven integrations.
 
@@ -203,7 +203,7 @@ All webhook payloads include:
     "name": "johndoe",
     "email": "john@example.com"
   },
-  "compare_url": "https://dits.io/myorg/project/compare/a1b2c3d4...f6e5d4c3"
+  "compare_url": "https://example.com/myorg/project/compare/a1b2c3d4...f6e5d4c3"
 }
 ```
 
@@ -602,7 +602,7 @@ data: {"lock":{"path":"video.mov","owner":"johndoe"}}
 ### WebSocket
 
 ```javascript
-const ws = new WebSocket('wss://api.dits.io/v1/ws');
+const ws = new WebSocket('wss://api.example.com/v1/ws');
 
 ws.onopen = () => {
     // Subscribe to events

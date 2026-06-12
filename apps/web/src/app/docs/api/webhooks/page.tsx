@@ -26,21 +26,30 @@ export default function WebhooksPage() {
       <DocPageHeader
         eyebrow="API & Integration"
         title="Webhooks & Events"
-        description="Real-time notifications for repository events, enabling CI/CD pipelines, Slack notifications, and automated workflows."
+        description="A planned webhooks service for real-time repository event notifications, intended to power CI/CD pipelines, Slack notifications, and automated workflows."
       />
+
+      <Callout type="important" className="not-prose my-6">
+        <strong>Planned &mdash; not yet available.</strong> Dits has no hosted
+        webhooks service today. There is no <code>api.dits.io</code> endpoint that
+        delivers events, and the <code>dits webhook</code> commands shown elsewhere
+        are not implemented. Dits today is a local-first Rust CLI. The events,
+        payloads, and handlers below are illustrative of the intended design and
+        may change. Do not depend on them yet.
+      </Callout>
 
       <div className="not-prose bg-brand/5 border border-brand/20 rounded-lg p-6 my-8">
         <div className="flex items-start gap-4">
           <Webhook className="h-8 w-8 text-brand mt-1" />
           <div>
-            <h2 className="text-xl font-semibold mb-2">Event-Driven Automation</h2>
+            <h2 className="text-xl font-semibold mb-2">Event-Driven Automation (Planned)</h2>
             <p className="text-muted-foreground mb-4">
-              Webhooks deliver real-time notifications about repository activity,
-              enabling powerful integrations and automated workflows across your creative pipeline.
+              The planned webhooks service would deliver real-time notifications about repository activity,
+              enabling integrations and automated workflows across your creative pipeline. This service does not exist yet.
             </p>
             <div className="grid gap-3 md:grid-cols-3">
               <div className="text-center">
-                <div className="text-2xl font-bold text-brand">25+</div>
+                <div className="text-2xl font-bold text-brand">Planned</div>
                 <div className="text-sm text-muted-foreground">Event Types</div>
               </div>
               <div className="text-center">

@@ -49,8 +49,8 @@ dits --version
 # Check available disk space
 df -h .
 
-# Verify network connectivity (if using DitsHub)
-dits remote test https://ditshub.com
+# Note: networked remotes are roadmap. Migrating into a LOCAL Dits repo works today;
+# publishing to a remote (and any `dits remote test`) is a future step.
 ```
 
 ### Estimate Migration Time
@@ -131,23 +131,26 @@ cp -r ../project-git/* .
 dits config user.name "Your Name"
 dits config user.email "your.email@example.com"
 
-# Add remote (if using DitsHub or self-hosted)
-dits remote add origin https://ditshub.com/your-org/your-project
+# Add remote (remote config only today; networked publish is roadmap)
+# 🚧 roadmap — networked remotes are not implemented yet
+dits remote add origin https://example.com/your-org/your-project
 ```
 
 ### Step 5: Import with History (Optional)
 
-If you want to preserve your Git commit history:
+> 🚧 **Roadmap — not implemented yet.** There is no `dits migrate` command. History-import
+> tooling is planned. Today, import files into a fresh Dits repo (Step 6) — this captures
+> your current working tree, not the upstream commit history.
 
 ```bash
-# Full history import (may take a while for large repos)
+# (Roadmap) Full history import (may take a while for large repos)
 dits migrate from-git \
     --source . \
     --lfs \
     --history \
     --branch-filter "main,develop,release/*"
 
-# Or import only specific branches
+# (Roadmap) Or import only specific branches
 dits migrate from-git \
     --source . \
     --lfs \
@@ -169,9 +172,12 @@ dits commit -m "Initial import from Git LFS"
 
 ### Step 7: Push to Remote
 
+> 🚧 **Roadmap — not implemented yet.** `push` prints a placeholder and transfers no data
+> today; networked remotes are a future step. Your migrated repo is fully usable locally.
+
 ```bash
 # Push all content
-dits push -u origin main
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Verify push completed
 dits remote show origin
@@ -195,6 +201,10 @@ dits repo-stats
 ```
 
 ### Complete Migration Script
+
+> 🚧 The `dits remote add` / `dits push` steps in this script are **roadmap** — they print
+> placeholders and transfer no data today. The local migration (`init`, `add`, `commit`,
+> `fsck`) works now.
 
 ```bash
 #!/bin/bash
@@ -280,10 +290,11 @@ For teams migrating together:
 ```bash
 # Team lead: Create the Dits repository
 dits init
-dits remote add origin https://ditshub.com/team/project
+# 🚧 roadmap — networked remotes/push are not implemented yet (remote config only)
+dits remote add origin https://example.com/team/project
 dits add .
 dits commit -m "Initial migration from Git LFS"
-dits push -u origin main
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 **Day 2 - Team onboarding:**
@@ -293,7 +304,8 @@ dits push -u origin main
 mv project project-git-archive
 
 # 2. Clone from Dits
-dits clone https://ditshub.com/team/project
+# 🚧 roadmap — network clone not implemented; only a local-path clone works today
+dits clone https://example.com/team/project
 
 # 3. Verify setup
 cd project
@@ -358,8 +370,9 @@ dits add .
 dits commit -m "Initial import from Git repository"
 
 # Add remote and push
-dits remote add origin https://ditshub.com/org/project
-dits push -u origin main
+# 🚧 roadmap — networked remotes/push are not implemented yet (remote config only)
+dits remote add origin https://example.com/org/project
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Step 4: Set Up Hybrid Workflow (Optional)
@@ -411,9 +424,9 @@ Perforce is common in game development and large enterprises. Dits provides simi
 | Exclusive checkout | `dits lock` |
 | Shelving | `dits stash` |
 | Streams | Branches |
-| P4V | DitsHub Desktop App |
+| P4V | (no desktop app yet — CLI only) |
 | Labels | Tags |
-| Triggers | Webhooks |
+| Triggers | Hooks (`dits hooks`); a webhooks service is roadmap |
 
 ### Step 1: Export from Perforce
 
@@ -455,16 +468,19 @@ dits init
 dits config user.name "Your Name"
 dits config user.email "you@company.com"
 
-# Add remote
-dits remote add origin https://ditshub.com/company/project
+# Add remote (remote config only today; networked publish is roadmap)
+# 🚧 roadmap — networked remotes are not implemented yet
+dits remote add origin https://example.com/company/project
 ```
 
 ### Step 4: Import with History (Advanced)
 
-For preserving Perforce history:
+> 🚧 **Roadmap — not implemented yet.** There is no `dits migrate from-perforce` command.
+> History-import tooling is planned. Today, copy your synced workspace into a fresh Dits
+> repo (Step 5).
 
 ```bash
-# Use the Dits Perforce import tool
+# (Roadmap) Use the Dits Perforce import tool
 dits migrate from-perforce \
     --server perforce.company.com:1666 \
     --user your-p4-user \
@@ -491,7 +507,7 @@ Changelist: @head
 Migration date: $(date)"
 
 # Push
-dits push -u origin main
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Step 6: Set Up Locking for Team
@@ -524,7 +540,7 @@ dits lock file.psd                  # Lock file (optional)
 # ... make changes ...
 dits add file.psd
 dits commit -m "Description"
-dits push
+dits push                           # 🚧 roadmap — prints a placeholder, transfers no data today
 dits unlock file.psd                # Release lock
 ```
 
@@ -602,8 +618,9 @@ dits init
 dits config user.name "Your Name"
 dits config user.email "you@example.com"
 
-# Add remote
-dits remote add origin https://ditshub.com/username/myproject
+# Add remote (remote config only today; networked publish is roadmap)
+# 🚧 roadmap — networked remotes are not implemented yet
+dits remote add origin https://example.com/username/myproject
 ```
 
 ### Step 5: Add and Commit
@@ -623,10 +640,13 @@ Date: $(date)
 File count: $(find . -type f ! -path './.dits/*' | wc -l)"
 
 # Push to remote
-dits push -u origin main
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Step 6: Verify and Share
+
+> 🚧 Sharing over a network — P2P and remote clone — is **roadmap** (no data transfer
+> today). `fsck` / `repo-stats` work locally now.
 
 ```bash
 # Verify migration
@@ -635,13 +655,12 @@ dits repo-stats
 
 # Share with team using P2P or remote
 # Option A: P2P sharing
-dits p2p share
+dits p2p share   # 🚧 roadmap — scaffolding, no data transfer today
 # Share the join code with team members
 
 # Option B: Remote cloning
 # Team members run:
-dits clone https://ditshub.com/username/myproject
-```
+dits clone https://example.com/username/myproject   # 🚧 roadmap — network clone not implemented; local-path clone works
 
 ### Step 7: Update Your Workflow
 
@@ -656,10 +675,10 @@ dits clone https://ditshub.com/username/myproject
 # When ready to save a checkpoint:
 dits add changed-files
 dits commit -m "Description of changes"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # To get team changes:
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Migration Script for Dropbox
@@ -787,8 +806,9 @@ find . -name "*.gslides" -delete # Google Slides links
 dits init
 dits add .
 dits commit -m "Migrated from Google Drive"
-dits remote add origin https://ditshub.com/you/project
-dits push -u origin main
+# 🚧 roadmap — networked remotes/push are not implemented yet (remote config only)
+dits remote add origin https://example.com/you/project
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Converting Google Docs
@@ -883,8 +903,9 @@ Migration date: $(date)
 "
 
 # Push
-dits remote add origin https://ditshub.com/org/project
-dits push -u origin main
+# 🚧 roadmap — networked remotes/push are not implemented yet (remote config only)
+dits remote add origin https://example.com/org/project
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Step 4: Preserve Comments (Optional)
@@ -914,7 +935,7 @@ Use Dits for version control and Frame.io for client review:
 # 2. Export and add to Dits
 dits add exports/client-review-v3.mp4
 dits commit -m "Client review v3 - color correction pass"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # 3. Upload to Frame.io for client review
 frameio upload exports/client-review-v3.mp4 --project "Client Project"
@@ -992,13 +1013,15 @@ cd project-local
 dits init
 dits add .
 dits commit -m "Migrated from S3/B2"
-dits remote add origin https://ditshub.com/org/project
-dits push -u origin main
+# 🚧 roadmap — networked remotes/push are not implemented yet (remote config only)
+dits remote add origin https://example.com/org/project
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Step 4: Configure Dits with S3/B2 Backend (Optional)
 
-Dits can use S3/B2 as its storage backend:
+> 🚧 **Roadmap — not implemented yet.** Remote storage backends (S3/B2) are not implemented;
+> Dits uses local storage today. The settings below are aspirational.
 
 ```bash
 # Configure S3 backend
@@ -1081,8 +1104,9 @@ audio.wav was: audio_master.wav
 project.prproj was: project_file_latest.prproj"
 
 # Add remote and push
-dits remote add origin https://ditshub.com/you/project
-dits push -u origin main
+# 🚧 roadmap — networked remotes/push are not implemented yet (remote config only)
+dits remote add origin https://example.com/you/project
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Step 4: Archive Old Versions
@@ -1116,7 +1140,7 @@ cp video_v2.mp4 video_v3.mp4
 # When ready to checkpoint:
 dits add video.mp4
 dits commit -m "Color correction pass"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Need to go back?
 dits log
@@ -1145,8 +1169,11 @@ dits inspect-file important-video.mp4  # Shows chunks and metadata
 
 ### 2. Test Core Workflows
 
+> 🚧 The `clone <url>` and `push` steps below are **roadmap** (no data transfer today). The
+> local commit cycle works now.
+
 ```bash
-# Test clone
+# Test clone (local-path clone works; network clone is roadmap)
 cd /tmp
 dits clone <your-repo-url> test-clone
 cd test-clone
@@ -1159,12 +1186,12 @@ dits restore --staged somefile.mp4
 echo "test" > test.txt
 dits add test.txt
 dits commit -m "Test commit"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Clean up test
 dits rm test.txt
 dits commit -m "Remove test file"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### 3. Update Team Documentation
@@ -1175,41 +1202,47 @@ dits push
 We now use Dits for version control. Here's how to get started:
 
 ## First Time Setup
-1. Install Dits: https://dits.io/install
-2. Clone the project: `dits clone <url>`
+1. Install Dits: `npm install -g @byronwade/dits` (or build from source: `cargo build --release`)
+2. Clone the project: `dits clone <url>`  (🚧 roadmap: network clone not implemented; local-path clone works)
 
 ## Daily Workflow
-1. Pull latest: `dits pull`
+1. Pull latest: `dits pull`  (🚧 roadmap — no data transfer today)
 2. Make your changes
 3. Commit: `dits add . && dits commit -m "message"`
-4. Push: `dits push`
+4. Push: `dits push`  (🚧 roadmap — no data transfer today)
 
 ## Questions?
-Contact: [Your Name] or check docs.dits.io
+Contact: [Your Name] or see github.com/byronwade/dits
 ```
 
 ### 4. Update CI/CD Pipelines
 
+> 🚧 The `dits clone <url>` steps below are **roadmap** (network clone is not implemented;
+> local-path clone works today).
+
 **GitHub Actions:**
 ```yaml
 - name: Install Dits
-  run: curl -fsSL https://dits.io/install.sh | bash
+  run: npm install -g @byronwade/dits
 
 - name: Clone with Dits
-  run: dits clone ${{ secrets.DITS_REPO_URL }}
+  run: dits clone ${{ secrets.DITS_REPO_URL }}   # 🚧 roadmap — network clone not implemented
 ```
 
 **GitLab CI:**
 ```yaml
 before_script:
-  - curl -fsSL https://dits.io/install.sh | bash
-  - dits clone $DITS_REPO_URL
+  - npm install -g @byronwade/dits
+  - dits clone $DITS_REPO_URL   # 🚧 roadmap — network clone not implemented
 ```
 
 ### 5. Configure Webhooks (Optional)
 
+> 🚧 **Roadmap — not implemented yet.** There is no `dits webhook` command and no webhooks
+> service. For local automation today, use repo hooks (`dits hooks`).
+
 ```bash
-# Add webhook for integrations
+# (Roadmap) Add webhook for integrations
 dits webhook add https://your-service.com/dits-webhook \
     --events push,commit \
     --secret YOUR_SECRET
@@ -1217,13 +1250,16 @@ dits webhook add https://your-service.com/dits-webhook \
 
 ### 6. Set Up Backup Strategy
 
+> 🚧 The networked `clone --mirror <url>` and `fetch --all` below are **roadmap** (no data
+> transfer today). A local-path `clone --mirror` works now for local backups.
+
 ```bash
-# Local backup
-dits clone --mirror https://ditshub.com/org/project /backup/project.dits
+# Local backup (local-path clone works today)
+dits clone --mirror https://example.com/org/project /backup/project.dits
 
 # Schedule regular backups
 # Add to crontab:
-# 0 2 * * * dits -C /backup/project.dits fetch --all
+# 0 2 * * * dits -C /backup/project.dits fetch --all   # 🚧 roadmap — no data transfer today
 ```
 
 ---
@@ -1244,14 +1280,15 @@ rsync -av --progress /old-system/project/ /dits-project/
 cd /dits-project
 dits add .
 dits commit -m "Mirror from old system - $(date +%Y-%m-%d)"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Week 3: Read from Dits, Write to Both
 
 ```bash
 # Team clones from Dits
-dits clone https://ditshub.com/org/project
+# 🚧 roadmap — network clone not implemented; only a local-path clone works today
+dits clone https://example.com/org/project
 
 # Changes still synced to old system as backup
 # Migration lead verifies integrity daily
@@ -1312,10 +1349,8 @@ dits archive --format dir -o /export/path HEAD
 
 If you encounter issues during migration:
 
-- **Documentation**: [docs.dits.io/migration](https://docs.dits.io/migration)
-- **Discord**: [discord.gg/dits](https://discord.gg/dits) - #migration-help channel
-- **GitHub Issues**: [github.com/dits-io/dits/issues](https://github.com/dits-io/dits/issues)
-- **Email Support**: migration-support@dits.io (for enterprise customers)
+- **Source & issues**: [github.com/byronwade/dits](https://github.com/byronwade/dits)
+- **Install**: `npm install -g @byronwade/dits` (or bun/pnpm), or build from source with `cargo build --release`
 
 ### Common Migration Issues
 
@@ -1327,7 +1362,7 @@ dits config transfer.timeout 30m
 # Or split large files across multiple commits
 find . -name "*.mp4" -size +10G | head -5 | xargs dits add
 dits commit -m "Add large files (batch 1)"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 **"Disk full" during import:**
@@ -1336,7 +1371,8 @@ dits push
 dits init /Volumes/External/project
 
 # Or use sparse checkout
-dits clone --filter=sparse https://ditshub.com/org/project
+# 🚧 roadmap — network clone (and --filter) not implemented; only local-path clone works today
+dits clone --filter=sparse https://example.com/org/project
 ```
 
 **"Permission denied" errors:**

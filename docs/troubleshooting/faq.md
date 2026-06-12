@@ -1,6 +1,6 @@
 # Frequently Asked Questions (FAQ)
 
-Find answers to the most common questions about Dits. If you can't find what you're looking for, check our [Troubleshooting Guide](common-issues.md) or reach out on [Discord](https://discord.gg/dits).
+Find answers to the most common questions about Dits. If you can't find what you're looking for, check our [Troubleshooting Guide](common-issues.md) or open an issue on [GitHub](https://github.com/byronwade/dits/issues).
 
 > 🚧 **Roadmap notice.** Answers describing **P2P sharing**, **remotes**, **network clone**,
 > and **TLS/QUIC transport** refer to **roadmap** features that are **not implemented yet** —
@@ -66,7 +66,7 @@ Dits excels with:
 
 ### Is Dits open source?
 
-The core Dits CLI and engine are open source under the MIT license. DitsHub (the hosted service) is a commercial offering built on the open-source core.
+Yes. The Dits CLI and engine are open source under a dual **Apache-2.0 OR MIT** license. (A hosted service is roadmap and does not exist yet.)
 
 ---
 
@@ -74,29 +74,22 @@ The core Dits CLI and engine are open source under the MIT license. DitsHub (the
 
 ### How do I install Dits?
 
-**macOS (Homebrew):**
+**npm (or bun/pnpm):**
 ```bash
-brew tap dits-io/dits
-brew install dits
-```
-
-**Linux:**
-```bash
-curl -fsSL https://dits.io/install.sh | bash
-```
-
-**Windows:**
-```powershell
-choco install dits
-# or download from GitHub releases
+npm install -g @byronwade/dits
+# or: bun add -g @byronwade/dits
+# or: pnpm add -g @byronwade/dits
 ```
 
 **From source:**
 ```bash
-git clone https://github.com/dits-io/dits.git
+git clone https://github.com/byronwade/dits.git
 cd dits
 cargo build --release
 ```
+
+> Homebrew taps, `cargo install dits`, apt/dnf/choco/scoop/winget, and a curl install
+> script are **not yet published** — use npm or build from source.
 
 ### How do I create my first repository?
 
@@ -110,10 +103,9 @@ dits commit -m "Initial commit"
 
 ### Do I need an account to use Dits?
 
-No! Dits works entirely locally without any account. You only need an account if you want to:
-- Use DitsHub cloud hosting
-- Access team collaboration features
-- Use remote backup services
+No! Dits works entirely locally without any account. (Hosted cloud, team collaboration,
+and remote backup are **roadmap** features that do not exist yet — see the roadmap notice
+at the top.)
 
 ### How do I configure my identity?
 
@@ -140,7 +132,9 @@ Typical savings depend on your use case:
 ### How does deduplication work?
 
 When you add a file, Dits:
-1. **Chunks** the file into ~1MB pieces based on content patterns
+1. **Chunks** the file into content-defined pieces using FastCDC. Chunk sizes depend on the
+   active profile — e.g. the `default` profile targets 16KB/64KB/256KB (min/avg/max), and
+   the `media` profile targets 64KB/256KB/1MB.
 2. **Hashes** each chunk with BLAKE3
 3. **Stores** only unique chunks
 4. **Creates a manifest** listing which chunks make up the file
@@ -213,10 +207,10 @@ dits p2p share
 dits p2p connect ABC-123 ./project
 ```
 
-**Option 2: Remote server (DitsHub or self-hosted)**
+**Option 2: Remote server (roadmap)**
 ```bash
 # Add remote
-dits remote add origin https://ditshub.com/team/project
+dits remote add origin https://example.com/team/project
 
 # Push
 dits push -u origin main
@@ -286,9 +280,13 @@ dits log --stat -- path/to/file
 
 ## P2P Sharing
 
+> 🚧 **Roadmap — not implemented yet.** The entire P2P feature is scaffolding: `dits p2p`
+> subcommands print placeholders and transfer no data, with no NAT traversal or QUIC. The
+> answers below describe the intended design, not current behavior.
+
 ### What is P2P sharing?
 
-P2P (peer-to-peer) sharing lets you share your repository directly with collaborators without uploading to a cloud server. Data transfers directly between your computers.
+P2P (peer-to-peer) sharing is designed to let you share your repository directly with collaborators without uploading to a cloud server. Data would transfer directly between your computers.
 
 ### How does P2P work?
 
@@ -299,7 +297,7 @@ P2P (peer-to-peer) sharing lets you share your repository directly with collabor
 
 ### Do both computers need to be online?
 
-Yes, for P2P sharing both computers must be online at the same time. For asynchronous collaboration, use a remote server (DitsHub or self-hosted).
+In the intended design, both computers must be online at the same time for P2P sharing. Asynchronous collaboration via a remote server is also roadmap.
 
 ### Does P2P work through firewalls?
 
@@ -339,8 +337,12 @@ Subsequent adds of similar files are much faster due to deduplication.
 
 ### Why is my clone so slow?
 
-Possible reasons:
-1. **Large repository**: Use partial clone: `dits clone --filter blob:none`
+> 🚧 **Roadmap — network clone is not implemented yet.** Only a **local-path** clone works
+> today (`dits clone /path/to/repo`), and partial/shallow flags (`--filter`, `--depth`) do
+> not exist. The guidance below is for the future networked clone.
+
+Possible reasons (future networked clone):
+1. **Large repository**: partial clone (`dits clone --filter blob:none`) is roadmap
 2. **Slow network**: Check connection speed
 3. **Remote server load**: Try off-peak hours
 4. **First clone**: Subsequent syncs are much faster
@@ -354,10 +356,10 @@ dits config cache.path /Volumes/SSD/dits-cache
 # Increase cache size
 dits config cache.size 100GB
 
-# Use more parallel transfers
+# Use more parallel transfers (roadmap — no networked transfer today)
 dits config transfer.maxParallel 16
 
-# For very large repos, use partial clones
+# For very large repos, partial clones are roadmap (network clone not implemented)
 dits clone --filter blob:none <url>
 ```
 
@@ -436,21 +438,19 @@ there is no in-transit encryption to speak of — there is no networked transfer
 **P2P transfers**: 🚧 Roadmap. P2P is scaffolding; no encrypted (or any) data transfer
 happens yet.
 
-### Where is my data stored with DitsHub?
+### Where is my data stored with a hosted service?
 
-DitsHub stores data in secure data centers:
-- AWS (multiple regions)
-- Data encrypted at rest
-- SOC 2 Type II compliant
-- GDPR compliant
+> 🚧 **Roadmap.** A hosted cloud service does not exist yet. Today all data is stored
+> locally in your `.dits/` directory; nothing is uploaded anywhere.
 
 ### Can I self-host Dits?
 
-Yes! You can run your own Dits server. See the [Self-Hosting Guide](../operations/self-hosting.md).
+A self-hosted Dits server is **roadmap** and not implemented. The only server in-tree today
+is the embedded per-repo object server (`dits serve`) used for local object fetching.
 
 ### How do I report a security vulnerability?
 
-Email security@dits.io with details. We follow responsible disclosure practices and typically respond within 24 hours.
+Open a security advisory or issue at [github.com/byronwade/dits](https://github.com/byronwade/dits). Please follow responsible disclosure and do not file public exploit details.
 
 ---
 
@@ -458,20 +458,17 @@ Email security@dits.io with details. We follow responsible disclosure practices 
 
 ### Is Dits free?
 
-**Dits CLI (open source)**: Free forever under MIT license.
+**Dits CLI (open source)**: Free, under a dual **Apache-2.0 OR MIT** license.
 
-**DitsHub (hosted service)**:
-- Free tier: 5 GB storage, 1 user
-- Pro tier: 100 GB storage, unlimited users
-- Enterprise: Custom pricing
+A hosted service with tiered pricing is **roadmap** and does not exist yet.
 
 ### Can I use Dits for commercial projects?
 
-Yes! The MIT license allows commercial use without restrictions.
+Yes! The Apache-2.0 OR MIT dual license allows commercial use without restrictions.
 
 ### Do I need a license for the desktop app?
 
-The desktop app is part of DitsHub and follows DitsHub pricing. A free tier is available.
+There is no desktop app today; it is roadmap.
 
 ---
 
@@ -542,7 +539,5 @@ The desktop app is part of DitsHub and follows DitsHub pricing. A free tier is a
 
 ## Still Have Questions?
 
-- **Documentation**: [docs.dits.io](https://docs.dits.io)
-- **GitHub Issues**: [github.com/dits-io/dits/issues](https://github.com/dits-io/dits/issues)
-- **Discord**: [discord.gg/dits](https://discord.gg/dits)
-- **Email**: support@dits.io
+- **Source & Documentation**: [github.com/byronwade/dits](https://github.com/byronwade/dits)
+- **GitHub Issues**: [github.com/byronwade/dits/issues](https://github.com/byronwade/dits/issues)

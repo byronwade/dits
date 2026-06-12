@@ -36,9 +36,9 @@ import { BenchmarksHighlights } from "@/components/benchmarks-highlights";
 
 const installCommands = {
   npm: "npm install -g @byronwade/dits",
+  bun: "bun install -g @byronwade/dits",
+  pnpm: "pnpm install -g @byronwade/dits",
   curl: "curl -fsSL https://raw.githubusercontent.com/byronwade/dits/main/install.sh | sh",
-  brew: "brew tap byronwade/dits && brew install dits",
-  cargo: "cargo install dits",
 };
 
 const faqs = [
@@ -60,7 +60,7 @@ const faqs = [
   {
     question: "Is it really free and open source?",
     answer:
-      "Yes. Dits is 100% open source under the MIT license. There are no usage limits, no file size caps, no account required. You can self-host everything on your own infrastructure.",
+      "Yes. Dits is free and open source, dual-licensed under Apache-2.0 OR MIT (pick whichever suits you). There are no usage limits, no file size caps, no account required. You can self-host everything on your own infrastructure.",
   },
   {
     question: "How do I migrate from existing tools?",
@@ -234,7 +234,7 @@ export default function Home() {
                 </span>
                 <span className="flex items-center gap-1.5">
                   <CodeXml className="h-3.5 w-3.5" />
-                  MIT Licensed
+                  Apache-2.0 OR MIT
                 </span>
               </div>
 

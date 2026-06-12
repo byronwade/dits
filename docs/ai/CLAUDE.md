@@ -653,4 +653,4 @@ cargo bench
 - **Issues**: GitHub Issues
 - **Discussions**: GitHub Discussions
 - **Discord**: #dev channel
-- **Email**: dev@dits.io
+- **Email**: GitHub Issues (github.com/byronwade/dits/issues)

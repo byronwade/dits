@@ -1,5 +1,7 @@
 # Service Level Agreement (SLA)
 
+> 🚧 **Planned / not yet available.** The Ditshub hosted service and these commercial SLA terms are **not available today**. There is no hosted Dits service to provide uptime, durability, or support guarantees against. This page documents intended design, not a purchasable product or binding commitment. See `docs/STATUS.md`.
+
 Uptime guarantees, performance commitments, and remediation procedures.
 
 ---

@@ -503,15 +503,18 @@ chunk C  ──blake3──▶  7f3a91c2…  (same as A → store nothing, just 
                   <div className="flex items-center justify-between">
                     <HardDrive className="size-5 text-muted-foreground" aria-hidden="true" />
                     <Badge variant="outline" className="text-[10px] uppercase text-warning">
-                      <AlertTriangle className="mr-1 size-3" aria-hidden="true" /> Roadmap
+                      <AlertTriangle className="mr-1 size-3" aria-hidden="true" /> Partial
                     </Badge>
                   </div>
                   <CardTitle className="text-lg">Virtual filesystem</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <CardDescription>
-                    A FUSE/WinFSP mount so files appear local but hydrate on demand — work with a
-                    terabyte repo without downloading all of it. Designed; not yet shipped.
+                    A FUSE mount (<code className="font-mono text-sm">dits mount</code> /{" "}
+                    <code className="font-mono text-sm">unmount</code>) so files appear local but
+                    hydrate on demand. Works locally today in a fuser-enabled build
+                    (<code className="font-mono text-sm">--features fuser</code>); remote/on-demand
+                    hydration is on the roadmap.
                   </CardDescription>
                 </CardContent>
               </Card>
@@ -597,8 +600,8 @@ chunk C  ──blake3──▶  7f3a91c2…  (same as A → store nothing, just 
               See it on your own files
             </h2>
             <p className="text-muted-foreground mb-8 text-lg">
-              Read the deep-dive docs, or watch the engine chunk and deduplicate your data in the
-              browser (coming soon).
+              Read the deep-dive docs, or watch the real engine chunk and deduplicate your data in
+              the browser — the Playground runs it live in WebAssembly today.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button size="lg" render={<Link href="/docs/architecture" />}>Read the architecture docs</Button>

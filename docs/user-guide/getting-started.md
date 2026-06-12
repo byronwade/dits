@@ -1,5 +1,7 @@
 # Getting Started with Dits
 
+> 🚧 **Alpha — local-first today.** Dits currently works as a **local** version control system. Networked features (`push`/`pull`/`fetch`/`sync`, network `clone`, `dits p2p …`) are **roadmap / scaffolding and transfer no data today** — they print placeholders. The only install that works today is `npm install -g @byronwade/dits` (or bun/pnpm), or building from source with `cargo build --release`. See `docs/STATUS.md` for the authoritative status.
+
 **Dits** (Distributed Intelligent Transfer System) is a version control system designed specifically for large media files. Unlike Git, which struggles with binary files, Dits is built from the ground up to handle video, audio, images, and other large assets efficiently.
 
 ---
@@ -112,20 +114,21 @@ Dits understands video container formats (MP4, MOV, MXF):
 
 ### 3. Virtual Filesystem (VFS)
 
-Mount your repository as a drive on your system:
+Mount your repository as a drive on your system (requires a `--features fuser` build; **local-only** today — remote hydration is on the roadmap):
 
 ```bash
 dits mount /Volumes/my-project
+dits unmount /Volumes/my-project
 ```
 
-- Files appear immediately without downloading
-- Content streams on-demand as you access files
+- Files are served from your local repository
 - Perfect for NLE integration (Premiere Pro sees it as a regular folder)
-- Read-write support for editing
+- Remote/on-demand hydration over the network is roadmap, not implemented
 
-### 4. P2P Sharing
+### 4. P2P Sharing (roadmap — not implemented)
 
-Share repositories directly with collaborators:
+> 🚧 `dits p2p …` is **scaffolding today and transfers no data** — no NAT traversal, no
+> QUIC sync. The commands and output below describe the intended design.
 
 ```bash
 # You share
@@ -136,10 +139,11 @@ dits p2p share
 dits p2p connect ABC-123 ./shared-project
 ```
 
+Intended design:
+
 - No cloud uploads required
 - Direct peer-to-peer transfers
 - End-to-end encrypted
-- Works through firewalls
 
 ### 5. Git-Like Workflow
 
@@ -199,13 +203,12 @@ Typical storage savings:
 
 ### Additional Requirements
 
-**For Virtual Filesystem (VFS) mounting:**
+**For Virtual Filesystem (VFS) mounting** (`dits mount`, requires a `--features fuser` build, local-only):
 
 | Platform | Requirement |
 |----------|-------------|
 | **macOS** | macFUSE (`brew install macfuse`) |
 | **Linux** | FUSE 3 (`apt install fuse3`) |
-| **Windows** | Dokany driver |
 
 **For building from source:**
 
@@ -217,109 +220,30 @@ Typical storage savings:
 
 ## Installation
 
-### macOS
+The supported install today is the npm package. Homebrew taps, apt/dnf repos, Chocolatey,
+and Scoop buckets are **not yet published** (planned).
 
-**Using Homebrew (Recommended):**
+### npm / bun / pnpm (Recommended)
 
 ```bash
-# Add the Dits tap
-brew tap dits-io/dits
+# npm
+npm install -g @byronwade/dits
 
-# Install Dits
-brew install dits
+# or bun
+bun install -g @byronwade/dits
 
-# Install macFUSE for VFS support
-brew install macfuse
+# or pnpm
+pnpm add -g @byronwade/dits
 
 # Verify installation
 dits --version
-```
-
-**Manual Installation:**
-
-```bash
-# Download the latest release
-curl -L https://github.com/dits-io/dits/releases/latest/download/dits-macos-arm64.tar.gz -o dits.tar.gz
-
-# Extract
-tar -xzf dits.tar.gz
-
-# Move to PATH
-sudo mv dits /usr/local/bin/
-
-# Verify
-dits --version
-```
-
-### Linux (Ubuntu/Debian)
-
-**Using APT:**
-
-```bash
-# Add repository
-curl -fsSL https://dits.io/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/dits.gpg
-echo "deb [signed-by=/etc/apt/keyrings/dits.gpg] https://dits.io/apt stable main" | sudo tee /etc/apt/sources.list.d/dits.list
-
-# Install
-sudo apt update
-sudo apt install dits
-
-# Install FUSE for VFS support
-sudo apt install fuse3
-
-# Verify
-dits --version
-```
-
-**Using the Install Script:**
-
-```bash
-curl -fsSL https://dits.io/install.sh | bash
-```
-
-### Linux (Fedora/RHEL)
-
-```bash
-# Add repository
-sudo dnf config-manager --add-repo https://dits.io/rpm/dits.repo
-
-# Install
-sudo dnf install dits
-
-# Install FUSE
-sudo dnf install fuse3
-
-# Verify
-dits --version
-```
-
-### Windows
-
-**Using the Installer:**
-
-1. Download `dits-windows-x64.msi` from [GitHub Releases](https://github.com/dits-io/dits/releases)
-2. Run the installer
-3. Optionally install [Dokany](https://github.com/dokan-dev/dokany/releases) for VFS support
-4. Open Command Prompt or PowerShell and run `dits --version`
-
-**Using Chocolatey:**
-
-```powershell
-choco install dits
-```
-
-**Using Scoop:**
-
-```powershell
-scoop bucket add dits https://github.com/dits-io/scoop-bucket
-scoop install dits
 ```
 
 ### Building from Source
 
 ```bash
 # Clone the repository
-git clone https://github.com/dits-io/dits.git
+git clone https://github.com/byronwade/dits.git
 cd dits
 
 # Build release binary
@@ -328,9 +252,25 @@ cargo build --release
 # The binary will be at target/release/dits
 ./target/release/dits --version
 
+# To enable VFS mount support, build with the fuser feature (local-only):
+cargo build --release --features fuser
+
 # Optionally install to PATH
 sudo cp target/release/dits /usr/local/bin/
 ```
+
+### FUSE for VFS mounting (optional)
+
+`dits mount` requires a build with the `fuser` feature and a platform FUSE driver:
+
+| Platform | Requirement |
+|----------|-------------|
+| **macOS** | macFUSE (`brew install macfuse`) |
+| **Linux** | FUSE 3 (`apt install fuse3`) |
+
+> Not yet available: `cargo install dits`, `brew tap`, apt/dnf/choco/scoop/winget
+> packages, and prebuilt release archives from a custom domain. These are on the
+> roadmap; use npm or build from source today.
 
 ### Verifying Your Installation
 
@@ -339,20 +279,11 @@ After installation, verify everything is working:
 ```bash
 # Check version
 dits --version
-# Output: dits 1.0.0
+# Output: dits 0.1.5
 
 # Check help
 dits --help
-
-# Run diagnostics
-dits doctor
 ```
-
-The `dits doctor` command checks:
-- FUSE availability
-- System resources
-- Network connectivity
-- Configuration validity
 
 ---
 
@@ -387,6 +318,9 @@ dits log
 That's it! You now have a version-controlled video project.
 
 ### Share with a Collaborator (No Cloud Required)
+
+> 🚧 Roadmap — `dits p2p …` is scaffolding and transfers no data today. The flow below
+> describes intended behavior.
 
 ```bash
 # On your machine: Start sharing
@@ -821,9 +755,13 @@ dits tag -d v0.9
 
 ## P2P Sharing
 
-Dits includes built-in peer-to-peer sharing for direct collaboration without cloud uploads.
+> 🚧 **Roadmap / scaffolding — transfers no data today.** The `dits p2p` commands exist but
+> do **not** transfer data: there is no NAT traversal and no QUIC sync. Everything in this
+> section documents the intended design, not shipped behavior. See `docs/STATUS.md`.
 
-### How P2P Works
+Dits is designed to include built-in peer-to-peer sharing for direct collaboration without cloud uploads.
+
+### How P2P Works (intended design)
 
 ```
 ┌──────────────────────┐         ┌──────────────────────┐
@@ -836,7 +774,7 @@ Dits includes built-in peer-to-peer sharing for direct collaboration without clo
            │                                │
            │  End-to-end encrypted          │
            │  Direct connection             │
-           │  NAT traversal included        │
+           │  NAT traversal: roadmap        │
            │                                │
            ▼                                ▼
     ┌────────────┐                   ┌────────────┐
@@ -982,10 +920,8 @@ Now that you understand the basics, explore these topics:
 
 ## Getting Help
 
-- **Documentation**: https://docs.dits.io
-- **GitHub Issues**: https://github.com/dits-io/dits/issues
-- **Discord Community**: https://discord.gg/dits
-- **Email Support**: support@dits.io
+- **GitHub**: https://github.com/byronwade/dits
+- **GitHub Issues**: https://github.com/byronwade/dits/issues
 
 ---
 

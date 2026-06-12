@@ -40,8 +40,20 @@ export default function DocsBenchmarksPage() {
       <DocPageHeader
         eyebrow="Reference"
         title="Benchmarks & bandwidth cost"
-        description="Dits stores and transfers only the chunks that changed. Translated into cloud-egress dollars, here's what that delta transfer is worth — with a link to the full, reproducible benchmark suite."
+        description="Dits stores only the chunks that changed. Translated into cloud-egress dollars, here's what an equivalent delta transfer would be worth — with a link to the full, reproducible benchmark suite."
       />
+
+      <Callout type="important" title="Storage delta is measured; egress savings are projected">
+        The changed-chunk <strong>delta is real and measured</strong> &mdash;
+        local content-defined chunking stores only the bytes that changed
+        (~200&nbsp;KB for the edit below, not 10&nbsp;GB). The{" "}
+        <em>cloud-egress dollar savings</em>, however, assume that delta is sent
+        over a network on pull. Networked <code>push</code>/<code>pull</code> and
+        delta sync over the wire are <strong>roadmap</strong> &mdash; not
+        implemented yet &mdash; so treat the dollar figures as{" "}
+        <strong>projected</strong>, derived from the measured storage delta. See
+        the <Link href="/docs/roadmap">roadmap</Link>.
+      </Callout>
 
       <Callout type="tip" title="The short version" className="not-prose my-6">
         Whole-file tools (Git&nbsp;LFS, manual copies) move the entire asset on every change. Dits
@@ -62,8 +74,9 @@ export default function DocsBenchmarksPage() {
 
       <h2>Per-edit egress, priced</h2>
       <p className="text-sm">
-        One localized edit to a 10&nbsp;GB asset. Byte figures come from the measured benchmarks; the
-        only new math is multiplication (GB transferred × $/GB).
+        One localized edit to a 10&nbsp;GB asset. The byte figures come from the measured storage
+        delta; the egress dollars are projected (they assume the delta is transferred on pull, which
+        depends on roadmap networked sync). The only new math is multiplication (GB × $/GB).
       </p>
 
       <div className="not-prose my-6 overflow-hidden rounded-2xl border border-border bg-card">

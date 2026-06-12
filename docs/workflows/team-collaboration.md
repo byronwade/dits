@@ -11,24 +11,30 @@ How to effectively collaborate on video projects with multiple team members usin
 
 ## Team Setup
 
+> 🚧 **Roadmap — not implemented yet.** There is no hosted web dashboard and no
+> `dits repo create` / `dits access grant` commands (no hosted accounts, roles, or
+> permissions service). This whole "Team Setup" section is the **intended future** workflow.
+> Today, share a repository by pointing a **local-path** `clone` at a repo on shared/local
+> storage.
+
 ### 1. Create Shared Repository
 
 **Admin creates the repository:**
 ```bash
-# On dits.dev web dashboard or via CLI:
+# (Roadmap) On a hosted dashboard or via CLI:
 dits repo create team/commercial-project --description "Q1 2025 Commercial"
 ```
 
 ### 2. Add Team Members
 
-**Via web dashboard:**
+**Via web dashboard (roadmap):**
 1. Go to repository settings
 2. Add members with appropriate roles:
    - **Admin:** Full control, manage members
    - **Editor:** Push/pull, lock files
    - **Viewer:** Read-only access
 
-**Via CLI (admin):**
+**Via CLI (admin) — roadmap, no such command today:**
 ```bash
 dits access grant jane@example.com --role editor
 dits access grant john@example.com --role editor
@@ -38,7 +44,8 @@ dits access grant client@agency.com --role viewer
 ### 3. Team Members Clone
 ```bash
 # Each team member clones:
-dits clone https://dits.example.com/team/commercial-project
+# 🚧 roadmap — network clone not implemented; only a local-path clone works today
+dits clone https://example.com/team/commercial-project
 cd commercial-project
 ```
 
@@ -78,7 +85,7 @@ dits lock footage/scene01.mov --reason "Rough cut"
 # Save and commit
 dits add footage/scene01.mov project.prproj
 dits commit -m "Rough cut scene 1 - selected best takes"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Release for next editor
 dits unlock footage/scene01.mov
@@ -93,7 +100,7 @@ dits locks
 # Wait or work on something else...
 
 # Once available:
-dits pull  # Get Editor A's changes
+dits pull  # Get Editor A's changes   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits lock footage/scene01.mov --reason "Color grade"
 
 # Continue editing...
@@ -124,13 +131,13 @@ dits checkout -b feature/alt-edit
 # Make changes
 dits add -A
 dits commit -m "Alternative edit: faster pacing"
-dits push -u origin feature/alt-edit
+dits push -u origin feature/alt-edit   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 **Review and merge:**
 ```bash
 # Editor A reviews
-dits fetch
+dits fetch   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits log origin/feature/alt-edit --oneline
 
 # Compare versions
@@ -218,7 +225,7 @@ dits commit -m "WIP: Color grade 50% complete - DO NOT EXPORT"
 If someone bypasses locking and you both edit:
 
 ```bash
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 # CONFLICT: footage/scene01.mov modified by both
 
 # Options:
@@ -245,7 +252,7 @@ Project files (.prproj, .drp) often conflict:
 dits lock project.prproj --reason "Main editor"
 
 # If conflict occurs:
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 # CONFLICT: project.prproj
 
 # Usually safest to keep one version:
@@ -299,6 +306,10 @@ dits commit -m "Scene 3: Color grade pass 1"
 ```
 
 ### 3. Push/Pull Cadence
+
+> 🚧 `dits push` / `dits pull` are **roadmap** — they print placeholders and transfer no
+> data today. The cadence below is the intended future habit; commits are local now.
+
 ```bash
 # DO: Pull before starting work
 dits pull
@@ -357,14 +368,14 @@ exports/final_final_v2_FINAL.mp4
 # Editor A completes rough cut
 dits add -A
 dits commit -m "Rough cut complete - ready for color"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits unlock --all
 
 # Notify colorist
 # (via Slack, email, or commit message)
 
 # Colorist picks up
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits log -1  # Verify rough cut is there
 dits lock footage/*.mov --reason "Color grade"
 # Begin color work...
@@ -373,7 +384,7 @@ dits lock footage/*.mov --reason "Color grade"
 ### Scenario: Client Review Build
 ```bash
 # Lead editor creates review export
-dits pull  # Get all latest changes
+dits pull  # Get all latest changes   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Lock project file during export
 dits lock project.prproj --reason "Creating client review"
@@ -383,19 +394,20 @@ dits lock project.prproj --reason "Creating client review"
 # Add export to repo
 dits add exports/client_review_v3_20250115.mp4
 dits commit -m "Client review v3 - addressed feedback on scene 2"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Unlock
 dits unlock project.prproj
 
 # Create tag for reference
 dits tag client-review-v3 -m "Sent to client 2025-01-15"
-dits push --tags
+dits push --tags   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Scenario: Multiple Versions for Client
 ```bash
 # Create version branches
+# 🚧 roadmap — each `dits push` below prints a placeholder and transfers no data today
 dits checkout -b version/30sec
 # Make 30-second cut...
 dits commit -m "30-second version"
@@ -457,7 +469,7 @@ dits branch -r --no-merged main
 dits log --since="1 week ago" --oneline
 
 # Storage used
-dits repo stats
+dits repo-stats
 
 # Large files added
 dits log --since="1 week ago" --stat | grep -E "^\s+.*\|\s+Bin"
@@ -472,8 +484,8 @@ dits log --since="1 week ago" --stat | grep -E "^\s+.*\|\s+Bin"
 | See who's working | `dits locks` |
 | Lock file | `dits lock <file>` |
 | Unlock file | `dits unlock <file>` |
-| Get latest | `dits pull` |
-| Share changes | `dits push` |
+| Get latest | `dits pull` 🚧 roadmap (no data transfer today) |
+| Share changes | `dits push` 🚧 roadmap (no data transfer today) |
 | Recent activity | `dits log --oneline -10` |
 | Team branches | `dits branch -a` |
 | Compare versions | `dits diff <commit1> <commit2>` |

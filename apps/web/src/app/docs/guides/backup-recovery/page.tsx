@@ -147,8 +147,8 @@ Branch 'deleted-branch' restored.`}
             <h3>Recover Deleted Commits</h3>
             <CodeBlock
                 language="bash"
-                code={`# Find lost commits
-$ dits fsck --lost-found
+                code={`# Find lost commits (fsck reports dangling objects)
+$ dits fsck --verbose
 Checking objects...
 dangling commit abc1234: "Important work"
 dangling commit def5678: "More changes"

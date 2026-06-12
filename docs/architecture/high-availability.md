@@ -1,8 +1,8 @@
 # High Availability & Multi-Region Architecture
 
-> ⚠️ Some of this describes a quarantined/legacy backend design (now in legacy/backend-crates), not the current local-first architecture. The live architecture is the modules under apps/cli/src/ (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands).
+> ⚠️ **Not the current product.** This documents the quarantined backend service (see `legacy/backend-crates`) and/or a planned hosted offering. Dits today is a local-first CLI — no server, database, multi-region deployment, or networked sync exists yet (`push`/`pull`/`fetch`/network `clone` print placeholders and transfer no data). The live architecture is the modules under `apps/cli/src/` (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands). Retained as design reference. See `docs/STATUS.md`.
 
-Designing Dits for production-grade reliability and global distribution.
+Designing a planned Dits hosted service for reliability and global distribution.
 
 ---
 
@@ -517,7 +517,7 @@ impl ConflictResolver {
 # Cloudflare Load Balancer
 resource "cloudflare_load_balancer" "dits" {
   zone_id          = var.zone_id
-  name             = "api.dits.io"
+  name             = "api.example.com"
   fallback_pool_id = cloudflare_load_balancer_pool.primary.id
   default_pool_ids = [
     cloudflare_load_balancer_pool.primary.id,
@@ -559,13 +559,13 @@ resource "cloudflare_load_balancer_pool" "primary" {
 
   origins {
     name    = "us-east-1a"
-    address = "api-us-east-1a.dits.io"
+    address = "api-us-east-1a.example.com"
     enabled = true
     weight  = 1.0
   }
   origins {
     name    = "us-east-1b"
-    address = "api-us-east-1b.dits.io"
+    address = "api-us-east-1b.example.com"
     enabled = true
     weight  = 1.0
   }
@@ -606,7 +606,7 @@ metadata:
     alb.ingress.kubernetes.io/unhealthy-threshold-count: '3'
 spec:
   rules:
-    - host: api.dits.io
+    - host: api.example.com
       http:
         paths:
           - path: /
@@ -757,7 +757,7 @@ aws route53 change-resource-record-sets \
 
 # 5. Verify services
 echo "Verifying services..."
-curl -f https://api-$RESTORE_REGION.dits.io/health
+curl -f https://api-$RESTORE_REGION.example.com/health
 
 # 6. Notify team
 echo "Sending notifications..."

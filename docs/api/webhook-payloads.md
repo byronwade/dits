@@ -1,8 +1,8 @@
 # Webhook Payload Schemas
 
-> ⚠️ Some of this describes a quarantined/legacy backend design (now in legacy/backend-crates), not the current local-first architecture. The live architecture is the modules under apps/cli/src/ (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands).
+> 🚧 **Roadmap — not yet available.** There is **no webhooks service** and **no hosted API** in Dits today. Dits ships as a local-first CLI (`npm install -g @byronwade/dits`); `api.dits.io` does **not** exist and no SDK packages (`@dits/sdk`, `dits-sdk`, `dits-go`) are published. These payload schemas describe the quarantined/legacy backend design (now in `legacy/backend-crates`) and intended/planned events. The live architecture is the modules under `apps/cli/src/` (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands). See `docs/STATUS.md`.
 
-Complete JSON schema definitions for all Dits webhook events.
+Complete JSON schema definitions for all planned Dits webhook events.
 
 ## Common Payload Structure
 
@@ -110,20 +110,20 @@ Triggered when commits are pushed to a branch.
       "id": "org_acme",
       "name": "acme-corp",
       "display_name": "Acme Corporation",
-      "avatar_url": "https://dits.io/avatars/acme.png",
-      "profile_url": "https://dits.io/acme-corp"
+      "avatar_url": "https://example.com/avatars/acme.png",
+      "profile_url": "https://example.com/acme-corp"
     },
-    "clone_url": "https://dits.io/acme-corp/product-launch.dits",
-    "api_url": "https://api.dits.io/v1/repos/acme-corp/product-launch",
-    "web_url": "https://dits.io/acme-corp/product-launch"
+    "clone_url": "https://example.com/acme-corp/product-launch.dits",
+    "api_url": "https://api.example.com/v1/repos/acme-corp/product-launch",
+    "web_url": "https://example.com/acme-corp/product-launch"
   },
   "sender": {
     "id": "user_jane",
     "username": "jane",
     "display_name": "Jane Developer",
     "email": "jane@acme.com",
-    "avatar_url": "https://dits.io/avatars/jane.png",
-    "profile_url": "https://dits.io/jane"
+    "avatar_url": "https://example.com/avatars/jane.png",
+    "profile_url": "https://example.com/jane"
   },
   "payload": {
     "ref": "refs/heads/main",
@@ -134,7 +134,7 @@ Triggered when commits are pushed to a branch.
     "deleted": false,
     "forced": false,
     "base_ref": null,
-    "compare_url": "https://dits.io/acme-corp/product-launch/compare/a1b2c3d4...b2c3d4e5",
+    "compare_url": "https://example.com/acme-corp/product-launch/compare/a1b2c3d4...b2c3d4e5",
     "commits": [
       {
         "id": "b2c3d4e5f6789012345678901234567890abcde1",
@@ -151,7 +151,7 @@ Triggered when commits are pushed to a branch.
           "email": "jane@acme.com",
           "username": "jane"
         },
-        "url": "https://dits.io/acme-corp/product-launch/commit/b2c3d4e5",
+        "url": "https://example.com/acme-corp/product-launch/commit/b2c3d4e5",
         "added": [],
         "removed": [],
         "modified": [
@@ -175,7 +175,7 @@ Triggered when commits are pushed to a branch.
         "email": "jane@acme.com",
         "username": "jane"
       },
-      "url": "https://dits.io/acme-corp/product-launch/commit/b2c3d4e5"
+      "url": "https://example.com/acme-corp/product-launch/commit/b2c3d4e5"
     },
     "pusher": {
       "name": "jane",
@@ -224,7 +224,7 @@ Triggered when tags are pushed.
         "type": "commit",
         "sha": "b2c3d4e5f6789012345678901234567890abcde1"
       },
-      "url": "https://dits.io/acme-corp/product-launch/releases/tag/v1.0.0"
+      "url": "https://example.com/acme-corp/product-launch/releases/tag/v1.0.0"
     }
   }
 }
@@ -286,9 +286,9 @@ Triggered on force push.
     "updated_at": "2024-01-01T00:00:00.000Z",
     "size_bytes": 0,
     "owner": { "...": "..." },
-    "clone_url": "https://dits.io/acme-corp/new-project.dits",
-    "api_url": "https://api.dits.io/v1/repos/acme-corp/new-project",
-    "web_url": "https://dits.io/acme-corp/new-project"
+    "clone_url": "https://example.com/acme-corp/new-project.dits",
+    "api_url": "https://api.example.com/v1/repos/acme-corp/new-project",
+    "web_url": "https://example.com/acme-corp/new-project"
   },
   "sender": { "...": "..." },
   "organization": { "...": "..." },
@@ -843,7 +843,7 @@ Sent when a webhook is first created or tested.
       "path": "renders/final_cut.mov",
       "size_bytes": 53687091200,
       "hash": "blake3:e5f6789012345678901234567890abcde1f23a4b",
-      "download_url": "https://dits.io/acme-corp/product-launch/renders/final_cut.mov"
+      "download_url": "https://example.com/acme-corp/product-launch/renders/final_cut.mov"
     },
     "metrics": {
       "frames_rendered": 216000,

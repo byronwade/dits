@@ -23,12 +23,17 @@ export default function CloudPage() {
             <DocPageHeader
                 eyebrow="Deployment"
                 title="Cloud Provider Deployment"
-                description="Deploy Dits on major cloud providers with managed services for databases, storage, and Kubernetes."
+                description="A planned guide for deploying a hosted Dits server on major cloud providers using managed databases, storage, and Kubernetes."
             />
 
-            <Callout type="note" title="Cloud Native" className="not-prose my-6">
-                Dits integrates seamlessly with cloud-native services for optimal
-                performance and reliability.
+            <Callout type="important" className="not-prose my-6">
+                <strong>Planned &mdash; not yet available.</strong> There is no Dits
+                server image or Helm chart to deploy today, and the
+                <code>charts.dits.io</code> repository does not exist. The cloud
+                deployments below are part of the roadmap. Dits today is a
+                local-first Rust CLI &mdash; there is nothing to host. Treat these
+                examples as illustrative of the intended design, not working
+                instructions.
             </Callout>
 
             <h2>Supported Cloud Providers</h2>

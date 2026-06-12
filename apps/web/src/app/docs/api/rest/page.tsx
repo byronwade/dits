@@ -99,22 +99,30 @@ export default function RestApiPage() {
         <DocPageHeader
           eyebrow="API & Integration"
           title="Dits REST API"
-          description="Programmatic access to Dits repositories, users, and metadata through a comprehensive REST API."
+          description="A planned REST API for programmatic access to Dits repositories, users, and metadata."
         />
+
+        <Callout type="important" className="not-prose my-6">
+          <strong>Planned &mdash; not yet available.</strong> The hosted Dits REST
+          API described on this page is part of the roadmap and has not been built.
+          There is no <code>api.dits.io</code> service to call today. Dits today is a
+          local-first Rust CLI; everything below is illustrative of the intended
+          design and may change. Do not depend on it yet.
+        </Callout>
 
         <div className="not-prose bg-brand/5 border border-brand/20 rounded-lg p-6 my-8">
           <div className="flex items-start gap-4">
             <Server className="h-8 w-8 text-brand mt-1" />
             <div>
-              <h2 className="text-xl font-semibold mb-2">API Overview</h2>
+              <h2 className="text-xl font-semibold mb-2">API Overview (Planned)</h2>
               <p className="text-muted-foreground mb-4">
-                The Dits REST API provides full programmatic access to repository management,
-                user administration, and metadata operations. Built for integrations with CI/CD,
-                project management tools, and custom workflows.
+                The planned Dits REST API would provide programmatic access to repository management,
+                user administration, and metadata operations &mdash; intended for integrations with CI/CD,
+                project management tools, and custom workflows. None of these endpoints exist yet.
               </p>
               <div className="grid gap-3 md:grid-cols-3">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-brand">100+</div>
+                  <div className="text-2xl font-bold text-brand">Planned</div>
                   <div className="text-sm text-muted-foreground">API Endpoints</div>
                 </div>
                 <div className="text-center">
@@ -413,6 +421,14 @@ jobs:
 
           <TabsContent value="sdks" className="mt-6">
             <h2>SDKs & Libraries</h2>
+
+            <Callout type="important" className="not-prose my-4">
+              <strong>Not yet published.</strong> The official SDKs below
+              (<code>@dits/sdk</code>, <code>dits-sdk</code>, the Go and Rust
+              clients) are planned and not available on any package registry. The
+              install commands and code samples are illustrative of the intended
+              API.
+            </Callout>
 
             <div className="grid gap-4 md:grid-cols-2 my-6">
               <Card>

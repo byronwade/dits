@@ -5,9 +5,11 @@ This comprehensive guide covers using Dits for version control in game developme
 > 🚧 **Roadmap notice.** Dits today is **local-first**. Commands in this guide that sync
 > over a network — `push`, `pull`, `fetch`, network `clone` (including `--filter` /
 > `--depth` partial-clone flags), `remote`, and all `p2p` sharing — are **not implemented
-> yet**; they print placeholders and transfer no data. There is also **no `dits mount`**
-> command (the VFS is internal). Everything **local** works. Treat networked, partial-clone,
-> mount, and P2P examples below as the intended future workflow.
+> yet**; they print placeholders and transfer no data. The `dits mount` virtual drive
+> **does** exist but requires a build with `--features fuser` (absent from the default npm
+> build) and is **local-only** (no remote/on-demand hydration). Everything **local** works.
+> Treat networked, partial-clone, remote-streaming, and P2P examples below as the intended
+> future workflow.
 
 ---
 
@@ -71,7 +73,7 @@ Result with Git:
 ✅ Game engine format awareness: Unity, Unreal, Godot native support
 ✅ Git-compatible workflow: Familiar commands, branching, merging
 ✅ Binary asset collaboration: Locks prevent conflicts
-✅ Tested with 80+ file formats: Production-ready reliability
+✅ Tested with 80+ file formats (alpha software — expect rough edges)
 ✅ Git recovery on binaries: Diff, merge, blame work on game assets
 ✅ 1TB+ repository support: Handles massive game projects
 ✅ Cross-platform: Windows/macOS/Linux game development
@@ -425,7 +427,7 @@ dits switch art/character-update
 dits add Assets/Models/Character_Hero.fbx
 dits add Assets/Textures/Character/
 dits commit -m "Update hero character: new armor variant"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Programmer workflow
 git branch feature/character-abilities
@@ -680,6 +682,7 @@ execute_process(
 
 if(NOT DITS_STATUS EQUAL 0)
     message(STATUS "Fetching assets from Dits...")
+    # 🚧 roadmap — `dits pull` prints a placeholder and transfers no data today
     execute_process(
         COMMAND dits pull
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -1015,7 +1018,7 @@ dits unlock Assets/Models/Characters/Boss_Dragon.fbx
 
 ```bash
 # Morning: Sync with team
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 git pull
 
 # Check what changed
@@ -1030,7 +1033,7 @@ dits locks
 # End of day: Push changes
 dits add Assets/[your-work]/
 dits commit -m "Detailed description of changes"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 git add src/[your-work]/
 git commit -m "Detailed description of changes"
@@ -1076,7 +1079,7 @@ dits commit -m "Hero model: new armor, updated rig
 - Adjusted skeleton weights
 - Breaking change: bone names updated (see hero_rig_changelog.txt)"
 dits tag art/hero-v2
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Notify programmer via commit message or tag
 # Programmer updates code to match new rig
@@ -1135,7 +1138,7 @@ dits commit -m "Mobile textures: 512x512 compressed"
 ### Recommended Branch Structure
 
 ```
-main                     # Production-ready
+main                     # Stable / release branch
 ├── develop              # Integration branch
 ├── feature/*            # Feature development
 │   ├── dragon-boss
@@ -1161,26 +1164,28 @@ main                     # Production-ready
 ```bash
 # Configure for large repositories
 dits config cache.size 100GB
-dits config transfer.maxParallel 16
+dits config transfer.maxParallel 16   # 🚧 roadmap — transfer.* settings have no effect today (no networked transfer)
 dits config core.compression zstd
 
 # Use partial clones
+# 🚧 roadmap — network clone (and --filter / --depth) is not implemented; only local-path clone works today
 dits clone --filter blob:none [url]  # Metadata only
 dits clone --depth 1 [url]           # Latest only
 ```
 
 ### Asset Streaming
 
-> 🚧 **Roadmap — not implemented yet.** There is no `dits mount` command, and on-demand
-> streaming of remote assets depends on networked transfer, which is not implemented.
-> Today, check assets out locally with `dits checkout`. The example below is the intended
+> 🚧 **Partly roadmap.** `dits mount` exists but requires a build with `--features fuser`
+> (absent from the default npm build) and is **local-only**. On-demand *streaming of remote
+> assets* depends on networked transfer, which is **not implemented**. Today, check assets
+> out locally with `dits checkout`. The remote-streaming behavior below is the intended
 > future workflow.
 
 ```bash
-# (Roadmap) Mount repository for streaming
+# Mount repository (requires --features fuser build; local-only)
 dits mount /Volumes/GameAssets --cache-size 50GB
 
-# Assets load on-demand
+# (Roadmap) Assets load on-demand from a remote
 # No need to download entire repository
 ```
 
@@ -1205,19 +1210,28 @@ dits tag last-build --force
 
 ### Network Optimization
 
+> 🚧 **Roadmap — not implemented yet.** Networked transfer is not implemented, so these
+> `transfer.*` settings have no effect today, and the `p2p` commands are scaffolding that
+> transfer no data.
+
 ```bash
 # For remote teams with slow connections
 dits config transfer.chunkSize 4MB
 dits config transfer.timeout 120
 
 # Use P2P for local team sharing
-dits p2p share  # On asset server
-dits p2p connect ABC-123 ./game  # Team members
+dits p2p share  # On asset server   # 🚧 roadmap — scaffolding, no data transfer today
+dits p2p connect ABC-123 ./game  # Team members   # 🚧 roadmap — scaffolding, no data transfer today
 ```
 
 ---
 
 ## CI/CD Integration
+
+> 🚧 **Roadmap notice.** These pipelines depend on networked `clone` (from a URL), `pull`,
+> and `push`, which are **not implemented yet** — they print placeholders and transfer no
+> data. Local Dits operations (`init`, `add`, `commit`, `fsck`) run in CI today; the
+> remote-fetch/publish steps below are the intended future workflow.
 
 ### GitHub Actions Example
 
@@ -1241,12 +1255,13 @@ jobs:
 
     - name: Setup Dits
       run: |
-        curl -fsSL https://dits.io/install.sh | bash
+        npm install -g @byronwade/dits   # or build from source: cargo build --release
         dits config --global user.name "CI Bot"
         dits config --global user.email "ci@yourcompany.com"
 
     - name: Fetch assets
       run: |
+        # 🚧 roadmap — network clone/pull not implemented; transfers no data today
         dits clone --filter blob:none ${{ secrets.DITS_REPO_URL }}
         # Or use cache
         dits pull --cache-only
@@ -1259,7 +1274,7 @@ jobs:
       run: |
         dits add Builds/Release/
         dits commit -m "CI Build: ${{ github.sha }}"
-        dits push
+        dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Jenkins Pipeline Example
@@ -1273,7 +1288,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
-                sh 'dits pull'
+                sh 'dits pull'   // 🚧 roadmap — prints a placeholder, transfers no data today
             }
         }
 
@@ -1296,7 +1311,7 @@ pipeline {
                     dits commit -m "Jenkins Build #${BUILD_NUMBER}"
                     dits tag build/${BUILD_NUMBER}
                     dits push
-                '''
+                '''   // 🚧 roadmap — `dits push` prints a placeholder, transfers no data today
             }
         }
     }
@@ -1353,6 +1368,9 @@ dits commit -m "Resolve conflict: Use [ours/theirs] version"
 
 ### "Clone takes too long"
 
+> 🚧 Roadmap — network clone/fetch is not implemented yet (no data transfer today). The
+> commands below are the intended future workflow; only a local-path clone works today.
+
 ```bash
 # Use partial clone
 dits clone --filter blob:none [url]
@@ -1395,12 +1413,15 @@ dits lock Content/Maps/Level_01.umap
 
 ### "Build machine can't fetch assets"
 
-```bash
-# Ensure CI has access
-dits remote add origin https://token:$DITS_TOKEN@dits.yourcompany.com/game
+> 🚧 Roadmap — networked remotes/fetch are not implemented yet (`remote` manages config
+> only; no data transfer today). The remote URLs below are illustrative.
 
-# Or use SSH
-dits remote add origin dits@dits.yourcompany.com:game
+```bash
+# Ensure CI has access (remote config only today)
+dits remote add origin https://token:$DITS_TOKEN@example.com/game
+
+# Or use SSH (remote config only today)
+dits remote add origin dits@example.com:game
 
 # Use cache for CI
 dits config cache.path /ci-cache/dits
@@ -1432,7 +1453,7 @@ cat .ditsignore
 
 ```bash
 # Sync
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 git pull
 
 # Status
@@ -1442,7 +1463,7 @@ git status
 # Commit assets
 dits add Assets/[path]
 dits commit -m "message"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Commit code
 git add src/[path]

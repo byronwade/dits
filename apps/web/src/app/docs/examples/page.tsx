@@ -198,10 +198,10 @@ dits merge code
 # Build game
 # (Unity build process...)
 dits add Builds/  # Add built executables
-dits commit -m "Build v0.1.2 - Windows + Mac"
+dits commit -m "Build v0.1.5 - Windows + Mac"
 
 # Tag release
-dits tag release-0.1.2`}
+dits tag release-0.1.5`}
                   />
                 </div>
 
@@ -430,7 +430,13 @@ dits merge edit-landscape-001`}
       </div>
 
       <h2>Performance Expectations</h2>
-      <p>Real-world performance based on file types and workflows:</p>
+      <p>
+        Expected behavior based on file types and workflows. The{" "}
+        <strong>Storage Savings</strong> column reflects real local
+        deduplication. The <strong>Network Efficiency (projected)</strong>{" "}
+        column assumes networked delta sync, which is{" "}
+        <Link href="/docs/roadmap">roadmap</Link> and not implemented yet.
+      </p>
 
       <div className="not-prose overflow-x-auto my-6">
         <Table>
@@ -439,7 +445,7 @@ dits merge edit-landscape-001`}
               <TableHead>Workflow</TableHead>
               <TableHead>File Types</TableHead>
               <TableHead>Storage Savings</TableHead>
-              <TableHead>Network Efficiency</TableHead>
+              <TableHead>Network Efficiency (projected)</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

@@ -88,7 +88,7 @@ const problemsSolved = [
   },
   {
     problem: "Cloning large repos takes forever",
-    solution: "On-demand file hydration with VFS",
+    solution: "VFS mount (local fuser build today; remote hydration on the roadmap)",
   },
   {
     problem: "Binary files don't merge",
@@ -142,7 +142,7 @@ const workingToday = [
   "Hybrid Git (libgit2) text + Dits binary storage",
   "Local commit / add / status / diff / log / branch / merge / checkout",
   "Local-filesystem clone & push",
-  "FUSE/WinFSP virtual filesystem mounts (dits mount)",
+  "FUSE virtual filesystem mounts — dits mount / unmount (requires a --features fuser build; works locally, remote hydration is roadmap)",
   "Local file locking (dits lock / unlock / locks)",
   "FACR frame-addressable video (experimental — try dits facr-demo)",
 ];
@@ -170,8 +170,8 @@ const openCore = [
   },
   {
     icon: Cloud,
-    name: "Ditshub (hosted platform)",
-    points: ["Managed cloud built on the open protocol", "Real-time collaboration & permissions", "Cloud render / transcode compute", "Everything it does is possible self-hosted"],
+    name: "Ditshub (hosted platform — planned)",
+    points: ["Managed cloud built on the open protocol (roadmap)", "Real-time collaboration & permissions (roadmap)", "Cloud render / transcode compute (roadmap)", "Everything it does will be possible self-hosted"],
   },
 ];
 
@@ -179,7 +179,7 @@ const targetAudiences = [
   {
     icon: Film,
     title: "Video Production Teams",
-    description: "From solo YouTubers to major studios. Track every cut, every render, every revision with confidence.",
+    description: "From solo YouTubers to small studios today, with larger teams as the networked sync engine lands. Track every cut, every render, every revision.",
     useCases: ["Documentary projects", "Commercial production", "VFX pipelines", "Color grading workflows"],
   },
   {
@@ -196,8 +196,8 @@ const targetAudiences = [
   },
   {
     icon: Building2,
-    title: "Enterprise Media",
-    description: "Scale version control across departments with fine-grained access control and audit trails.",
+    title: "Enterprise Media (roadmap)",
+    description: "The longer-term goal: scale version control across departments with fine-grained access control and audit trails. These team features depend on the networked sync engine still in development.",
     useCases: ["Broadcast archives", "Compliance tracking", "Multi-site collaboration", "Legacy migration"],
   },
 ];
@@ -220,8 +220,8 @@ const roadmapItems = [
   {
     phase: "1.0",
     status: "planned",
-    title: "Production Ready",
-    description: "Virtual filesystem, enterprise features, and platform support",
+    title: "Stable Release",
+    description: "Remote virtual filesystem hydration, team features, and broader platform support",
     features: ["FUSE/ProjectedFS VFS", "Windows/macOS/Linux", "Access control", "Performance optimization"],
   },
   {
@@ -238,7 +238,7 @@ const contributionAreas = [
     icon: Code2,
     title: "Core Development",
     description: "Contribute to the Rust codebase, fix bugs, and implement new features.",
-    link: "https://github.com/dits-dev/dits",
+    link: "https://github.com/byronwade/dits",
   },
   {
     icon: BookOpen,
@@ -250,13 +250,13 @@ const contributionAreas = [
     icon: MessageSquare,
     title: "Community Support",
     description: "Answer questions, share knowledge, and help grow the community.",
-    link: "https://discord.gg/dits",
+    link: "https://github.com/byronwade/dits/discussions",
   },
   {
     icon: Target,
     title: "Testing & Feedback",
     description: "Test new features, report bugs, and provide valuable user feedback.",
-    link: "https://github.com/dits-dev/dits/issues",
+    link: "https://github.com/byronwade/dits/issues",
   },
 ];
 
@@ -585,8 +585,8 @@ $ dits commit -m "Final cut v3"
               Built for Creative Professionals
             </h2>
             <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-              Whether you&apos;re a solo creator or part of a large studio, Dits adapts
-              to your workflow.
+              Whether you&apos;re a solo creator today or planning for a larger team as
+              sync lands, Dits is built to adapt to your workflow.
             </p>
             <div className="grid md:grid-cols-2 gap-6">
               {targetAudiences.map((audience) => (
@@ -745,7 +745,7 @@ $ dits commit -m "Final cut v3"
                   <h3 className="font-semibold mb-2">Community Driven</h3>
                   <p className="text-sm text-muted-foreground">
                     Built for and with the media community. Your feedback shapes
-                    the roadmap. Join our Discord to participate.
+                    the roadmap. Join the conversation in GitHub Discussions.
                   </p>
                 </div>
                 <div className="text-center" role="listitem">
@@ -798,7 +798,7 @@ $ dits commit -m "Final cut v3"
                     Help spread the word by starring our repository
                   </p>
                 </div>
-                <Button variant="outline" size="sm" render={<Link href="https://github.com/dits-dev/dits" target="_blank" rel="noopener noreferrer" />}>
+                <Button variant="outline" size="sm" render={<Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer" />}>
                   Star on GitHub
                 </Button>
               </div>

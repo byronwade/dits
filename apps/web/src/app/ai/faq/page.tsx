@@ -307,7 +307,7 @@ const CATEGORIES: Category[] = [
       {
         question: "Is it open source?",
         answer:
-          "Yes. Dits is open-core: the CLI, engine, formats, and protocol are open, inspectable, and self-hostable — the same engine behind Dits for media. An optional hosted layer adds managed storage and compute, but everything it does is possible with the self-hosted core.",
+          "Yes. Dits is open-core and dual-licensed under Apache-2.0 OR MIT (pick whichever suits you): the CLI, engine, formats, and protocol are open, inspectable, and self-hostable — the same engine behind Dits for media. An optional hosted layer adds managed storage and compute, but everything it does is possible with the self-hosted core.",
       },
       {
         question: "Is it self-hostable? Does my data leave my infrastructure?",

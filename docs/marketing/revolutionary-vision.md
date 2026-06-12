@@ -1,5 +1,11 @@
 # Revolutionary Vision: Dits as Creative AI Platform
 
+> ⚠️ **Internal vision / strategy document — NOT product status.** This describes a long-term
+> aspiration, not what Dits does today. Many capabilities below (AI creative assistant,
+> real-time collaboration, semantic search, pricing/ARR/market-share targets) are **not
+> built and not committed**. For what actually ships, see [`docs/STATUS.md`](../STATUS.md).
+> Do not quote this file in user-facing marketing, the README, or the website.
+
 ## The Core Thesis
 
 **Dits is not version control for large files. Dits is the AI-powered creative production platform that fundamentally reimagines how creative work gets done.**

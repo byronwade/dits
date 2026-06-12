@@ -3,13 +3,15 @@
 This guide covers the most common issues users encounter with Dits and provides step-by-step solutions.
 
 > 🚧 **Roadmap notice.** Troubleshooting sections about **remotes, authentication, P2P, and
-> mounting** describe **roadmap** features that are **not implemented yet**. `push`, `pull`,
-> `fetch`, network `clone`, and `remote` print placeholders and transfer no data; **`dits
-> auth`** does not exist (auth is local encryption only — `login`/`logout`/
-> `change-password`); **`dits mount` / `dits unmount`** do not exist (the VFS is internal);
-> and all `p2p` subcommands are scaffolding. If a command in those sections "doesn't work,"
-> that is expected — the feature is not built yet. Local commands (`status`, `add`,
-> `commit`, `checkout`, `restore`, `fsck`, locks) work today.
+> network mounting** describe **roadmap** features that are **not implemented yet**. `push`,
+> `pull`, `fetch`, network `clone`, and `remote` print placeholders and transfer no data;
+> **`dits auth`** does not exist (auth is local encryption only — `login`/`logout`/
+> `change-password`); **`dits mount` / `dits unmount`** are **local-only** and exist **only
+> when the CLI is built with `--features fuser`** (requires macFUSE/libfuse) — they are
+> absent from default builds, and on-demand/remote hydration is roadmap; all `p2p`
+> subcommands are scaffolding. **`dits doctor`** does not exist. If a command in those
+> sections "doesn't work," that is expected — the feature is not built yet. Local commands
+> (`status`, `add`, `commit`, `checkout`, `restore`, `fsck`, locks) work today.
 
 ---
 
@@ -57,15 +59,14 @@ dits --version
 
 **If not installed:**
 ```bash
-# macOS
-brew tap dits-io/dits && brew install dits
+# npm (or bun/pnpm)
+npm install -g @byronwade/dits
 
-# Linux
-curl -fsSL https://dits.io/install.sh | bash
-
-# Windows (PowerShell as Admin)
-choco install dits
+# Or build from source
+git clone https://github.com/byronwade/dits.git
+cd dits && cargo build --release
 ```
+> Homebrew, choco, and a curl install script are not yet published.
 
 ---
 
@@ -97,11 +98,12 @@ kextstat | grep -i fuse
 **Solution:**
 
 ```bash
-# Option 1: Install with sudo
-curl -fsSL https://dits.io/install.sh | sudo bash
+# Install globally with your Node package manager (may need sudo depending on prefix)
+sudo npm install -g @byronwade/dits
 
-# Option 2: Install to user directory
-curl -fsSL https://dits.io/install.sh | bash -s -- --prefix=$HOME/.local
+# Or build from source into a user-writable location
+cargo build --release
+# then copy target/release/dits to ~/.local/bin
 export PATH="$PATH:$HOME/.local/bin"
 ```
 
@@ -339,18 +341,16 @@ dits config --global http.proxy http://proxy.company.com:8080
 **Solution:**
 
 ```bash
-# Login
-dits auth login
+# Roadmap (not implemented). The intended commands would be:
+#   dits auth login
+#   dits auth login --token YOUR_TOKEN
+#   dits auth status
+# None of these exist today. Real auth is local-only:
+#   dits login / dits logout / dits change-password (encryption keys)
 
-# Or use token
-dits auth login --token YOUR_TOKEN
-
-# Check auth status
-dits auth status
-
-# If using SSH, check keys
+# If using SSH, check keys (roadmap)
 ssh-add -l
-ssh -T dits@ditshub.com
+ssh -T dits@example.com
 ```
 
 ---
@@ -509,10 +509,12 @@ dits p2p share --expires 24h
 
 ## Virtual Filesystem (VFS)
 
-> ℹ️ **There is no `dits mount` / `dits unmount` command.** The VFS is internal (used by
-> checkout and proxies). If you ran `dits mount` and got "unrecognized subcommand," that is
-> expected — the command does not exist. The mount-related troubleshooting below is retained
-> for the future, user-facing VFS feature only.
+> ℹ️ **`dits mount` / `dits unmount` are LOCAL-ONLY and feature-gated.** They exist only
+> when the CLI is built with `cargo build --features fuser` (requires macFUSE/libfuse) and
+> are absent from default builds — if you ran `dits mount` on a default build and got
+> "unrecognized subcommand," that is expected. There is **no `dits vfs` command**. The
+> on-demand / remote hydration described in some steps below is roadmap; local mounting of
+> a checked-out repo is what works today.
 
 ### "Mount failed: FUSE not available"
 
@@ -600,13 +602,13 @@ dits status
 **Solution:**
 
 ```bash
-# Pre-cache files you'll need
+# Pre-cache files you'll need (roadmap — `fetch` transfers no data today)
 dits fetch --blob path/to/needed/files/
 
 # Increase cache size
 dits config cache.size 50GB
 
-# Mount with prefetch
+# Mount with prefetch (roadmap flag; on-demand hydration not implemented)
 dits mount /Volumes/project --prefetch
 
 # Use local cache path on SSD
@@ -673,8 +675,8 @@ dits commit -m "Add file 1"
 dits add large-file-2.mp4
 dits commit -m "Add file 2"
 
-# Clear cache
-dits cache clear
+# Inspect cache usage (there is no `dits cache clear`; the real command is `dits cache-stats`)
+dits cache-stats
 ```
 
 ---
@@ -716,8 +718,8 @@ dits repo-stats
 # Run garbage collection
 dits gc --aggressive
 
-# Clear cache
-dits cache clear
+# Inspect cache usage (there is no `dits cache clear`; use `dits cache-stats`)
+dits cache-stats
 
 # Check what's taking space
 dits repo-stats -v | sort -k2 -h
@@ -738,8 +740,8 @@ dits freeze old-content/ --tier archive
 # Check disk space
 df -h
 
-# Clear dits cache (safe)
-dits cache clear
+# Inspect cache usage (there is no `dits cache clear`; use `dits cache-stats`)
+dits cache-stats
 
 # Run garbage collection
 dits gc
@@ -789,15 +791,16 @@ dits config core.videoAware true
 **Solution:**
 
 ```bash
-# Re-login
-dits auth logout
-dits auth login
-
-# Check token status
-dits auth status
-
-# Generate new token
-dits auth token --create
+# Roadmap (not implemented) — `dits auth` does not exist.
+# Intended future flow:
+#   dits auth logout
+#   dits auth login
+#   dits auth status
+#   dits auth token --create
+# Today, manage LOCAL encryption keys instead:
+#   dits logout
+#   dits login
+#   dits change-password
 ```
 
 ---
@@ -809,16 +812,17 @@ dits auth token --create
 **Solution:**
 
 ```bash
-# Check your access level
-dits auth status
+# Check your access level (roadmap — `dits auth` does not exist)
+# dits auth status
 
 # Contact repository owner for access
 
-# Verify remote URL is correct
+# Verify remote URL is correct (config only — no transfer today)
 dits remote -v
 
-# Try cloning with explicit credentials
-dits clone https://user:token@ditshub.com/org/repo
+# Try cloning with explicit credentials (roadmap — network clone not implemented;
+# only local-path clone works today)
+dits clone https://user:token@example.com/org/repo
 ```
 
 ---
@@ -836,8 +840,8 @@ ssh-add -l
 # Add your key
 ssh-add ~/.ssh/id_ed25519
 
-# Test connection
-ssh -T dits@ditshub.com
+# Test connection (roadmap — remote SSH auth not implemented)
+ssh -T dits@example.com
 
 # Check SSH config
 cat ~/.ssh/config
@@ -994,15 +998,16 @@ git config --system core.longpaths true
 
 If your issue isn't covered here:
 
-1. **Search existing issues**: [github.com/dits-io/dits/issues](https://github.com/dits-io/dits/issues)
-2. **Check Discord**: [discord.gg/dits](https://discord.gg/dits)
-3. **Run diagnostics**: `dits doctor` (outputs diagnostic information)
-4. **Collect logs**: `DITS_DEBUG=1 dits [command] 2>&1 | tee dits-debug.log`
-5. **Open an issue**: Include the diagnostic output and debug logs
+1. **Search existing issues**: [github.com/byronwade/dits/issues](https://github.com/byronwade/dits/issues)
+2. **Collect logs**: `DITS_DEBUG=1 dits [command] 2>&1 | tee dits-debug.log`
+3. **Open an issue**: Include the debug logs
+
+> Note: there is **no `dits doctor` command** (earlier drafts invented it). For diagnostics,
+> use `dits --version`, `dits fsck`, and `DITS_DEBUG=1` debug logs.
 
 When reporting issues, please include:
 - Operating system and version
 - Dits version (`dits --version`)
-- Output of `dits doctor`
+- Output of `dits fsck` (for repository issues)
 - Steps to reproduce the issue
 - Any error messages (full text)

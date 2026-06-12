@@ -31,8 +31,18 @@ export default function WireProtocolPage() {
       <DocPageHeader
         eyebrow="API & Integration"
         title="Dits Wire Protocol"
-        description="The Dits wire protocol handles efficient, resumable transfer of chunks and metadata over QUIC, with built-in integrity verification and compression."
+        description="A planned wire protocol for efficient, resumable transfer of chunks and metadata over QUIC, with built-in integrity verification and compression."
       />
+
+      <Callout type="important" className="not-prose my-6">
+        <strong>Planned &mdash; not yet available.</strong> The wire protocol
+        described here specifies how Dits clients and servers <em>would</em>
+        exchange chunks over the network. Networked transfer (<code>push</code>,
+        <code>pull</code>, <code>fetch</code>, <code>clone</code>, p2p) is on the
+        roadmap and not implemented &mdash; these commands print placeholders and
+        transfer no data today. Dits today is a local-first Rust CLI. Treat this
+        page as a design specification, not a description of shipping behavior.
+      </Callout>
 
       <Callout type="note" title="Protocol Version" className="not-prose my-6">
         Current version: <strong>v1</strong>. The protocol is designed for forward compatibility

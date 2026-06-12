@@ -17,7 +17,7 @@ How to recover from common problems: deleted files, corrupted projects, accident
 dits add -A && dits commit -m "Checkpoint"
 
 # Push to remote (your backup!)
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Create tags for important milestones
 dits tag checkpoint-20250115 -m "Before major changes"
@@ -179,9 +179,14 @@ dits show ghi7890:project.prproj > project_v3.prproj
 ## Scenario 4: "I Messed Up the Whole Project!"
 
 ### Reset to Remote State
+
+> 🚧 `dits fetch` is **roadmap** (transfers no data today), so "reset to remote" is not
+> available yet. Use a local milestone instead — reset to a tag or commit (see below) or to
+> a local mirror clone.
+
 ```bash
 # CAUTION: This discards ALL local changes
-dits fetch origin
+dits fetch origin   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits reset --hard origin/main
 
 # Your project now matches remote exactly
@@ -206,7 +211,9 @@ cd ..
 mv project project-broken  # Keep the broken one just in case
 
 # Clone fresh from remote
-dits clone https://dits.example.com/team/project
+# 🚧 roadmap — network clone not implemented; only a local-path clone (e.g. from a local
+# mirror) works today
+dits clone https://example.com/team/project
 
 # Your local is now pristine
 # Broken version still at project-broken if you need anything
@@ -337,14 +344,18 @@ dits fsck --full
 ```
 
 ### Repair from Remote
+
+> 🚧 Remote repair (`fetch` / network `clone`) is **roadmap** — it transfers no data today.
+> Recover from a local mirror or local backup instead, plus `reflog` / `fsck`.
+
 ```bash
 # If remote is healthy, re-fetch
-dits fetch --all
+dits fetch --all   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits fsck
 
-# Or start fresh
+# Or start fresh (local-path clone works today; network clone is roadmap)
 cd ..
-dits clone https://dits.example.com/team/project project-fresh
+dits clone https://example.com/team/project project-fresh
 ```
 
 ### Manual Repair (Advanced)
@@ -353,7 +364,7 @@ dits clone https://dits.example.com/team/project project-fresh
 rm .dits/objects/ab/c1234...
 
 # Re-fetch from remote
-dits fetch origin
+dits fetch origin   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Rebuild index
 dits reset --hard origin/main
@@ -362,6 +373,9 @@ dits reset --hard origin/main
 ---
 
 ## Scenario 9: "I Pushed Bad Changes!"
+
+> 🚧 This scenario assumes networked `push`, which is **roadmap** (transfers no data today).
+> The `revert` / `reset` parts are local and work now; the `push` steps are aspirational.
 
 ### Communicate First
 ```
@@ -373,7 +387,7 @@ dits reset --hard origin/main
 ```bash
 # Create a new commit that undoes the bad one
 dits revert abc1234
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # History preserved, team can pull safely
 ```
@@ -387,7 +401,7 @@ dits push
 dits reset --hard def5678
 
 # Force push (DANGEROUS)
-dits push --force-with-lease
+dits push --force-with-lease   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Team must re-clone or reset
 ```
@@ -416,7 +430,7 @@ dits push --force-with-lease
 ## Prevention Checklist
 
 - [ ] Commit frequently (at least daily)
-- [ ] Push to remote after important work
+- [ ] Push to remote after important work (🚧 roadmap — keep local mirrors/backups today)
 - [ ] Tag milestones (`dits tag before-client-feedback`)
 - [ ] Run `dits fsck` periodically
 - [ ] Don't use `--force` without team communication
@@ -430,8 +444,9 @@ dits push --force-with-lease
 If all else fails:
 1. **Don't panic** - Dits keeps extensive history
 2. **Stop making changes** - Preserve current state
-3. **Check remote** - `dits fetch` to see if remote is healthy
-4. **Contact support** - support@dits.dev with:
+3. **Check local recovery first** - `dits reflog`, `dits fsck`, and local tags/mirrors are
+   the reliable path (`dits fetch` from a network remote is roadmap — no data transfer today)
+4. **File an issue** - github.com/byronwade/dits with:
    - Output of `dits fsck`
    - Output of `dits log -10`
    - Description of what happened

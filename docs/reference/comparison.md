@@ -33,11 +33,11 @@ Dits is designed specifically for version control of large binary files—video,
 
 | Feature | What It Means |
 |---------|---------------|
-| **Content-Defined Chunking** | Files split into ~1MB chunks based on content, enabling deduplication |
+| **Content-Defined Chunking** | Files split into content-defined chunks via FastCDC. Chunk sizes follow a named profile — e.g. `default` (16KB/64KB/256KB min/avg/max) or `media` (64KB/256KB/1MB) — enabling deduplication |
 | **Video-Aware Chunking** | Chunks align to keyframes for optimal deduplication |
 | **Hybrid Storage** | Text files use Git-style storage, binaries use Dits CDC |
-| **P2P Sharing** | Direct transfer between computers without cloud |
-| **Virtual Filesystem** | Mount repos as drives, download files on demand |
+| **P2P Sharing** | 🚧 Roadmap — designed for direct transfer between computers without cloud; not implemented yet |
+| **Virtual Filesystem** | Mount repos locally (requires `--features fuser` build); on-demand/remote download is roadmap |
 | **File Locking** | Prevent conflicts on binary files |
 
 ---
@@ -72,7 +72,7 @@ Dits is designed specifically for version control of large binary files—video,
 
 | Solution | Setup | Monthly Cost | Notes |
 |----------|-------|--------------|-------|
-| **Dits + DitsHub** | Free | ~$100 | Deduplication reduces actual storage |
+| **Dits + hosted service** | Free | ~$100 | 🚧 Hosted service is roadmap; deduplication reduces actual storage |
 | **Git + GitHub LFS** | Free | ~$250+ | LFS data packs expensive |
 | **Perforce** | Complex | $390+ | Per-user licensing |
 | **Dropbox Business** | Easy | $150+ | No version control features |
@@ -167,7 +167,8 @@ git lfs pull --all  # Ensure all files are local
 dits init
 dits add .
 dits commit -m "Migrated from Git LFS"
-dits remote add origin https://ditshub.com/org/project
+# 🚧 Roadmap: remote add + push do not transfer data yet (networked sync not implemented)
+dits remote add origin https://example.com/org/project
 dits push -u origin main
 ```
 
@@ -215,8 +216,8 @@ Dits (Distributed):
 | **Streams (branches)** | Complex setup | Simple branches |
 | **Administration** | Requires dedicated admin | Self-service |
 | **Learning curve** | Steep | Moderate (Git-like) |
-| **GUI client** | P4V (mature) | DitsHub Desktop |
-| **Cost** | Per-user licensing ($$$$) | Open source or DitsHub |
+| **GUI client** | P4V (mature) | Desktop app (roadmap) |
+| **Cost** | Per-user licensing ($$$$) | Open source (hosted service roadmap) |
 | **Integrations** | Game engines, IDEs | Growing ecosystem |
 
 ### Workflow Translation
@@ -426,14 +427,14 @@ Plastic SCM (now Unity Version Control) is a version control system with good bi
 |---------|-------------|------|
 | **Model** | Distributed or centralized | Distributed |
 | **Binary handling** | Good | Excellent (chunk-level) |
-| **GUI client** | Excellent (Gluon) | DitsHub Desktop |
+| **GUI client** | Excellent (Gluon) | Desktop app (roadmap) |
 | **Unity integration** | Deep (owned by Unity) | Plugin available |
 | **Open source** | No (free tier available) | Yes |
 | **Deduplication** | File-level | Chunk-level |
 | **Video-aware** | No | Yes |
 | **P2P sharing** | No | Yes |
 | **Learning curve** | Moderate | Moderate |
-| **Cost** | Free up to 5GB, then paid | Open source or DitsHub |
+| **Cost** | Free up to 5GB, then paid | Open source (hosted service roadmap) |
 
 ### When to Choose Plastic SCM
 
@@ -465,7 +466,7 @@ DVC is a version control system designed for machine learning projects, focusing
 | **Integration** | Git extension | Standalone |
 | **Deduplication** | File-level | Chunk-level |
 | **Pipeline tracking** | Yes (experiments) | No |
-| **Storage backends** | S3, GCS, Azure, etc. | Local, S3, DitsHub |
+| **Storage backends** | S3, GCS, Azure, etc. | Local (S3 / hosted service roadmap) |
 | **Video-aware** | No | Yes |
 | **Target users** | Data scientists | Creative professionals |
 | **Locking** | No | Yes |
@@ -577,7 +578,8 @@ dits push
 mkdir new-project
 cd new-project
 dits init
-dits remote add origin https://ditshub.com/studio/new-project
+# 🚧 Roadmap: remote/push transfer no data yet (networked sync not implemented)
+dits remote add origin https://example.com/studio/new-project
 
 # Migrating old project:
 # 1. Archive in Perforce
@@ -590,7 +592,8 @@ dits remote add origin https://ditshub.com/studio/new-project
 
 ```bash
 # Production team uses Dits
-dits clone https://ditshub.com/studio/commercial
+# 🚧 Roadmap: network clone is not implemented; only local-path clone works today
+dits clone https://example.com/studio/commercial
 cd commercial
 
 # Work, commit, push...
@@ -629,5 +632,5 @@ See: [Migration Guide - Frame.io](../guides/migration.md#migrating-from-frameio)
 - [Getting Started Guide](../user-guide/getting-started.md)
 - [Video Editor's Guide](../guides/video-editors.md)
 - [Game Developer's Guide](../guides/game-developers.md)
-- [CLI Reference](cli.md)
+- [CLI Reference](../user-guide/cli-reference.md)
 - [FAQ](../troubleshooting/faq.md)

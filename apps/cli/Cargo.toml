@@ -1,6 +1,6 @@
 [package]
 name = "dits"
-version = "0.1.0"
+version = "0.1.5"
 edition = "2021"
 description = "Version control for video and large binary files"
 license = "Apache-2.0 OR MIT"

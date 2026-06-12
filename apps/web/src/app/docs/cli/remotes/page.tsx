@@ -47,8 +47,19 @@ export default function RemoteCommandsPage() {
       <DocPageHeader
         eyebrow="CLI Reference"
         title="Remote Commands"
-        description="Commands for synchronizing your local repository with remote servers."
+        description="A roadmap design for synchronizing your local repository with remote servers."
       />
+
+      <Callout type="important" title="Roadmap — networked sync is not yet functional">
+        <code>fetch</code>, <code>pull</code>, and <code>push</code> over a{" "}
+        <em>network</em> are <strong>placeholders</strong> &mdash; the wire
+        protocol that transfers chunks is not wired up yet, so no data moves to
+        or from a remote server. The commands, options, and example output below
+        describe the <em>planned</em> design. What works today is the local VCS
+        and local-filesystem <code>clone</code>/<code>push</code> (a path on the
+        same machine). See the <Link href="/docs/roadmap">roadmap</Link> for
+        status.
+      </Callout>
 
       <Table className="not-prose my-6">
         <TableHeader>
@@ -182,10 +193,10 @@ Updating a1b2c3d..f5e4d3c
 Applying stashed changes...`}
       />
 
-      <Callout type="note" title="Delta Transfer" className="not-prose my-6">
-        Dits only transfers missing chunks. If you already have similar files
-        locally, pull operations are significantly faster than downloading
-        everything.
+      <Callout type="note" title="Delta Transfer (planned)" className="not-prose my-6">
+        The planned design transfers only the chunks a remote is missing, so
+        pulls would be far faster than downloading everything. This delta
+        transfer is roadmap &mdash; it is not implemented yet.
       </Callout>
 
       <h2 className="flex items-center gap-2">
@@ -316,9 +327,11 @@ $ dits remote set-url origin https://new.example.com/project
 $ dits remote remove backup`}
       />
 
-      <h2>Transfer Progress</h2>
+      <h2>Transfer Progress (planned)</h2>
       <p>
-        Dits shows detailed progress during transfers:
+        In the planned networked design, Dits would show detailed progress
+        during transfers. The output below is illustrative &mdash; networked
+        transfer is not implemented yet:
       </p>
       <CodeBlock
         language="bash"

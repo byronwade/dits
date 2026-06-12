@@ -33,11 +33,15 @@ export default function VFSCommandsPage() {
         description="Mount Dits repositories as virtual drives. Files appear instantly and stream on-demand - no need to download entire files before opening them."
       />
 
-      <Callout type="note" title="Just-In-Time Hydration" className="not-prose my-6">
-        When you mount a repository, files appear immediately as placeholders.
-        Actual data is fetched only when a file is opened or accessed. This
-        enables instant access to multi-terabyte repositories without waiting
-        for downloads.
+      <Callout type="important" title="Local-only — requires a fuser build">
+        <code>dits mount</code> requires a build with the FUSE feature enabled
+        (<code>cargo build --features fuser</code>) and works against the{" "}
+        <strong>local</strong> content store only. Files appear immediately as
+        placeholders and are hydrated on access from the local{" "}
+        <code>.dits</code> store. Streaming chunks on demand from a{" "}
+        <em>remote</em> (the multi-terabyte just-in-time workflow shown below) is{" "}
+        <strong>roadmap</strong> &mdash; it depends on networked fetch, which is
+        not implemented yet. See the <Link href="/docs/roadmap">roadmap</Link>.
       </Callout>
 
       <Table className="not-prose my-6">
@@ -293,20 +297,25 @@ Cache Configuration:
 
       <h2>VFS Use Cases</h2>
 
-      <h3>Instant Access to Large Repositories</h3>
+      <h3>Instant Access to Large Repositories (planned)</h3>
+      <p>
+        This workflow depends on networked partial clone and remote chunk
+        streaming, which are <strong>roadmap</strong>. The output below is
+        illustrative of the planned design, not current behavior.
+      </p>
       <CodeBlock
         language="bash"
-        code={`# Clone metadata only (fast!)
+        code={`# [PLANNED] Clone metadata only (fast!)
 $ dits clone --filter blob:none https://dits.example.com/huge-project
 Cloning into 'huge-project'...
 Metadata fetched: 15 MB
-Repository ready (125 TB of files available on demand)
+Repository ready (large repositories available on demand)
 
 # Mount and start working immediately
 $ cd huge-project && dits mount /mnt/huge
 Files available at /mnt/huge
 
-# Open files - they stream on demand
+# Open files - they stream on demand from the remote
 $ vlc /mnt/huge/footage/scene01.mov
 # Video plays immediately, chunks stream as needed`}
       />

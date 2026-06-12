@@ -57,8 +57,8 @@ dits add .
 # Commit changes
 dits commit -m "Initial commit"
 
-# Add remote and push
-dits remote add origin https://ditshub.com/user/project
+# Add remote and push (roadmap — push transfers no data today)
+dits remote add origin https://example.com/user/project
 dits push -u origin main
 ```
 
@@ -124,22 +124,22 @@ dits clone [options] <url> [directory]
 **Examples:**
 ```bash
 # Basic clone
-dits clone https://ditshub.com/org/project
+dits clone https://example.com/org/project
 
 # Clone to specific directory
-dits clone https://ditshub.com/org/project ./my-project
+dits clone https://example.com/org/project ./my-project
 
 # Clone specific branch
-dits clone -b develop https://ditshub.com/org/project
+dits clone -b develop https://example.com/org/project
 
 # Shallow clone (faster, less history)
-dits clone --depth 1 https://ditshub.com/org/project
+dits clone --depth 1 https://example.com/org/project
 
 # Sparse clone (download files on demand)
-dits clone --filter=sparse https://ditshub.com/org/large-project
+dits clone --filter=sparse https://example.com/org/large-project
 
 # Parallel downloads for faster clone
-dits clone -j 8 https://ditshub.com/org/project
+dits clone -j 8 https://example.com/org/project
 ```
 
 ---
@@ -195,6 +195,9 @@ dits add -f Renders/important_output.exr
 
 ### dits rm
 
+> 🚧 **Roadmap — not in the current command set.** `dits rm` is not implemented. Remove a
+> file from the working tree and re-stage with `dits add`. Verify with `dits --help`.
+
 Remove files from the working tree and staging area.
 
 ```bash
@@ -227,6 +230,9 @@ dits rm -n "*.bak"
 ---
 
 ### dits mv
+
+> 🚧 **Roadmap — not in the current command set.** `dits mv` is not implemented. Move/rename
+> the file on disk and re-stage with `dits add`. Verify with `dits --help`.
 
 Move or rename a file.
 
@@ -784,7 +790,7 @@ dits remote
 dits remote -v
 
 # Add remote
-dits remote add origin https://ditshub.com/org/project
+dits remote add origin https://example.com/org/project
 dits remote add backup https://backup.example.com/project
 
 # Remove remote
@@ -1078,6 +1084,9 @@ dits blame -t script.py
 ---
 
 ### dits ls-files
+
+> 🚧 **Roadmap — not in the current command set.** `dits ls-files` is not implemented. Use
+> `dits status` to inspect tracked/untracked files. Verify with `dits --help`.
 
 Show information about files in index and working tree.
 
@@ -1622,31 +1631,21 @@ dits repo-stats --json
 
 ---
 
-### dits cache
+### dits cache-stats
 
-Manage local cache.
+> ℹ️ The real command is `dits cache-stats` (there is no `dits cache status/clear/prune`
+> subcommand group). Verify with `dits --help`.
+
+Show local cache statistics.
 
 ```bash
-dits cache [subcommand]
+dits cache-stats
 ```
-
-**Subcommands:**
-| Subcommand | Description |
-|------------|-------------|
-| `status` | Show cache status |
-| `clear` | Clear cache |
-| `prune` | Remove old entries |
 
 **Examples:**
 ```bash
-# Check cache status
-dits cache status
-
-# Clear cache
-dits cache clear
-
-# Prune old entries
-dits cache prune
+# Show cache statistics
+dits cache-stats
 ```
 
 ---
@@ -1687,6 +1686,11 @@ dits archive --format dir -o /export/project HEAD
 ```
 
 ---
+
+> 🚧 **Roadmap — not in the current command set.** `dits cat-file`, `dits rev-parse`,
+> `dits hash-object`, and `dits migrate` are **not implemented** as standalone commands.
+> They are documented here as intended Git-parity design. Verify the real command set with
+> `dits --help`. (`dits archive` above is real.)
 
 ### dits cat-file
 
@@ -1834,6 +1838,6 @@ dits help
 dits help <command>
 dits <command> --help
 
-# Online documentation
-# https://docs.dits.io/cli
+# Source and issues
+# https://github.com/byronwade/dits
 ```

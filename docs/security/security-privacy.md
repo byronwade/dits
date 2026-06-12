@@ -783,7 +783,8 @@ dits push  # Enter new token
 If you discover a security vulnerability:
 
 1. **DO NOT** create a public issue
-2. Email: security@dits.io
+2. Open a private security advisory at
+   [github.com/byronwade/dits](https://github.com/byronwade/dits/security/advisories)
 3. Include:
    - Description of vulnerability
    - Steps to reproduce
@@ -807,27 +808,30 @@ Low: Next release
 
 ### Bug Bounty
 
-DitsHub offers bounties for qualifying vulnerabilities:
+> 🚧 **Roadmap.** A hosted service and any associated bug-bounty program do not exist yet.
+> The tiers below describe the intended future program, not a live offering.
+
 - Critical: $1,000 - $5,000
 - High: $500 - $1,000
 - Medium: $100 - $500
 - Low: Recognition
 
-Details: https://ditshub.com/security/bounty
-
 ---
 
 ## Additional Resources
 
-- [Dits Security Whitepaper](https://docs.dits.io/security/whitepaper)
-- [DitsHub Security Page](https://ditshub.com/security)
+- [Source & Documentation](https://github.com/byronwade/dits)
 - [Self-Hosting Security Guide](../operations/self-hosting.md)
-- [Compliance Documentation](https://ditshub.com/compliance)
+
+> 🚧 A hosted security/compliance portal (whitepaper, hosted security page) is roadmap and
+> does not exist yet.
 
 ---
 
 ## Contact
 
-- **Security Issues**: security@dits.io
-- **General Support**: support@dits.io
-- **Enterprise Security**: enterprise@dits.io
+- **Security Issues**: Open a private advisory at
+  [github.com/byronwade/dits](https://github.com/byronwade/dits/security/advisories)
+
+> 🚧 Hosted support and enterprise-security contact channels are roadmap; today the project
+> is community-supported via GitHub.

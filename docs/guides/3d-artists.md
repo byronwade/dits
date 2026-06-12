@@ -68,7 +68,7 @@ project/
 ✅ Material support: PBR, Substance Painter, custom shaders
 ✅ Animation workflows: FBX animation, Blender actions, custom rigs
 ✅ Git operations on 3D: Diff, merge, blame work on binary assets
-✅ Tested with 80+ formats: Production-ready reliability
+✅ Tested with 80+ formats (alpha software — expect rough edges)
 ✅ 1TB+ repository support: Handles massive 3D projects
 ✅ Render farm integration: Versioned render jobs and outputs
 ```
@@ -296,8 +296,9 @@ dits add .
 dits commit -m "Initial project setup: Character rig pipeline"
 
 # Connect to remote
-dits remote add origin https://ditshub.com/studio/character-project
-dits push -u origin main
+# 🚧 roadmap — networked remotes are not implemented yet (remote config only)
+dits remote add origin https://example.com/studio/character-project
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ---
@@ -357,7 +358,7 @@ Renders/*.exr
 cd ~/Projects/BlenderProject
 
 # Get latest (if working with remote)
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Work on your file...
 # Save in Blender (Ctrl+S)
@@ -370,7 +371,7 @@ dits commit -m "Model: Added hero character base mesh"
 # After completing a milestone:
 dits add .
 dits commit -m "Model: Hero character topology cleanup"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Workflow: Linked Libraries
@@ -392,7 +393,7 @@ dits add Library/characters.blend
 dits commit -m "Character: Updated hero materials"
 
 # Team members update
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Their linked assets update automatically when they reload
 ```
@@ -501,10 +502,10 @@ Project/
 cd Assets
 dits add character_rig.ma
 dits commit -m "Rig: Fixed IK stretch"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Animators get update
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 # Reload references in Maya to see changes
 ```
 
@@ -519,7 +520,7 @@ dits lock Assets/character_rig.ma --reason "Updating IK system"
 # Release when done
 dits add Assets/character_rig.ma
 dits commit -m "Rig: Updated IK system with stretch"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits unlock Assets/character_rig.ma
 ```
 
@@ -657,11 +658,11 @@ dits lock hda/fx_explosion.hda --reason "Adding controls"
 
 dits add hda/fx_explosion.hda
 dits commit -m "HDA: fx_explosion - added turbulence control"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits unlock hda/fx_explosion.hda
 
 # Team members get the update
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 # Reload HDAs in Houdini
 ```
 
@@ -743,7 +744,7 @@ ZBrush files deduplicate extremely well:
 
 ```bash
 # Start of sculpt session
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # After significant progress
 # Save in ZBrush (Ctrl+S)
@@ -758,7 +759,7 @@ dits commit -m "Sculpt: Secondary forms - wrinkles, pores"
 # End of day
 dits add .
 dits commit -m "Sculpt: End of day progress"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### GoZ Integration
@@ -894,7 +895,7 @@ Asset Department Flow:
 ```bash
 # Modeling completes, hands off to texturing
 dits checkout main
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits branch asset/hero-char/texturing
 
 # Texturing works...
@@ -902,10 +903,10 @@ dits add Assets/Characters/hero/
 dits commit -m "Texture: Hero character skin complete"
 
 # Ready for rigging
-dits push origin asset/hero-char/texturing
+dits push origin asset/hero-char/texturing   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Rigging pulls texturing branch
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits checkout asset/hero-char/texturing
 dits branch asset/hero-char/rigging
 
@@ -923,7 +924,7 @@ dits merge asset/hero-char/rigging
 dits tag asset/hero-char/v1.0
 
 # Shots can now reference this version
-dits push --tags
+dits push --tags   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Shot-Level Versioning
@@ -958,12 +959,12 @@ dits lock Assets/Characters/hero.blend --reason "Modeling updates"
 # Work...
 dits add Assets/Characters/hero.blend
 dits commit -m "Model: Updated topology for deformation"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits unlock Assets/Characters/hero.blend
 
 # Rigger waits for modeler
 dits locks  # Check if modeling is done
-dits pull   # Get latest model
+dits pull   # Get latest model   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Rigger works on rig
 dits lock Assets/Characters/hero_rig.blend --reason "Rigging"
@@ -975,7 +976,7 @@ dits lock Assets/Characters/hero_rig.blend --reason "Rigging"
 ```bash
 # Start of day
 cd ~/Projects/CurrentShow
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Check what's happening
 dits log --oneline -10
@@ -990,7 +991,7 @@ dits lock your_file.blend
 # End of day
 dits add .
 dits commit -m "Progress: [description of work]"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits unlock your_file.blend
 ```
 
@@ -998,7 +999,7 @@ dits unlock your_file.blend
 
 ```bash
 # If someone else changed a file you're working on
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # If conflict on binary file
 dits status
@@ -1018,13 +1019,13 @@ dits commit -m "Merge: Combined modeling changes"
 
 ```bash
 # Need to share large file with colleague quickly?
-dits p2p share
+dits p2p share   # 🚧 roadmap — scaffolding, prints a placeholder, transfers no data today
 
 # Share the join code
 # They connect:
-dits p2p connect ABC-123 ./project
+dits p2p connect ABC-123 ./project   # 🚧 roadmap — scaffolding, no data transfer today
 
-# Direct transfer, no cloud upload needed
+# (Roadmap) Direct transfer, no cloud upload needed
 ```
 
 ---
@@ -1074,13 +1075,14 @@ dits tag render/v2-approved
 
 ```bash
 # Before submitting to render farm
-dits push  # Ensure latest is on remote
+dits push  # Ensure latest is on remote   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Render farm clones repo
-dits clone https://ditshub.com/studio/project /farm/project
+# 🚧 roadmap — network clone not implemented; only a local-path clone works today
+dits clone https://example.com/studio/project /farm/project
 
 # Or use specific tag
-dits clone --branch render/v1-approved https://...
+dits clone --branch render/v1-approved https://example.com/studio/project
 
 # After render completes
 # Frames go to designated output location (not version controlled)
@@ -1157,18 +1159,20 @@ dits repo-stats -v
 dits gc
 
 # For very large repos, use sparse checkout
-dits clone --filter=sparse https://ditshub.com/studio/show
+# 🚧 roadmap — network clone (and --filter) not implemented; only local-path clone works today
+dits clone --filter=sparse https://example.com/studio/show
 dits sparse add Shots/SEQ010/
 ```
 
 ### Backup Strategy
 
 ```bash
-# Remote backup (DitsHub)
+# Remote backup
+# 🚧 roadmap — networked remote backup is not implemented yet (push transfers no data today)
 dits push  # Regular pushes throughout day
 
-# Mirror for disaster recovery
-dits clone --mirror https://ditshub.com/studio/show /backup/show-mirror
+# Mirror for disaster recovery (local-path clone works today; network clone is roadmap)
+dits clone --mirror https://example.com/studio/show /backup/show-mirror
 
 # Verify backup
 dits -C /backup/show-mirror fsck
@@ -1184,15 +1188,15 @@ dits -C /backup/show-mirror fsck
 # Modeler pushes update
 dits add Assets/Characters/hero.blend
 dits commit -m "Model: Topology fix for elbow deformation"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Rigger gets update
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Rigger needs to update weights
 dits add Assets/Characters/hero_rig.blend
 dits commit -m "Rig: Updated skin weights for new topology"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Scenario: Client Wants Previous Version
@@ -1220,20 +1224,20 @@ dits checkout review-old-version
 dits checkout props-update
 dits add Props/
 dits commit -m "Props: Updated hero weapons"
-dits push origin props-update
+dits push origin props-update   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Artist B worked on environment
 dits checkout env-update
 dits add Environments/
 dits commit -m "Env: Lighting adjustments"
-dits push origin env-update
+dits push origin env-update   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Supervisor merges both
 dits checkout main
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits merge props-update
 dits merge env-update
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Scenario: Recovering Deleted Work
@@ -1259,8 +1263,8 @@ dits commit -m "Restore: Recovered accidentally deleted file"
 | Task | Command |
 |------|---------|
 | Save progress | `dits add . && dits commit -m "..."` |
-| Get team changes | `dits pull` |
-| Share changes | `dits push` |
+| Get team changes | `dits pull` 🚧 roadmap (no data transfer today) |
+| Share changes | `dits push` 🚧 roadmap (no data transfer today) |
 | Lock file for work | `dits lock file.blend --reason "..."` |
 | Release lock | `dits unlock file.blend` |
 | View history | `dits log` |
@@ -1288,8 +1292,5 @@ alias drs='dits repo-stats'
 
 ## Getting Help
 
-- **Documentation**: [docs.dits.io](https://docs.dits.io)
-- **3D Artist Community**: [discord.gg/dits](https://discord.gg/dits) #3d-artists channel
-- **Video Tutorials**: [youtube.com/@dits](https://youtube.com/@dits)
-- **GitHub Issues**: [github.com/dits-io/dits/issues](https://github.com/dits-io/dits/issues)
-- **Email Support**: support@dits.io
+- **Source & issues**: [github.com/byronwade/dits](https://github.com/byronwade/dits)
+- **Install**: `npm install -g @byronwade/dits` (or bun/pnpm), or build from source with `cargo build --release`

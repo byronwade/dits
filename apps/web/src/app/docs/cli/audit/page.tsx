@@ -142,7 +142,7 @@ $ dits audit -v --limit 5
 Event: push (2025-01-15 16:45:32)
   User: john@example.com
   IP: 192.168.1.100
-  Client: dits-cli/1.0.0
+  Client: dits-cli/0.1.5
   Branch: main
   Commits: 1 (abc1234)
   Chunks uploaded: 456
@@ -387,12 +387,12 @@ Exporting full year audit...
         "duration_ms": 45000
       },
       "client": {
-        "version": "1.0.0",
+        "version": "0.1.5",
         "platform": "darwin-arm64"
       },
       "source": {
         "ip": "192.168.1.100",
-        "user_agent": "dits-cli/1.0.0"
+        "user_agent": "dits-cli/0.1.5"
       },
       "status": "success"
     }
