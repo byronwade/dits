@@ -17,7 +17,7 @@ How to recover from common problems: deleted files, corrupted projects, accident
 dits add -A && dits commit -m "Checkpoint"
 
 # Push to remote (your backup!)
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Create tags for important milestones
 dits tag checkpoint-20250115 -m "Before major changes"
@@ -179,9 +179,14 @@ dits show ghi7890:project.prproj > project_v3.prproj
 ## Scenario 4: "I Messed Up the Whole Project!"
 
 ### Reset to Remote State
+
+> 🚧 `dits fetch` is **roadmap** (transfers no data today), so "reset to remote" is not
+> available yet. Use a local milestone instead — reset to a tag or commit (see below) or to
+> a local mirror clone.
+
 ```bash
 # CAUTION: This discards ALL local changes
-dits fetch origin
+dits fetch origin   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits reset --hard origin/main
 
 # Your project now matches remote exactly
@@ -206,7 +211,9 @@ cd ..
 mv project project-broken  # Keep the broken one just in case
 
 # Clone fresh from remote
-dits clone https://dits.example.com/team/project
+# 🚧 roadmap — network clone not implemented; only a local-path clone (e.g. from a local
+# mirror) works today
+dits clone https://example.com/team/project
 
 # Your local is now pristine
 # Broken version still at project-broken if you need anything

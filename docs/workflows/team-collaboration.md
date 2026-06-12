@@ -484,8 +484,8 @@ dits log --since="1 week ago" --stat | grep -E "^\s+.*\|\s+Bin"
 | See who's working | `dits locks` |
 | Lock file | `dits lock <file>` |
 | Unlock file | `dits unlock <file>` |
-| Get latest | `dits pull` |
-| Share changes | `dits push` |
+| Get latest | `dits pull` 🚧 roadmap (no data transfer today) |
+| Share changes | `dits push` 🚧 roadmap (no data transfer today) |
 | Recent activity | `dits log --oneline -10` |
 | Team branches | `dits branch -a` |
 | Compare versions | `dits diff <commit1> <commit2>` |
