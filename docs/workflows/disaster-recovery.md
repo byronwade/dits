@@ -344,14 +344,18 @@ dits fsck --full
 ```
 
 ### Repair from Remote
+
+> 🚧 Remote repair (`fetch` / network `clone`) is **roadmap** — it transfers no data today.
+> Recover from a local mirror or local backup instead, plus `reflog` / `fsck`.
+
 ```bash
 # If remote is healthy, re-fetch
-dits fetch --all
+dits fetch --all   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits fsck
 
-# Or start fresh
+# Or start fresh (local-path clone works today; network clone is roadmap)
 cd ..
-dits clone https://dits.example.com/team/project project-fresh
+dits clone https://example.com/team/project project-fresh
 ```
 
 ### Manual Repair (Advanced)
@@ -360,7 +364,7 @@ dits clone https://dits.example.com/team/project project-fresh
 rm .dits/objects/ab/c1234...
 
 # Re-fetch from remote
-dits fetch origin
+dits fetch origin   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Rebuild index
 dits reset --hard origin/main
@@ -369,6 +373,9 @@ dits reset --hard origin/main
 ---
 
 ## Scenario 9: "I Pushed Bad Changes!"
+
+> 🚧 This scenario assumes networked `push`, which is **roadmap** (transfers no data today).
+> The `revert` / `reset` parts are local and work now; the `push` steps are aspirational.
 
 ### Communicate First
 ```
@@ -380,7 +387,7 @@ dits reset --hard origin/main
 ```bash
 # Create a new commit that undoes the bad one
 dits revert abc1234
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # History preserved, team can pull safely
 ```
@@ -394,7 +401,7 @@ dits push
 dits reset --hard def5678
 
 # Force push (DANGEROUS)
-dits push --force-with-lease
+dits push --force-with-lease   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Team must re-clone or reset
 ```
