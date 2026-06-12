@@ -1202,41 +1202,47 @@ dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 We now use Dits for version control. Here's how to get started:
 
 ## First Time Setup
-1. Install Dits: https://dits.io/install
-2. Clone the project: `dits clone <url>`
+1. Install Dits: `npm install -g @byronwade/dits` (or build from source: `cargo build --release`)
+2. Clone the project: `dits clone <url>`  (🚧 roadmap: network clone not implemented; local-path clone works)
 
 ## Daily Workflow
-1. Pull latest: `dits pull`
+1. Pull latest: `dits pull`  (🚧 roadmap — no data transfer today)
 2. Make your changes
 3. Commit: `dits add . && dits commit -m "message"`
-4. Push: `dits push`
+4. Push: `dits push`  (🚧 roadmap — no data transfer today)
 
 ## Questions?
-Contact: [Your Name] or check docs.dits.io
+Contact: [Your Name] or see github.com/byronwade/dits
 ```
 
 ### 4. Update CI/CD Pipelines
 
+> 🚧 The `dits clone <url>` steps below are **roadmap** (network clone is not implemented;
+> local-path clone works today).
+
 **GitHub Actions:**
 ```yaml
 - name: Install Dits
-  run: curl -fsSL https://dits.io/install.sh | bash
+  run: npm install -g @byronwade/dits
 
 - name: Clone with Dits
-  run: dits clone ${{ secrets.DITS_REPO_URL }}
+  run: dits clone ${{ secrets.DITS_REPO_URL }}   # 🚧 roadmap — network clone not implemented
 ```
 
 **GitLab CI:**
 ```yaml
 before_script:
-  - curl -fsSL https://dits.io/install.sh | bash
-  - dits clone $DITS_REPO_URL
+  - npm install -g @byronwade/dits
+  - dits clone $DITS_REPO_URL   # 🚧 roadmap — network clone not implemented
 ```
 
 ### 5. Configure Webhooks (Optional)
 
+> 🚧 **Roadmap — not implemented yet.** There is no `dits webhook` command and no webhooks
+> service. For local automation today, use repo hooks (`dits hooks`).
+
 ```bash
-# Add webhook for integrations
+# (Roadmap) Add webhook for integrations
 dits webhook add https://your-service.com/dits-webhook \
     --events push,commit \
     --secret YOUR_SECRET
@@ -1244,13 +1250,16 @@ dits webhook add https://your-service.com/dits-webhook \
 
 ### 6. Set Up Backup Strategy
 
+> 🚧 The networked `clone --mirror <url>` and `fetch --all` below are **roadmap** (no data
+> transfer today). A local-path `clone --mirror` works now for local backups.
+
 ```bash
-# Local backup
-dits clone --mirror https://ditshub.com/org/project /backup/project.dits
+# Local backup (local-path clone works today)
+dits clone --mirror https://example.com/org/project /backup/project.dits
 
 # Schedule regular backups
 # Add to crontab:
-# 0 2 * * * dits -C /backup/project.dits fetch --all
+# 0 2 * * * dits -C /backup/project.dits fetch --all   # 🚧 roadmap — no data transfer today
 ```
 
 ---
@@ -1271,14 +1280,15 @@ rsync -av --progress /old-system/project/ /dits-project/
 cd /dits-project
 dits add .
 dits commit -m "Mirror from old system - $(date +%Y-%m-%d)"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Week 3: Read from Dits, Write to Both
 
 ```bash
 # Team clones from Dits
-dits clone https://ditshub.com/org/project
+# 🚧 roadmap — network clone not implemented; only a local-path clone works today
+dits clone https://example.com/org/project
 
 # Changes still synced to old system as backup
 # Migration lead verifies integrity daily

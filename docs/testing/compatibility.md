@@ -10,6 +10,10 @@ Supported platforms, formats, and application versions.
 
 ### Desktop Clients
 
+> ℹ️ **Install today:** `npm install -g @byronwade/dits` (or bun/pnpm) or `cargo build
+> --release`. The packaged artifacts referenced in the Notes column (.deb, .rpm, AppImage,
+> AUR, notarized installers) are **not yet published** — treat them as planned distribution.
+
 | OS | Version | Architecture | Status | Notes |
 |----|---------|--------------|--------|-------|
 | **macOS** | 12 (Monterey)+ | x86_64 | Supported | Notarized |
@@ -317,15 +321,19 @@ Supported platforms, formats, and application versions.
 
 ## API Client SDKs
 
+> 🚧 **Roadmap — none of these SDK packages are published.** They depend on the hosted REST
+> API (api.dits.io), which does not exist yet. `dits-sdk`, `dits-py`, `@dits/sdk`, and
+> `dits-go` are **not** on any registry. Treat the whole table as roadmap/design reference.
+
 | Language | Package | Support |
 |----------|---------|---------|
-| **Rust** | `dits-sdk` | Full |
-| **Python** | `dits-py` | Full |
-| **JavaScript/TypeScript** | `@dits/sdk` | Full |
-| **Go** | `dits-go` | Full |
-| **C/C++** | `libdits` | Partial |
-| **Swift** | `DitsKit` | Planned |
-| **Kotlin** | `dits-kotlin` | Planned |
+| **Rust** | `dits-sdk` | 🚧 Roadmap (not published) |
+| **Python** | `dits-py` | 🚧 Roadmap (not published) |
+| **JavaScript/TypeScript** | `@dits/sdk` | 🚧 Roadmap (not published) |
+| **Go** | `dits-go` | 🚧 Roadmap (not published) |
+| **C/C++** | `libdits` | 🚧 Roadmap (not published) |
+| **Swift** | `DitsKit` | 🚧 Roadmap (not published) |
+| **Kotlin** | `dits-kotlin` | 🚧 Roadmap (not published) |
 
 ---
 
