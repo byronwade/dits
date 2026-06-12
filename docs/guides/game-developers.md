@@ -1207,19 +1207,28 @@ dits tag last-build --force
 
 ### Network Optimization
 
+> 🚧 **Roadmap — not implemented yet.** Networked transfer is not implemented, so these
+> `transfer.*` settings have no effect today, and the `p2p` commands are scaffolding that
+> transfer no data.
+
 ```bash
 # For remote teams with slow connections
 dits config transfer.chunkSize 4MB
 dits config transfer.timeout 120
 
 # Use P2P for local team sharing
-dits p2p share  # On asset server
-dits p2p connect ABC-123 ./game  # Team members
+dits p2p share  # On asset server   # 🚧 roadmap — scaffolding, no data transfer today
+dits p2p connect ABC-123 ./game  # Team members   # 🚧 roadmap — scaffolding, no data transfer today
 ```
 
 ---
 
 ## CI/CD Integration
+
+> 🚧 **Roadmap notice.** These pipelines depend on networked `clone` (from a URL), `pull`,
+> and `push`, which are **not implemented yet** — they print placeholders and transfer no
+> data. Local Dits operations (`init`, `add`, `commit`, `fsck`) run in CI today; the
+> remote-fetch/publish steps below are the intended future workflow.
 
 ### GitHub Actions Example
 
@@ -1243,12 +1252,13 @@ jobs:
 
     - name: Setup Dits
       run: |
-        curl -fsSL https://dits.io/install.sh | bash
+        npm install -g @byronwade/dits   # or build from source: cargo build --release
         dits config --global user.name "CI Bot"
         dits config --global user.email "ci@yourcompany.com"
 
     - name: Fetch assets
       run: |
+        # 🚧 roadmap — network clone/pull not implemented; transfers no data today
         dits clone --filter blob:none ${{ secrets.DITS_REPO_URL }}
         # Or use cache
         dits pull --cache-only
@@ -1261,7 +1271,7 @@ jobs:
       run: |
         dits add Builds/Release/
         dits commit -m "CI Build: ${{ github.sha }}"
-        dits push
+        dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Jenkins Pipeline Example

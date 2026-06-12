@@ -10,8 +10,8 @@ Complete guide to deploying Dits using Docker and Docker Compose.
 
 ```bash
 # Clone deployment repo
-git clone https://github.com/dits-io/dits-deploy.git
-cd dits-deploy/docker
+git clone https://github.com/byronwade/dits.git
+cd dits/docker
 
 # Configure environment
 cp .env.example .env

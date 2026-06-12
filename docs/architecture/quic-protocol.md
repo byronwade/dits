@@ -1,8 +1,8 @@
 # QUIC Chunk Transfer Protocol Specification
 
-> ⚠️ Design spec for a transport that is NOT yet implemented.
+> ⚠️ **Not wired into the product.** This is a design spec for a networked chunk-transfer transport. A QUIC delta engine exists in-tree (`apps/cli/src/stream/quic_origin.rs`, exercised via the `stream-demo` command) and is tested, but it is **NOT** connected to the `push`/`pull` porcelain. Networked sync transfers no data today — `push`/`pull`/`fetch`/network `clone` print placeholders. The auth/upload/server message flows below describe the quarantined backend (see `legacy/backend-crates`) and a planned hosted service, not shipping behavior. Retained as design reference. See `docs/STATUS.md`.
 
-This document specifies the QUIC-based protocol used for efficient chunk transfer in Dits. The protocol is optimized for large file transfers with support for parallel streams, resumable transfers, and end-to-end encryption.
+This document specifies the QUIC-based protocol designed for efficient chunk transfer in Dits. The protocol is optimized for large file transfers with support for parallel streams, resumable transfers, and end-to-end encryption. Note: while the QUIC delta engine exists as a tested library/demo, it is not yet wired into `push`/`pull`, so no networked transfer happens today.
 
 ## Protocol Overview
 

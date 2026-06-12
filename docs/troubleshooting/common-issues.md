@@ -57,15 +57,14 @@ dits --version
 
 **If not installed:**
 ```bash
-# macOS
-brew tap dits-io/dits && brew install dits
+# npm (or bun/pnpm)
+npm install -g @byronwade/dits
 
-# Linux
-curl -fsSL https://dits.io/install.sh | bash
-
-# Windows (PowerShell as Admin)
-choco install dits
+# Or build from source
+git clone https://github.com/byronwade/dits.git
+cd dits && cargo build --release
 ```
+> Homebrew, choco, and a curl install script are not yet published.
 
 ---
 
@@ -97,11 +96,12 @@ kextstat | grep -i fuse
 **Solution:**
 
 ```bash
-# Option 1: Install with sudo
-curl -fsSL https://dits.io/install.sh | sudo bash
+# Install globally with your Node package manager (may need sudo depending on prefix)
+sudo npm install -g @byronwade/dits
 
-# Option 2: Install to user directory
-curl -fsSL https://dits.io/install.sh | bash -s -- --prefix=$HOME/.local
+# Or build from source into a user-writable location
+cargo build --release
+# then copy target/release/dits to ~/.local/bin
 export PATH="$PATH:$HOME/.local/bin"
 ```
 
