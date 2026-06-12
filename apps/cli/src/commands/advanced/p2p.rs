@@ -193,8 +193,9 @@ pub fn share_repository(args: ShareArgs) -> Result<()> {
 
     rt.block_on(async {
         let host = start_p2p_host(config).await?;
-        // P2P transport is scaffolding: a join code is generated, but no QUIC endpoint or
-        // signaling/NAT traversal is active yet, so the repository is not actually reachable.
+        // P2P transport is scaffolding: a join code is generated, but no QUIC endpoint
+        // or signaling/NAT traversal is active yet, so the repository is not
+        // actually reachable.
         println!("🎯 Join code (scaffolding only — no data is served yet): {}", host.join_code());
         Ok(())
     })
@@ -236,8 +237,9 @@ pub fn connect_repository(args: ConnectArgs) -> Result<()> {
 
     rt.block_on(async {
         let _client = connect_p2p_repository(config).await?;
-        // NOTE: P2P transport is scaffolding (no QUIC/NAT traversal yet), so nothing was
-        // actually connected or mounted. Do not print a success message here.
+        // NOTE: P2P transport is scaffolding (no QUIC/NAT traversal yet), so nothing
+        // was actually connected or mounted. Do not print a success message
+        // here.
         Ok(())
     })
 }
