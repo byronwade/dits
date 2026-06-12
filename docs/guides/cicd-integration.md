@@ -584,10 +584,13 @@ stages:
 
 ## Webhook Integration
 
+> 🚧 **Roadmap — not implemented yet.** There is no `dits webhook` command and no hosted
+> webhooks service. This entire section describes a planned feature; none of it works today.
+
 ### Setting Up Webhooks
 
 ```bash
-# Create webhook for CI triggers
+# (Roadmap) Create webhook for CI triggers
 dits webhook create \
     --repo myorg/project \
     --url https://api.github.com/repos/org/repo/dispatches \
@@ -718,8 +721,9 @@ dits commit -m "Auto-generated [skip ci]"
 # Clean up old artifacts
 - name: Cleanup
   run: |
-    dits gc --prune-old --aggressive
-    dits cache clear --older-than 7d
+    dits gc --aggressive
+    # Note: real cache command is `dits cache-stats` (read-only).
+    # `dits cache clear/prune` does not exist.
 ```
 
 ---
@@ -729,32 +733,36 @@ dits commit -m "Auto-generated [skip ci]"
 ### Common Issues
 
 **Authentication failures:**
-```bash
-# Verify token
-curl -H "Authorization: Bearer $DITS_TOKEN" \
-    https://api.dits.io/v1/user
 
-# Check token scopes
+> 🚧 Roadmap — there is no hosted API and no `dits auth status` command. The real auth
+> commands (`login` / `logout` / `change-password`) manage **local encryption keys** only.
+
+```bash
+# (Roadmap) Verify token against a hosted API
+curl -H "Authorization: Bearer $DITS_TOKEN" \
+    https://api.example.com/v1/user
+
+# (Roadmap) Check token scopes — no `dits auth` command exists today
 dits auth status
 ```
 
 **Timeouts on large files:**
 ```bash
-# Increase timeout
-dits config set transfer.timeout 30m
+# 🚧 roadmap — transfer.* settings have no effect today (no networked transfer)
+dits config transfer.timeout 30m
 
 # Use chunked transfer
-dits push --chunked
+dits push --chunked   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 **Disk space issues:**
 ```bash
 # Use sparse checkout
-dits config set checkout.sparse true
+dits config checkout.sparse true
 dits sparse add "*.prproj"
 
-# Clean cache
-dits cache clear
+# Check cache usage (there is no `dits cache clear`; real command is `dits cache-stats`)
+dits cache-stats
 ```
 
 ---
