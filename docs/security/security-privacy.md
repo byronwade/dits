@@ -820,15 +820,18 @@ Low: Next release
 
 ## Additional Resources
 
-- [Dits Security Whitepaper](https://docs.dits.io/security/whitepaper)
-- [DitsHub Security Page](https://ditshub.com/security)
+- [Source & Documentation](https://github.com/byronwade/dits)
 - [Self-Hosting Security Guide](../operations/self-hosting.md)
-- [Compliance Documentation](https://ditshub.com/compliance)
+
+> 🚧 A hosted security/compliance portal (whitepaper, hosted security page) is roadmap and
+> does not exist yet.
 
 ---
 
 ## Contact
 
-- **Security Issues**: security@dits.io
-- **General Support**: support@dits.io
-- **Enterprise Security**: enterprise@dits.io
+- **Security Issues**: Open a private advisory at
+  [github.com/byronwade/dits](https://github.com/byronwade/dits/security/advisories)
+
+> 🚧 Hosted support and enterprise-security contact channels are roadmap; today the project
+> is community-supported via GitHub.

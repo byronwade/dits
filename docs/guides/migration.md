@@ -675,10 +675,10 @@ dits clone https://example.com/username/myproject   # 🚧 roadmap — network c
 # When ready to save a checkpoint:
 dits add changed-files
 dits commit -m "Description of changes"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # To get team changes:
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Migration Script for Dropbox
@@ -806,8 +806,9 @@ find . -name "*.gslides" -delete # Google Slides links
 dits init
 dits add .
 dits commit -m "Migrated from Google Drive"
-dits remote add origin https://ditshub.com/you/project
-dits push -u origin main
+# 🚧 roadmap — networked remotes/push are not implemented yet (remote config only)
+dits remote add origin https://example.com/you/project
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Converting Google Docs
@@ -902,8 +903,9 @@ Migration date: $(date)
 "
 
 # Push
-dits remote add origin https://ditshub.com/org/project
-dits push -u origin main
+# 🚧 roadmap — networked remotes/push are not implemented yet (remote config only)
+dits remote add origin https://example.com/org/project
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Step 4: Preserve Comments (Optional)
@@ -933,7 +935,7 @@ Use Dits for version control and Frame.io for client review:
 # 2. Export and add to Dits
 dits add exports/client-review-v3.mp4
 dits commit -m "Client review v3 - color correction pass"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # 3. Upload to Frame.io for client review
 frameio upload exports/client-review-v3.mp4 --project "Client Project"
@@ -1011,13 +1013,15 @@ cd project-local
 dits init
 dits add .
 dits commit -m "Migrated from S3/B2"
-dits remote add origin https://ditshub.com/org/project
-dits push -u origin main
+# 🚧 roadmap — networked remotes/push are not implemented yet (remote config only)
+dits remote add origin https://example.com/org/project
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Step 4: Configure Dits with S3/B2 Backend (Optional)
 
-Dits can use S3/B2 as its storage backend:
+> 🚧 **Roadmap — not implemented yet.** Remote storage backends (S3/B2) are not implemented;
+> Dits uses local storage today. The settings below are aspirational.
 
 ```bash
 # Configure S3 backend
@@ -1100,8 +1104,9 @@ audio.wav was: audio_master.wav
 project.prproj was: project_file_latest.prproj"
 
 # Add remote and push
-dits remote add origin https://ditshub.com/you/project
-dits push -u origin main
+# 🚧 roadmap — networked remotes/push are not implemented yet (remote config only)
+dits remote add origin https://example.com/you/project
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Step 4: Archive Old Versions
@@ -1135,7 +1140,7 @@ cp video_v2.mp4 video_v3.mp4
 # When ready to checkpoint:
 dits add video.mp4
 dits commit -m "Color correction pass"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Need to go back?
 dits log
@@ -1164,8 +1169,11 @@ dits inspect-file important-video.mp4  # Shows chunks and metadata
 
 ### 2. Test Core Workflows
 
+> 🚧 The `clone <url>` and `push` steps below are **roadmap** (no data transfer today). The
+> local commit cycle works now.
+
 ```bash
-# Test clone
+# Test clone (local-path clone works; network clone is roadmap)
 cd /tmp
 dits clone <your-repo-url> test-clone
 cd test-clone
@@ -1178,12 +1186,12 @@ dits restore --staged somefile.mp4
 echo "test" > test.txt
 dits add test.txt
 dits commit -m "Test commit"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Clean up test
 dits rm test.txt
 dits commit -m "Remove test file"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### 3. Update Team Documentation

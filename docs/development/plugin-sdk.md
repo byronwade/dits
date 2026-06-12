@@ -53,8 +53,13 @@ The Dits Plugin SDK enables developers to build:
 
 Primary SDK for high-performance integrations.
 
+> 🚧 **Not published.** The `dits-sdk` crate, the `@dits/sdk` npm package, and the `dits-py`
+> PyPI package below **do not exist** on any registry, and `https://api.dits.io` is not a
+> live endpoint (the hosted REST API is roadmap). These snippets are design reference for a
+> future SDK/hosted API only — they will not install or run today.
+
 ```toml
-# Cargo.toml
+# Cargo.toml — NOT PUBLISHED (roadmap)
 [dependencies]
 dits-sdk = "0.1"
 tokio = { version = "1", features = ["full"] }
@@ -87,6 +92,7 @@ async fn main() -> Result<(), dits_sdk::Error> {
 For web and Node.js integrations.
 
 ```bash
+# NOT PUBLISHED (roadmap) — @dits/sdk does not exist on npm
 npm install @dits/sdk
 ```
 
@@ -118,6 +124,7 @@ async function main() {
 For scripting and automation.
 
 ```bash
+# NOT PUBLISHED (roadmap) — dits-py does not exist on PyPI
 pip install dits-py
 ```
 
@@ -953,4 +960,4 @@ vsce publish
 - Breaking changes require major version bump
 - Beta features marked with `@beta` decorator
 - Deprecations announced one major version in advance
-- Full API reference at docs.dits.io/sdk
+- Full API reference: see the source at [github.com/byronwade/dits](https://github.com/byronwade/dits) (a hosted SDK docs site is roadmap)
