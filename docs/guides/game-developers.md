@@ -1285,7 +1285,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
-                sh 'dits pull'
+                sh 'dits pull'   // 🚧 roadmap — prints a placeholder, transfers no data today
             }
         }
 
@@ -1308,7 +1308,7 @@ pipeline {
                     dits commit -m "Jenkins Build #${BUILD_NUMBER}"
                     dits tag build/${BUILD_NUMBER}
                     dits push
-                '''
+                '''   // 🚧 roadmap — `dits push` prints a placeholder, transfers no data today
             }
         }
     }
@@ -1365,6 +1365,9 @@ dits commit -m "Resolve conflict: Use [ours/theirs] version"
 
 ### "Clone takes too long"
 
+> 🚧 Roadmap — network clone/fetch is not implemented yet (no data transfer today). The
+> commands below are the intended future workflow; only a local-path clone works today.
+
 ```bash
 # Use partial clone
 dits clone --filter blob:none [url]
@@ -1407,12 +1410,15 @@ dits lock Content/Maps/Level_01.umap
 
 ### "Build machine can't fetch assets"
 
-```bash
-# Ensure CI has access
-dits remote add origin https://token:$DITS_TOKEN@dits.yourcompany.com/game
+> 🚧 Roadmap — networked remotes/fetch are not implemented yet (`remote` manages config
+> only; no data transfer today). The remote URLs below are illustrative.
 
-# Or use SSH
-dits remote add origin dits@dits.yourcompany.com:game
+```bash
+# Ensure CI has access (remote config only today)
+dits remote add origin https://token:$DITS_TOKEN@example.com/game
+
+# Or use SSH (remote config only today)
+dits remote add origin dits@example.com:game
 
 # Use cache for CI
 dits config cache.path /ci-cache/dits
@@ -1444,7 +1450,7 @@ cat .ditsignore
 
 ```bash
 # Sync
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 git pull
 
 # Status
@@ -1454,7 +1460,7 @@ git status
 # Commit assets
 dits add Assets/[path]
 dits commit -m "message"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Commit code
 git add src/[path]

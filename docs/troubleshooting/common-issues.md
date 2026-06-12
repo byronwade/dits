@@ -673,8 +673,8 @@ dits commit -m "Add file 1"
 dits add large-file-2.mp4
 dits commit -m "Add file 2"
 
-# Clear cache
-dits cache clear
+# Inspect cache usage (there is no `dits cache clear`; the real command is `dits cache-stats`)
+dits cache-stats
 ```
 
 ---
@@ -716,8 +716,8 @@ dits repo-stats
 # Run garbage collection
 dits gc --aggressive
 
-# Clear cache
-dits cache clear
+# Inspect cache usage (there is no `dits cache clear`; use `dits cache-stats`)
+dits cache-stats
 
 # Check what's taking space
 dits repo-stats -v | sort -k2 -h
@@ -738,8 +738,8 @@ dits freeze old-content/ --tier archive
 # Check disk space
 df -h
 
-# Clear dits cache (safe)
-dits cache clear
+# Inspect cache usage (there is no `dits cache clear`; use `dits cache-stats`)
+dits cache-stats
 
 # Run garbage collection
 dits gc
