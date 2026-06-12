@@ -23,8 +23,13 @@ P2P). The drift is **not in the polished surfaces**; it's concentrated in:
    "20+ major studios" claims the live site deliberately avoids.
 3. **Installation instructions** pointing to artifacts/taps/domains that don't
    demonstrably exist — and two install docs that disagree with each other.
-4. **Internal contradictions** — VFS "works today" vs "not shipped", version `1.0.0` vs
-   `0.1.2` vs `0.1.0`, MIT vs dual-license, two different GitHub orgs.
+4. **The web docs tree (`apps/web/src/app/docs/`)** — the largest and *least* disciplined
+   surface. ~75 pages present networking, P2P, QUIC, a hosted REST API, official SDKs,
+   Ditshub cloud, and SaaS pricing/SLA **flatly as shipping**, with fabricated terminal
+   output and live hosted URLs. Only ~4 of those pages carry any caveat.
+5. **Internal contradictions** — VFS "works today" vs "not shipped", version `1.0.0` vs
+   `0.1.2`, MIT vs dual-license, two different GitHub orgs, two incompatible P2P command
+   surfaces.
 
 Root cause: a real "honesty pass" was done (STATUS.md, cli-reference.md, the live site's
 roadmap badges) but it **didn't reach every file**. Only 14 docs reference STATUS.md, and
@@ -104,6 +109,64 @@ that ranges from `0.1.2` to `1.0.0`. None of the package-registry/tap/installer 
 verifiable in-repo. **Recommend:** verify which (if any) are published; collapse to one
 namespace; gate the rest as "coming soon".
 
+**Externally verified 2026-06-12 (registry lookups):**
+| Advertised | Reality |
+|---|---|
+| `npm install -g @byronwade/dits` (homepage) | ✅ **Exists**, latest **v0.1.5** — but that's a *third* version (vs download page `0.1.2`, docs `1.0.0`) |
+| `cargo install dits` (homepage + docs) | ❌ **404 — crate does not exist on crates.io. This command fails.** |
+| `@dits/sdk` "official SDK" (web API docs) | ❌ **404 — does not exist on npm** |
+| `dits-sdk` "official Python SDK" (web API docs) | ❌ **404 — does not exist on PyPI** |
+
+So the headline npm install is genuinely real (good — and the npm version `0.1.5` should
+become the single canonical version everywhere). But `cargo install dits` and the "official"
+SDK packages are advertised and **do not exist** — the most concrete, checkable falsehoods in
+the whole project.
+
+### C5. The web docs tree (`apps/web/src/app/docs/`) presents an entire hosted product that doesn't exist
+This is the **single largest drift surface** — and worse than the markdown docs, because the
+markdown docs at least carry roadmap/legacy banners. Across ~75 web doc pages, **only ~4**
+(`roadmap`, `guides/glossary`, `guides/large-files`, `cli/vfs`) contain any caveat. The rest
+present roadmap/non-existent features flatly, with **fabricated terminal output** and **live
+hosted URLs**:
+- **Hosted REST API as live:** `docs/api/rest/page.tsx` — "100+ API Endpoints",
+  `baseURL: https://api.dits.io/v1`, `curl -X POST https://api.dits.io/v1/repos`, rate limit
+  "5,000/hour". `docs/api/webhooks/page.tsx` — "25+ Event Types", HMAC signatures.
+  `docs/api/wire/page.tsx` — "The wire protocol is fully documented and open for third-party
+  implementations".
+- **"Official SDKs" claiming live registry pages:** `docs/api/sdks/page.tsx` —
+  `npm install @dits/sdk`, `pip install dits-sdk`, `go get github.com/dits-io/go-sdk`,
+  `cargo add dits-sdk`, asserting `npmjs.com/package/@dits/sdk`, `pypi.org/project/dits-sdk/`,
+  `crates.io/crates/dits-sdk`, `docs.rs/dits-sdk` exist. **These are externally checkable and
+  almost certainly 404.**
+- **"Production-Ready Implementation":** `docs/cli-reference/page.tsx` — "All 60+ commands are
+  fully implemented with 120+ automated tests"; marks `push`/`pull`/`fetch` status
+  **"stable"**, `sync` "beta". `docs/page.tsx` — `implementedCommands` array literally lists
+  `"remote","push","pull","fetch","clone","p2p"` and "All 60+ commands are fully implemented".
+- **Ditshub managed cloud as live:** `docs/deployment/page.tsx` ("Cloud Managed / Hosted
+  platform with Ditshub / Automatic scaling / Global CDN"), `docs/deployment/cloud/page.tsx`
+  (full EKS/RDS/S3 + `helm repo add dits https://charts.dits.io`),
+  `docs/deployment/self-hosting/page.tsx` (`curl -LO https://releases.dits.io/latest/dits-server`).
+- **P2P with fabricated infra & two incompatible command sets:**
+  `docs/concepts/peer-to-peer/page.tsx` and `docs/cli/p2p/page.tsx` claim "100% success rate —
+  works through any NAT type", signal server `wss://dits-signal.fly.dev`, relay
+  `relay.dits.byronwade.com`, join codes + port 4433 — while `docs/guides/collaboration/page.tsx`
+  documents a *different* surface (`dits p2p start/discover/sync`, libp2p peer IDs, port 9001).
+  Neither matches the real scaffolding.
+- **Fabricated network output everywhere:** e.g. `docs/cli/remotes/page.tsx` —
+  `remote: Finding chunks: 12,456 (8.5 GB)` / `Receiving objects: 100% (45/45)`;
+  `docs/cli/repository/page.tsx` — `Repository ready (125 TB of files available on demand)`.
+
+**Bonus contradiction:** the web tree's own `docs/roadmap/page.tsx` labels Remote/P2P
+"In Progress" and Ditshub "Q4 2025 / Planned" — directly contradicting the cli/api/deployment
+pages that show those same features working.
+
+### C6. SaaS pricing & SLA documented with no disclaimer
+`docs/business/pricing.md` and `docs/business/sla.md` carry **no caveat at all** and present a
+full commercial offering: Free / Pro ($20/user/mo) / Team ($50/user/mo) / Enterprise tiers,
+storage & transfer overages (`$0.02/GB/month`, `$0.05/GB`), "Web UI access", "API access",
+multi-region — plus uptime guarantees, service credits, and P95 latency commitments. None of
+this exists. These read as a live, purchasable product.
+
 ---
 
 ## HIGH — status contradictions and metadata drift
@@ -121,8 +184,11 @@ Reality: real, but **feature-gated (`--features fuser`), local-only, not in defa
 build; remote hydration is roadmap" — and stop documenting the non-existent `dits vfs`.
 
 ### H2. Version string drift
-`1.0.0` (getting-started.md, first-time-setup.md) vs `0.1.2` (download page) vs `0.1.0`
-(`Cargo.toml`, `benchmarks.md`). The `1.0.0` strings also collide with the alpha banner.
+Four different versions in play: `1.0.0` (getting-started.md, first-time-setup.md), `0.1.2`
+(download page), `0.1.0` (`Cargo.toml`, `benchmarks.md`), and **`0.1.5`** (the actual
+published npm package — verified). The `1.0.0` strings also collide with the alpha banner.
+**Canonical should be the published npm version (`0.1.5`)**; align `Cargo.toml`, the download
+page, and all docs to it (or derive them from it).
 
 ### H3. Invented CLI commands documented as working
 None of these exist in the canonical command set (`apps/cli/src/commands`, STATUS.md,
@@ -240,22 +306,34 @@ user about a connection that doesn't exist. Either make it real, have it error
   on sync and P2P, with an at-point "networked sync is in active development" caveat.
 - **`docs/marketing/positioning.md`** — has explicit guardrails ("Never imply network sync,
   P2P, or QUIC delta transfer work today").
+- **The `ai/docs/` web tree** — the honesty gold standard: `ai/docs/roadmap/page.tsx` states
+  "If a capability is not under 'Working today,' do not depend on it yet";
+  `ai/docs/concepts/tensor-chunking` is explicitly "a roadmap and design topic, not a shipped
+  feature". Use this tree's discipline as the template for fixing the main `docs/` web tree.
+- **`apps/web/src/app/docs/roadmap/page.tsx`** — correctly labels Remote/P2P/Ditshub as
+  in-progress/planned; it's the rest of the web docs tree that contradicts *it*.
 
 ---
 
 ## Recommended remediation order
 
-1. **Purge legacy-backend drift** (C1, C2, C3): remove or clearly quarantine
+1. **Fix the web docs tree** (C5, C6) — *highest priority*: it ships a whole hosted product
+   (REST API, SDKs, Ditshub cloud, SaaS pricing/SLA, P2P) that doesn't exist, with no caveats
+   and fabricated output, to anyone who clicks "Docs". Either gate every roadmap page behind
+   the same discipline as `ai/docs/`, or remove the API/SDK/cloud/pricing/SLA/P2P pages until
+   they're real. Verify whether `@dits/sdk` / `dits-sdk` / `api.dits.io` actually exist; if
+   not, the "official SDK" and "100+ endpoints" pages are the most reputationally dangerous.
+2. **Purge legacy-backend drift** (C1, C2, C3): remove or clearly quarantine
    `data-structures/remote.md`, the README Self-Hosting/Enterprise/REST-API/perf-table tail,
    and the `operations/*` network examples. Make the "quarantined backend" banner state
    plainly that those commands transfer no data.
-2. **Fix installation** (C4): verify which artifacts exist; collapse to one
+3. **Fix installation** (C4): verify which artifacts exist; collapse to one
    org/domain/tap; version string to a single value; gate unpublished channels.
-3. **Reconcile VFS status** (H1) and remove the non-existent `dits vfs` command from docs.
-4. **One version, one license, one GitHub org, one FastCDC param set** (H2, H4, H5, H6).
-5. **Strip invented CLI commands** (H3).
-6. **Reframe `revolutionary-vision.md` / `unique-positioning.md`** as internal strategy (M1).
-7. **Fix the fabricated `dits p2p ping` output** — make it real, error out, or remove it.
-8. **Refresh STATUS.md** in the 4 under-claiming spots (test count → 469, `serve` is real,
+4. **Reconcile VFS status** (H1) and remove the non-existent `dits vfs` command from docs.
+5. **One version, one license, one GitHub org, one FastCDC param set** (H2, H4, H5, H6).
+6. **Strip invented CLI commands** (H3).
+7. **Reframe `revolutionary-vision.md` / `unique-positioning.md`** as internal strategy (M1).
+8. **Fix the fabricated `dits p2p ping` output** — make it real, error out, or remove it.
+9. **Refresh STATUS.md** in the 4 under-claiming spots (test count → 469, `serve` is real,
    QUIC is implemented, FUSE is implemented-but-gated) so it stays the trustworthy anchor.
-9. **Add a STATUS.md pointer** to the top of every user-facing doc so future drift is caught.
+10. **Add a STATUS.md pointer** to the top of every user-facing doc so future drift is caught.
