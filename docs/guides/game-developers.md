@@ -5,9 +5,11 @@ This comprehensive guide covers using Dits for version control in game developme
 > 🚧 **Roadmap notice.** Dits today is **local-first**. Commands in this guide that sync
 > over a network — `push`, `pull`, `fetch`, network `clone` (including `--filter` /
 > `--depth` partial-clone flags), `remote`, and all `p2p` sharing — are **not implemented
-> yet**; they print placeholders and transfer no data. There is also **no `dits mount`**
-> command (the VFS is internal). Everything **local** works. Treat networked, partial-clone,
-> mount, and P2P examples below as the intended future workflow.
+> yet**; they print placeholders and transfer no data. The `dits mount` virtual drive
+> **does** exist but requires a build with `--features fuser` (absent from the default npm
+> build) and is **local-only** (no remote/on-demand hydration). Everything **local** works.
+> Treat networked, partial-clone, remote-streaming, and P2P examples below as the intended
+> future workflow.
 
 ---
 
@@ -1173,16 +1175,17 @@ dits clone --depth 1 [url]           # Latest only
 
 ### Asset Streaming
 
-> 🚧 **Roadmap — not implemented yet.** There is no `dits mount` command, and on-demand
-> streaming of remote assets depends on networked transfer, which is not implemented.
-> Today, check assets out locally with `dits checkout`. The example below is the intended
+> 🚧 **Partly roadmap.** `dits mount` exists but requires a build with `--features fuser`
+> (absent from the default npm build) and is **local-only**. On-demand *streaming of remote
+> assets* depends on networked transfer, which is **not implemented**. Today, check assets
+> out locally with `dits checkout`. The remote-streaming behavior below is the intended
 > future workflow.
 
 ```bash
-# (Roadmap) Mount repository for streaming
+# Mount repository (requires --features fuser build; local-only)
 dits mount /Volumes/GameAssets --cache-size 50GB
 
-# Assets load on-demand
+# (Roadmap) Assets load on-demand from a remote
 # No need to download entire repository
 ```
 
