@@ -3,13 +3,15 @@
 This guide covers the most common issues users encounter with Dits and provides step-by-step solutions.
 
 > 🚧 **Roadmap notice.** Troubleshooting sections about **remotes, authentication, P2P, and
-> mounting** describe **roadmap** features that are **not implemented yet**. `push`, `pull`,
-> `fetch`, network `clone`, and `remote` print placeholders and transfer no data; **`dits
-> auth`** does not exist (auth is local encryption only — `login`/`logout`/
-> `change-password`); **`dits mount` / `dits unmount`** do not exist (the VFS is internal);
-> and all `p2p` subcommands are scaffolding. If a command in those sections "doesn't work,"
-> that is expected — the feature is not built yet. Local commands (`status`, `add`,
-> `commit`, `checkout`, `restore`, `fsck`, locks) work today.
+> network mounting** describe **roadmap** features that are **not implemented yet**. `push`,
+> `pull`, `fetch`, network `clone`, and `remote` print placeholders and transfer no data;
+> **`dits auth`** does not exist (auth is local encryption only — `login`/`logout`/
+> `change-password`); **`dits mount` / `dits unmount`** are **local-only** and exist **only
+> when the CLI is built with `--features fuser`** (requires macFUSE/libfuse) — they are
+> absent from default builds, and on-demand/remote hydration is roadmap; all `p2p`
+> subcommands are scaffolding. **`dits doctor`** does not exist. If a command in those
+> sections "doesn't work," that is expected — the feature is not built yet. Local commands
+> (`status`, `add`, `commit`, `checkout`, `restore`, `fsck`, locks) work today.
 
 ---
 
@@ -507,10 +509,12 @@ dits p2p share --expires 24h
 
 ## Virtual Filesystem (VFS)
 
-> ℹ️ **There is no `dits mount` / `dits unmount` command.** The VFS is internal (used by
-> checkout and proxies). If you ran `dits mount` and got "unrecognized subcommand," that is
-> expected — the command does not exist. The mount-related troubleshooting below is retained
-> for the future, user-facing VFS feature only.
+> ℹ️ **`dits mount` / `dits unmount` are LOCAL-ONLY and feature-gated.** They exist only
+> when the CLI is built with `cargo build --features fuser` (requires macFUSE/libfuse) and
+> are absent from default builds — if you ran `dits mount` on a default build and got
+> "unrecognized subcommand," that is expected. There is **no `dits vfs` command**. The
+> on-demand / remote hydration described in some steps below is roadmap; local mounting of
+> a checked-out repo is what works today.
 
 ### "Mount failed: FUSE not available"
 
@@ -598,13 +602,13 @@ dits status
 **Solution:**
 
 ```bash
-# Pre-cache files you'll need
+# Pre-cache files you'll need (roadmap — `fetch` transfers no data today)
 dits fetch --blob path/to/needed/files/
 
 # Increase cache size
 dits config cache.size 50GB
 
-# Mount with prefetch
+# Mount with prefetch (roadmap flag; on-demand hydration not implemented)
 dits mount /Volumes/project --prefetch
 
 # Use local cache path on SSD

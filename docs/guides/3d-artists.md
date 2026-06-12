@@ -895,7 +895,7 @@ Asset Department Flow:
 ```bash
 # Modeling completes, hands off to texturing
 dits checkout main
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits branch asset/hero-char/texturing
 
 # Texturing works...
@@ -903,10 +903,10 @@ dits add Assets/Characters/hero/
 dits commit -m "Texture: Hero character skin complete"
 
 # Ready for rigging
-dits push origin asset/hero-char/texturing
+dits push origin asset/hero-char/texturing   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Rigging pulls texturing branch
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits checkout asset/hero-char/texturing
 dits branch asset/hero-char/rigging
 
@@ -924,7 +924,7 @@ dits merge asset/hero-char/rigging
 dits tag asset/hero-char/v1.0
 
 # Shots can now reference this version
-dits push --tags
+dits push --tags   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Shot-Level Versioning
@@ -959,12 +959,12 @@ dits lock Assets/Characters/hero.blend --reason "Modeling updates"
 # Work...
 dits add Assets/Characters/hero.blend
 dits commit -m "Model: Updated topology for deformation"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits unlock Assets/Characters/hero.blend
 
 # Rigger waits for modeler
 dits locks  # Check if modeling is done
-dits pull   # Get latest model
+dits pull   # Get latest model   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Rigger works on rig
 dits lock Assets/Characters/hero_rig.blend --reason "Rigging"
@@ -976,7 +976,7 @@ dits lock Assets/Characters/hero_rig.blend --reason "Rigging"
 ```bash
 # Start of day
 cd ~/Projects/CurrentShow
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Check what's happening
 dits log --oneline -10
