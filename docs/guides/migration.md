@@ -290,10 +290,11 @@ For teams migrating together:
 ```bash
 # Team lead: Create the Dits repository
 dits init
-dits remote add origin https://ditshub.com/team/project
+# 🚧 roadmap — networked remotes/push are not implemented yet (remote config only)
+dits remote add origin https://example.com/team/project
 dits add .
 dits commit -m "Initial migration from Git LFS"
-dits push -u origin main
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 **Day 2 - Team onboarding:**
@@ -303,7 +304,8 @@ dits push -u origin main
 mv project project-git-archive
 
 # 2. Clone from Dits
-dits clone https://ditshub.com/team/project
+# 🚧 roadmap — network clone not implemented; only a local-path clone works today
+dits clone https://example.com/team/project
 
 # 3. Verify setup
 cd project
@@ -368,8 +370,9 @@ dits add .
 dits commit -m "Initial import from Git repository"
 
 # Add remote and push
-dits remote add origin https://ditshub.com/org/project
-dits push -u origin main
+# 🚧 roadmap — networked remotes/push are not implemented yet (remote config only)
+dits remote add origin https://example.com/org/project
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Step 4: Set Up Hybrid Workflow (Optional)
@@ -421,9 +424,9 @@ Perforce is common in game development and large enterprises. Dits provides simi
 | Exclusive checkout | `dits lock` |
 | Shelving | `dits stash` |
 | Streams | Branches |
-| P4V | DitsHub Desktop App |
+| P4V | (no desktop app yet — CLI only) |
 | Labels | Tags |
-| Triggers | Webhooks |
+| Triggers | Hooks (`dits hooks`); a webhooks service is roadmap |
 
 ### Step 1: Export from Perforce
 
@@ -465,16 +468,19 @@ dits init
 dits config user.name "Your Name"
 dits config user.email "you@company.com"
 
-# Add remote
-dits remote add origin https://ditshub.com/company/project
+# Add remote (remote config only today; networked publish is roadmap)
+# 🚧 roadmap — networked remotes are not implemented yet
+dits remote add origin https://example.com/company/project
 ```
 
 ### Step 4: Import with History (Advanced)
 
-For preserving Perforce history:
+> 🚧 **Roadmap — not implemented yet.** There is no `dits migrate from-perforce` command.
+> History-import tooling is planned. Today, copy your synced workspace into a fresh Dits
+> repo (Step 5).
 
 ```bash
-# Use the Dits Perforce import tool
+# (Roadmap) Use the Dits Perforce import tool
 dits migrate from-perforce \
     --server perforce.company.com:1666 \
     --user your-p4-user \

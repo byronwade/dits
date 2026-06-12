@@ -2,6 +2,19 @@
 
 Complete reference for all Dits configuration files and options.
 
+> 🚧 **Roadmap notice.** Dits is **local-first** today (alpha, version 0.1.5). Config
+> sections for networked features — `[transfer]`, `[http]`, `[quic]`, `[credential]`,
+> remote/LFS server URLs, and `[remote.*]` push/fetch — describe the **unimplemented**
+> networked sync layer. `push`/`pull`/`fetch`/`sync` transfer no data and network `clone` is
+> roadmap, so those keys have no effect yet. Remote-auth env vars (`DITS_TOKEN`,
+> `DITS_SSH_KEY`) are also roadmap. Core, user, chunking, hashing, compression, cache, color,
+> alias, hook, and `.ditsignore`/`.ditsattributes` settings apply locally today.
+>
+> **FastCDC profiles:** the `[chunking]` values below (16KB/64KB/256KB min/avg/max) are the
+> code's `default` profile. Named profiles also exist — `media` (64KB/256KB/1MB), `large`
+> (256KB/1MB/4MB), and `project` (4KB/16KB/64KB). Name a profile rather than citing a single
+> contradictory chunk size.
+
 ## Configuration Hierarchy
 
 Configuration is read in order (later overrides earlier):
@@ -180,7 +193,7 @@ ssl_verify = true
 # ssl_ca_info = "/path/to/ca-bundle.crt"
 
 # User agent string
-user_agent = "dits/1.0"
+user_agent = "dits/0.1.5"
 
 # Low speed limit (abort if below this for low_speed_time)
 low_speed_limit = 1000  # bytes/sec

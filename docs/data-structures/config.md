@@ -2,6 +2,18 @@
 
 Configuration settings for Dits client and repositories.
 
+> 🚧 **Roadmap notice.** Dits is **local-first** today. Config sections for **remotes**
+> (`[remote.*]`, refspecs, push/fetch) and **transfer** (`[transfer]`, bandwidth limits,
+> delta compression, proxy) describe the **unimplemented** networked sync layer — recording
+> them has no effect because `push`/`pull`/`fetch`/`sync` transfer no data and network
+> `clone` is roadmap. The `DITS_TOKEN` auth env var is likewise roadmap. Core, user,
+> chunking, cache, UI, and alias settings apply locally today.
+>
+> **FastCDC profiles:** the `chunking` defaults below (16KB/64KB/256KB min/avg/max) are the
+> code's `default` profile. Dits also ships named profiles — `media` (64KB/256KB/1MB),
+> `large` (256KB/1MB/4MB), and `project` (4KB/16KB/64KB). Prefer naming a profile over
+> citing a single contradictory chunk size.
+
 ---
 
 ## Overview
