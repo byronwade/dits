@@ -680,6 +680,7 @@ execute_process(
 
 if(NOT DITS_STATUS EQUAL 0)
     message(STATUS "Fetching assets from Dits...")
+    # 🚧 roadmap — `dits pull` prints a placeholder and transfers no data today
     execute_process(
         COMMAND dits pull
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -1015,7 +1016,7 @@ dits unlock Assets/Models/Characters/Boss_Dragon.fbx
 
 ```bash
 # Morning: Sync with team
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 git pull
 
 # Check what changed
@@ -1030,7 +1031,7 @@ dits locks
 # End of day: Push changes
 dits add Assets/[your-work]/
 dits commit -m "Detailed description of changes"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 git add src/[your-work]/
 git commit -m "Detailed description of changes"
@@ -1076,7 +1077,7 @@ dits commit -m "Hero model: new armor, updated rig
 - Adjusted skeleton weights
 - Breaking change: bone names updated (see hero_rig_changelog.txt)"
 dits tag art/hero-v2
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Notify programmer via commit message or tag
 # Programmer updates code to match new rig
@@ -1161,10 +1162,11 @@ main                     # Production-ready
 ```bash
 # Configure for large repositories
 dits config cache.size 100GB
-dits config transfer.maxParallel 16
+dits config transfer.maxParallel 16   # 🚧 roadmap — transfer.* settings have no effect today (no networked transfer)
 dits config core.compression zstd
 
 # Use partial clones
+# 🚧 roadmap — network clone (and --filter / --depth) is not implemented; only local-path clone works today
 dits clone --filter blob:none [url]  # Metadata only
 dits clone --depth 1 [url]           # Latest only
 ```

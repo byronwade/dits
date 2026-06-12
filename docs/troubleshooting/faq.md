@@ -280,9 +280,13 @@ dits log --stat -- path/to/file
 
 ## P2P Sharing
 
+> 🚧 **Roadmap — not implemented yet.** The entire P2P feature is scaffolding: `dits p2p`
+> subcommands print placeholders and transfer no data, with no NAT traversal or QUIC. The
+> answers below describe the intended design, not current behavior.
+
 ### What is P2P sharing?
 
-P2P (peer-to-peer) sharing lets you share your repository directly with collaborators without uploading to a cloud server. Data transfers directly between your computers.
+P2P (peer-to-peer) sharing is designed to let you share your repository directly with collaborators without uploading to a cloud server. Data would transfer directly between your computers.
 
 ### How does P2P work?
 
@@ -293,7 +297,7 @@ P2P (peer-to-peer) sharing lets you share your repository directly with collabor
 
 ### Do both computers need to be online?
 
-Yes, for P2P sharing both computers must be online at the same time. For asynchronous collaboration, use a remote server (DitsHub or self-hosted).
+In the intended design, both computers must be online at the same time for P2P sharing. Asynchronous collaboration via a remote server is also roadmap.
 
 ### Does P2P work through firewalls?
 
@@ -430,21 +434,19 @@ there is no in-transit encryption to speak of — there is no networked transfer
 **P2P transfers**: 🚧 Roadmap. P2P is scaffolding; no encrypted (or any) data transfer
 happens yet.
 
-### Where is my data stored with DitsHub?
+### Where is my data stored with a hosted service?
 
-DitsHub stores data in secure data centers:
-- AWS (multiple regions)
-- Data encrypted at rest
-- SOC 2 Type II compliant
-- GDPR compliant
+> 🚧 **Roadmap.** A hosted cloud service does not exist yet. Today all data is stored
+> locally in your `.dits/` directory; nothing is uploaded anywhere.
 
 ### Can I self-host Dits?
 
-Yes! You can run your own Dits server. See the [Self-Hosting Guide](../operations/self-hosting.md).
+A self-hosted Dits server is **roadmap** and not implemented. The only server in-tree today
+is the embedded per-repo object server (`dits serve`) used for local object fetching.
 
 ### How do I report a security vulnerability?
 
-Email security@dits.io with details. We follow responsible disclosure practices and typically respond within 24 hours.
+Open a security advisory or issue at [github.com/byronwade/dits](https://github.com/byronwade/dits). Please follow responsible disclosure and do not file public exploit details.
 
 ---
 
@@ -452,20 +454,17 @@ Email security@dits.io with details. We follow responsible disclosure practices 
 
 ### Is Dits free?
 
-**Dits CLI (open source)**: Free forever under MIT license.
+**Dits CLI (open source)**: Free, under a dual **Apache-2.0 OR MIT** license.
 
-**DitsHub (hosted service)**:
-- Free tier: 5 GB storage, 1 user
-- Pro tier: 100 GB storage, unlimited users
-- Enterprise: Custom pricing
+A hosted service with tiered pricing is **roadmap** and does not exist yet.
 
 ### Can I use Dits for commercial projects?
 
-Yes! The MIT license allows commercial use without restrictions.
+Yes! The Apache-2.0 OR MIT dual license allows commercial use without restrictions.
 
 ### Do I need a license for the desktop app?
 
-The desktop app is part of DitsHub and follows DitsHub pricing. A free tier is available.
+There is no desktop app today; it is roadmap.
 
 ---
 
@@ -536,7 +535,5 @@ The desktop app is part of DitsHub and follows DitsHub pricing. A free tier is a
 
 ## Still Have Questions?
 
-- **Documentation**: [docs.dits.io](https://docs.dits.io)
-- **GitHub Issues**: [github.com/dits-io/dits/issues](https://github.com/dits-io/dits/issues)
-- **Discord**: [discord.gg/dits](https://discord.gg/dits)
-- **Email**: support@dits.io
+- **Source & Documentation**: [github.com/byronwade/dits](https://github.com/byronwade/dits)
+- **GitHub Issues**: [github.com/byronwade/dits/issues](https://github.com/byronwade/dits/issues)

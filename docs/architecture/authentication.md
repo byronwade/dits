@@ -33,9 +33,9 @@ Header:
 
 Payload:
 {
-  "iss": "https://api.dits.io",
+  "iss": "https://api.example.com",
   "sub": "user:550e8400-e29b-41d4-a716-446655440000",
-  "aud": ["https://api.dits.io"],
+  "aud": ["https://api.example.com"],
   "exp": 1704067200,
   "iat": 1704063600,
   "nbf": 1704063600,
@@ -192,7 +192,7 @@ GET /v1/auth/oauth/github HTTP/1.1
 ```
 https://github.com/login/oauth/authorize?
   client_id=Iv1.abc123&
-  redirect_uri=https://api.dits.io/v1/auth/callback&
+  redirect_uri=https://api.example.com/v1/auth/callback&
   scope=user:email%20read:org&
   state=random-state-string
 ```
@@ -204,7 +204,7 @@ GET /v1/auth/callback?code=abc123&state=random-state-string HTTP/1.1
 
 **4. Response (redirect to frontend with tokens):**
 ```
-https://app.dits.io/auth/success?
+https://app.example.com/auth/success?
   access_token=eyJ...&
   refresh_token=abc...&
   expires_in=3600
@@ -628,7 +628,7 @@ Content-Type: application/json
      │<───────────────────────────────────────│
      │                                        │
      │  Display to user:                      │
-     │  "Visit https://dits.io/device         │
+     │  "Visit https://example.com/device     │
      │   and enter code: ABCD-1234"           │
      │                                        │
      │  Poll: POST /v1/auth/device/token      │
@@ -659,7 +659,7 @@ expires_at = "2024-01-15T12:00:00Z"
 
 [work]
 token = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9..."
-endpoint = "https://api.company.dits.io"
+endpoint = "https://api.company.example.com"
 ```
 
 ---
