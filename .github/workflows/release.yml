@@ -32,10 +32,14 @@ jobs:
             platform: darwin-x64
             smoke: true
 
-          # Linux (glibc)
+          # Linux (glibc) — build via `cross` so the binary links an older,
+          # widely-compatible glibc. Building natively on ubuntu-latest links
+          # the runner's glibc (2.39), which fails on common distros (Debian 12,
+          # Ubuntu 22.04, …) with "GLIBC_2.39 not found".
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
             platform: linux-x64
+            cross: true
             smoke: true
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-latest
