@@ -5,10 +5,11 @@ This comprehensive guide covers everything video editors need to know about usin
 > 🚧 **Roadmap notice.** Dits today is **local-first**. Commands in this guide that sync
 > over a network — `push`, `pull`, `fetch`, `sync`, network `clone`, `remote`, and all
 > `p2p` sharing — are **not implemented yet**; they print placeholders and transfer no
-> data. There is also **no `dits mount` / `dits unmount`** command (the VFS is internal).
-> Everything **local** works: commits, branches, locks, MP4 tooling, and the FACR
-> frame-engine / photo commands. Treat networked and P2P examples below as the intended
-> future workflow, and use a **local-path** `clone` for local mirroring.
+> data. `dits mount` / `dits unmount` are **local-only** and require a build with
+> `--features fuser` (absent from the default npm build); there is **no remote/on-demand
+> hydration**. Everything **local** works: commits, branches, locks, MP4 tooling, and the
+> FACR frame-engine / photo commands. Treat networked and P2P examples below as the
+> intended future workflow, and use a **local-path** `clone` for local mirroring.
 
 ---
 
@@ -1530,8 +1531,8 @@ ls -la /dev/fuse
 # Check Dits storage usage
 dits repo-stats
 
-# Clear cache
-dits cache clear
+# Check cache usage (there is no `dits cache clear`; real command is `dits cache-stats`)
+dits cache-stats
 
 # Run garbage collection
 dits gc --aggressive
