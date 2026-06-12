@@ -242,7 +242,7 @@ mod tests {
 
     #[test]
     fn test_deterministic_derivation() {
-        let salt = [42u8; 32];
+        let salt = generate_salt();
         let bundle1 = derive_keys("password", &salt, Some(&Argon2Params::fast())).unwrap();
         let bundle2 = derive_keys("password", &salt, Some(&Argon2Params::fast())).unwrap();
 
