@@ -525,9 +525,14 @@ Cache structure:
 
 ### Cache Commands
 
+> 🚧 **Partly roadmap.** The real cache command is **`dits cache-stats`** (read-only). There
+> is **no** `dits cache status`, `dits cache clear`, `dits cache prune`, or `dits cache warm`.
+> Those subcommands below are aspirational; use `dits cache-stats` to inspect the cache and
+> `dits gc` to reclaim space.
+
 ```bash
-# View cache status
-dits cache status
+# View cache stats (real command)
+dits cache-stats
 
 # Output:
 # Cache location: /Users/jane/.dits-cache
@@ -536,26 +541,29 @@ dits cache status
 # Metadata cache: 5.4 GB
 # Oldest entry: 45 days ago
 
-# Clear all cache
+# (Roadmap) Clear all cache
 dits cache clear
 
-# Clear only old entries
+# (Roadmap) Clear only old entries
 dits cache prune --older-than 30d
 
-# Clear specific repository's cache
+# (Roadmap) Clear specific repository's cache
 dits cache clear --repo /path/to/repo
 ```
 
 ### Cache Warming
 
+> 🚧 **Roadmap — not implemented yet.** There is no `dits cache warm` command. (Cache
+> warming also depends on networked fetch, which is roadmap.)
+
 ```bash
-# Pre-populate cache before going offline
+# (Roadmap) Pre-populate cache before going offline
 dits cache warm
 
-# Warm specific paths
+# (Roadmap) Warm specific paths
 dits cache warm Assets/Characters/
 
-# Warm for offline editing
+# (Roadmap) Warm for offline editing
 dits cache warm --offline-mode
 ```
 
@@ -828,25 +836,25 @@ dits commit -m "Environments"
 ### Performance Configuration Cheatsheet
 
 ```bash
-# Network optimization
+# Network optimization — 🚧 roadmap (transfer.*/QUIC have no effect today)
 dits config transfer.jobs 16
 dits config transfer.protocol quic
 dits config transfer.maxConnections 16
 
-# Storage optimization
+# Storage optimization (works today)
 dits config cache.path /Volumes/SSD/dits-cache
 dits config cache.size 100GB
 
-# Large repository optimization
+# Large repository optimization — 🚧 roadmap for network clone; local-path clone works
 dits clone --filter=sparse <url>
 dits sparse add <paths>
 
-# VFS optimization
+# VFS optimization — 🚧 roadmap (no `dits vfs` command; VFS is internal)
 dits vfs mount /mnt/project --cache-size 100GB --prefetch-metadata
 
 # Cleanup
 dits gc --aggressive
-dits cache prune --older-than 30d
+dits cache-stats   # inspect cache (no `dits cache prune`)
 ```
 
 ### Performance Benchmarks
@@ -860,10 +868,10 @@ dd if=/dev/urandom of=test-1gb.bin bs=1M count=1024
 # Benchmark add
 time dits add test-1gb.bin
 
-# Benchmark push
+# Benchmark push — 🚧 roadmap (prints a placeholder, transfers no data today)
 time dits push
 
-# Benchmark clone
+# Benchmark clone — 🚧 roadmap for network clone; local-path clone works today
 time dits clone <url> test-clone
 
 # Clean up
