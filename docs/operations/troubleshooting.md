@@ -19,26 +19,25 @@ This guide covers common problems encountered when using Dits and how to resolve
 ### Health Check Commands
 
 ```bash
-# Check CLI version and connection
+# Check CLI version and local repo status
 dits --version
 dits status
 
-# Check server health
-curl -s https://api.dits.io/health | jq
-
-# Check detailed diagnostics
-dits doctor
-
-# Verify authentication
-dits whoami
+# Inspect repository / cache (local)
+dits repo-stats
+dits cache-stats
+dits fsck
 ```
+
+> 🚧 The `dits doctor`, `dits whoami`, `dits update`, `dits cache clear`, and any
+> `curl https://api.dits.io/...` server-health checks **do not exist** — there is no `dits
+> doctor`/`whoami`/`update` command and no hosted API. Use the local commands above.
 
 ### Common First Steps
 
-1. **Update to latest version**: `dits update`
-2. **Check network connectivity**: `ping api.dits.io`
-3. **Verify credentials**: `dits login`
-4. **Clear local cache**: `dits cache clear`
+1. **Update**: reinstall via `npm install -g @byronwade/dits` or rebuild from source
+2. **Verify repository integrity**: `dits fsck`
+3. **Inspect local cache**: `dits cache-stats`
 
 ---
 
@@ -707,8 +706,8 @@ dits config set cache.l1-enabled false
 ### Community Resources
 
 - **Documentation**: docs.dits.io
-- **GitHub Issues**: github.com/dits-io/dits/issues
-- **Discussions**: github.com/dits-io/dits/discussions
+- **GitHub Issues**: github.com/byronwade/dits/issues
+- **Discussions**: github.com/byronwade/dits/discussions
 - **Discord**: discord.gg/dits
 
 ### Reporting Bugs

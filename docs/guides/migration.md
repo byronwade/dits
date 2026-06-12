@@ -49,8 +49,8 @@ dits --version
 # Check available disk space
 df -h .
 
-# Verify network connectivity (if using DitsHub)
-dits remote test https://ditshub.com
+# Note: networked remotes are roadmap. Migrating into a LOCAL Dits repo works today;
+# publishing to a remote (and any `dits remote test`) is a future step.
 ```
 
 ### Estimate Migration Time
@@ -131,23 +131,26 @@ cp -r ../project-git/* .
 dits config user.name "Your Name"
 dits config user.email "your.email@example.com"
 
-# Add remote (if using DitsHub or self-hosted)
-dits remote add origin https://ditshub.com/your-org/your-project
+# Add remote (remote config only today; networked publish is roadmap)
+# 🚧 roadmap — networked remotes are not implemented yet
+dits remote add origin https://example.com/your-org/your-project
 ```
 
 ### Step 5: Import with History (Optional)
 
-If you want to preserve your Git commit history:
+> 🚧 **Roadmap — not implemented yet.** There is no `dits migrate` command. History-import
+> tooling is planned. Today, import files into a fresh Dits repo (Step 6) — this captures
+> your current working tree, not the upstream commit history.
 
 ```bash
-# Full history import (may take a while for large repos)
+# (Roadmap) Full history import (may take a while for large repos)
 dits migrate from-git \
     --source . \
     --lfs \
     --history \
     --branch-filter "main,develop,release/*"
 
-# Or import only specific branches
+# (Roadmap) Or import only specific branches
 dits migrate from-git \
     --source . \
     --lfs \
@@ -169,9 +172,12 @@ dits commit -m "Initial import from Git LFS"
 
 ### Step 7: Push to Remote
 
+> 🚧 **Roadmap — not implemented yet.** `push` prints a placeholder and transfers no data
+> today; networked remotes are a future step. Your migrated repo is fully usable locally.
+
 ```bash
 # Push all content
-dits push -u origin main
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Verify push completed
 dits remote show origin
@@ -195,6 +201,10 @@ dits repo-stats
 ```
 
 ### Complete Migration Script
+
+> 🚧 The `dits remote add` / `dits push` steps in this script are **roadmap** — they print
+> placeholders and transfer no data today. The local migration (`init`, `add`, `commit`,
+> `fsck`) works now.
 
 ```bash
 #!/bin/bash

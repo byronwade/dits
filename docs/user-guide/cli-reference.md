@@ -2,7 +2,7 @@
 
 **Project:** Dits (Data-Intensive Version Control System)
 **Document:** Complete Command Line Interface Reference
-**Version:** 1.0
+**Product version:** 0.1.5
 
 ---
 
@@ -11,9 +11,11 @@
 > **Dits is a local-first CLI.** All local version-control, MP4, FACR/photo, locking,
 > encryption, audit, freeze/thaw, and dependency commands work today. **Networked
 > collaboration is on the roadmap and not implemented yet:** `push`, `pull`, `fetch`,
-> `sync`, network `clone`, `remote`/`serve`, and all `p2p` subcommands currently print
+> `sync`, network `clone`, `remote`, and all `p2p` subcommands currently print
 > placeholders and do **not** transfer data. `clone` works only against a **local
-> filesystem path**. See [Roadmap — Not Implemented Yet](#roadmap--not-implemented-yet).
+> filesystem path**. (The embedded object server `dits serve` and `dits fetch-objects`
+> **do** work locally — see those commands.) See
+> [Roadmap — Not Implemented Yet](#roadmap--not-implemented-yet).
 >
 > **Note:** There is **no** `auth` or `vfs` command. `mount` / `unmount` exist **only when
 > the CLI is built with the `fuser` feature** (`cargo build --features fuser`, requires
@@ -165,7 +167,6 @@ These commands exist in the CLI but are **scaffolding only**: they print placeho
 | `sync` | 🚧 | Bi-directional sync — placeholder, no data transfer |
 | `clone` (network) | 🚧 | Only **local-path** clone works; network clone is roadmap |
 | `remote` | 🚧 | Manages remote config/scaffolding only |
-| `serve` | 🚧 | Remote server scaffolding only |
 | `p2p` (all subcommands) | 🚧 | Wormhole P2P — scaffolding; no transfer, NAT traversal, or QUIC |
 | QUIC delta transport | 🚧 | Designed, not implemented |
 
@@ -187,7 +188,8 @@ Dits provides a git-like command line interface optimized for large binary files
 - **Collaboration** - lock, unlock, locks
 - **Configuration** - config
 - **Utilities** - gc, fsck, help
-- **Roadmap (not implemented)** - push, pull, fetch, sync, remote, serve, p2p
+- **Roadmap (not implemented)** - push, pull, fetch, sync, remote, p2p
+- **Local object server** - serve, fetch-objects (content-addressed, work today)
 
 ---
 
@@ -682,9 +684,12 @@ dits sync --dry-run
 
 ### `dits serve`
 
-Start a remote server for this repository.
+Start the embedded per-repo object server for this repository.
 
-> 🚧 **Roadmap — not implemented yet.** Scaffolding only; does not serve live transfers.
+> ✅ **Implemented (local).** `serve` runs a real axum/TCP server that serves
+> content-addressed object bytes from a repo. Another repo can pull missing objects from a
+> `dits serve` `http://` URL via `dits fetch-objects` (content-addressed, incremental). This
+> is **not** the roadmap networked `push`/`pull` porcelain — those still transfer no data.
 
 ```
 dits serve [OPTIONS]
