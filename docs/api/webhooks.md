@@ -1,6 +1,6 @@
 # Webhook & Event System
 
-> ⚠️ Some of this describes a quarantined/legacy backend design (now in legacy/backend-crates), not the current local-first architecture. The live architecture is the modules under apps/cli/src/ (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands).
+> 🚧 **Roadmap — not yet available.** There is **no webhooks service** and **no hosted API** in Dits today. Dits ships as a local-first CLI (`npm install -g @byronwade/dits`); `api.dits.io` does **not** exist and no SDK packages (`@dits/sdk`, `dits-sdk`, `dits-go`) are published. This describes the quarantined/legacy backend design (now in `legacy/backend-crates`) and intended/planned behavior. The live architecture is the modules under `apps/cli/src/` (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands). See `docs/STATUS.md`.
 
 Real-time notifications and event-driven integrations.
 

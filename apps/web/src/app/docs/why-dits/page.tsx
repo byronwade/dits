@@ -326,7 +326,16 @@ export default function WhyDitsPage() {
       </div>
 
       <h2>Performance Comparison</h2>
-      <p>Real-world performance differences for a 10GB video file:</p>
+      <p>Performance differences for a 10GB video file:</p>
+
+      <Callout type="important" title="Transfer figures are projected; storage dedup is real">
+        The deduplication and storage figures below reflect what Dits does
+        locally today. The <em>upload</em>, <em>download</em>, and <em>clone</em>{" "}
+        rows (including &ldquo;50,000x faster&rdquo;) describe networked delta
+        transfer, which is <strong>roadmap</strong> &mdash; not implemented yet.
+        Treat those as <strong>projected</strong>. See the{" "}
+        <Link href="/docs/roadmap">roadmap</Link>.
+      </Callout>
 
       <div className="not-prose overflow-x-auto my-6">
         <Table>
@@ -349,7 +358,7 @@ export default function WhyDitsPage() {
               <TableCell>Small edit (1MB change)</TableCell>
               <TableCell>10GB upload</TableCell>
               <TableCell>~200KB upload</TableCell>
-              <TableCell className="text-brand font-semibold">50,000x faster</TableCell>
+              <TableCell className="text-brand font-semibold">50,000x faster (projected)</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>Clone repository</TableCell>

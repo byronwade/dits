@@ -1,6 +1,6 @@
 # Error Code Reference
 
-> ⚠️ Some of this describes a quarantined/legacy backend design (now in legacy/backend-crates), not the current local-first architecture. The live architecture is the modules under apps/cli/src/ (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands).
+> 🚧 **Roadmap — not yet available.** Many of these codes belong to a hosted/networked service that does **not** exist yet. Dits ships today as a local-first CLI (`npm install -g @byronwade/dits`); there is **no hosted REST API** (`api.dits.io` does not exist) and **no published SDK packages** (`@dits/sdk`, `dits-sdk`, `dits-go` are 404). This describes the quarantined/legacy backend design (now in `legacy/backend-crates`) and intended/planned behavior. The live architecture is the modules under `apps/cli/src/` (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands). See `docs/STATUS.md`.
 
 Complete catalog of error codes, causes, and resolution steps.
 
@@ -25,10 +25,10 @@ Dits uses structured error codes across all APIs and clients. Every error includ
     "code": "E1001",
     "message": "Authentication required",
     "details": {
-      "realm": "api.dits.io",
+      "realm": "api.example.com",
       "schemes": ["Bearer"]
     },
-    "doc_url": "https://docs.dits.io/errors/E1001",
+    "doc_url": "https://docs.example.com/errors/E1001",
     "request_id": "req_abc123xyz"
   }
 }
@@ -158,7 +158,7 @@ dits login --mfa
 
 **Cause**: User account has been suspended.
 
-**Resolution**: Contact support@dits.io
+**Resolution**: Contact support@example.com
 
 ---
 
@@ -818,7 +818,7 @@ dits gc --prune-old
 
 **Cause**: Backend storage temporarily unavailable.
 
-**Resolution**: Retry after a few minutes. Check status.dits.io for outages.
+**Resolution**: Retry after a few minutes. Check the (planned) status page for outages.
 
 ---
 
@@ -936,7 +936,7 @@ dits update
 **Resolution**:
 ```bash
 # Check DNS
-nslookup api.dits.io
+nslookup api.example.com
 
 # Try direct IP (if known)
 ```
@@ -961,7 +961,7 @@ nslookup api.dits.io
 
 **Cause**: Server temporarily unavailable.
 
-**Resolution**: Check status.dits.io and retry later.
+**Resolution**: Check the (planned) status page and retry later.
 
 ---
 
@@ -990,7 +990,7 @@ nslookup api.dits.io
 
 **Cause**: Server undergoing maintenance.
 
-**Resolution**: Check status.dits.io for maintenance window.
+**Resolution**: Check the (planned) status page for maintenance window.
 
 ---
 
@@ -1104,7 +1104,7 @@ dits help error E3003
 dits support-bundle
 
 # Contact support
-# Email: support@dits.io
+# Email: support@example.com
 # Include: Error code, request_id, support bundle
 ```
 

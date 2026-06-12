@@ -548,7 +548,7 @@ dits commit -m "Picture lock - v1.0"
 dits tag picture-lock-v1
 
 # Share with colorist
-dits p2p share
+dits p2p share   # 🚧 roadmap — scaffolding, prints a placeholder, transfers no data today
 # → Join code: ABC-123
 ```
 
@@ -556,7 +556,7 @@ dits p2p share
 
 ```bash
 # Clone the project
-dits p2p connect ABC-123 ./documentary
+dits p2p connect ABC-123 ./documentary   # 🚧 roadmap — scaffolding, no data transfer today
 cd documentary
 
 # Create color branch
@@ -569,7 +569,7 @@ dits add 03_PROJECT/Documentary.drp
 dits commit -m "Color: Complete first pass grade"
 
 # Share back
-dits p2p share
+dits p2p share   # 🚧 roadmap — scaffolding, no data transfer today
 # → Join code: DEF-456
 ```
 
@@ -577,8 +577,8 @@ dits p2p share
 
 ```bash
 # Fetch colorist's work
-dits remote add colorist dits://peer/DEF-456
-dits fetch colorist
+dits remote add colorist dits://peer/DEF-456   # remote config only
+dits fetch colorist                            # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Review and merge
 dits merge colorist/grade/pass-1
@@ -914,7 +914,7 @@ dits add 06_EXPORTS/reviews/
 dits commit -m "Export review v1"
 
 # Share with client (they only see exports)
-# Could use DitsHub sharing or simple file share
+# 🚧 Hosted sharing (Ditshub) is roadmap; today use a simple local/file share
 
 # Receive feedback, make changes
 dits commit -m "Apply client feedback: shorten intro, add B-roll"
@@ -931,11 +931,11 @@ dits tag final-approved
 dits init
 dits add .
 dits commit -m "Initial project"
-dits p2p share
+dits p2p share   # 🚧 roadmap — scaffolding, no data transfer today
 # → ABC-123
 
 # Editor B: Clone project
-dits p2p connect ABC-123 ./project
+dits p2p connect ABC-123 ./project   # 🚧 roadmap — scaffolding, no data transfer today
 cd project
 
 # Editor A: Works on scenes 1-3
@@ -951,7 +951,7 @@ dits switch edit/scenes-4-6
 dits commit -m "Complete scenes 4-6"
 
 # Merge: Editor A merges B's work
-dits fetch origin
+dits fetch origin   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits merge origin/edit/scenes-4-6
 
 # Resolve any conflicts
@@ -986,19 +986,20 @@ For collaborators in different locations:
 
 ```bash
 # Option 1: P2P direct (both online at same time)
-dits p2p share  # Person A
-dits p2p connect ABC-123 ./project  # Person B
+dits p2p share  # Person A   # 🚧 roadmap — scaffolding, no data transfer today
+dits p2p connect ABC-123 ./project  # Person B   # 🚧 roadmap
 
-# Option 2: DitsHub cloud (async collaboration)
-dits remote add origin https://ditshub.com/team/project
-dits push -u origin main
+# Option 2: Hosted cloud (async collaboration)
+# 🚧 roadmap — hosted cloud and networked remotes are not implemented yet.
+dits remote add origin https://example.com/team/project   # remote config only
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Person B clones
-dits clone https://ditshub.com/team/project
+dits clone https://example.com/team/project   # 🚧 roadmap — network clone not implemented; local-path clone works
 
 # Regular sync
-dits pull  # Get others' changes
-dits push  # Share your changes
+dits pull  # Get others' changes   # 🚧 roadmap — no data transfer today
+dits push  # Share your changes    # 🚧 roadmap — no data transfer today
 ```
 
 ---
@@ -1020,7 +1021,7 @@ dits add 06_EXPORTS/for_color/
 dits commit -m "Color handoff: Reference with TC, EDL, and XML"
 
 # Share project
-dits p2p share
+dits p2p share   # 🚧 roadmap — scaffolding, no data transfer today
 # → ABC-123
 ```
 
@@ -1028,7 +1029,7 @@ dits p2p share
 
 ```bash
 # Clone project
-dits p2p connect ABC-123 ./project
+dits p2p connect ABC-123 ./project   # 🚧 roadmap — scaffolding, no data transfer today
 cd project
 
 # Create color branch
@@ -1047,14 +1048,14 @@ dits add 06_EXPORTS/from_color/
 dits commit -m "Color: Export graded ProRes masters"
 
 # Push back
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 **Editor receives color:**
 
 ```bash
 # Fetch colorist's work
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Review color branch
 dits diff picture-lock-v1 color/grade-v1
@@ -1097,7 +1098,7 @@ dits tag audio-handoff-v1
 
 ```bash
 # Get project
-dits clone [project-url]
+dits clone [project-url]   # 🚧 roadmap — network clone not implemented; local-path clone works
 dits branch audio/mix-v1
 dits switch audio/mix-v1
 
@@ -1106,13 +1107,13 @@ dits switch audio/mix-v1
 # Export stems and final mix
 dits add 04_AUDIO/mix/
 dits commit -m "Audio: Final mix - stereo and 5.1 stems"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 **Editor receives audio:**
 
 ```bash
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits merge audio/mix-v1
 
 # Import mix back to NLE
