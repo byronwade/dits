@@ -2,11 +2,12 @@
 
 A typical day using Dits for video editing, from sync to commit.
 
-> 🚧 **Roadmap notice.** This workflow shows team-sync steps (`dits pull` / `dits push`)
-> and a `dits mount` / `dits unmount` virtual drive. **None of these are implemented yet:**
-> networked sync prints placeholders and transfers no data, and there is **no `dits mount`
-> / `dits unmount`** command (the VFS is internal). Today, work locally with `add`,
-> `commit`, `checkout`, and the FACR/photo commands.
+> 🚧 **Roadmap notice.** This workflow shows team-sync steps (`dits pull` / `dits push`).
+> **Networked sync is not implemented yet:** it prints placeholders and transfers no data.
+> The `dits mount` / `dits unmount` virtual drive **does** exist but requires a build with
+> `--features fuser` (absent from the default npm build) and is **local-only** (no
+> remote/on-demand hydration). Today, work locally with `add`, `commit`, `checkout`, and
+> the FACR/photo commands.
 
 ---
 
@@ -15,9 +16,9 @@ A typical day using Dits for video editing, from sync to commit.
 ### 1. Sync with Team
 ```bash
 cd /path/to/project
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 
-# Output:
+# Output (illustrative — future networked behavior):
 # Fetching from origin...
 # Downloading: 12 chunks (45.2 MB)
 # Updating abc1234..def5678
@@ -80,9 +81,14 @@ open footage/scene01.mov  # macOS
 start footage/scene01.mov  # Windows
 ```
 
-**Option B: Virtual Filesystem (Recommended)**
+**Option B: Virtual Filesystem (local-only, feature-gated)**
+
+> 🚧 `dits mount` / `dits unmount` require a build with `--features fuser` (absent from the
+> default npm build) and are **local-only** — there is no remote/on-demand hydration. On a
+> default install, use direct file access (Option A).
+
 ```bash
-# Mount repository
+# Mount repository (requires --features fuser build; local-only)
 dits mount /Volumes/project
 
 # Open NLE project from mounted drive
@@ -148,9 +154,9 @@ dits commit -m "Fix audio sync in scene 1, adjust cuts at 01:23:45"
 
 ### 11. Push Changes
 ```bash
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
-# Output:
+# Output (illustrative — future networked behavior):
 # Pushing to origin...
 # Computing delta: 249 chunks to transfer
 # Uploading: 100% (249/249), 15.8 MB | 12.3 MB/s
@@ -173,14 +179,14 @@ dits unlock footage/scene01.mov
 ### 13. Final Sync
 ```bash
 # Pull any changes from teammates
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Push any uncommitted work
 dits status
 # If changes exist:
 dits add -A
 dits commit -m "WIP: Scene 2 rough cut"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### 14. Unlock All Your Files
@@ -197,6 +203,7 @@ dits unlock --all
 
 ### 15. Unmount Virtual Filesystem
 ```bash
+# (Requires the --features fuser build; local-only)
 dits unmount /Volumes/project
 ```
 
@@ -206,7 +213,7 @@ dits unmount /Volumes/project
 
 ```bash
 # Start of day
-dits pull                          # Get latest changes
+dits pull                          # Get latest changes  🚧 roadmap (no data transfer today)
 dits log --oneline -5              # See recent activity
 dits locks                         # Check who's working on what
 
@@ -219,13 +226,13 @@ dits diff                          # See detailed changes
 dits add <files>                   # Stage changes
 dits commit -m "message"           # Save snapshot
 
-# Sharing
+# Sharing  🚧 roadmap — these print placeholders and transfer no data today
 dits push                          # Upload changes
 dits pull                          # Download changes
 
 # End of day
 dits unlock --all                  # Release all locks
-dits unmount <path>                # Unmount virtual FS
+dits unmount <path>                # Unmount virtual FS (--features fuser build; local-only)
 ```
 
 ---
@@ -269,7 +276,7 @@ dits unlock footage/scene01.mov
 
 ### 4. Use Virtual Filesystem for Large Projects
 ```bash
-# For projects with hundreds of files:
+# For projects with hundreds of files (requires --features fuser build; local-only):
 dits mount /Volumes/project
 
 # Benefits:

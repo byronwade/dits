@@ -239,11 +239,14 @@ ln -s /Volumes/SSD/dits-repos/project/.dits .dits
 
 ### Storage Backend Options
 
+> 🚧 Local storage is the only backend today. S3-compatible / remote backends are
+> **roadmap** — the settings below have no effect yet.
+
 ```bash
-# Local storage (default)
+# Local storage (default, works today)
 dits config storage.backend local
 
-# S3-compatible storage (self-hosted)
+# (Roadmap) S3-compatible storage (self-hosted)
 dits config storage.backend s3
 dits config storage.s3.endpoint https://s3.example.com
 dits config storage.s3.bucket my-dits-bucket
