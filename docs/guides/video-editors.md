@@ -1156,7 +1156,7 @@ dits tag vfx/001-plate-v1
 **VFX artist works:**
 
 ```bash
-dits clone [project]
+dits clone [project]   # 🚧 roadmap — network clone not implemented; local-path clone works
 dits branch vfx/shot-001
 dits switch vfx/shot-001
 
@@ -1170,13 +1170,13 @@ dits commit -m "VFX 001: Sky replacement - first pass"
 dits commit -m "VFX 001: Adjust color match"
 dits commit -m "VFX 001: Add lens flare, final approved"
 dits tag vfx/001-final
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 **Editor receives VFX:**
 
 ```bash
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits merge vfx/shot-001
 
 # Relink VFX render in timeline
@@ -1356,11 +1356,12 @@ dits tag delivery-broadcast -m "Final broadcast master"
 
 ```bash
 # Set up remote backup
-dits remote add backup s3://my-bucket/projects/commercial-2025
-dits push backup main
+# 🚧 roadmap — networked/remote backup is not implemented yet (push transfers no data today).
+dits remote add backup s3://my-bucket/projects/commercial-2025   # remote config only
+dits push backup main   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Automated backup (add to cron/launchd)
-dits push backup --all
+dits push backup --all   # 🚧 roadmap — no data transfer today
 ```
 
 ### Project Archiving
@@ -1392,7 +1393,7 @@ dits archive verify ./commercial-2025-archive.dits
 dits archive extract ./commercial-2025-archive.dits ./restored-project
 
 # Or clone from backup
-dits clone s3://my-bucket/archives/commercial-2025
+dits clone s3://my-bucket/archives/commercial-2025   # 🚧 roadmap — network clone not implemented; local-path clone works
 ```
 
 ---
@@ -1402,11 +1403,10 @@ dits clone s3://my-bucket/archives/commercial-2025
 ### Optimizing Large Projects
 
 ```bash
-# Use shallow clones for quick access
+# 🚧 roadmap — network clone (and --depth / --filter) is not implemented yet;
+# only local-path clone works today.
 dits clone --depth 1 [url]  # Only latest version
-
-# Partial clone (metadata only)
-dits clone --filter blob:none [url]
+dits clone --filter blob:none [url]  # Partial clone (metadata only)
 
 # Enable caching
 dits config cache.size 50GB
@@ -1428,6 +1428,9 @@ dits config --global cache.path /Volumes/FastSSD/dits-cache
 ```
 
 ### Network Optimization
+
+> 🚧 Roadmap — networked transfer is not implemented yet, so these `transfer.*`
+> settings have no effect today.
 
 ```bash
 # For slow connections
@@ -1488,6 +1491,9 @@ dits status --ignored
 
 ### "Clone/pull is very slow"
 
+> 🚧 Roadmap — network clone/pull and `p2p ping` are not implemented yet (no data
+> transfer today). The commands below are the intended future workflow.
+
 ```bash
 # Use shallow clone
 dits clone --depth 1 [url]
@@ -1496,7 +1502,7 @@ dits clone --depth 1 [url]
 dits clone --filter blob:none [url]
 
 # Check network
-dits p2p ping [target]
+dits p2p ping [target]   # 🚧 roadmap — scaffolding, no data transfer today
 
 # Use local cache
 dits config cache.size 100GB

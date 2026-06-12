@@ -92,7 +92,7 @@ const glossaryTerms = [
     },
     {
         term: "P2P (Peer-to-Peer)",
-        definition: "Direct synchronization between machines without requiring a central server. Dits uses libp2p for decentralized collaboration.",
+        definition: "Planned direct synchronization between machines without a central server. P2P in Dits is currently scaffolding (it prints placeholders and transfers no data) — see the roadmap.",
     },
     {
         term: "Proxy File",

@@ -203,7 +203,7 @@ All webhook payloads include:
     "name": "johndoe",
     "email": "john@example.com"
   },
-  "compare_url": "https://dits.io/myorg/project/compare/a1b2c3d4...f6e5d4c3"
+  "compare_url": "https://example.com/myorg/project/compare/a1b2c3d4...f6e5d4c3"
 }
 ```
 
@@ -602,7 +602,7 @@ data: {"lock":{"path":"video.mov","owner":"johndoe"}}
 ### WebSocket
 
 ```javascript
-const ws = new WebSocket('wss://api.dits.io/v1/ws');
+const ws = new WebSocket('wss://api.example.com/v1/ws');
 
 ws.onopen = () => {
     // Subscribe to events
