@@ -150,8 +150,9 @@ dits add .
 dits commit -m "Initial repository setup with existing projects"
 
 # Connect to remote (optional)
-dits remote add origin https://ditshub.com/janesmithphoto/portfolio
-dits push -u origin main
+# 🚧 roadmap — networked remotes are not implemented yet (remote config only)
+dits remote add origin https://example.com/janesmithphoto/portfolio
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ---
@@ -249,14 +250,16 @@ dits config lock.patterns "*.psd,*.tiff,*.psb"
 dits config lock.required true
 
 # Push to remote
-dits remote add origin https://ditshub.com/studio/projects
-dits push -u origin main
+# 🚧 roadmap — networked remotes are not implemented yet (remote config only)
+dits remote add origin https://example.com/studio/projects
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 **Team Member Setup:**
 ```bash
 # Each team member clones
-dits clone https://ditshub.com/studio/projects
+# 🚧 roadmap — network clone not implemented; only a local-path clone works today
+dits clone https://example.com/studio/projects
 cd projects
 
 # Configure identity
@@ -278,13 +281,13 @@ cd 2024-06-20_Product_Shoot
 # Commit and push
 dits add .
 dits commit -m "Import: Product shoot for ABC Brand - 150 photos"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 **Retoucher Begins Work:**
 ```bash
 # Get latest
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Lock files before editing
 dits lock product_hero.psd --reason "Retouching hero image"

@@ -152,7 +152,7 @@ export default function RoadmapPage() {
                             <Badge variant="outline">In Progress</Badge>
                         </div>
                         <p className="text-sm text-muted-foreground m-0">
-                            Direct peer-to-peer syncing without central server using libp2p.
+                            Direct peer-to-peer syncing without a central server. Currently scaffolding — prints placeholders and transfers no data yet.
                         </p>
                     </div>
                 </div>

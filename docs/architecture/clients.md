@@ -1,6 +1,6 @@
 # Multi-Platform Client Strategy
 
-> ⚠️ Some of this describes a quarantined/legacy backend design (now in legacy/backend-crates), not the current local-first architecture. The live architecture is the modules under apps/cli/src/ (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands).
+> ⚠️ **Not the current product.** This documents a planned multi-platform client strategy and the quarantined backend service (see `legacy/backend-crates`) those clients would talk to. Dits today is a local-first CLI — there is no hosted API, no web/mobile clients, and no networked sync (`push`/`pull`/`fetch`/network `clone` print placeholders and transfer no data). The live architecture is the modules under `apps/cli/src/` (core, store, mp4, facr, segment, proxy, vfs, security, metadata, dependency, lifecycle, commands). Retained as design reference. See `docs/STATUS.md`.
 
 **Project:** Dits (Data-Intensive Version Control System)
 **Document:** Mobile, Web, and Desktop Client Architecture

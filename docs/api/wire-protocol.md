@@ -1,6 +1,6 @@
 # Wire Protocol Specification
 
-> ⚠️ Design spec for a transport that is NOT yet implemented.
+> 🚧 **Roadmap — not yet available.** This is a design spec for a networked transport that is **NOT implemented**. Dits ships today as a local-first CLI (`npm install -g @byronwade/dits`); networked `push`/`pull`/`fetch`/`sync` are not built, there is **no hosted REST API** (`api.dits.io` does not exist), and **no SDK packages** (`@dits/sdk`, `dits-sdk`, `dits-go`) are published. A QUIC delta engine exists in-tree and is tested, but it is not wired into the porcelain. This document describes intended/planned design, not a shipped product. Source: `github.com/byronwade/dits`. See `docs/STATUS.md`.
 
 Binary protocol for efficient chunk transfer over QUIC.
 
