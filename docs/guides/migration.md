@@ -507,7 +507,7 @@ Changelist: @head
 Migration date: $(date)"
 
 # Push
-dits push -u origin main
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Step 6: Set Up Locking for Team
@@ -540,7 +540,7 @@ dits lock file.psd                  # Lock file (optional)
 # ... make changes ...
 dits add file.psd
 dits commit -m "Description"
-dits push
+dits push                           # 🚧 roadmap — prints a placeholder, transfers no data today
 dits unlock file.psd                # Release lock
 ```
 
@@ -618,8 +618,9 @@ dits init
 dits config user.name "Your Name"
 dits config user.email "you@example.com"
 
-# Add remote
-dits remote add origin https://ditshub.com/username/myproject
+# Add remote (remote config only today; networked publish is roadmap)
+# 🚧 roadmap — networked remotes are not implemented yet
+dits remote add origin https://example.com/username/myproject
 ```
 
 ### Step 5: Add and Commit
@@ -639,10 +640,13 @@ Date: $(date)
 File count: $(find . -type f ! -path './.dits/*' | wc -l)"
 
 # Push to remote
-dits push -u origin main
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Step 6: Verify and Share
+
+> 🚧 Sharing over a network — P2P and remote clone — is **roadmap** (no data transfer
+> today). `fsck` / `repo-stats` work locally now.
 
 ```bash
 # Verify migration
@@ -651,13 +655,12 @@ dits repo-stats
 
 # Share with team using P2P or remote
 # Option A: P2P sharing
-dits p2p share
+dits p2p share   # 🚧 roadmap — scaffolding, no data transfer today
 # Share the join code with team members
 
 # Option B: Remote cloning
 # Team members run:
-dits clone https://ditshub.com/username/myproject
-```
+dits clone https://example.com/username/myproject   # 🚧 roadmap — network clone not implemented; local-path clone works
 
 ### Step 7: Update Your Workflow
 
