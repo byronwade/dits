@@ -1349,10 +1349,8 @@ dits archive --format dir -o /export/path HEAD
 
 If you encounter issues during migration:
 
-- **Documentation**: [docs.dits.io/migration](https://docs.dits.io/migration)
-- **Discord**: [discord.gg/dits](https://discord.gg/dits) - #migration-help channel
-- **GitHub Issues**: [github.com/dits-io/dits/issues](https://github.com/dits-io/dits/issues)
-- **Email Support**: migration-support@dits.io (for enterprise customers)
+- **Source & issues**: [github.com/byronwade/dits](https://github.com/byronwade/dits)
+- **Install**: `npm install -g @byronwade/dits` (or bun/pnpm), or build from source with `cargo build --release`
 
 ### Common Migration Issues
 
@@ -1364,7 +1362,7 @@ dits config transfer.timeout 30m
 # Or split large files across multiple commits
 find . -name "*.mp4" -size +10G | head -5 | xargs dits add
 dits commit -m "Add large files (batch 1)"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 **"Disk full" during import:**
@@ -1373,7 +1371,8 @@ dits push
 dits init /Volumes/External/project
 
 # Or use sparse checkout
-dits clone --filter=sparse https://ditshub.com/org/project
+# 🚧 roadmap — network clone (and --filter) not implemented; only local-path clone works today
+dits clone --filter=sparse https://example.com/org/project
 ```
 
 **"Permission denied" errors:**

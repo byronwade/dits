@@ -451,15 +451,15 @@ progress = "bar"
 verbose = false
 date_format = "%Y-%m-%d %H:%M:%S"
 
-# Remote configurations
+# Remote configurations (🚧 roadmap — recorded only; no networked transfer today)
 [remote.origin]
-url = "https://dits.io/myorg/myrepo"
+url = "https://example.com/myorg/myrepo"
 fetch = ["+refs/heads/*:refs/remotes/origin/*"]
 push = ["refs/heads/*:refs/heads/*"]
 prune = true
 
 [remote.backup]
-url = "https://backup.dits.io/myorg/myrepo"
+url = "https://backup.example.com/myorg/myrepo"
 fetch = ["+refs/heads/main:refs/remotes/backup/main"]
 
 # Branch configurations

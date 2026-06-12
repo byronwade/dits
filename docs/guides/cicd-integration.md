@@ -25,16 +25,20 @@ Dits integrates with popular CI/CD platforms to enable automated workflows for m
 
 ## Authentication in CI
 
+> 🚧 **Roadmap — not implemented yet.** There is no `dits-admin` binary, no hosted service,
+> no API tokens, and no service accounts. The real auth commands (`login` / `logout` /
+> `change-password`) manage **local encryption keys** only. The setup below is aspirational.
+
 ### Service Account Setup
 
 ```bash
-# Create a service account (admin)
+# (Roadmap) Create a service account (admin)
 dits-admin user create \
     --email ci@example.com \
     --name "CI Service Account" \
     --type service
 
-# Generate API token
+# (Roadmap) Generate API token
 dits-admin token create \
     --user ci@example.com \
     --name "CI Token" \
@@ -85,20 +89,20 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Dits
-        uses: dits-io/setup-dits@v1
-        with:
-          version: 'latest'
+        # No official setup action is published yet — install from npm.
+        run: npm install -g @byronwade/dits
 
       - name: Configure Dits
         run: |
-          dits config set user.name "GitHub Actions"
-          dits config set user.email "actions@github.com"
+          dits config user.name "GitHub Actions"
+          dits config user.email "actions@github.com"
 
       - name: Pull latest assets
         env:
           DITS_TOKEN: ${{ secrets.DITS_TOKEN }}
         run: |
-          dits clone https://dits.io/myorg/assets assets
+          # 🚧 roadmap — network clone/pull not implemented; transfers no data today
+          dits clone https://example.com/myorg/assets assets
           cd assets
           dits pull
 
