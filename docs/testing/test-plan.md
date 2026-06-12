@@ -4,9 +4,9 @@
 
 DITS includes the most extensive testing framework ever built for a version control system, inspired by Git's legendary testing approach but dramatically expanded to cover every conceivable aspect of creative workflows.
 
-**120+ Automated Tests** across 80+ file formats with Git-based recovery validation.
+**469 passing tests** across 80+ file formats with Git-based recovery validation.
 
-> Note: The canonical suite is the ~123 tests of the local-first CLI engine at `apps/cli`
+> Note: The canonical suite is the 469 passing tests of the local-first CLI engine at `apps/cli`
 > (shell-script TAP tests plus in-crate unit tests). Rust examples below that use
 > `TestServer`/remote/`clone`-over-network illustrate the **quarantined** backend
 > (`legacy/backend-crates`) and are retained as design reference, not the canonical suite.
@@ -15,7 +15,7 @@ DITS includes the most extensive testing framework ever built for a version cont
 
 ## Testing Philosophy
 
-1. **Test Everything**: 120+ tests covering 80+ file formats, Git recovery, cross-platform compatibility
+1. **Test Everything**: 469 passing tests covering 80+ file formats, Git recovery, cross-platform compatibility
 2. **Git-Inspired Framework**: Shell script tests with TAP output, just like Git's legendary testing
 3. **Creative Asset Focus**: 3D models, game assets, video, audio, materials, custom formats
 4. **Recovery Validation**: Full Git operations (diff/merge/blame/reset) on binary creative assets
@@ -30,7 +30,7 @@ DITS includes the most extensive testing framework ever built for a version cont
 
 ### 1. Git-Inspired Shell Script Tests (Primary Framework)
 
-**120+ Comprehensive Tests** using Git's legendary shell script testing approach:
+**469 passing tests** using Git's legendary shell script testing approach:
 
 #### **Basic Tests** (`t/basic/` - Foundation)
 - Core CLI functionality and repository lifecycle
