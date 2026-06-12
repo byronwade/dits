@@ -22,36 +22,41 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # macOS
+          # macOS  (macos-latest is arm64; darwin-x64 runs via Rosetta 2)
           - target: aarch64-apple-darwin
             os: macos-latest
             platform: darwin-arm64
+            smoke: true
           - target: x86_64-apple-darwin
             os: macos-latest
             platform: darwin-x64
+            smoke: true
 
           # Linux (glibc)
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
             platform: linux-x64
+            smoke: true
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-latest
             platform: linux-arm64
-            cross: true
+            cross: true   # cross-built; runtime-tested locally via Docker/QEMU
 
           # Linux (musl)
           - target: x86_64-unknown-linux-musl
             os: ubuntu-latest
             platform: linux-x64-musl
+            smoke: true    # static musl binary runs on the glibc host
           - target: aarch64-unknown-linux-musl
             os: ubuntu-latest
             platform: linux-arm64-musl
-            cross: true
+            cross: true   # cross-built; runtime-tested locally via Docker/QEMU
 
-          # Windows
+          # Windows  (x64 runner; win32-arm64 is cross-built, no native runner)
           - target: x86_64-pc-windows-msvc
             os: windows-latest
             platform: win32-x64
+            smoke: true
           - target: aarch64-pc-windows-msvc
             os: windows-latest
             platform: win32-arm64
@@ -87,6 +92,18 @@ jobs:
           # installed). No-op on macOS/Linux.
           RUSTFLAGS: ${{ runner.os == 'Windows' && '-C target-feature=+crt-static' || '' }}
         run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Smoke test (run the freshly built binary)
+        if: matrix.smoke
+        shell: bash
+        run: |
+          BIN="apps/cli/target/${{ matrix.target }}/release/dits"
+          if [ "${{ runner.os }}" = "Windows" ]; then BIN="${BIN}.exe"; fi
+          echo "Running: $BIN --version"
+          "$BIN" --version
+          echo "Running: $BIN --help"
+          "$BIN" --help > /dev/null
+          echo "✓ ${{ matrix.platform }} binary executes"
 
       - name: Strip binary (Unix)
         if: runner.os != 'Windows'
