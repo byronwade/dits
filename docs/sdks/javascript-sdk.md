@@ -931,5 +931,5 @@ processRepos([
 - Full TypeScript support with type definitions
 - Tree-shakeable for optimal bundle size
 - Works in Node.js, browsers, and Web Workers
-- Full documentation at docs.dits.io/sdk/javascript
+- Planned package (not yet published); source at github.com/byronwade/dits
 

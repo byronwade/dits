@@ -297,7 +297,7 @@ dits lock product_hero.psd --reason "Retouching hero image"
 # Save progress
 dits add product_hero.psd
 dits commit -m "Retouch: Hero image - skin cleanup, color grade"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Release lock when done
 dits unlock product_hero.psd
@@ -338,7 +338,7 @@ dits merge client-review-v1
 dits tag final-approved
 
 # Push everything
-dits push --all
+dits push --all   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ---
@@ -784,21 +784,23 @@ dits repo-stats
 dits gc
 
 # For very large repositories, use sparse checkout
-dits clone --filter=sparse https://ditshub.com/studio/archive
+# 🚧 roadmap — network clone (and --filter) is not implemented; only local-path clone works today
+dits clone --filter=sparse https://example.com/studio/archive
 dits sparse add 2024/Johnson_Family/
 
 # Only download what you need
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Backup Strategy
 
 ```bash
 # Remote backup (primary)
-dits remote add backup https://backup.ditshub.com/studio/projects
-dits push backup main
+# 🚧 roadmap — networked remote backup is not implemented yet (remote config only; push transfers no data today)
+dits remote add backup https://example.com/studio/projects
+dits push backup main   # 🚧 roadmap — prints a placeholder, transfers no data today
 
-# Local backup to external drive
+# Local backup to external drive (local-path clone works today)
 dits clone --mirror . /Volumes/Backup/studio-mirror
 
 # Verify backups

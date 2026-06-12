@@ -1,14 +1,15 @@
 # Python SDK Guide
 
-> ⚠️ These SDKs target a quarantined/legacy backend service (legacy/backend-crates), not the current local-first CLI. Retained as design reference.
+> 🚧 **Roadmap — not yet available.** There is **no published `dits-py` / `dits-sdk` PyPI package** (it 404s) and **no hosted REST API** (`api.dits.io` does not exist). Dits ships today as a local-first CLI — install the CLI with `npm install -g @byronwade/dits` (or bun/pnpm). This SDK targeted a quarantined/legacy backend service (`legacy/backend-crates`) and is retained as illustrative/planned design only, not a shipped product. Source: `github.com/byronwade/dits`. See `docs/STATUS.md`.
 
-Complete guide to using the Dits Python SDK.
+Complete guide to using the planned Dits Python SDK.
 
 ---
 
 ## Installation
 
 ```bash
+# (package not yet published — these names 404 today)
 pip install dits-py
 
 # With async support
@@ -80,7 +81,7 @@ from dits import Client, ClientConfig
 from datetime import timedelta
 
 client = Client(
-    endpoint="https://api.dits.io",
+    endpoint="https://api.example.com",  # roadmap: no hosted API exists yet
     token="dits_token_xxx",
     config=ClientConfig(
         timeout=timedelta(seconds=30),
@@ -195,7 +196,7 @@ repo = Repository.open("./project")
 repo = Repository.init("./new-project")
 
 # Add remote
-repo.remote_add("origin", "https://dits.io/myorg/new-project")
+repo.remote_add("origin", "https://example.com/myorg/new-project")  # roadmap placeholder
 ```
 
 ### Repository Info
@@ -716,7 +717,7 @@ def process_repo(repo: Repository) -> None:
 ```python
 # settings.py
 DITS_TOKEN = os.environ.get("DITS_TOKEN")
-DITS_ENDPOINT = os.environ.get("DITS_ENDPOINT", "https://api.dits.io")
+DITS_ENDPOINT = os.environ.get("DITS_ENDPOINT", "https://api.example.com")  # roadmap placeholder
 
 # views.py
 from django.conf import settings
@@ -847,4 +848,4 @@ if __name__ == "__main__":
 - Sync and async APIs available
 - Fully typed with type hints
 - Thread-safe for concurrent use
-- Full documentation at dits-py.readthedocs.io
+- Planned package (not yet published); source at github.com/byronwade/dits

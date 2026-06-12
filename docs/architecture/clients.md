@@ -859,7 +859,7 @@ class DitsSyncClient {
     private handlers: Map<string, Function>;
 
     connect(repoId: string) {
-        this.ws = new WebSocket(`wss://api.dits.dev/ws/repos/${repoId}`);
+        this.ws = new WebSocket(`wss://api.example.com/ws/repos/${repoId}`);
 
         this.ws.onmessage = (event) => {
             const message = JSON.parse(event.data);

@@ -1,6 +1,6 @@
 # Frequently Asked Questions (FAQ)
 
-Find answers to the most common questions about Dits. If you can't find what you're looking for, check our [Troubleshooting Guide](common-issues.md) or reach out on [Discord](https://discord.gg/dits).
+Find answers to the most common questions about Dits. If you can't find what you're looking for, check our [Troubleshooting Guide](common-issues.md) or open an issue on [GitHub](https://github.com/byronwade/dits/issues).
 
 > 🚧 **Roadmap notice.** Answers describing **P2P sharing**, **remotes**, **network clone**,
 > and **TLS/QUIC transport** refer to **roadmap** features that are **not implemented yet** —
@@ -66,7 +66,7 @@ Dits excels with:
 
 ### Is Dits open source?
 
-The core Dits CLI and engine are open source under the MIT license. DitsHub (the hosted service) is a commercial offering built on the open-source core.
+Yes. The Dits CLI and engine are open source under a dual **Apache-2.0 OR MIT** license. (A hosted service is roadmap and does not exist yet.)
 
 ---
 
@@ -74,29 +74,22 @@ The core Dits CLI and engine are open source under the MIT license. DitsHub (the
 
 ### How do I install Dits?
 
-**macOS (Homebrew):**
+**npm (or bun/pnpm):**
 ```bash
-brew tap dits-io/dits
-brew install dits
-```
-
-**Linux:**
-```bash
-curl -fsSL https://dits.io/install.sh | bash
-```
-
-**Windows:**
-```powershell
-choco install dits
-# or download from GitHub releases
+npm install -g @byronwade/dits
+# or: bun add -g @byronwade/dits
+# or: pnpm add -g @byronwade/dits
 ```
 
 **From source:**
 ```bash
-git clone https://github.com/dits-io/dits.git
+git clone https://github.com/byronwade/dits.git
 cd dits
 cargo build --release
 ```
+
+> Homebrew taps, `cargo install dits`, apt/dnf/choco/scoop/winget, and a curl install
+> script are **not yet published** — use npm or build from source.
 
 ### How do I create my first repository?
 
