@@ -1235,8 +1235,9 @@ dits facr-trim 01_RAW/scene01.mov.facr.json --start 240 --end 1200
 dits facr-checkout 01_RAW/scene01.mov.facr.trimmed.json scene01_trim.mov
 ```
 
-> ℹ️ There is no `dits mount` command. The virtual filesystem is internal to checkout and
-> proxies; you work with reconstructed files via `facr-checkout` / `checkout`.
+> ℹ️ `dits mount` exists but requires a build with `--features fuser` (absent from the
+> default npm build) and is local-only. For frame-level work you generally use reconstructed
+> files via `facr-checkout` / `checkout` rather than the mount.
 
 ---
 
@@ -1579,7 +1580,7 @@ dits facr-trim scene01.mov.facr.json --start 0 --end 500  # Non-destructive trim
 # Utilities
 dits gc                              # Clean up
 dits fsck                            # Verify integrity
-# (No `dits mount` / `dits unmount` — the VFS is internal)
+# (dits mount / unmount require a --features fuser build and are local-only)
 ```
 
 ---
