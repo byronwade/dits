@@ -259,7 +259,7 @@ For repositories with many files you don't need:
 
 ```bash
 # Clone without content
-dits clone --filter=sparse https://ditshub.com/org/huge-project
+dits clone --filter=sparse https://example.com/org/huge-project
 
 # Add only paths you need
 dits sparse add Assets/Characters/Hero/
@@ -278,10 +278,10 @@ Clone with limited history:
 
 ```bash
 # Shallow clone (recent commits only)
-dits clone --depth 10 https://ditshub.com/org/project
+dits clone --depth 10 https://example.com/org/project
 
 # Clone without blobs (download on demand)
-dits clone --filter=blob:none https://ditshub.com/org/project
+dits clone --filter=blob:none https://example.com/org/project
 
 # Deepen later if needed
 dits fetch --deepen 100
@@ -385,15 +385,15 @@ dits inspect-file video.mp4
 
 ```bash
 # Parallel chunk downloads
-dits clone -j 16 https://ditshub.com/org/project
+dits clone -j 16 https://example.com/org/project
 
 # Sparse clone for immediate use
-dits clone --filter=sparse https://ditshub.com/org/project
+dits clone --filter=sparse https://example.com/org/project
 cd project
 dits sparse add path/you/need/
 
 # Shallow clone (limited history)
-dits clone --depth 1 https://ditshub.com/org/project
+dits clone --depth 1 https://example.com/org/project
 ```
 
 ### Faster Pushes
@@ -796,7 +796,7 @@ dits remote test origin
 dits config transfer.jobs 16
 
 # 2. Check network
-ping ditshub.com
+ping example.com
 speedtest-cli
 
 # 3. Use QUIC protocol
