@@ -138,13 +138,14 @@ jobs:
           sudo apt-get install -y ffmpeg
 
       - name: Install Dits
-        uses: dits-io/setup-dits@v1
+        run: npm install -g @byronwade/dits
 
       - name: Clone repository
         env:
           DITS_TOKEN: ${{ secrets.DITS_TOKEN }}
         run: |
-          dits clone https://dits.io/myorg/project .
+          # 🚧 roadmap — network clone not implemented; transfers no data today
+          dits clone https://example.com/myorg/project .
 
       - name: Generate proxies
         run: |
@@ -160,7 +161,7 @@ jobs:
         run: |
           dits add *_proxy.mp4
           dits commit -m "Generate proxies [ci skip]"
-          dits push
+          dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Dits Webhook Trigger
@@ -211,19 +212,20 @@ stages:
   - deploy
 
 variables:
-  DITS_ENDPOINT: https://dits.io
+  DITS_ENDPOINT: https://example.com
   DITS_REPO: myorg/project
 
 .dits-setup:
   before_script:
-    - curl -sSL https://get.dits.io | sh
-    - dits config set user.name "GitLab CI"
-    - dits config set user.email "ci@gitlab.com"
+    - npm install -g @byronwade/dits
+    - dits config user.name "GitLab CI"
+    - dits config user.email "ci@gitlab.com"
 
 sync-assets:
   stage: sync
   extends: .dits-setup
   script:
+    # 🚧 roadmap — network clone/pull not implemented; transfers no data today
     - dits clone $DITS_ENDPOINT/$DITS_REPO assets
     - cd assets && dits pull
     - dits fsck
@@ -257,7 +259,7 @@ deploy-assets:
     - cd assets
     - dits add *.mp4
     - dits commit -m "Process media from CI"
-    - dits push
+    - dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
   only:
     - main
 ```
@@ -273,12 +275,13 @@ sync-large-assets:
     GIT_STRATEGY: none
   script:
     # Use sparse checkout for specific files
+    # 🚧 roadmap — remote config only; pull transfers no data today
     - dits init
     - dits remote add origin $DITS_ENDPOINT/$DITS_REPO
-    - dits config set checkout.sparse true
+    - dits config checkout.sparse true
     - dits sparse add "*.prproj"
     - dits sparse add "Media/*.mov"
-    - dits pull
+    - dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
   timeout: 2h  # Extended timeout for large files
 ```
 
@@ -295,22 +298,23 @@ pipeline {
 
     environment {
         DITS_TOKEN = credentials('dits-token')
-        DITS_REPO = 'https://dits.io/myorg/project'
+        DITS_REPO = 'https://example.com/myorg/project'
     }
 
     stages {
         stage('Setup') {
             steps {
                 sh '''
-                    curl -sSL https://get.dits.io | sh
-                    dits config set user.name "Jenkins"
-                    dits config set user.email "jenkins@example.com"
+                    npm install -g @byronwade/dits
+                    dits config user.name "Jenkins"
+                    dits config user.email "jenkins@example.com"
                 '''
             }
         }
 
         stage('Sync') {
             steps {
+                // 🚧 roadmap — network clone/pull not implemented; transfers no data today
                 sh '''
                     dits clone $DITS_REPO assets
                     cd assets && dits pull
@@ -336,6 +340,7 @@ pipeline {
                 branch 'main'
             }
             steps {
+                // 🚧 roadmap — `dits push` prints a placeholder, transfers no data today
                 sh '''
                     cd assets
                     dits add .
@@ -366,12 +371,14 @@ def call(Map config = [:]) {
     def repo = config.repo
 
     withEnv(["DITS_TOKEN=${token}"]) {
+        // 🚧 roadmap — network clone/pull not implemented; transfers no data today
         sh "dits clone ${repo} ."
         sh "dits pull"
     }
 }
 
 def push(String message) {
+    // 🚧 roadmap — `dits push` prints a placeholder, transfers no data today
     sh """
         dits add .
         dits commit -m "${message}"
@@ -386,7 +393,7 @@ pipeline {
     stages {
         stage('Sync') {
             steps {
-                dits repo: 'https://dits.io/org/project'
+                dits repo: 'https://example.com/org/project'
             }
         }
         stage('Push') {
