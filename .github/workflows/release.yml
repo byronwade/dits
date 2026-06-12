@@ -97,7 +97,7 @@ jobs:
         if: matrix.smoke
         shell: bash
         run: |
-          BIN="apps/cli/target/${{ matrix.target }}/release/dits"
+          BIN="target/${{ matrix.target }}/release/dits"
           if [ "${{ runner.os }}" = "Windows" ]; then BIN="${BIN}.exe"; fi
           echo "Running: $BIN --version"
           "$BIN" --version
@@ -107,16 +107,16 @@ jobs:
 
       - name: Strip binary (Unix)
         if: runner.os != 'Windows'
-        run: strip apps/cli/target/${{ matrix.target }}/release/dits || true
+        run: strip target/${{ matrix.target }}/release/dits || true
 
       - name: Prepare artifacts
         shell: bash
         run: |
           mkdir -p artifacts/${{ matrix.platform }}
           if [ "${{ runner.os }}" = "Windows" ]; then
-            cp apps/cli/target/${{ matrix.target }}/release/dits.exe artifacts/${{ matrix.platform }}/
+            cp target/${{ matrix.target }}/release/dits.exe artifacts/${{ matrix.platform }}/
           else
-            cp apps/cli/target/${{ matrix.target }}/release/dits artifacts/${{ matrix.platform }}/
+            cp target/${{ matrix.target }}/release/dits artifacts/${{ matrix.platform }}/
             chmod +x artifacts/${{ matrix.platform }}/dits
           fi
 
