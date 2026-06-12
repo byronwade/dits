@@ -42,14 +42,20 @@ roadmap badges) but it **didn't reach every file**. Only 14 docs reference STATU
 | FACR frame engine (FFmpeg) | **Works**, labeled experimental | `apps/cli/src/facr` |
 | Local-path `clone`/`push` | **Works** against a filesystem path | `repo/push.rs:110+` |
 | VFS / `mount` | **Real but gated** behind `--features fuser`; local-only; **not in default build** | `Cargo.toml:114`, `vfs/mod.rs:41` |
-| Network `push`/`pull`/`fetch`/`sync` | **Stub** — prints placeholder, transfers no data | `repo/push.rs:63-64` ("…implemented in Phase 4b") |
-| Network `clone` | **Not implemented** (local path only) | STATUS.md; `repo/clone.rs` |
-| `remote`/`serve` | Config/scaffolding only | STATUS.md |
-| P2P (share/connect/cache/ping/mount) | **Scaffolding** — prints fake success | `advanced/p2p.rs:196,238` |
-| QUIC delta transport | **Designed, not implemented** | STATUS.md |
-| Hosted backend / REST API / SDK / Ditshub | **Does not exist** (quarantined to `legacy/`) | `Cargo.toml` exclude; STATUS.md |
+| Network `push`/`pull`/`sync` | **Stub** — prints placeholder, transfers no data | `repo/push.rs:63-64` ("…implemented in Phase 4b") |
+| Network `fetch` | **Partial** — opens an HTTP socket, GETs `/refs`, but discards body / downloads no objects | `repo/fetch.rs:58-78` |
+| Network `clone` | **Not implemented** (`bail!`, local path only) | `repo/clone.rs:24-28` |
+| `serve` (embedded remote server) | **Real** axum/TCP server serving object bytes, wired into CLI | `store/remote_server.rs:169`, `main.rs:1668` |
+| P2P (share/connect/cache/ping/mount) | **Scaffolding** — prints fake success; `ping` prints **fabricated** latency | `advanced/p2p.rs:196,238,371-377` |
+| QUIC delta transport | **Implemented & tested** as a library + `stream-demo` command; **not wired** into push/pull | `stream/quic_origin.rs:102,244,284` |
+| Streaming | **HLS works** (ffmpeg encode, VMAF/CRF ladder, AES-128); **no DASH** | `stream/encode.rs`, `vmaf.rs`, `playlist.rs` |
+| Encryption (AES-256-GCM, Argon2id) | **Real crypto** | `security/encryption.rs:60`, `security/keys.rs:138` |
+| Test suite | **469 passing** (0 failed, 3 ignored) | `cargo test --workspace` |
+| Hosted backend / REST API / SDK / Ditshub | **Does not exist** (quarantined to `legacy/`, largely stubbed) | `Cargo.toml` exclude; `legacy/README.md` |
 
-`docs/STATUS.md` is **accurate** and should remain the single source of truth.
+`docs/STATUS.md` is **mostly accurate on the roadmap items** and should remain the single
+source of truth — **but it has itself drifted in 4 places** (see "Drift in the other
+direction" below). It needs a refresh, not replacement.
 
 ---
 
@@ -149,9 +155,11 @@ Four different "canonical" parameter sets are stated:
 Pick the values actually used in `packages/dits-core` / `apps/cli/src/core/chunk.rs` and
 make every doc cite them.
 
-### H7. Count drift
-README "60+ Commands" vs cli-reference "80+ subcommands"; "120+ Tests" vs STATUS "~123".
-Minor, but pick one source.
+### H7. Count drift — test count is badly *understated*
+README "60+ Commands" vs cli-reference "80+ subcommands". More importantly, the test count
+is stale in the *conservative* direction: README "120+ Tests" and STATUS.md "~123" vs.
+**actual 469 passing** (`cargo test --workspace`). This is the rare case where the docs
+*undersell* — fix it upward.
 
 ---
 
@@ -189,9 +197,41 @@ status (mitigated only by the file-level legacy banner).
 
 ---
 
+## Drift in the *other* direction — STATUS.md & README *undersell* the product
+
+The honesty pass over-corrected in a few spots. These are claims the product can safely make
+but doesn't, plus one place where STATUS.md is now wrong:
+
+- **Test count** (STATUS.md:8/:51 "~123", README "120+ Tests"): actual **469 passing**
+  (`cargo test --workspace`). ~4× undercount.
+- **`serve`** (STATUS.md:37 "config/scaffolding only"): `store/remote_server.rs:169` is a
+  real axum server serving object bytes, wired at `main.rs:1668`. It works.
+- **QUIC delta transport** (STATUS.md:40 "designed, not implemented"): `stream/quic_origin.rs`
+  is a real, **tested** QUIC implementation (`push_delta` sends only missing segments;
+  round-trip test at :284), exposed via `stream-demo`. It's real — just not wired into the
+  `push`/`pull` porcelain.
+- **FUSE mount** is fully implemented (`vfs/fuse.rs:334` `impl Filesystem`, real `mount2`/
+  `fusermount -u`), only feature-gated off. STATUS.md's "what works today" omits it entirely,
+  so a reader would assume the code doesn't exist.
+- Genuinely working and **safe to market more confidently:** real AES-256-GCM + Argon2id
+  encryption, the FFmpeg-backed FACR pipeline, HLS streaming with a VMAF/CRF ladder, and the
+  469-test suite.
+
+**Action:** refresh STATUS.md (test count, `serve`, QUIC, mention FUSE-is-implemented-but-
+gated) so it stays the trustworthy anchor every other doc points to.
+
+## One genuinely alarming item — fabricated runtime output
+
+`apps/cli/src/commands/advanced/p2p.rs:371-377`: the `dits p2p ping` command prints
+**hardcoded fake network stats** — `"64 bytes from 192.168.1.100 ... time=12.3ms"` — with no
+real network activity. This isn't roadmap labeling; it's a command that actively lies to the
+user about a connection that doesn't exist. Either make it real, have it error
+("not implemented"), or remove it. (Same pattern, lower stakes: `p2p share`/`connect` print
+"✅ Repository shared/Connected successfully!" without transferring anything.)
+
 ## What's already good (keep / use as the template)
 
-- **`docs/STATUS.md`** — accurate single source of truth.
+- **`docs/STATUS.md`** — accurate on roadmap items and the right idea; needs the 4 fixes above.
 - **`docs/user-guide/cli-reference.md`** — exemplary: per-section roadmap banners, correctly
   marks `auth`/`vfs`/network ops as absent/roadmap, gates `mount` behind `--features fuser`.
 - **Live web `/benchmarks`** — data-driven from a reproducible run; no hardcoded numbers.
@@ -215,4 +255,7 @@ status (mitigated only by the file-level legacy banner).
 4. **One version, one license, one GitHub org, one FastCDC param set** (H2, H4, H5, H6).
 5. **Strip invented CLI commands** (H3).
 6. **Reframe `revolutionary-vision.md` / `unique-positioning.md`** as internal strategy (M1).
-7. **Add a STATUS.md pointer** to the top of every user-facing doc so future drift is caught.
+7. **Fix the fabricated `dits p2p ping` output** — make it real, error out, or remove it.
+8. **Refresh STATUS.md** in the 4 under-claiming spots (test count → 469, `serve` is real,
+   QUIC is implemented, FUSE is implemented-but-gated) so it stays the trustworthy anchor.
+9. **Add a STATUS.md pointer** to the top of every user-facing doc so future drift is caught.
