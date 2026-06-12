@@ -1,0 +1,57 @@
+name: Verify Binaries
+
+# Runtime-validates the platform binaries bundled in a published @byronwade/dits
+# npm release by actually executing each one. The Linux binaries (including the
+# cross-compiled arm64 targets that have no native CI runner) are run under QEMU
+# emulation via Docker. macOS and win32-x64 are smoke-tested in the release
+# build itself; win32-arm64 has no runner anywhere and stays build-validated.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Published npm version to verify (e.g. 0.1.6)'
+        required: true
+        default: '0.1.6'
+
+jobs:
+  verify-linux:
+    name: Verify Linux binaries (QEMU)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up QEMU (multi-arch emulation)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Download the published package
+        run: |
+          npm pack "@byronwade/dits@${{ inputs.version }}"
+          tar -xzf byronwade-dits-*.tgz
+          echo "Bundled binaries:"
+          ls -1 package/bin
+
+      - name: Execute each Linux binary under its native runtime
+        run: |
+          set -euo pipefail
+          fail=0
+          # platform-dir | docker --platform | image | extra setup for dynamic (glibc) deps
+          test_one() {
+            local dir="$1" plat="$2" image="$3" setup="${4:-true}"
+            echo "::group::$dir ($plat, $image)"
+            if docker run --rm --platform "$plat" \
+                 -v "$PWD/package/bin/$dir:/b:ro" "$image" \
+                 sh -c "$setup; /b/dits --version && /b/dits --help >/dev/null && echo OK"; then
+              echo "[OK] $dir executes under $plat"
+            else
+              echo "[FAIL] $dir FAILED under $plat"; fail=1
+            fi
+            echo "::endgroup::"
+          }
+          # musl builds are static -> run directly on Alpine
+          test_one linux-x64-musl   linux/amd64 alpine:3.20
+          test_one linux-arm64-musl linux/arm64 alpine:3.20
+          # glibc builds are dynamic -> Debian, install libssl3/ca-certificates first
+          GLIBC_SETUP="apt-get update -qq && apt-get install -y -qq libssl3 ca-certificates >/dev/null 2>&1 || true"
+          test_one linux-x64        linux/amd64 debian:bookworm-slim "$GLIBC_SETUP"
+          test_one linux-arm64      linux/arm64 debian:bookworm-slim "$GLIBC_SETUP"
+          echo "-----"
+          if [ "$fail" -ne 0 ]; then echo "One or more binaries failed to execute"; exit 1; fi
+          echo "All Linux binaries executed successfully."
