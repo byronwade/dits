@@ -415,8 +415,10 @@ pipeline {
 # .circleci/config.yml
 version: 2.1
 
+# 🚧 roadmap — no official CircleCI orb is published yet; install from npm instead
+# (npm install -g @byronwade/dits). The orb usage below is aspirational.
 orbs:
-  dits: dits-io/dits@1.0
+  dits: byronwade/dits@1.0
 
 executors:
   media-processor:
@@ -474,7 +476,7 @@ jobs:
             cd assets
             dits add *.mp4
             dits commit -m "Processed by CircleCI"
-            dits push
+            dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 workflows:
   process-workflow:
@@ -521,15 +523,16 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
-                curl -sSL https://get.dits.io | sh
-                dits config set user.name "Azure DevOps"
-                dits config set user.email "azdo@example.com"
+                npm install -g @byronwade/dits
+                dits config user.name "Azure DevOps"
+                dits config user.email "azdo@example.com"
 
           - task: Bash@3
             displayName: 'Clone repository'
             inputs:
               targetType: 'inline'
               script: |
+                # 🚧 roadmap — network clone/pull not implemented; transfers no data today
                 dits clone $(DITS_REPO) assets
                 cd assets && dits pull
             env:
@@ -572,7 +575,7 @@ stages:
                       cd $(Pipeline.Workspace)/dits-assets
                       dits add .
                       dits commit -m "Azure DevOps Build $(Build.BuildNumber)"
-                      dits push
+                      dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
                   env:
                     DITS_TOKEN: $(DITS_TOKEN)
 ```
