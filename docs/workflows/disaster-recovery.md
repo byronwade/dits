@@ -430,7 +430,7 @@ dits push --force-with-lease   # 🚧 roadmap — prints a placeholder, transfer
 ## Prevention Checklist
 
 - [ ] Commit frequently (at least daily)
-- [ ] Push to remote after important work
+- [ ] Push to remote after important work (🚧 roadmap — keep local mirrors/backups today)
 - [ ] Tag milestones (`dits tag before-client-feedback`)
 - [ ] Run `dits fsck` periodically
 - [ ] Don't use `--force` without team communication
@@ -444,8 +444,9 @@ dits push --force-with-lease   # 🚧 roadmap — prints a placeholder, transfer
 If all else fails:
 1. **Don't panic** - Dits keeps extensive history
 2. **Stop making changes** - Preserve current state
-3. **Check remote** - `dits fetch` to see if remote is healthy
-4. **Contact support** - support@dits.dev with:
+3. **Check local recovery first** - `dits reflog`, `dits fsck`, and local tags/mirrors are
+   the reliable path (`dits fetch` from a network remote is roadmap — no data transfer today)
+4. **File an issue** - github.com/byronwade/dits with:
    - Output of `dits fsck`
    - Output of `dits log -10`
    - Description of what happened
