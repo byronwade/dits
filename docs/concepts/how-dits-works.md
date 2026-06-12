@@ -23,7 +23,7 @@ A user-friendly explanation of the technology behind Dits and why it's so effici
 
 ## The Big Picture
 
-Dits is a version control system designed for large binary files—video, audio, images, 3D models, and game assets. It provides Git-like workflow (add, commit, push, pull) but with technology optimized for files that Git struggles with.
+Dits is a version control system designed for large binary files—video, audio, images, 3D models, and game assets. It provides a Git-like workflow optimized for files that Git struggles with. Local operations (`add`, `commit`, `branch`, `merge`, local-path `clone`) work today; networked `push`/`pull`/`fetch`/`sync` are roadmap and transfer no data yet (see the roadmap notes below).
 
 ### Core Principles
 

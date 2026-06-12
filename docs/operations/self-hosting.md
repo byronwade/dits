@@ -1013,10 +1013,10 @@ curl https://dits.example.com/ready
 
 ## Support
 
-- Documentation: docs.dits.io
-- Community Forum: community.dits.io
-- Enterprise Support: support@dits.io
-- GitHub Issues: github.com/dits-io/dits/issues
+- Documentation: see `docs/` in the repository
+- Community Forum: planned (not available yet)
+- Support: planned (not available yet)
+- GitHub Issues: github.com/byronwade/dits/issues
 
 ---
 

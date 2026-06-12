@@ -38,6 +38,19 @@ Insert X:  [X][AAA|A][BBB|B][CCC|C][DDD|D]  ← Only first chunk changes
 
 ## Algorithm Parameters
 
+> **Canonical named profiles (as implemented in `apps/cli`).** Cite these by name rather
+> than quoting a single set of numbers:
+>
+> | Profile | min | avg | max |
+> |---------|-----|-----|-----|
+> | `default` | 16 KB | 64 KB | 256 KB |
+> | `media` | 64 KB | 256 KB | 1 MB |
+> | `large` | 256 KB | 1 MB | 4 MB |
+> | `project` | 4 KB | 16 KB | 64 KB |
+>
+> The illustrative Rust below predates these names; treat the exact constants in the code
+> samples as illustrative and defer to the table above for current values.
+
 ```rust
 /// FastCDC configuration
 pub struct FastCdcConfig {

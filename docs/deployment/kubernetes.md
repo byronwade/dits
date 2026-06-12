@@ -1,6 +1,6 @@
 # Kubernetes Deployment Guide
 
-> ⚠️ Describes the quarantined backend service (see legacy/backend-crates), NOT the current product. Dits today is a local-first CLI — no server or database required. This doc is retained as design reference for a future hosted offering.
+> ⚠️ **Not the current product.** This documents the quarantined backend service (see `legacy/backend-crates`) and/or a planned hosted offering. Dits today is a local-first CLI — no server, database, or networked sync exists yet (`push`/`pull`/`fetch`/network `clone` print placeholders and transfer no data). The container images, Helm charts, and API endpoints below do not exist. Retained as design reference. See `docs/STATUS.md`.
 
 Complete guide to deploying Dits on Kubernetes.
 
@@ -28,7 +28,7 @@ Dits can be deployed on Kubernetes using Helm charts or raw manifests. This guid
 ### Add Repository
 
 ```bash
-helm repo add dits https://charts.dits.io
+helm repo add dits https://charts.example.com
 helm repo update
 ```
 

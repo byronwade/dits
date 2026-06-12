@@ -502,10 +502,10 @@ Project/
 cd Assets
 dits add character_rig.ma
 dits commit -m "Rig: Fixed IK stretch"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Animators get update
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 # Reload references in Maya to see changes
 ```
 
@@ -520,7 +520,7 @@ dits lock Assets/character_rig.ma --reason "Updating IK system"
 # Release when done
 dits add Assets/character_rig.ma
 dits commit -m "Rig: Updated IK system with stretch"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits unlock Assets/character_rig.ma
 ```
 
@@ -658,11 +658,11 @@ dits lock hda/fx_explosion.hda --reason "Adding controls"
 
 dits add hda/fx_explosion.hda
 dits commit -m "HDA: fx_explosion - added turbulence control"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits unlock hda/fx_explosion.hda
 
 # Team members get the update
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 # Reload HDAs in Houdini
 ```
 
@@ -744,7 +744,7 @@ ZBrush files deduplicate extremely well:
 
 ```bash
 # Start of sculpt session
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # After significant progress
 # Save in ZBrush (Ctrl+S)
@@ -759,7 +759,7 @@ dits commit -m "Sculpt: Secondary forms - wrinkles, pores"
 # End of day
 dits add .
 dits commit -m "Sculpt: End of day progress"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### GoZ Integration

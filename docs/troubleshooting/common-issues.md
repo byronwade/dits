@@ -808,16 +808,17 @@ dits config core.videoAware true
 **Solution:**
 
 ```bash
-# Check your access level
-dits auth status
+# Check your access level (roadmap — `dits auth` does not exist)
+# dits auth status
 
 # Contact repository owner for access
 
-# Verify remote URL is correct
+# Verify remote URL is correct (config only — no transfer today)
 dits remote -v
 
-# Try cloning with explicit credentials
-dits clone https://user:token@ditshub.com/org/repo
+# Try cloning with explicit credentials (roadmap — network clone not implemented;
+# only local-path clone works today)
+dits clone https://user:token@example.com/org/repo
 ```
 
 ---
@@ -835,8 +836,8 @@ ssh-add -l
 # Add your key
 ssh-add ~/.ssh/id_ed25519
 
-# Test connection
-ssh -T dits@ditshub.com
+# Test connection (roadmap — remote SSH auth not implemented)
+ssh -T dits@example.com
 
 # Check SSH config
 cat ~/.ssh/config
@@ -993,15 +994,16 @@ git config --system core.longpaths true
 
 If your issue isn't covered here:
 
-1. **Search existing issues**: [github.com/dits-io/dits/issues](https://github.com/dits-io/dits/issues)
-2. **Check Discord**: [discord.gg/dits](https://discord.gg/dits)
-3. **Run diagnostics**: `dits doctor` (outputs diagnostic information)
-4. **Collect logs**: `DITS_DEBUG=1 dits [command] 2>&1 | tee dits-debug.log`
-5. **Open an issue**: Include the diagnostic output and debug logs
+1. **Search existing issues**: [github.com/byronwade/dits/issues](https://github.com/byronwade/dits/issues)
+2. **Collect logs**: `DITS_DEBUG=1 dits [command] 2>&1 | tee dits-debug.log`
+3. **Open an issue**: Include the debug logs
+
+> Note: there is **no `dits doctor` command** (earlier drafts invented it). For diagnostics,
+> use `dits --version`, `dits fsck`, and `DITS_DEBUG=1` debug logs.
 
 When reporting issues, please include:
 - Operating system and version
 - Dits version (`dits --version`)
-- Output of `dits doctor`
+- Output of `dits fsck` (for repository issues)
 - Steps to reproduce the issue
 - Any error messages (full text)
