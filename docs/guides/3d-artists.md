@@ -68,7 +68,7 @@ project/
 ✅ Material support: PBR, Substance Painter, custom shaders
 ✅ Animation workflows: FBX animation, Blender actions, custom rigs
 ✅ Git operations on 3D: Diff, merge, blame work on binary assets
-✅ Tested with 80+ formats: Production-ready reliability
+✅ Tested with 80+ formats (alpha software — expect rough edges)
 ✅ 1TB+ repository support: Handles massive 3D projects
 ✅ Render farm integration: Versioned render jobs and outputs
 ```
@@ -296,8 +296,9 @@ dits add .
 dits commit -m "Initial project setup: Character rig pipeline"
 
 # Connect to remote
-dits remote add origin https://ditshub.com/studio/character-project
-dits push -u origin main
+# 🚧 roadmap — networked remotes are not implemented yet (remote config only)
+dits remote add origin https://example.com/studio/character-project
+dits push -u origin main   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ---
@@ -357,7 +358,7 @@ Renders/*.exr
 cd ~/Projects/BlenderProject
 
 # Get latest (if working with remote)
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Work on your file...
 # Save in Blender (Ctrl+S)
@@ -370,7 +371,7 @@ dits commit -m "Model: Added hero character base mesh"
 # After completing a milestone:
 dits add .
 dits commit -m "Model: Hero character topology cleanup"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 ```
 
 ### Workflow: Linked Libraries
@@ -392,7 +393,7 @@ dits add Library/characters.blend
 dits commit -m "Character: Updated hero materials"
 
 # Team members update
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Their linked assets update automatically when they reload
 ```

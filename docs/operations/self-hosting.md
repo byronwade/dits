@@ -1,6 +1,6 @@
 # Self-Hosting Guide
 
-> ⚠️ Describes the quarantined backend service (see legacy/backend-crates), NOT the current product. Dits today is a local-first CLI — no server or database required. This doc is retained as design reference for a future hosted offering.
+> ⚠️ **Not the current product.** This documents the quarantined backend service (see `legacy/backend-crates`) and/or a planned hosted offering. Dits today is a local-first CLI — no server, database, or networked sync exists yet (`push`/`pull`/`fetch`/network `clone` print placeholders and transfer no data). There is nothing to self-host: the images, Helm charts, and API endpoints below do not exist. Retained as design reference. See `docs/STATUS.md`.
 
 Deploy and operate Dits on your own infrastructure.
 
@@ -155,7 +155,7 @@ spec:
     spec:
       containers:
         - name: dits-server
-          image: dits/server:1.0.0
+          image: dits/server:0.1.5
           ports:
             - containerPort: 8080
             - containerPort: 8443
@@ -294,7 +294,7 @@ spec:
 
 ```bash
 # Add Dits Helm repository
-helm repo add dits https://charts.dits.io
+helm repo add dits https://charts.example.com
 helm repo update
 
 # Install with custom values
@@ -310,7 +310,7 @@ replicaCount: 3
 
 image:
   repository: dits/server
-  tag: "1.0.0"
+  tag: "0.1.5"
   pullPolicy: IfNotPresent
 
 ingress:
@@ -853,7 +853,7 @@ groups:
 ```bash
 # Update image tag
 kubectl set image deployment/dits-server \
-    dits-server=dits/server:1.1.0 \
+    dits-server=dits/server:0.1.5 \
     -n dits
 
 # Watch rollout

@@ -339,18 +339,16 @@ dits config --global http.proxy http://proxy.company.com:8080
 **Solution:**
 
 ```bash
-# Login
-dits auth login
+# Roadmap (not implemented). The intended commands would be:
+#   dits auth login
+#   dits auth login --token YOUR_TOKEN
+#   dits auth status
+# None of these exist today. Real auth is local-only:
+#   dits login / dits logout / dits change-password (encryption keys)
 
-# Or use token
-dits auth login --token YOUR_TOKEN
-
-# Check auth status
-dits auth status
-
-# If using SSH, check keys
+# If using SSH, check keys (roadmap)
 ssh-add -l
-ssh -T dits@ditshub.com
+ssh -T dits@example.com
 ```
 
 ---
@@ -789,15 +787,16 @@ dits config core.videoAware true
 **Solution:**
 
 ```bash
-# Re-login
-dits auth logout
-dits auth login
-
-# Check token status
-dits auth status
-
-# Generate new token
-dits auth token --create
+# Roadmap (not implemented) — `dits auth` does not exist.
+# Intended future flow:
+#   dits auth logout
+#   dits auth login
+#   dits auth status
+#   dits auth token --create
+# Today, manage LOCAL encryption keys instead:
+#   dits logout
+#   dits login
+#   dits change-password
 ```
 
 ---

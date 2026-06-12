@@ -1136,7 +1136,7 @@ dits commit -m "Mobile textures: 512x512 compressed"
 ### Recommended Branch Structure
 
 ```
-main                     # Production-ready
+main                     # Stable / release branch
 ├── develop              # Integration branch
 ├── feature/*            # Feature development
 │   ├── dragon-boss
