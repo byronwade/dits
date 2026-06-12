@@ -991,7 +991,7 @@ dits lock your_file.blend
 # End of day
 dits add .
 dits commit -m "Progress: [description of work]"
-dits push
+dits push   # 🚧 roadmap — prints a placeholder, transfers no data today
 dits unlock your_file.blend
 ```
 
@@ -999,7 +999,7 @@ dits unlock your_file.blend
 
 ```bash
 # If someone else changed a file you're working on
-dits pull
+dits pull   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # If conflict on binary file
 dits status
@@ -1019,13 +1019,13 @@ dits commit -m "Merge: Combined modeling changes"
 
 ```bash
 # Need to share large file with colleague quickly?
-dits p2p share
+dits p2p share   # 🚧 roadmap — scaffolding, prints a placeholder, transfers no data today
 
 # Share the join code
 # They connect:
-dits p2p connect ABC-123 ./project
+dits p2p connect ABC-123 ./project   # 🚧 roadmap — scaffolding, no data transfer today
 
-# Direct transfer, no cloud upload needed
+# (Roadmap) Direct transfer, no cloud upload needed
 ```
 
 ---
@@ -1075,13 +1075,14 @@ dits tag render/v2-approved
 
 ```bash
 # Before submitting to render farm
-dits push  # Ensure latest is on remote
+dits push  # Ensure latest is on remote   # 🚧 roadmap — prints a placeholder, transfers no data today
 
 # Render farm clones repo
-dits clone https://ditshub.com/studio/project /farm/project
+# 🚧 roadmap — network clone not implemented; only a local-path clone works today
+dits clone https://example.com/studio/project /farm/project
 
 # Or use specific tag
-dits clone --branch render/v1-approved https://...
+dits clone --branch render/v1-approved https://example.com/studio/project
 
 # After render completes
 # Frames go to designated output location (not version controlled)
@@ -1158,7 +1159,8 @@ dits repo-stats -v
 dits gc
 
 # For very large repos, use sparse checkout
-dits clone --filter=sparse https://ditshub.com/studio/show
+# 🚧 roadmap — network clone (and --filter) not implemented; only local-path clone works today
+dits clone --filter=sparse https://example.com/studio/show
 dits sparse add Shots/SEQ010/
 ```
 

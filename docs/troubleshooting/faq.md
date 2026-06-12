@@ -337,8 +337,12 @@ Subsequent adds of similar files are much faster due to deduplication.
 
 ### Why is my clone so slow?
 
-Possible reasons:
-1. **Large repository**: Use partial clone: `dits clone --filter blob:none`
+> 🚧 **Roadmap — network clone is not implemented yet.** Only a **local-path** clone works
+> today (`dits clone /path/to/repo`), and partial/shallow flags (`--filter`, `--depth`) do
+> not exist. The guidance below is for the future networked clone.
+
+Possible reasons (future networked clone):
+1. **Large repository**: partial clone (`dits clone --filter blob:none`) is roadmap
 2. **Slow network**: Check connection speed
 3. **Remote server load**: Try off-peak hours
 4. **First clone**: Subsequent syncs are much faster
@@ -352,10 +356,10 @@ dits config cache.path /Volumes/SSD/dits-cache
 # Increase cache size
 dits config cache.size 100GB
 
-# Use more parallel transfers
+# Use more parallel transfers (roadmap — no networked transfer today)
 dits config transfer.maxParallel 16
 
-# For very large repos, use partial clones
+# For very large repos, partial clones are roadmap (network clone not implemented)
 dits clone --filter blob:none <url>
 ```
 

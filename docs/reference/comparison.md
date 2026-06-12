@@ -33,11 +33,11 @@ Dits is designed specifically for version control of large binary files—video,
 
 | Feature | What It Means |
 |---------|---------------|
-| **Content-Defined Chunking** | Files split into ~1MB chunks based on content, enabling deduplication |
+| **Content-Defined Chunking** | Files split into content-defined chunks via FastCDC. Chunk sizes follow a named profile — e.g. `default` (16KB/64KB/256KB min/avg/max) or `media` (64KB/256KB/1MB) — enabling deduplication |
 | **Video-Aware Chunking** | Chunks align to keyframes for optimal deduplication |
 | **Hybrid Storage** | Text files use Git-style storage, binaries use Dits CDC |
-| **P2P Sharing** | Direct transfer between computers without cloud |
-| **Virtual Filesystem** | Mount repos as drives, download files on demand |
+| **P2P Sharing** | 🚧 Roadmap — designed for direct transfer between computers without cloud; not implemented yet |
+| **Virtual Filesystem** | Mount repos locally (requires `--features fuser` build); on-demand/remote download is roadmap |
 | **File Locking** | Prevent conflicts on binary files |
 
 ---
