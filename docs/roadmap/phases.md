@@ -1,29 +1,34 @@
 # Engineering Roadmap
 
-This document outlines the phased development plan for Dits. Phases 1-3.5 are complete; Phase 3.6 is next priority.
+This document outlines the phased development plan for Dits. For the **importance-ordered audit of
+everything that is not finished yet**, see the canonical [`ROADMAP.md`](../../ROADMAP.md); for the
+authoritative record of what the code does today, see [`docs/STATUS.md`](../STATUS.md).
 
 ---
 
 ## Implementation Status
 
+Legend: ✅ works today (local) · 🟡 local parts ship, networked/advanced parts are roadmap ·
+🧪 implemented but feature-gated/experimental · ⏳ roadmap, not implemented.
+
 | Phase | Name | Status | Description |
 |-------|------|--------|-------------|
 | 1 | The Engine | ✅ Complete | Local chunking and deduplication |
 | 2 | Structure Awareness | ✅ Complete | MP4/ISOBMFF atom parsing |
-| 3 | Virtual File System | ✅ Complete | FUSE mount for on-demand access |
+| 3 | Virtual File System | 🧪 Feature-gated | FUSE mount (behind `fuser` feature), local-only |
 | 3.5 | Git Parity | ✅ Complete | Branching, merging, tags, stash |
-| **3.6** | **Hybrid Storage** | **🔜 Next** | **Git for text, Dits for binary** |
-| 4 | Collaboration & Sync | 🚧 Planned | QUIC-based push/pull |
-| 5 | Conflict & Locking | 🚧 Planned | Binary locks, conflict detection |
-| 6 | The Hologram | 🚧 Planned | Proxy-based editing |
-| 7 | The Spiderweb | 🚧 Planned | Dependency graph parsing |
-| 8 | Deep Freeze | 🚧 Planned | Tiered storage lifecycle |
-| 9 | The Black Box | 🚧 Planned | Client-side encryption |
+| 3.6 | Hybrid Storage | ✅ Complete | Git for text, Dits for binary |
+| 4 | Collaboration & Sync | ⏳ Roadmap | QUIC-based push/pull — **not implemented** |
+| 5 | Conflict & Locking | 🟡 Partial | Local locks/`gc`/`fsck` ship; networked conflict handling is roadmap |
+| 6 | The Hologram | 🟡 Partial | Local proxy generation ships; remote proxy workflow is roadmap |
+| 7 | The Spiderweb | 🟡 Partial | Local dependency graph (`dep-*`) ships; ecosystem/plugins are roadmap |
+| 8 | Deep Freeze | 🟡 Partial | Local `freeze`/`thaw` ship; cloud cold tiers are roadmap |
+| 9 | The Black Box | 🟡 Partial | Local convergent encryption ships; RBAC/key management is roadmap |
 
-> Note: Networked sync (Phase 4b — `push`/`pull`/`fetch`/`sync`, network `clone`), P2P, and QUIC
-> delta transport are **not implemented**; they remain roadmap. (Several local features in later
-> phases — proxy, dependency graph, freeze/thaw, encryption — already ship in the CLI; see
-> `docs/STATUS.md`.)
+> Note: Networked sync (Phase 4b — `push`/`pull`/`fetch`/`sync`, network `clone`), P2P, and the
+> QUIC delta transport's connection to the porcelain are **not implemented**; they remain roadmap.
+> (Several *local* features in later phases — proxy, dependency graph, freeze/thaw, encryption —
+> already ship in the CLI; see [`docs/STATUS.md`](../STATUS.md).)
 
 ---
 
