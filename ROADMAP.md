@@ -142,5 +142,3 @@ Highest-leverage contributions right now:
 
 Open an issue at <https://github.com/byronwade/dits/issues> describing what you want to tackle. See
 [`README.md` → Contributing](README.md#contributing) and [`CONTRIBUTORS.md`](CONTRIBUTORS.md).
-</content>
-</invoke>
