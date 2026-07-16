@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install stable Rust
         uses: dtolnay/rust-toolchain@stable
@@ -23,20 +25,28 @@ jobs:
         with:
           components: rustfmt
 
-      - name: Export formatted files
+      - name: Format and refresh workspace metadata
         run: |
           mkdir -p diagnostics/formatted/apps/cli/src/config
           mkdir -p diagnostics/formatted/apps/cli/src/store
           cargo +nightly fmt --all
+          cargo metadata --format-version 1 > diagnostics/metadata.json
+          cp Cargo.lock diagnostics/Cargo.lock.generated
           cp apps/cli/src/config/mod.rs diagnostics/formatted/apps/cli/src/config/mod.rs
           cp apps/cli/src/store/objects.rs diagnostics/formatted/apps/cli/src/store/objects.rs
           cp apps/cli/src/telemetry.rs diagnostics/formatted/apps/cli/src/telemetry.rs
           git diff -- apps/cli/src/config/mod.rs apps/cli/src/store/objects.rs apps/cli/src/telemetry.rs > diagnostics/rustfmt.patch
+          git rev-parse 'HEAD^{tree}' > diagnostics/head.tree
+          git rev-parse HEAD > diagnostics/head.commit
 
-      - name: Refresh metadata and lockfile
+      - name: Export repository snapshot
         run: |
-          cargo metadata --format-version 1 > diagnostics/metadata.json
-          cp Cargo.lock diagnostics/Cargo.lock.generated
+          tar \
+            --exclude=.git \
+            --exclude=target \
+            --exclude=node_modules \
+            --exclude=diagnostics \
+            -czf diagnostics/repository.tar.gz .
 
       - name: Export audit result
         run: |
@@ -46,11 +56,11 @@ jobs:
       - name: Export check, clippy, and test results
         run: |
           set +e
-          cargo check --workspace --all-targets > diagnostics/check.txt 2>&1
+          cargo +stable check --workspace --all-targets > diagnostics/check.txt 2>&1
           echo "$?" > diagnostics/check.exit
-          cargo clippy --workspace --all-targets --all-features -- -D warnings > diagnostics/clippy.txt 2>&1
+          cargo +stable clippy --workspace --all-targets --all-features -- -D warnings > diagnostics/clippy.txt 2>&1
           echo "$?" > diagnostics/clippy.exit
-          cargo test --workspace --all-targets --no-fail-fast > diagnostics/test.txt 2>&1
+          cargo +stable test --workspace --all-targets --no-fail-fast > diagnostics/test.txt 2>&1
           echo "$?" > diagnostics/test.exit
           exit 0
 
