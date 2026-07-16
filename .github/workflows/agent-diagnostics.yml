@@ -1,0 +1,56 @@
+name: Agent Diagnostics
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install stable Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install nightly rustfmt
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
+
+      - name: Export formatted files
+        run: |
+          mkdir -p diagnostics/formatted/apps/cli/src/config
+          mkdir -p diagnostics/formatted/apps/cli/src/store
+          cargo +nightly fmt --all
+          cp apps/cli/src/config/mod.rs diagnostics/formatted/apps/cli/src/config/mod.rs
+          cp apps/cli/src/store/objects.rs diagnostics/formatted/apps/cli/src/store/objects.rs
+          cp apps/cli/src/telemetry.rs diagnostics/formatted/apps/cli/src/telemetry.rs
+          git diff -- apps/cli/src/config/mod.rs apps/cli/src/store/objects.rs apps/cli/src/telemetry.rs > diagnostics/rustfmt.patch
+
+      - name: Refresh metadata and lockfile
+        run: |
+          cargo metadata --format-version 1 > diagnostics/metadata.json
+          cp Cargo.lock diagnostics/Cargo.lock.generated
+
+      - name: Export audit result
+        run: |
+          cargo install --locked cargo-audit
+          cargo audit --format json > diagnostics/audit.json || true
+
+      - name: Export check result
+        run: |
+          set +e
+          cargo check --workspace --all-targets > diagnostics/check.txt 2>&1
+          echo "$?" > diagnostics/check.exit
+          exit 0
+
+      - name: Upload diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-diagnostics
+          path: diagnostics
+          if-no-files-found: error
