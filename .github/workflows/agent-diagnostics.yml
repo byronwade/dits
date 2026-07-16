@@ -15,6 +15,8 @@ jobs:
 
       - name: Install stable Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
 
       - name: Install nightly rustfmt
         uses: dtolnay/rust-toolchain@nightly
@@ -41,11 +43,15 @@ jobs:
           cargo install --locked cargo-audit
           cargo audit --format json > diagnostics/audit.json || true
 
-      - name: Export check result
+      - name: Export check, clippy, and test results
         run: |
           set +e
           cargo check --workspace --all-targets > diagnostics/check.txt 2>&1
           echo "$?" > diagnostics/check.exit
+          cargo clippy --workspace --all-targets --all-features -- -D warnings > diagnostics/clippy.txt 2>&1
+          echo "$?" > diagnostics/clippy.exit
+          cargo test --workspace --all-targets --no-fail-fast > diagnostics/test.txt 2>&1
+          echo "$?" > diagnostics/test.exit
           exit 0
 
       - name: Upload diagnostics
