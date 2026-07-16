@@ -60,6 +60,28 @@ jobs:
               raise SystemExit('legacy manifest test did not match the reviewed source')
           objects.write_text(source)
 
+          parser = Path('apps/cli/src/dependency/parser.rs')
+          source = parser.read_text()
+          source = source.replace(
+              'use quick_xml::{events::Event, Reader};',
+              'use quick_xml::{escape::unescape, events::Event, Reader};',
+          )
+          source = source.replace(
+              'let path_str = e.unescape().map_err(|e| ParseError::Xml(e.to_string()))?;',
+              '''let decoded = e.decode().map_err(|e| ParseError::Xml(e.to_string()))?;\n                    let path_str =\n                        unescape(decoded.as_ref()).map_err(|e| ParseError::Xml(e.to_string()))?;''',
+          )
+          source = source.replace(
+              'if let Ok(value) = attr.unescape_value() {',
+              'if let Ok(value) = attr.decode_and_unescape_value(reader.decoder()) {',
+          )
+          source = source.replace(
+              'let text = e.unescape().map_err(|e| ParseError::Xml(e.to_string()))?;',
+              '''let decoded = e.decode().map_err(|e| ParseError::Xml(e.to_string()))?;\n                    let text =\n                        unescape(decoded.as_ref()).map_err(|e| ParseError::Xml(e.to_string()))?;''',
+          )
+          if '.unescape()' in source:
+              raise SystemExit('unmigrated quick-xml BytesText::unescape call')
+          parser.write_text(source)
+
           cargo = Path('apps/cli/Cargo.toml')
           source = cargo.read_text()
           source = source.replace('git2 = { version = "0.19", features = ["vendored-libgit2"] }',
@@ -128,7 +150,8 @@ jobs:
           git config user.name "OpenAI"
           git config user.email "agent@openai.com"
           git add .cargo/audit.toml .github/workflows/ci.yml apps/cli/Cargo.toml Cargo.lock \
-            apps/cli/src/config/mod.rs apps/cli/src/store/objects.rs apps/cli/src/telemetry.rs \
+            apps/cli/src/config/mod.rs apps/cli/src/dependency/parser.rs \
+            apps/cli/src/store/objects.rs apps/cli/src/telemetry.rs \
             docs/concepts.md docs/research/technical-foundations.md
           git commit -m "fix: resolve CI blockers and refresh dependencies"
           git push origin HEAD:${{ github.event.pull_request.head.ref }}
