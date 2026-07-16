@@ -16,16 +16,19 @@ use serde::{Deserialize, Serialize};
 pub struct Config {
     /// User settings.
     #[serde(default)]
-    pub user:     UserConfig,
+    pub user:      UserConfig,
     /// Core settings.
     #[serde(default)]
-    pub core:     CoreConfig,
+    pub core:      CoreConfig,
     /// Chunking settings.
     #[serde(default)]
-    pub chunking: ChunkingConfig,
+    pub chunking:  ChunkingConfig,
+    /// Optional, privacy-preserving CLI telemetry settings.
+    #[serde(default)]
+    pub telemetry: TelemetrySettings,
     /// Additional settings (for extensibility).
     #[serde(default, flatten)]
-    pub extra:    BTreeMap<String, toml::Value>,
+    pub extra:     BTreeMap<String, toml::Value>,
 }
 
 /// User configuration.
@@ -82,6 +85,24 @@ impl Default for ChunkingConfig {
     }
 }
 
+/// Settings for the opt-in CLI telemetry client.
+///
+/// The identifier is random and generated only after telemetry has been
+/// explicitly enabled and the first event is recorded. It is never derived
+/// from machine identifiers, usernames, paths, or repository contents.
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+pub struct TelemetrySettings {
+    /// Whether telemetry is enabled. Disabled by default.
+    #[serde(default)]
+    pub enabled:   bool,
+    /// Random installation identifier, generated lazily.
+    #[serde(default)]
+    pub user_id:   Option<String>,
+    /// Unix timestamp of the most recent scheduled telemetry batch.
+    #[serde(default)]
+    pub last_sent: u64,
+}
+
 fn default_chunk_size() -> u64 {
     64 * 1024 // 64KB - matches ChunkerConfig::default()
 }
@@ -118,6 +139,9 @@ impl Config {
 
     /// Save configuration to file.
     pub fn save(&self, path: &Path) -> Result<(), ConfigError> {
+        if let Some(parent) = path.parent().filter(|parent| !parent.as_os_str().is_empty()) {
+            fs::create_dir_all(parent)?;
+        }
         let content = toml::to_string_pretty(self)?;
         fs::write(path, content)?;
         Ok(())
@@ -134,6 +158,9 @@ impl Config {
             ["chunking", "target_size"] => Some(self.chunking.target_size.to_string()),
             ["chunking", "min_size"] => Some(self.chunking.min_size.to_string()),
             ["chunking", "max_size"] => Some(self.chunking.max_size.to_string()),
+            ["telemetry", "enabled"] => Some(self.telemetry.enabled.to_string()),
+            ["telemetry", "user_id"] => self.telemetry.user_id.clone(),
+            ["telemetry", "last_sent"] => Some(self.telemetry.last_sent.to_string()),
             _ => None,
         }
     }
@@ -146,15 +173,32 @@ impl Config {
             ["user", "email"] => self.user.email = Some(value.to_string()),
             ["core", "default_branch"] => self.core.default_branch = value.to_string(),
             ["core", "verbose"] => {
-                self.core.verbose = value.parse().map_err(|_| ConfigError::InvalidValue {
-                    key:    key.to_string(),
-                    value:  value.to_string(),
-                    reason: "expected boolean".to_string(),
-                })?
+                self.core.verbose = parse_bool(key, value)?;
             },
             ["chunking", "target_size"] => self.chunking.target_size = parse_size(value)?,
             ["chunking", "min_size"] => self.chunking.min_size = parse_size(value)?,
             ["chunking", "max_size"] => self.chunking.max_size = parse_size(value)?,
+            ["telemetry", "enabled"] => {
+                self.telemetry.enabled = parse_bool(key, value)?;
+            },
+            ["telemetry", "user_id"] => {
+                if value.trim().is_empty() {
+                    return Err(ConfigError::InvalidValue {
+                        key:    key.to_string(),
+                        value:  value.to_string(),
+                        reason: "expected a non-empty identifier".to_string(),
+                    });
+                }
+                self.telemetry.user_id = Some(value.to_string());
+            },
+            ["telemetry", "last_sent"] => {
+                self.telemetry.last_sent =
+                    value.parse().map_err(|_| ConfigError::InvalidValue {
+                        key:    key.to_string(),
+                        value:  value.to_string(),
+                        reason: "expected an unsigned Unix timestamp".to_string(),
+                    })?;
+            },
             _ => return Err(ConfigError::UnknownKey(key.to_string())),
         }
         Ok(())
@@ -174,11 +218,19 @@ impl Config {
                 self.user.email = None;
                 Ok(had_value)
             },
+            ["telemetry", "user_id"] => Ok(self.telemetry.user_id.take().is_some()),
+            ["telemetry", "last_sent"] => {
+                let had_value = self.telemetry.last_sent != 0;
+                self.telemetry.last_sent = 0;
+                Ok(had_value)
+            },
             _ => Err(ConfigError::CannotUnset(key.to_string())),
         }
     }
 
-    /// List all config values.
+    /// List user-facing config values.
+    ///
+    /// The random telemetry identifier is intentionally omitted.
     pub fn list(&self) -> Vec<(String, String)> {
         let mut items = Vec::new();
 
@@ -193,9 +245,18 @@ impl Config {
         items.push(("chunking.target_size".to_string(), format_size(self.chunking.target_size)));
         items.push(("chunking.min_size".to_string(), format_size(self.chunking.min_size)));
         items.push(("chunking.max_size".to_string(), format_size(self.chunking.max_size)));
+        items.push(("telemetry.enabled".to_string(), self.telemetry.enabled.to_string()));
 
         items
     }
+}
+
+fn parse_bool(key: &str, value: &str) -> Result<bool, ConfigError> {
+    value.parse().map_err(|_| ConfigError::InvalidValue {
+        key:    key.to_string(),
+        value:  value.to_string(),
+        reason: "expected boolean".to_string(),
+    })
 }
 
 /// Configuration errors.
@@ -273,4 +334,34 @@ pub fn global_config_path() -> PathBuf {
         .unwrap_or_else(|| PathBuf::from("."))
         .join("dits")
         .join("config.toml")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn telemetry_keys_round_trip() {
+        let mut config = Config::default();
+
+        config.set("telemetry.enabled", "true").unwrap();
+        config.set("telemetry.user_id", "random-test-id").unwrap();
+        config.set("telemetry.last_sent", "123").unwrap();
+
+        assert_eq!(config.get("telemetry.enabled").as_deref(), Some("true"));
+        assert_eq!(config.get("telemetry.user_id").as_deref(), Some("random-test-id"));
+        assert_eq!(config.get("telemetry.last_sent").as_deref(), Some("123"));
+        assert!(!config.list().iter().any(|(key, _)| key == "telemetry.user_id"));
+    }
+
+    #[test]
+    fn save_creates_missing_parent_directories() {
+        let temp = tempfile::tempdir().unwrap();
+        let path = temp.path().join("nested").join("dits").join("config.toml");
+
+        Config::default().save(&path).unwrap();
+
+        assert!(path.is_file());
+        assert!(Config::load(&path).is_ok());
+    }
 }

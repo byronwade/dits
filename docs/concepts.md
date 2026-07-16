@@ -1,702 +1,410 @@
-# Core Concepts
+# Core Concepts and Contracts
 
-Understanding how Dits works will help you use it effectively. This page explains the key concepts behind Dits.
+**Maturity:** Current concepts with clearly marked Experimental and Design
+sections.
 
-## Content-Defined Chunking
+This document describes the model implemented by the canonical Rust workspace.
+It deliberately separates byte identity, storage deduplication, media structure,
+and semantic edit identity. Earlier versions of this document described
+unwired chunkers, selectable hash algorithms, SIMD implementations, network
+services, and benchmark numbers as if they were active. Those claims are not
+part of the current contract.
 
-Unlike Git which stores files as single objects, Dits splits files into variable-size **chunks** based on their content. This is called **content-defined chunking** (CDC).
+See [`STATUS.md`](STATUS.md) for the live feature boundary and
+[`research/technical-foundations.md`](research/technical-foundations.md) for the
+long-range design.
 
-### Traditional vs Dits Approach
+## 1. The core invariant
 
-**Traditional Approach**
-```
-File: video.mp4 (2GB)
-├── Stored as single blob
-└── Any change = re-store 2GB
-```
+A Dits object is immutable. Its identifier is derived from its content. A
+reader verifies content before trusting it.
 
-**Dits Approach**
-```
-File: video.mp4 (2GB)
-├── Chunk 1: 1.2 MB (hash: abc...)
-├── Chunk 2: 0.9 MB (hash: def...)
-├── ...
-└── Only changed chunks stored
-```
+That invariant gives Dits four properties:
 
-### Chunking Algorithms
+1. Identical content can be reused instead of stored twice.
+2. Corruption can be detected by recomputing the identifier.
+3. Commits can refer to immutable history rather than mutable file locations.
+4. Local and remote implementations can verify each other without trusting the
+   storage provider.
 
-Dits implements multiple content-defined chunking algorithms, each optimized for different use cases:
+Content addressing does **not** by itself provide authorization,
+confidentiality, availability, provenance, or semantic understanding. Those are
+separate layers.
 
-#### FastCDC (Default)
-FastCDC (Fast Content-Defined Chunking) is Dits' primary algorithm, providing excellent performance and deduplication ratios.
+## 2. Current object model
 
-**Streaming Implementation:** Dits implements a memory-efficient streaming version of FastCDC that processes files in 64KB rolling windows, enabling unlimited file sizes without memory exhaustion. Performance: 10MB file chunked in 47ms (212MB/s throughput), 90% memory reduction.
+### Hash
 
-#### How Chunk Boundaries Are Determined
+The active engine uses a 32-byte BLAKE3 digest as its content address.
 
-**Fixed-size chunking problem:**
-- Cut every 1 MB exactly
-- Problem: Insert 1 byte at the start, and EVERY chunk shifts
-
-**Content-defined chunking solution:**
-- Cut based on content patterns using a rolling hash
-- Same content = same cut points
-- Insertions only affect nearby chunks
-
-#### Additional Chunking Algorithms
-
-Beyond FastCDC, Dits implements several specialized chunking algorithms for different performance and security requirements:
-
-**Rabin Fingerprinting**
-- Classic polynomial rolling hash algorithm
-- Strong locality guarantees (identical content = identical boundaries)
-- May produce more variable chunk sizes than FastCDC
-- Best for: Applications requiring strict content-aware boundaries
-
-**Asymmetric Extremum (AE)**
-- Places boundaries at local minima/maxima in sliding windows
-- Better control over chunk size distribution
-- Reduces extreme chunk size variance
-- Best for: Consistent chunk sizes, lower metadata overhead
-
-**Chonkers Algorithm**
-- Advanced layered algorithm with mathematical guarantees
-- Provable strict bounds on both chunk size AND edit locality
-- Uses hierarchical merging (balancing → caterpillar → diffbit phases)
-- Best for: Mission-critical applications requiring guarantees
-
-**Parallel FastCDC**
-- Multi-core implementation of FastCDC
-- Splits large files into segments processed in parallel
-- 2-4x throughput improvement on multi-core systems
-- Best for: Large files, high-throughput environments
-
-**Keyed FastCDC (KCDC)**
-- Security-enhanced FastCDC with secret key
-- Prevents fingerprinting attacks via chunk length patterns
-- Same performance as FastCDC with added privacy protection
-- Best for: Encrypted backups, privacy-sensitive applications
-
-#### Algorithm Parameters
-
-FastCDC uses carefully tuned parameters for optimal performance:
-
-```rust
-// FastCDC configuration for video files
-min_size: 32KB     // Minimum chunk size
-avg_size: 64KB     // Target average size
-max_size: 256KB    // Maximum chunk size
-normalization: 2   // Size distribution control
-```
-
-#### Rolling Hash Implementation
-
-FastCDC uses a "gear hash" - a precomputed table of random 64-bit values:
-
-```rust
-// Rolling hash state
-hash = 0
-
-// For each byte in the file:
-hash = (hash << 1) + gear_table[byte_value]
-
-// Check if hash matches boundary pattern:
-// (hash & mask) == 0 → create chunk boundary
-```
-
-#### Performance Characteristics
-
-| Implementation | Throughput | Platform |
-|----------------|------------|----------|
-| Scalar (baseline) | 800 MB/s | All CPUs |
-| SSE4.1 | 1.2 GB/s | Intel/AMD |
-| AVX2 | 2.0 GB/s | Modern Intel/AMD |
-| AVX-512 | 3.5 GB/s | High-end Intel |
-| ARM NEON | 1.5-2.5 GB/s | Apple Silicon, ARM64 |
-
-### Why Content-Defined Chunking Matters
-
-When you modify part of a file:
-- **Old approach:** Every chunk after the change is different
-- **CDC approach:** Only chunks containing changes are different
-
-```
-Original video: [A][B][C][D][E][F][G][H][I][J]
-Edit scene in middle:          ↓
-Modified video: [A][B][C][D'][E'][F][G][H][I][J]
-
-Result: Only chunks D' and E' are new!
-8 out of 10 chunks are shared.
-```
-
-## Content Addressing
-
-Every piece of data in Dits is identified by its **content hash**, specifically a BLAKE3 hash. This is called **content addressing**.
-
-### How It Works
-
-```
-# Every chunk has a unique hash based on its content
-Chunk abc123... = specific 1.2MB of video data
-Chunk def456... = specific 0.9MB of video data
-
-# Files are just lists of chunk hashes
-video.mp4 = [abc123, def456, ghi789, ...]
-
-# Commits reference file manifests by hash
-Commit xyz... → Manifest hash → File hashes → Chunk hashes
-```
-
-### Cryptographic Hashing
-
-Dits supports multiple cryptographic hash algorithms for different performance and security trade-offs:
-
-#### BLAKE3 (Default)
-Dits uses BLAKE3 as the default hash algorithm for its exceptional performance and security:
-
-| Property | SHA-256 | BLAKE3 |
-|----------|---------|--------|
-| Speed | ~500 MB/s | ~6 GB/s (10x faster) |
-| Parallelism | Single-threaded | Multi-threaded |
-| Security | Proven | Proven (BLAKE family) |
-| Output Size | 32 bytes | 32 bytes |
-
-#### Alternative Hash Algorithms
-
-**SHA-256**
-- Industry standard cryptographic hash
-- Widely trusted and analyzed
-- ~2x slower than BLAKE3
-- Best for: Regulatory compliance, maximum compatibility
-
-**SHA-3-256**
-- Future-proof cryptographic construction
-- Different algorithm family than SHA-2
-- ~3x slower than BLAKE3
-- Best for: Post-quantum security considerations
-
-#### Hash Algorithm Selection
-
-```rust
-// Configure repository to use different hash algorithm
-dits config core.hashAlgorithm sha256
-
-// Available options: blake3, sha256, sha3-256
-// Default: blake3 (recommended for performance)
-```
-
-All hash algorithms produce 256-bit (32-byte) outputs and provide cryptographic security guarantees.
-
-#### Cryptographic Properties
-
-- **Collision resistance:** Impossible to find two different inputs with same hash
-- **Preimage resistance:** Given a hash, impossible to find input that produces it
-- **Second preimage resistance:** Given input A, impossible to find input B with same hash
-
-### Benefits of Content Addressing
-
-1. **Automatic deduplication:** Identical content always has the same hash
-2. **Data integrity:** If a chunk's hash doesn't match, you know it's corrupted
-3. **Immutability:** You can't modify stored data without changing its address
-
-## Manifest System
-
-The manifest is Dits' authoritative record of a commit's file tree. It describes how to reconstruct files from chunks and stores rich metadata.
-
-### What a Manifest Contains
-
-Each manifest includes:
-- All files in the repository at that commit
-- File metadata (size, permissions, timestamps)
-- Chunk references for reconstructing content
-- Asset metadata (video dimensions, codec, duration)
-- Directory structure for efficient browsing
-- Dependency graphs for project files
-
-### Manifest Data Structure
-
-```rust
-pub struct ManifestPayload {
-    pub version: u8,                    // Format version
-    pub repo_id: Uuid,                  // Repository identifier
-    pub commit_hash: [u8; 32],          // This commit's hash
-    pub parent_hash: Option<[u8; 32]>, // Parent commit (for diffs)
-
-    pub entries: Vec<ManifestEntry>,    // All files
-    pub directories: Vec<DirectoryEntry>, // Directory structure
-    pub dependencies: Option<DependencyGraph>, // File relationships
-    pub stats: ManifestStats,           // Aggregate statistics
-}
-```
-
-### File Representation
-
-Each file is represented as a manifest entry:
-
-```rust
-pub struct ManifestEntry {
-    pub path: String,                  // Relative path
-    pub size: u64,                     // File size in bytes
-    pub content_hash: [u8; 32],        // Full file BLAKE3 hash
-    pub chunks: Vec<ChunkRef>,         // How to reconstruct file
-
-    // Rich metadata
-    pub metadata: FileMetadata,        // MIME type, encoding, etc.
-    pub asset_metadata: Option<AssetMetadata>, // Video/audio specifics
-}
-```
-
-### Asset Metadata Extraction
-
-For media files, Dits extracts rich metadata during chunking:
-
-```rust
-pub struct AssetMetadata {
-    pub asset_type: AssetType,        // Video, Audio, Image
-    pub duration_ms: Option<u64>,     // Playback duration
-    pub width: Option<u32>,           // Video width
-    pub height: Option<u32>,          // Video height
-    pub video_codec: Option<String>,  // "h264", "prores", etc.
-    pub audio_codec: Option<String>,  // "aac", "pcm", etc.
-
-    // Camera metadata
-    pub camera_metadata: Option<CameraMetadata>,
-    pub thumbnail: Option<[u8; 32]>,  // Thumbnail chunk hash
-}
-```
-
-## Hybrid Storage Architecture
-
-Dits uses a **hybrid storage system** that intelligently chooses the optimal storage method for different types of files.
-
-### Storage Engine Selection
-
-Files are automatically routed to the appropriate storage engine:
-
-| File Type | Storage Engine | Why |
-|-----------|----------------|-----|
-| Text (.txt, .md, .json, .rs) | libgit2 | Line-based diff, 3-way merge, blame |
-| Binary (.mp4, .mov, .psd) | FastCDC | Content-defined chunks, deduplication |
-| Hybrid (.prproj, .aep) | Both engines | Git for XML metadata, CDC for binary assets |
-
-### Classification Logic
-
-Dits classifies files using multiple signals:
-
-1. **File extension:** `.mp4` → video, `.rs` → text
-2. **Content analysis:** Binary patterns vs text patterns
-3. **MIME type detection:** `video/mp4` → video container
-4. **Size thresholds:** Large files (>1MB) → chunking
-
-### Storage Classes
-
-Beyond the storage engine, files can be assigned storage classes:
-
-- **Hot:** Frequently accessed, fast storage (SSD)
-- **Warm:** Occasionally accessed, slower storage (HDD)
-- **Cold:** Archive storage (tape, cloud)
-- **Glacier:** Long-term archive with retrieval delays
-
-## Sync Protocol and Delta Efficiency
-
-> ⚠️ Roadmap — networked sync (push/pull/fetch/sync) is **not implemented**. The `push`/`pull`/`fetch`/`sync` commands print placeholders and transfer no data today; `clone` works only against a local filesystem path, not a network remote. The have/want negotiation, Bloom filters, and delta transport below describe the intended design for the future network layer.
-
-Dits is designed to use a sophisticated sync protocol to minimize bandwidth usage.
-
-### Have/Want Protocol
-
-Instead of sending entire files, Dits negotiates what data is needed:
-
-```
-Local                           Remote
-┌──────────┐                    ┌──────────┐
-│ Chunks:  │                    │ Chunks:  │
-│ A, B, C  │                    │ A, B     │
-└──────────┘                    └──────────┘
-
-Step 1: Query what remote has
-        "Do you have A, B, C, D, E, F?"
-
-Step 2: Remote responds with Bloom filter
-        "I have A, B. Missing: C, D, E, F"
-
-Step 3: Upload only missing chunks
-        → Transfer C, D, E, F (not A, B!)
-```
-
-### Bloom Filter Optimization
-
-Dits uses Bloom filters to efficiently represent what chunks exist:
-
-- **Space efficient:** 1MB filter can represent millions of chunks
-- **Fast queries:** Check if remote has a chunk in microseconds
-- **False positives:** May say "has" when it doesn't (rare, handled gracefully)
-- **No false negatives:** Never says "missing" when it exists
-
-### Delta Sync Efficiency
-
-**Traditional sync (Dropbox-style):**
-- File changed → upload entire file
-- 10 GB video, small edit → transfer 10 GB
-
-**Dits delta sync:**
-- File changed → identify changed chunks
-- 10 GB video, small edit → transfer ~50 MB
-
-### Real-World Bandwidth Savings
-
-| Scenario | Raw Transfer | Dits Transfer | Savings |
-|----------|--------------|---------------|---------|
-| 5 versions of 10GB video | 50 GB | ~12 GB | 76% |
-| Team of 10 sharing assets | 100 GB | ~15 GB | 85% |
-| Daily backups | 50 GB/day | ~5 GB/day | 90% |
-
-## Video-Aware Features
-
-Video files have internal structure that Dits understands and optimizes for.
-
-### Keyframe-Aligned Chunking
-
-Video streams have keyframes (I-frames) that contain complete images:
-
-```
-Video stream:
-[I]--[P]--[P]--[P]--[I]--[P]--[P]--[P]--[I]...
- ^                   ^                   ^
-Keyframes (scene boundaries)
-```
-
-**Without keyframe alignment:**
-- Different encodes of same footage → different chunks
-- Poor deduplication
-
-**With keyframe alignment:**
-- Same scenes tend to create same chunks
-- Better deduplication (20-30% improvement)
-
-### Supported Video Formats
-
-Dits parses and optimizes for:
-- **MP4/M4V:** H.264, H.265/HEVC, ProRes
-- **MOV:** Apple ProRes, DNxHD, Animation
-- **MXF:** Broadcast formats (Sony XDCAM, Panasonic P2)
-- **AVI, MKV:** Container formats
-
-### Metadata Extraction
-
-Dits extracts comprehensive metadata:
-- **Technical:** Resolution, frame rate, codec, bitrate
-- **Content:** Duration, aspect ratio, color space
-- **Camera:** Make/model, lens, shutter speed, ISO
-- **GPS:** Location data from camera
-- **Timecode:** Embedded SMPTE timecode
-
-### Frame-Addressable Versioning (FACR) and Photo Edit-Logs
-
-Beyond container-level chunking, Dits has a real frame-addressable representation (FACR) where every frame is independently content-addressed. Re-grade 150 frames of a 1,000-frame clip and Dits stores 150 frames — not 1,000. The same model applies to photos as a non-destructive, content-addressed edit log over the original RAW.
-
-These paths are real today and require FFmpeg:
-- **Video:** `dits facr-add`, `dits facr-checkout`, `dits facr-trim` (try the dedup core with `dits facr-demo`).
-- **Photos:** `dits photo-add`, `dits photo-edit`, `dits photo-render` — edits are recorded as a versioned log, not as new full-resolution copies.
-
-## Deduplication in Action
-
-### How Deduplication Works
-
-Every chunk is identified by its BLAKE3 hash. If two chunks have identical content, they get identical hashes and are stored only once.
-
-### Storage Model
-
-```
-File Manifest:                  Chunk Storage:
-┌─────────────────────┐         ┌─────────────────────┐
-│ video.mp4           │         │ abc123: [1.02 MB]   │
-│   Chunk 1: abc123   │────────▶│                     │
-│   Chunk 2: def456   │────┐    ├─────────────────────┤
-│   Chunk 3: ghi789   │──┐ └───▶│ def456: [0.98 MB]   │
-│   ...               │  │      ├─────────────────────┤
-└─────────────────────┘  └─────▶│ ghi789: [1.05 MB]   │
-                                │ ...                 │
-┌─────────────────────┐         │                     │
-│ video_v2.mp4        │         │                     │
-│   Chunk 1: abc123   │────────▶│ (same chunks!)      │
-│   Chunk 2: def456   │────────▶│ (same chunks!)      │
-│   Chunk 3: xyz999   │───┐     ├─────────────────────┤
-│   ...               │   └────▶│ xyz999: [1.01 MB]   │
-└─────────────────────┘         └─────────────────────┘
-```
-
-### Real-World Deduplication Scenarios
-
-| Scenario | Raw Size | Deduplicated | Savings |
-|----------|----------|--------------|---------|
-| 5 versions of video (minor edits) | 50 GB | 12 GB | 76% |
-| 100 similar photos (same shoot) | 50 GB | 8 GB | 84% |
-| 10 game builds (iterative) | 100 GB | 18 GB | 82% |
-| 20 PSD saves (same file) | 10 GB | 1.5 GB | 85% |
-
-## Repository Structure
-
-A Dits repository is stored in a `.dits` directory with this structure:
-
-```
-.dits/
-├── HEAD                    # Current branch reference
-├── config                  # Repository configuration
-├── index                   # Staging area
-├── objects/                # Content storage
-│   ├── chunks/             # Deduplicated chunks (BLAKE3)
-│   │   ├── ab/
-│   │   │   └── c123...     # Chunk files
-│   │   └── de/
-│   │       └── f456...
-│   ├── manifests/          # File manifests
-│   └── commits/            # Commit objects
-├── refs/                   # Branches and tags
-│   ├── heads/
-│   │   └── main
-│   └── tags/
-│       └── v1.0
-└── logs/                   # Reference history
-```
-
-## Object Types
+A hash answers “are these bytes exactly the same?” It does not answer “do these
+frames look the same?”, “did these files come from the same source?”, or “is
+this object authorized?”
 
 ### Chunk
-The fundamental unit of storage. A variable-size piece of file content, typically 32KB to 256KB.
+
+A chunk is an immutable byte range with:
+
+- its exact bytes,
+- a BLAKE3 hash of those bytes, and
+- an ordered position inside a file manifest.
+
+Chunks are implementation units for storage and transfer. They are not
+editorial frames, scenes, image tiles, or application-level records.
+
+### File manifest entry
+
+A manifest entry records the information needed to materialize one working-tree
+path. Depending on storage strategy, it can reference Dits chunks, a Git object,
+or media-specific metadata.
+
+Important fields in the current code include:
+
+- relative path,
+- file mode and type,
+- byte size,
+- exact full-content hash,
+- ordered chunk references,
+- storage strategy,
+- optional Git object ID, and
+- optional MP4 metadata.
 
 ### Manifest
-Describes how to reconstruct a file from chunks. Contains:
-- Ordered list of chunk hashes
-- File metadata (size, permissions, timestamps)
-- Asset metadata (for media files)
+
+A manifest is the repository tree for a commit: a deterministic mapping from
+paths to manifest entries.
+
+Current writers serialize manifests as JSON. Older binary bincode manifests
+remain a compatibility concern, but bincode is not a suitable public,
+cross-language protocol contract.
 
 ### Commit
-A snapshot of the repository at a point in time:
-- Tree (manifest) hash pointing to file state
-- Parent commit hash(es)
-- Author and committer information
-- Commit message and timestamp
 
-### Branch
-A mutable reference to a commit. Makes it easy to work on different versions simultaneously.
+A commit references a manifest and a parent commit and records author,
+timestamp, and message metadata. Branches and tags are names that resolve to
+commit hashes.
 
-### Tag
-An immutable reference to a commit, typically used to mark releases or important versions.
+The commit graph gives Dits history. Content-defined chunks give it binary
+reuse. Those are related but distinct mechanisms.
 
-## Security & Integrity
+## 3. Content-defined chunking
 
-### Content Addressing Security
+### Why chunk boundaries depend on content
 
-Every piece of data is identified by its cryptographic hash:
+Fixed-size chunking loses reuse after an insertion near the beginning of a
+file because every later offset moves. Content-defined chunking chooses
+boundaries from a rolling content signal, allowing the chunker to resynchronize
+after many localized insertions and deletions.
 
-```
-Content → BLAKE3 hash → Storage
+The active shared engine uses the upstream `fastcdc` crate. The repository does
+not currently ship selectable Rabin, AE, Chonkers, keyed FastCDC, AVX-specific,
+or io_uring chunking paths in the canonical ingest pipeline.
 
-If content changes by even 1 bit:
-  → Completely different hash
-  → Stored as new content
-  → Tampering is detectable
-```
+### Current profiles
 
-### Verification Commands
+The shared engine defines these profiles:
 
-```bash
-# Verify entire repository integrity
-$ dits fsck
-Verifying repository integrity...
-Checking objects... ✓
-Checking references... ✓
-Checking manifests... ✓
-Verifying 45,678 chunks...
-  [████████████████████████████████] 100%
-All chunks verified ✓
-Repository is healthy.
-```
+| Profile | Minimum | Average | Maximum | Intended use |
+|---|---:|---:|---:|---|
+| Default | 16 KiB | 64 KiB | 256 KiB | General binary data |
+| Media | 64 KiB | 256 KiB | 1 MiB | Large media payloads |
+| Project | 4 KiB | 16 KiB | 64 KiB | Smaller project/metadata files |
+| Fast | 256 KiB | 1 MiB | 4 MiB | Lower metadata overhead |
 
-### Encryption Options
+These values are implementation defaults, not universal optima. A format,
+workload, storage device, and network all influence the useful range.
 
-**In transit (roadmap — network layer not implemented):**
-- Network transfers are designed to use TLS 1.3 or QUIC
-- P2P is designed to use AES-256-GCM encryption
-- Keys derived from session-specific secrets
+### What CDC reuses well
 
-**At rest (optional, real today):**
-```bash
-# Enable repository encryption
-$ dits encrypt-init
+Byte-level CDC is effective when most source bytes remain intact:
 
-# Files encrypted before storage
-# Only you (with key) can decrypt
-```
+- appending data,
+- inserting or deleting a bounded byte range,
+- moving unchanged byte ranges,
+- changing container metadata while preserving payload bytes,
+- stream-copy trims near existing boundaries, and
+- successive binary builds with large unchanged regions.
 
-## Virtual Filesystem (VFS)
+### What CDC cannot promise
 
-Dits can mount a repository as a virtual drive using FUSE. Files appear instantly but are only "hydrated" (chunks downloaded) when accessed.
+CDC does not create similarity where the bytes no longer match.
 
-### How VFS Works
+It usually performs poorly for:
 
-```
-User Application                     Dits VFS Layer
-(Premiere, Blender, etc.)           ┌─────────────────────────────────────┐
-                                    │ Is chunk in local cache?            │
-                                    │   YES → Return immediately          │
-                                    │   NO  → Fetch from remote, cache    │
-                                    └──────────────────┬──────────────────┘
-                                                       │
-                    ┌──────────────────────────────────┴──────────────────────────────────┐
-                    ▼                                                                       ▼
-        ┌─────────────┐                                                       ┌─────────────┐
-        │ Local Cache │                                                       │   Remote    │
-        │  (fast SSD) │                                                       │   Server    │
-        └─────────────┘                                                       └─────────────┘
-```
+- video or audio re-encoding,
+- lossy image recompression,
+- encryption with randomized nonces,
+- whole-file compression after a small source change,
+- global color transforms on flattened images,
+- archive formats whose member ordering or metadata changes globally, and
+- generated files containing timestamps or nondeterministic ordering.
 
-### Cache Management
+Therefore “small visual edit” does not imply “small byte delta.” Dits must
+report byte reuse from measurement, not infer it from the editor’s intent.
 
-- **Location:** Configurable (default: `~/.dits/cache`)
-- **Size:** Configurable (default: 100GB)
-- **Policy:** LRU (Least Recently Used)
-- **Prefetching:** Predicts and pre-downloads likely-needed chunks
+## 4. Full-content hashes and chunk hashes
 
-## Performance Characteristics
+Dits currently computes both:
 
-### Throughput Benchmarks
+- a full-file content hash, used to identify the exact file bytes; and
+- per-chunk hashes, used to reconstruct and deduplicate ranges.
 
-> ⚠️ The network rows below (QUIC Transfer, Multi-peer Download, Adaptive Transfer) are **roadmap** — QUIC delta transport and P2P swarm downloads are not implemented. Their figures are design targets, not measurements. The local rows (chunking, hashing, zero-copy I/O) are real.
+The full-content hash protects file identity. The chunk list provides reusable
+storage. A manifest must preserve both the ordered chunk references and the
+expected total size.
 
-| Operation | Performance | Notes |
-|-----------|-------------|-------|
-| **Streaming Chunking** | Unlimited | No memory limits, any file size |
-| **Parallel Chunking** | 8+ GB/s | Multi-core processing |
-| **Hashing (BLAKE3)** | 6 GB/s | Multi-threaded |
-| **QUIC Transfer** *(roadmap)* | 1+ GB/s | 1000+ concurrent streams (not implemented) |
-| **Multi-peer Download** *(roadmap)* | N × peer bandwidth | Linear scaling with peers (not implemented) |
-| **Zero-copy I/O** | 99% CPU reduction | Memory-mapped operations |
-| **Adaptive Transfer** *(roadmap)* | Auto-optimized | Self-tuning to network conditions (not implemented) |
+A future streaming ingest path should compute the full BLAKE3 digest
+incrementally while emitting bounded batches of chunks. It should not require a
+second complete in-memory copy of the file.
 
-### Download Performance Optimizations
+## 5. Hybrid text and binary storage
 
-> ⚠️ The network-dependent items here (High-Throughput QUIC, parallel/multi-peer downloads, adaptive chunk sizing over the wire) are **roadmap** — the QUIC transport and P2P layer are not implemented. They describe the intended download design. The local items (streaming FastCDC, parallel chunking, zero-copy operations) are real.
+Dits uses two storage strategies in the active CLI.
 
-Dits is designed to use multiple optimizations to maximize download speeds and utilize full network capacity:
+### Git text objects
 
-#### Streaming FastCDC
-- **Problem:** Traditional chunking loads entire files into memory
-- **Solution:** True streaming with 64KB sliding window
-- **Result:** Process files of any size with constant memory usage
+Text-like files can use libgit2 so they retain line-oriented diff, merge, and
+blame behavior.
 
-#### Parallel Processing
-- **Multi-core chunking:** 3-4x speedup on modern CPUs
-- **Parallel downloads:** Aggregate bandwidth from multiple peers
-- **Concurrent transfers:** 1000+ simultaneous chunk downloads
+### Dits chunks
 
-#### High-Throughput QUIC
-- **Concurrent streams:** 1000+ parallel transfers
-- **Large flow windows:** 16MB buffers for high bandwidth
-- **Connection pooling:** Reuse connections, eliminate handshakes
-- **BBR congestion control:** Optimized for modern networks
+Large binary and media files use the Dits object store and content-defined
+chunking.
 
-#### Adaptive Chunk Sizing
-- **Network-aware:** Adjusts chunk sizes based on bandwidth/latency
-- **LAN (>1Gbps):** 8MB chunks for maximum throughput
-- **Broadband (100Mbps):** 2MB chunks for balance
-- **High latency:** 256KB chunks for responsiveness
+### Hybrid files and projects
 
-#### Zero-Copy Operations
-- **Memory mapping:** Direct file-to-network transfers
-- **Reduced copying:** 50-70% less CPU overhead
-- **Lower latency:** Faster data movement throughout pipeline
+A creative project may contain text/XML metadata and binary payloads. “Hybrid”
+means each representation is routed to the engine that can preserve its useful
+semantics. It does not mean every individual file is always duplicated into
+both stores.
 
-**Intended result (roadmap):** once the network layer ships, downloads are designed to utilize available bandwidth with no software limitations, scaling with the number of available peers.
+Classification is a policy decision and must remain inspectable. Extension
+alone is not a sufficient long-term classifier; content probing, size,
+repository policy, and explicit overrides are needed.
 
-### Memory Usage
+## 6. Structure-aware media
 
-- **Chunking:** ~8MB buffer for 256KB max chunks
-- **Manifest loading:** Proportional to file count
-- **Cache:** Configurable (default 100GB)
+A media container is not an undifferentiated byte string. MP4/ISOBMFF, for
+example, contains typed boxes with metadata, sample tables, payload data, and
+offsets.
 
-### Network Efficiency
+The current MP4 path can separate selected structure from media payload and
+patch offsets during reconstruction. This can improve reuse when container
+metadata changes but encoded media bytes do not.
 
-- **Small changes:** <1% of file size transferred
-- **Large changes:** Only changed chunks
-- **New files:** Full transfer (but deduplicated against repo history)
+Structure-aware parsing has a strict safety rule:
 
-## Comparison with Alternatives
+> If Dits cannot prove that it can reconstruct the original contract for a
+> format variant, it must fall back to opaque byte storage.
 
-### Git LFS
+Support for one MP4 layout does not imply support for every MOV, fragmented MP4,
+multiple-`mdat`, edit-list, large-offset, camera-vendor, or NLE-generated file.
+Golden fixtures and byte/fidelity assertions define the real support matrix.
 
-**Git LFS:**
-```
-Git Repository:          LFS Server:
-┌─────────────┐          ┌─────────────┐
-│ version 1   │ ──────▶  │ 10 GB file  │
-│ (pointer)   │          ├─────────────┤
-│ version 2   │ ──────▶  │ 10 GB file  │
-│ (pointer)   │          │ (full copy) │
-└─────────────┘          └─────────────┘
-Total: 20 GB stored
-```
+## 7. FACR and semantic media identity
 
-**Dits:**
-```
-Dits Repository:
-┌─────────────────────────────────────┐
-│ Manifest: video.mp4 = [A,B,C,D,E]   │
-│ Chunks: A,B,C,D,E (10 GB total)     │
-│                                     │
-│ Version 2: video.mp4 = [A,B,C,F,G]  │
-│ Chunks: A,B,C,F,G (only F,G new)   │
-└─────────────────────────────────────┘
-Total: ~10.2 GB stored
-```
+**Maturity: Experimental.**
 
-### Key Differences
+FACR explores frame-addressable content representation. It is the beginning of
+a semantic layer above the byte CAS, not a replacement for exact originals.
 
-| Feature | Git LFS | Dits |
-|---------|---------|------|
-| Storage per version | Full copy | Changed chunks only |
-| Diff capability | None | Chunk-level diff |
-| Merge conflicts | Manual resolution | Explicit locking |
-| Large file support | Basic | Video-optimized |
-| Network efficiency | File-level | Chunk-level |
+A robust media model needs at least three identities:
 
-## Advanced Features
+1. **Encoded identity** — exact bytes of an imported or exported asset.
+2. **Decoded identity** — exact canonical pixels or audio samples after a
+   specified decode contract.
+3. **Perceptual similarity** — a search/index score used to find candidate
+   relationships.
 
-### P2P Sharing
+Only exact hashes are object identities. Perceptual hashes can collide and can
+change under innocuous transforms; they must never silently substitute one
+master asset for another.
 
-> ⚠️ Roadmap — P2P is scaffolding today (`dits p2p` commands print placeholders and transfer no data; no NAT traversal, no QUIC sync). This is the intended design.
+### Dits-owned edits
 
-Direct peer-to-peer file sharing without central server:
+When Dits records trim, reorder, crop, grade, or composite operations as a
+non-destructive edit graph, unchanged source objects remain referenced rather
+than re-encoded. This is the strongest route to true media version control.
 
-```
-You (NYC)  ◀───────────────────────────────▶  Colleague (NYC)
-                    Direct transfer
-                    Same network/city
+### External flattened exports
 
-Total transferred: 10 GB (direct, deduplicated)
+When an external NLE re-exports a timeline, even visually unchanged frames may
+decode differently because of color conversion, resampling, codec decisions,
+or metadata. Exact reuse may fall to zero. Dits can analyze similarity and
+store optional residuals, but it must not advertise a byte-exact deduplication
+result it did not measure.
+
+### Interchange, not lock-in
+
+The semantic layer should import and export established interchange concepts
+where possible. OpenTimelineIO is a useful model for editorial timing and
+references. OpenAssetIO is useful for resolving and publishing assets across
+tools. OpenUSD is relevant for composed scene graphs. C2PA is relevant for
+signed provenance and ingredient relationships.
+
+Dits should own its immutable object graph and compatibility rules, not invent
+a proprietary editing application or codec as its first move.
+
+## 8. Deduplication metrics
+
+“Deduplication ratio” is ambiguous unless the formula is stated. Dits
+benchmarks should report at least:
+
+- logical bytes represented,
+- physical new bytes written,
+- bytes already present,
+- object and chunk counts,
+- manifest/index overhead,
+- compression and encryption mode,
+- elapsed wall time,
+- peak resident memory,
+- read/write I/O, and
+- corpus plus mutation recipe.
+
+Useful derived values include:
+
+```text
+reuse ratio       = reused logical bytes / logical bytes processed
+write amplification = physical bytes written / new logical bytes
+storage factor    = physical stored bytes / logical represented bytes
 ```
 
-**Planned security:**
-- AES-256-GCM encryption
-- SPAKE2 key exchange
-- BLAKE3 integrity verification
+Do not mix projected network savings with measured local storage reuse.
 
-### Enterprise Features
+## 9. Object-store safety
 
-- **Audit logging:** All operations logged for compliance
-- **Access control:** Role-based permissions
-- **Retention policies:** Automatic data lifecycle management
-- **Replication:** Multi-site, multi-cloud redundancy
+The loose object store verifies chunk and blob checksums when reading. New
+object writes are completed in a temporary file and published without
+replacement so readers do not observe a partially written destination.
 
-## Next Steps
+This is only the first durability layer. A mature store also needs:
 
-- [Getting Started](../user-guide/getting-started.md) - Try Dits
-- [CLI Reference](../reference/cli.md) - Complete command reference
-- [Architecture Overview](../architecture/overview.md) - Technical deep dive
-- [Performance Tuning](../operations/performance-tuning.md) - Optimize for your workflow
+- crash-recovery tests,
+- concurrent-writer tests,
+- directory and metadata durability policy,
+- quarantine of corrupt objects,
+- repair from another verified copy,
+- pack/index checksums, and
+- transactional ref updates.
 
+Garbage collection must prove reachability from all protected roots before
+removing an object.
 
+## 10. Encryption and privacy
 
+Content addressing leaks equality: observers who can see object identifiers or
+access patterns may learn that two repositories contain the same bytes.
 
+Dits should distinguish three modes:
+
+1. **Plain verified CAS** — maximum deduplication, no confidentiality.
+2. **Repository-key encryption** — confidentiality within a trust domain;
+   cross-key deduplication is intentionally lost.
+3. **Message-locked/convergent encryption** — preserves equality-based
+   deduplication but leaks equality and can enable guessing attacks against
+   predictable content.
+
+Convergent encryption is a policy trade-off, not “encryption with no cost.”
+Threat models and repository mode must be explicit.
+
+Telemetry is independent from repository encryption. It is disabled by default
+and must never include paths, argument values, machine identifiers, repository
+names, or content.
+
+## 11. Remote synchronization
+
+**Maturity: Design. Network push/pull/fetch/P2P are not shipped contracts.**
+
+The protocol should be defined by verifiable operations, not by a transport
+brand:
+
+1. Negotiate protocol and object-format versions.
+2. Advertise refs and capabilities.
+3. Determine missing immutable objects.
+4. Transfer bounded streams with digest and length verification.
+5. Commit objects to the local CAS only after verification.
+6. Update refs with compare-and-swap semantics.
+7. Detect divergence; never overwrite it as a side effect of “sync.”
+8. Resume from verified object or range boundaries.
+
+Bloom filters may reduce negotiation traffic, but they are advisory. False
+positives must be detected by final object verification.
+
+QUIC is a potential transport because independent streams reduce
+head-of-line coupling and connections can survive address changes. The object
+protocol should also be implementable over ordinary HTTP so the storage model
+does not depend on one networking stack.
+
+## 12. Virtual hydration
+
+**Maturity: Experimental and feature-gated.**
+
+A virtual filesystem can expose a large commit without materializing every
+object. The read path maps a file offset to manifest ranges, obtains verified
+objects from local or remote storage, and returns only requested bytes.
+
+Correctness precedes latency:
+
+- reads must match a fully materialized checkout,
+- cache entries must be verified,
+- missing remote support must fail explicitly,
+- writes need copy-on-write isolation,
+- eviction cannot remove protected dirty data, and
+- unmount/crash behavior must be tested per platform.
+
+“Partial clone” and “on-demand hydration” are not complete until a real remote
+object source is wired to the same verification path.
+
+## 13. Performance principles
+
+Dits performance claims follow these rules:
+
+- Bound memory independently of file size.
+- Avoid duplicate full-file buffers.
+- Avoid serializing into one format and probing another on every read.
+- Batch tiny objects to reduce filesystem metadata overhead.
+- Preserve verification when adding caching, mmap, direct I/O, or networking.
+- Measure cold cache and warm cache separately.
+- Compare identical fidelity and durability contracts.
+- Store raw benchmark output with the commit and corpus recipe.
+
+The optimization sequence is documented in
+[`performance/engineering-plan.md`](performance/engineering-plan.md).
+
+## 14. Current versus future summary
+
+| Concept | Current state |
+|---|---|
+| BLAKE3 exact content IDs | Current |
+| FastCDC byte chunking | Current |
+| Loose local object store | Current |
+| Local manifests, commits, branches, checkout | Current |
+| Hybrid Git text storage | Current |
+| MP4 structure-aware path | Current with a bounded support matrix |
+| FACR frame/photo workflows | Experimental |
+| FUSE mount | Experimental and feature-gated |
+| Packfiles and multi-pack index | Design |
+| Bounded-memory streaming ingest | Design priority |
+| Remote CAS protocol | Design |
+| QUIC/P2P transfer | Scaffolding/design |
+| Hosted REST/API/SDK platform | Historical/design, not current |
+| C2PA/OTIO/OpenAssetIO/OpenUSD integration | Design |
+| Public conformance suite | Design priority |
+
+## 15. The stable mental model
+
+```text
+working file
+  -> exact full-content identity
+  -> content-defined byte chunks
+  -> immutable file manifest
+  -> immutable repository manifest
+  -> commit graph
+  -> optional media structure
+  -> optional semantic edit and provenance graph
+  -> optional verified remote transport
+```
+
+The lower layers must remain useful without the higher layers. Every higher
+layer must preserve the ability to verify and reconstruct the exact objects it
+references.

@@ -1,240 +1,161 @@
-# Dits Documentation Hub
+# Dits Documentation
 
-This folder captures the Dits Master Specification in a navigable structure. Use the links below to explore architecture, tech stack, data structures, roadmap, workflows, and the immediate execution plan.
+Dits is a local-first version-control system for large binary and media-heavy
+projects. The canonical implementation is the Rust CLI in `apps/cli` plus the
+shared chunking and hashing engine in `packages/dits-core`.
 
----
+This documentation uses explicit maturity labels so implemented behavior,
+experiments, design research, and historical material cannot be mistaken for
+one another.
 
-## Implementation Status
+## Documentation truth hierarchy
 
-| Phase | Name | Status | Description |
-|-------|------|--------|-------------|
-| 1 | Engine | ✅ Complete | Local chunking, deduplication, commit/checkout |
-| 2 | Atom Exploder | ✅ Complete | MP4/ISOBMFF structure-aware parsing |
-| 3 | Virtual File System | ✅ Complete | FUSE mount for on-demand hydration |
-| 3.5 | Git Parity | ✅ Complete | Branching, tags, diff, merge, stash, config |
-| 3.6 | Hybrid Storage | ✅ Complete | Git+Dits storage for optimal text/binary handling |
-| 4 | POC & Introspection | ✅ Complete | Dedup stats, inspect-file, repo-stats, Redis caching |
-| 4b | Network Sync | 🚧 Scaffolding | QUIC/P2P/push/pull are stubs that print placeholders. Only local-filesystem clone works. |
-| 5 | Conflict & Locking | ✅ Complete (local) | Binary locks, visual diff, conflict resolution |
-| FACR | Frame Engine | 🚧 In Progress | Frame-addressable video + photo edit-log. Real & working: `facr-add/checkout/trim`, `photo-add/edit/render`. Audio + production codecs pending. |
-| 6 | Hologram Layer | 🚧 In Progress | Proxy-based editing workflows |
-| 7 | Dependency Graph | ✅ Complete | Project file parsing, creative ecosystem |
-| 8 | Deep Freeze | 🚧 Planned | Tiered storage lifecycle |
-| 9 | Black Box | 🚧 Planned | Client-side encryption |
+When two documents disagree, use this order:
 
-> **Honest status note:** the **local-first engine** at `apps/cli` is the canonical product and works today. A former backend crate workspace (`dits-api`, `dits-worker`, `dits-db`, `dits-storage`, etc.) was quarantined to `legacy/backend-crates` and is **not** current architecture — ignore docs that still describe it as live. **Networking (QUIC/P2P/remote push/pull/sync) is not implemented yet.**
+1. Executable behavior and tests in `apps/cli` and `packages/dits-core`.
+2. [`STATUS.md`](STATUS.md), which records what is wired today.
+3. [`architecture/active-architecture.md`](architecture/active-architecture.md),
+   which maps the current module and dependency boundary.
+4. Current user guides and format documents.
+5. Design research, ADRs, phase plans, and historical documents.
 
-**Comprehensive Testing Infrastructure:**
-- **469 Passing Tests**: Git-inspired shell script framework + Rust unit tests
-- **80+ File Formats**: Creative assets, 3D models, game assets, video, audio
-- **Git Recovery**: Full Git operations on binary assets (diff/merge/blame/reset)
-- **Cross-Platform**: Windows/macOS/Linux filesystem compatibility
-- **Stress Testing**: 1TB workload simulation, concurrency testing
-- **Quality Assurance**: Chainlint for test script validation
+The root `README.md` is an introduction, not a protocol specification.
 
-**Current CLI Commands (60+ Commands):**
-- ✅ **Core Git**: `init`, `add`, `status`, `commit`, `log`, `checkout`, `branch`, `switch`, `diff`, `tag`, `merge`, `reset`, `restore`, `config`, `stash`, `rebase`, `cherry-pick`, `bisect`, `reflog`, `blame`, `show`, `grep`, `worktree`, `sparse-checkout`, `hooks`, `archive`, `describe`, `shortlog`, `maintenance`, `completions`
-- ✅ **Creative Workflows**: `video-init`, `video-add-clip`, `video-show`, `video-list`, `proxy-generate`, `proxy-status`, `proxy-list`, `proxy-delete`
-- ✅ **Asset Management**: `segment`, `assemble`, `roundtrip`, `mount`, `unmount`, `inspect`, `inspect-file`, `repo-stats`, `cache-stats`, `fsck`, `meta-scan`, `meta-show`, `meta-list`
-- ✅ **Frame Engine (FACR)**: `facr-add`, `facr-checkout`, `facr-trim`, `facr-demo` (video), `photo-add`, `photo-edit`, `photo-render` (photos) — frame/edit-log dedup, requires FFmpeg
-- ⚠️ **Collaboration (partial)**: `lock`, `unlock`, `locks`, `login`, `logout`, `change-password`, `audit*` work locally. `remote`, `push`, `pull`, `fetch`, `clone`, `p2p` are **scaffolding** — only local-filesystem `clone` transfers data; networked sync is not implemented yet.
-- ✅ **Lifecycle**: `freeze-init`, `freeze-status`, `freeze`, `thaw`, `freeze-policy`, `encrypt-init`, `encrypt-status`, `dep-check`, `dep-graph`, `dep-list`, `gc`, `clean`
+## Maturity labels
 
----
+Every capability document should use one of these labels near the title.
 
-## Quick Start
+| Label | Meaning |
+|---|---|
+| **Current** | Implemented in the canonical workspace and covered by an executable check or test. |
+| **Experimental** | Wired and usable, but its format, behavior, performance, or fidelity contract may change. |
+| **Design** | Proposed architecture or protocol. It must not be described as shipped. |
+| **Historical** | Preserved context from an earlier architecture; not a current product contract. |
+| **Projected** | A target or model result. It is not a benchmark. |
+| **Measured** | Reproducible result with command, commit, corpus, hardware, and raw output. |
 
-### Basic Workflow
+Words such as “production,” “complete,” “zero-copy,” “unlimited,” “petabyte,”
+or “x% faster” require an executable source of evidence.
+
+## Start here
+
+- [`STATUS.md`](STATUS.md) — implemented versus roadmap.
+- [`concepts.md`](concepts.md) — current concepts and their limits.
+- [`architecture/active-architecture.md`](architecture/active-architecture.md)
+  — current code map, invariants, and maturity boundary.
+- [`research/technical-foundations.md`](research/technical-foundations.md) —
+  source-backed architecture review and long-range design.
+- [`performance/engineering-plan.md`](performance/engineering-plan.md) —
+  bounded-memory ingest, object-store scaling, benchmarks, and acceptance gates.
+- [`education/course-standard.md`](education/course-standard.md) — a systems
+  curriculum and conformance program built around Dits.
+- [`user-guide/cli-reference.md`](user-guide/cli-reference.md) — command
+  reference checked against `dits --help`.
+
+## Current product boundary
+
+### Current
+
+The local-first engine supports content-addressed object storage, FastCDC
+chunking, BLAKE3 verification, manifests and commits, local branches and
+checkout, hybrid Git storage for text, binary locks, MP4/ISOBMFF structure
+handling, metadata/dependency inspection, lifecycle commands, and local
+creative-workflow tools.
+
+The exact command surface is generated by the binary. Run:
+
 ```bash
-# Initialize a repository
-dits init
-
-# Add and commit files (any format: video, 3D, game assets, etc.)
-dits add .
-dits commit -m "Initial project"
-
-# View history and status
-dits log --oneline
-dits status
-
-# Branch and merge
-dits checkout -b feature
-# ... make changes ...
-dits checkout main
-dits merge feature
+cargo build --bin dits
+bash scripts/check-cli-docs.sh
 ```
 
-### Creative Asset Management
-```bash
-# Video editing workflow
-dits video-init "My Project"
-dits video-add-clip footage/shot_001.mp4 --timeline 00:00:00
-dits proxy-generate footage/*.mp4
+### Experimental
 
-# Game development workflow
-dits lock assets/character.fbx  # Prevent conflicts
-# ... edit character ...
-dits add assets/character.fbx
-dits commit -m "Updated character model"
-dits unlock assets/character.fbx
+FACR video/photo workflows, FUSE mounting, media proxy/segment pipelines,
+streaming demonstrations, and some advanced Git-parity commands are active
+experiments. Their public formats and performance contracts are not stable.
 
-# 3D animation workflow
-dits add models/character.obj materials/*.mtl
-dits commit -m "Character model with materials"
+### Design, not shipped
+
+Network push, pull, fetch, remote sync, P2P transport, hosted coordination,
+multi-user distributed locking, public REST APIs, language SDKs, Kubernetes,
+PostgreSQL/Redis services, and cloud lifecycle tiers are design material unless
+`STATUS.md` explicitly moves them into the current boundary.
+
+### Historical
+
+The former cloud/backend workspace lives under `legacy/backend-crates`. It is a
+separate nested Cargo workspace for research and archaeological reference. It
+is not a dependency of the canonical engine.
+
+## Documentation map
+
+### Architecture and decisions
+
+- `architecture/active-architecture.md` — current module graph.
+- `adr/` — accepted or proposed architectural decisions.
+- `architecture/` — mixed current and design documents. Older documents must be
+  read with their maturity banner and `STATUS.md`.
+- `formats/` and `data-structures/` — current formats where they match code;
+  otherwise design drafts.
+
+### Research
+
+- `research/technical-foundations.md` — audit, external systems research,
+  proposed object model, interoperability, security, and milestones.
+- `research/` — source maps, experiments, and design investigations.
+- `superpowers/specs/` and `superpowers/plans/` — implementation proposals and
+  historical planning records, not product promises.
+
+### Performance
+
+- `performance/engineering-plan.md` — canonical optimization sequence and
+  regression gates.
+- `performance/benchmarks.md` and `benchmarks/` — results are authoritative only
+  when they include a reproducible environment and raw output.
+
+### User and contributor material
+
+- `user-guide/` — CLI and workflows.
+- `development/` — contributor guidance.
+- `testing/` — testing strategy and compatibility plans.
+- `guides/` — audience workflows; verify commands against the CLI reference.
+
+### Historical hosted-service material
+
+Documents under `api/`, `database/`, `deployment/`, `operations/`, `sdks/`, and
+parts of `architecture/` were written for a larger hosted system. Until they
+are individually rewritten and relabeled, treat them as **Design** or
+**Historical**, not operational instructions for the current repository.
+
+## Documentation acceptance checklist
+
+A pull request that documents a capability should answer all of the following:
+
+1. What maturity label applies?
+2. Which module, command, test, fixture, or benchmark proves the statement?
+3. Is the behavior a compatibility contract or an implementation detail?
+4. What failure modes and data-loss boundaries exist?
+5. Which operating systems and optional features were actually exercised?
+6. Are performance numbers measured, projected, or inherited from an upstream
+   project?
+7. Does the document distinguish byte-level deduplication from semantic media
+   equivalence?
+8. Does the document avoid implying that a local demo is a remote service?
+
+## Architectural principle
+
+Dits should remain small at its trust core:
+
+```text
+immutable bytes
+  -> verified content-addressed objects
+  -> deterministic manifests and commit graph
+  -> optional structure-aware media objects
+  -> optional semantic edit/provenance graph
+  -> optional transport and hosted coordination
 ```
 
-### Advanced Features
-```bash
-# Mount as virtual filesystem
-dits mount /mnt/project
-
-# Collaborate with team (roadmap — push transfers no data today)
-dits remote add origin https://example.com/project
-dits push origin main   # 🚧 prints a placeholder; networked sync not implemented
-
-# Lock binary assets for editing
-dits lock assets/*.blend --reason "Rigging character"
-
-# View repository statistics
-dits repo-stats
-dits cache-stats
-```
-
----
-
-## Core Architecture
-
-- **[Hybrid Architecture](architecture/hybrid-architecture.md)** - The "Gold Standard" design: Universal Deduplication + File-Type Awareness
-- [Architecture Overview](architecture/overview.md)
-- [Master Architecture](architecture/master-architecture.md)
-- [Open Problems & Solutions](architecture/open-problems-solutions.md) - Detailed solutions for 40 research questions
-- [Tech Stack](architecture/tech-stack.md)
-
----
-
-## Data Structures
-
-- [Chunk](data-structures/chunk.md) - Content-addressed binary pieces
-- [Asset](data-structures/asset.md) - File metadata and manifest
-- [Commit](data-structures/commit.md) - Snapshot with parent pointers
-- [Branch](data-structures/branch.md) - Mutable ref to commit
-- [Tag](data-structures/tag.md) - Immutable ref to commit
-- [Diff](data-structures/diff.md) - Change representation
-- [Lock](data-structures/lock.md) - Binary file locking (Phase 5)
-- [Config](data-structures/config.md) - Repository configuration
-
----
-
-## User Guide
-
-- [CLI Reference](user-guide/cli-reference.md) - Complete command documentation
-- [Getting Started](user-guide/getting-started.md) - First steps with Dits
-
----
-
-## Roadmap & Action Plans
-
-- [Roadmap Overview](roadmap/phases.md) - 9-phase development plan
-
-### Completed Phases
-- [Phase 1: Engine](action-plan/phase1.md) - Local chunking and deduplication
-- [Phase 2: Atom Exploder](action-plan/phase2.md) - MP4 structure awareness
-- [Phase 3: Virtual File System](action-plan/phase3.md) - FUSE mounting
-- [Phase 3.5: Git Parity](action-plan/phase3.5-git-parity.md) - Branching, tags, merge, stash
-
-### Planned Phases
-- [Phase 4: Collaboration & Sync](action-plan/phase4.md) - QUIC transport, push/pull
-- [Phase 5: Conflict & Locking](action-plan/phase5.md) - Binary locks
-- [Phase 6: Hologram Layer](action-plan/phase6.md) - Proxy editing
-- [Phase 7: Dependency Graph](action-plan/phase7.md) - Project file parsing
-- [Phase 8: Deep Freeze](action-plan/phase8.md) - Tiered storage
-- [Phase 9: Black Box](action-plan/phase9.md) - Client-side encryption
-
----
-
-## Workflows
-
-- [Quick Fix Workflow](workflows/quick-fix.md) - Fast iteration pattern
-
----
-
-## API & Formats
-
-- [Manifest Format](formats/manifest.md) - File reconstruction recipe
-- [Index Format](formats/index.md) - Staging area structure
-- [Wire Protocol](api/wire-protocol.md) - QUIC transport frames
-
----
-
-## Performance
-
-Dits is engineered for maximum throughput with large media files. Our performance documentation covers:
-
-### Benchmarks & Metrics
-- **[Performance Benchmarks](performance/benchmarks.md)** - Comprehensive benchmark results and advanced optimization techniques
-  - SIMD acceleration (AVX2, AVX-512, ARM NEON)
-  - Zero-copy I/O operations
-  - Memory pool allocation
-  - io_uring async I/O
-  - Hardware-specific tuning
-
-### Algorithm Optimizations
-- **[FastCDC Chunking](algorithms/fastcdc.md)** - Content-defined chunking with SIMD acceleration and streaming support
-  - AVX2/AVX-512 implementations for x86_64
-  - ARM NEON/Apple Silicon optimizations
-  - Zero-copy mmap chunking
-  - Rayon parallel processing
-- **[Delta Sync](algorithms/delta-sync.md)** - Efficient transfer with minimal data movement
-  - Zero-copy networking with buffer pools
-  - Pipelined transfers with backpressure
-  - Speculative prefetching
-  - Bandwidth estimation and adaptive scheduling
-
-### Network Performance
-- **[QUIC Protocol](architecture/quic-protocol.md)** - High-performance transport layer
-  - BBR/CUBIC congestion control
-  - Multi-path QUIC (experimental)
-  - Connection pooling
-  - Zero-copy splice operations
-  - Profile configs: high-throughput, low-latency, satellite
-
-### Production Tuning
-- **[Performance Tuning Guide](operations/performance-tuning.md)** - Comprehensive production optimization
-  - Linux io_uring configuration
-  - Direct I/O and memory-mapped stores
-  - NUMA-aware memory allocation
-  - Lock-free data structures
-  - Database batch operations
-  - Storage device tuning (NVMe, SSD, HDD)
-  - Network interface optimization
-
-### Performance Targets
-
-> 🚧 The **Upload (LAN)** and **Clone 10GB repo** rows below depend on networked sync /
-> QUIC, which is **not implemented** — those are projected design targets, not measured.
-> Local rows (chunking, hashing, status, VFS open) reflect the working local engine.
-
-| Operation | Target | Conditions |
-|-----------|--------|------------|
-| Chunk 1GB file | < 2s | SIMD + parallel |
-| BLAKE3 hash 1GB | < 500ms | Rayon parallel |
-| Upload (LAN) | > 800 MB/s | QUIC + zero-copy (roadmap — projected) |
-| Clone 10GB repo | < 90s | 1 Gbps link (roadmap — projected) |
-| Status check | < 50ms | Cached index |
-| VFS file open | < 30ms | Prefetched metadata |
-
----
-
-## Operations
-
-- [Self-Hosting Guide](operations/self-hosting.md)
-- [Performance Tuning](operations/performance-tuning.md)
-- [Runbooks](operations/runbooks/) - Incident response
-
----
-
-## Development
-
-- [Testing Strategy](testing/strategy.md)
-- [Contributing Guide](development/contributing.md)
-
+Higher layers may add compute and collaboration. They must not weaken local
+verification, mutate content-addressed objects, or create a second incompatible
+engine.
