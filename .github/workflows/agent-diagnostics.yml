@@ -8,6 +8,32 @@ permissions:
   contents: read
 
 jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Export repository snapshot
+        run: |
+          mkdir -p snapshot
+          git rev-parse 'HEAD^{tree}' > snapshot/head.tree
+          git rev-parse HEAD > snapshot/head.commit
+          tar \
+            --exclude=.git \
+            --exclude=target \
+            --exclude=node_modules \
+            --exclude=snapshot \
+            -czf snapshot/repository.tar.gz .
+
+      - name: Upload snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-snapshot
+          path: snapshot
+          if-no-files-found: error
+
   diagnostics:
     runs-on: ubuntu-latest
     steps:
@@ -38,15 +64,6 @@ jobs:
           git diff -- apps/cli/src/config/mod.rs apps/cli/src/store/objects.rs apps/cli/src/telemetry.rs > diagnostics/rustfmt.patch
           git rev-parse 'HEAD^{tree}' > diagnostics/head.tree
           git rev-parse HEAD > diagnostics/head.commit
-
-      - name: Export repository snapshot
-        run: |
-          tar \
-            --exclude=.git \
-            --exclude=target \
-            --exclude=node_modules \
-            --exclude=diagnostics \
-            -czf diagnostics/repository.tar.gz .
 
       - name: Export audit result
         run: |
