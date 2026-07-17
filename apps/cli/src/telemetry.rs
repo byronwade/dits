@@ -43,17 +43,11 @@ pub struct TelemetryEvent {
     pub session_id: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct TelemetryConfig {
     pub enabled:   bool,
     pub user_id:   String,
     pub last_sent: u64,
-}
-
-impl Default for TelemetryConfig {
-    fn default() -> Self {
-        Self { enabled: false, user_id: String::new(), last_sent: 0 }
-    }
 }
 
 pub struct TelemetryManager {

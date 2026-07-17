@@ -149,63 +149,6 @@ pub fn normalize_separators(path: &str) -> String {
     }
 }
 
-#[cfg(test)]
-mod path_tests {
-    #[cfg(unix)]
-    use tempfile::tempdir;
-
-    use super::*;
-
-    #[test]
-    fn repository_paths_are_normalized_and_confined() {
-        assert_eq!(normalize_repo_input_path("./media/shot.mov/").unwrap(), "media/shot.mov");
-        assert_eq!(normalize_repo_input_path(".").unwrap(), ".");
-        assert_eq!(normalize_repo_input_path("./").unwrap(), ".");
-
-        for invalid in ["../outside", "/absolute", "C:/outside", "media//shot.mov", ".dits/HEAD"] {
-            assert!(normalize_repo_input_path(invalid).is_err(), "accepted {invalid}");
-        }
-
-        // On Unix a backslash is a literal, non-portable filename character.
-        // On Windows it is a native separator and is normalized to `/`.
-        #[cfg(not(windows))]
-        assert!(normalize_repo_input_path("media\\shot.mov").is_err());
-
-        #[cfg(windows)]
-        assert_eq!(normalize_repo_input_path("media\\shot.mov").unwrap(), "media/shot.mov");
-    }
-
-    #[cfg(unix)]
-    #[test]
-    fn safe_join_rejects_symlink_ancestors() {
-        use std::os::unix::fs::symlink;
-
-        let root = tempdir().unwrap();
-        let outside = tempdir().unwrap();
-        symlink(outside.path(), root.path().join("escape")).unwrap();
-
-        assert!(safe_join_repo_path(root.path(), "escape/file.bin").is_err());
-    }
-
-    #[test]
-    fn bounded_bincode_keeps_legacy_encoding_and_rejects_oversized_values() {
-        let value = vec![7u8; 32];
-        let mut encoded = bincode::serialize(&value).unwrap();
-
-        assert_eq!(deserialize_bincode_with_limit::<Vec<u8>>(&encoded, 1024).unwrap(), value);
-        assert!(deserialize_bincode_with_limit::<Vec<u8>>(&encoded, 8).is_err());
-
-        // `bincode::deserialize` historically accepts trailing bytes. Keep
-        // that compatibility behavior while adding the allocation limit.
-        encoded.extend_from_slice(b"legacy trailing bytes");
-        assert_eq!(deserialize_bincode_with_limit::<Vec<u8>>(&encoded, 1024).unwrap(), value);
-
-        let mut hostile = bincode::serialize(&Vec::<u8>::new()).unwrap();
-        hostile[..std::mem::size_of::<u64>()].copy_from_slice(&u64::MAX.to_le_bytes());
-        assert!(deserialize_bincode_with_limit::<Vec<u8>>(&hostile, 1024).is_err());
-    }
-}
-
 /// Format bytes as human-readable string with consistent formatting.
 /// Uses 2 decimal places for MB/GB, 0 for KB/bytes for consistency.
 pub fn format_bytes(bytes: u64) -> String {
@@ -288,5 +231,62 @@ pub fn format_size_diff(current_size: u64, previous_size: u64) -> String {
         format!("-{}", format_bytes(previous_size - current_size))
     } else {
         "~".to_string()
+    }
+}
+
+#[cfg(test)]
+mod path_tests {
+    #[cfg(unix)]
+    use tempfile::tempdir;
+
+    use super::*;
+
+    #[test]
+    fn repository_paths_are_normalized_and_confined() {
+        assert_eq!(normalize_repo_input_path("./media/shot.mov/").unwrap(), "media/shot.mov");
+        assert_eq!(normalize_repo_input_path(".").unwrap(), ".");
+        assert_eq!(normalize_repo_input_path("./").unwrap(), ".");
+
+        for invalid in ["../outside", "/absolute", "C:/outside", "media//shot.mov", ".dits/HEAD"] {
+            assert!(normalize_repo_input_path(invalid).is_err(), "accepted {invalid}");
+        }
+
+        // On Unix a backslash is a literal, non-portable filename character.
+        // On Windows it is a native separator and is normalized to `/`.
+        #[cfg(not(windows))]
+        assert!(normalize_repo_input_path("media\\shot.mov").is_err());
+
+        #[cfg(windows)]
+        assert_eq!(normalize_repo_input_path("media\\shot.mov").unwrap(), "media/shot.mov");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn safe_join_rejects_symlink_ancestors() {
+        use std::os::unix::fs::symlink;
+
+        let root = tempdir().unwrap();
+        let outside = tempdir().unwrap();
+        symlink(outside.path(), root.path().join("escape")).unwrap();
+
+        assert!(safe_join_repo_path(root.path(), "escape/file.bin").is_err());
+    }
+
+    #[test]
+    fn bounded_bincode_keeps_legacy_encoding_and_rejects_oversized_values() {
+        let value = vec![7u8; 32];
+        let mut encoded = bincode::serialize(&value).unwrap();
+
+        assert_eq!(deserialize_bincode_with_limit::<Vec<u8>>(&encoded, 1024).unwrap(), value);
+        assert!(deserialize_bincode_with_limit::<Vec<u8>>(&encoded, 8).is_err());
+
+        // `bincode::deserialize` historically accepts trailing bytes. Keep
+        // that compatibility behavior while adding the allocation limit.
+        encoded.extend_from_slice(b"legacy trailing bytes");
+        assert_eq!(deserialize_bincode_with_limit::<Vec<u8>>(&encoded, 1024).unwrap(), value);
+
+        let mut hostile = bincode::serialize(&Vec::<u8>::new()).unwrap();
+        hostile[..std::mem::size_of::<u64>()].copy_from_slice(&u64::MAX.to_le_bytes());
+        assert!(deserialize_bincode_with_limit::<Vec<u8>>(&hostile, 1024).is_err());
     }
 }
