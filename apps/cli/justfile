@@ -39,15 +39,15 @@ test-chainlint:
 
 # Build all crates
 build:
-    cargo build --all-targets
+    cargo build --locked --all-targets
 
 # Build in release mode
 build-release:
-    cargo build --release --all-targets
+    cargo build --locked --release --all-targets
 
 # Run all tests
 test:
-    cargo nextest run 2>/dev/null || cargo test
+    cargo nextest run --locked 2>/dev/null || cargo test --locked
 
 # Run shell script integration tests
 test-integration:
@@ -169,15 +169,15 @@ test-qa-extended: test-cross-platform test-network-failures test-aging test-mass
 
 # Run tests for a specific crate
 test-crate crate:
-    cargo test -p {{crate}}
+    cargo test --locked -p {{crate}}
 
 # Run tests with coverage
 coverage:
-    cargo tarpaulin --out Html --output-dir target/coverage
+    cargo tarpaulin --locked --out Html --output-dir target/coverage
 
 # Run clippy lints
 lint:
-    cargo clippy --all-targets --all-features -- -D warnings
+    cargo clippy --locked --all-targets --all-features -- -D warnings
 
 # Format code
 fmt:
@@ -205,11 +205,11 @@ watch-lint:
 
 # Generate and open documentation
 docs:
-    cargo doc --no-deps --open
+    cargo doc --locked --no-deps --open
 
 # Build all documentation
 docs-all:
-    cargo doc --all-features --document-private-items
+    cargo doc --locked --all-features --document-private-items
 
 # Serve documentation locally
 docs-serve:
@@ -229,14 +229,14 @@ db-stop:
 
 # Run database migrations
 db-migrate:
-    cargo run --bin dits-migrate
+    cargo run --locked --bin dits-migrate
 
 # Reset database (WARNING: destructive)
 db-reset:
     docker-compose down -v
     docker-compose up -d postgres redis
     sleep 3
-    cargo run --bin dits-migrate
+    cargo run --locked --bin dits-migrate
 
 # Connect to local database
 db-connect:
@@ -248,7 +248,7 @@ db-connect:
 
 # Run API server
 server:
-    cargo run --bin dits-server
+    cargo run --locked --bin dits-server
 
 # Run API server in watch mode
 server-watch:
@@ -256,7 +256,7 @@ server-watch:
 
 # Run API server in release mode
 server-release:
-    cargo run --release --bin dits-server
+    cargo run --locked --release --bin dits-server
 
 # ============================================================================
 # CLI
@@ -264,7 +264,7 @@ server-release:
 
 # Run CLI command
 cli *args:
-    cargo run --bin dits -- {{args}}
+    cargo run --locked --bin dits -- {{args}}
 
 # Install CLI locally
 cli-install:
@@ -276,15 +276,15 @@ cli-install:
 
 # Run all benchmarks
 bench:
-    cargo bench
+    cargo bench --locked
 
 # Run specific benchmark
 bench-name name:
-    cargo bench -- {{name}}
+    cargo bench --locked -- {{name}}
 
 # Run benchmarks and compare to baseline
 bench-compare:
-    cargo bench -- --save-baseline new
+    cargo bench --locked -- --save-baseline new
     critcmp baseline new
 
 # ============================================================================
@@ -301,7 +301,7 @@ release-check:
 
 # Build release binaries
 release-build:
-    cargo build --release
+    cargo build --locked --release
     @echo "Binaries in target/release/"
 
 # ============================================================================

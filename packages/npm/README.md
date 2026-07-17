@@ -64,7 +64,7 @@ build the repository source directly:
 ```bash
 git clone https://github.com/byronwade/dits.git
 cd dits
-cargo build --release -p dits
+cargo build --locked --release -p dits
 ./target/release/dits --version
 ```
 

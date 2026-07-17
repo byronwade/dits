@@ -565,7 +565,7 @@ mod tests {
         store.init().unwrap();
 
         let data = b"\x80\x81\x82not-json";
-        let hash = Hasher::hash(&data);
+        let hash = Hasher::hash(data);
         let path = store.object_path(ObjectType::Manifest, &hash);
         assert!(write_atomic_if_missing(&path, data).unwrap());
 

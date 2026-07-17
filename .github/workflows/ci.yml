@@ -37,19 +37,6 @@ jobs:
       - name: Install cargo-audit
         run: cargo install --locked cargo-audit
 
-      # Temporary bootstrap for repositories created before the application
-      # lockfile was committed. The artifact lets maintainers review and add the
-      # exact graph; once Cargo.lock exists, this command is a no-op update.
-      - name: Resolve application dependency graph
-        run: cargo generate-lockfile
-
-      - name: Upload resolved Cargo lockfile
-        uses: actions/upload-artifact@v4
-        with:
-          name: cargo-lockfile
-          path: Cargo.lock
-          if-no-files-found: error
-
       # `--deny warnings` would also fail on informational advisories
       # (unmaintained / unsound) that have no patched release in our current
       # dependency tree. Each is tracked with a rationale in .cargo/audit.toml
@@ -102,10 +89,10 @@ jobs:
         run: cargo +nightly fmt --all -- --check
 
       - name: Run clippy
-        run: cargo +stable clippy --all-targets --all-features -- -D warnings
+        run: cargo +stable clippy --locked --all-targets --all-features -- -D warnings
 
       - name: Check documentation
-        run: cargo doc --no-deps --document-private-items
+        run: cargo doc --locked --no-deps --document-private-items
 
       - name: Check CLI docs match the binary
         run: bash scripts/check-cli-docs.sh
@@ -140,14 +127,14 @@ jobs:
         run: cargo install --locked cargo-nextest
 
       - name: Run tests with coverage
-        run: cargo nextest run --profile ci
+        run: cargo nextest run --locked --profile ci
 
       - name: Generate coverage report
         continue-on-error: true
         run: |
           cargo install --locked cargo-tarpaulin
           mkdir -p coverage
-          cargo tarpaulin --out Xml --output-dir coverage
+          cargo tarpaulin --locked --out Xml --output-dir coverage
 
       - name: Upload coverage to Codecov
         continue-on-error: true
@@ -180,7 +167,7 @@ jobs:
 
       - name: Build CLI
         working-directory: apps/cli
-        run: cargo build --release
+        run: cargo build --locked --release
 
       - name: Run integration tests
         working-directory: apps/cli
@@ -231,7 +218,7 @@ jobs:
 
       - name: Build CLI
         working-directory: apps/cli
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --locked --release --target ${{ matrix.target }}
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -318,7 +305,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ffmpeg git-lfs
 
       - name: Build dits (release)
-        run: cargo build --release -p dits
+        run: cargo build --locked --release -p dits
 
       - name: Comparative harness unit tests
         run: npm run bench:comparative:test
@@ -327,7 +314,7 @@ jobs:
         run: npm test --workspace packages/npm
 
       - name: Engine micro-benchmarks (FastCDC / BLAKE3 / SHA-256)
-        run: cargo test -p dits --release --test benchmarks -- --ignored --nocapture --test-threads=1
+        run: cargo test --locked -p dits --release --test benchmarks -- --ignored --nocapture --test-threads=1
 
       - name: Generate test media
         run: benchmarks/comparative/media/gen-media.sh small
@@ -373,12 +360,6 @@ jobs:
       - name: Install cargo-audit
         run: cargo install --locked cargo-audit
 
-      # Keep the bootstrap CI run auditable before the generated application
-      # lockfile is committed. Remove this alongside the Security Audit
-      # bootstrap step once Cargo.lock is in the repository.
-      - name: Resolve application dependency graph
-        run: cargo generate-lockfile
-
       - name: Scan Rust dependencies
         run: >-
           cargo audit --deny warnings
@@ -423,7 +404,7 @@ jobs:
 
       - name: Build CLI
         working-directory: apps/cli
-        run: cargo build --release
+        run: cargo build --locked --release
 
       - name: Build web app
         run: npm run build --workspace apps/web

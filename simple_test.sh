@@ -11,7 +11,7 @@ echo "=== Simple Dits Performance Test ==="
 if [ ! -f "apps/cli/target/release/dits" ]; then
     echo "Building Dits..."
     cd apps/cli
-    cargo build --release --quiet
+    cargo build --locked --release --quiet
     cd ..
 fi
 
@@ -58,6 +58,5 @@ cd ..
 rm -rf test_repo
 
 echo "✅ All tests passed!"
-
 
 

@@ -88,7 +88,7 @@ dits --version`}</code></pre>
                 <CardContent>
                   <pre className="overflow-x-auto rounded-xl border border-border bg-muted p-4 text-sm"><code>{`git clone https://github.com/byronwade/dits.git
 cd dits
-cargo build --release -p dits
+cargo build --locked --release -p dits
 ./target/release/dits --version`}</code></pre>
                 </CardContent>
               </Card>

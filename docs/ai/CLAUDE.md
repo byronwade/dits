@@ -102,7 +102,7 @@ Before handoff:
 
 ```bash
 cargo fmt --all -- --check
-cargo test --workspace
+cargo test --locked --workspace
 npm --workspace apps/web run test:ci
 npm --workspace apps/web run build
 bash scripts/check-cli-docs.sh

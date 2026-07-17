@@ -110,7 +110,7 @@ jobs:
       - name: Build (cross)
         if: matrix.cross
         working-directory: apps/cli
-        run: cross build --release --target ${{ matrix.target }}
+        run: cross build --locked --release --target ${{ matrix.target }}
 
       - name: Build (native)
         if: "!matrix.cross"
@@ -121,7 +121,7 @@ jobs:
           # it depends on vcruntime140.dll and fails to start where that isn't
           # installed). No-op on macOS/Linux.
           RUSTFLAGS: ${{ runner.os == 'Windows' && '-C target-feature=+crt-static' || '' }}
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --locked --release --target ${{ matrix.target }}
 
       - name: Smoke test (run the freshly built binary)
         if: matrix.smoke

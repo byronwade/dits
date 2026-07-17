@@ -80,7 +80,7 @@ Run the relevant subset and report anything unavailable:
 ```bash
 cargo +nightly fmt --all -- --check
 cargo +stable clippy --all-targets --all-features -- -D warnings
-cargo test --workspace
+cargo test --locked --workspace
 bash scripts/check-cli-docs.sh
 bash scripts/check-product-truth.sh
 npm --workspace apps/web run lint

@@ -83,7 +83,7 @@ function getPlatformKey() {
       `Known release targets: ${knownTargets}\n\n` +
       `Build the repository source directly:\n` +
       `  git clone https://github.com/byronwade/dits.git\n` +
-      `  cd dits && cargo build --release -p dits`
+      `  cd dits && cargo build --locked --release -p dits`
     );
   }
 
@@ -108,7 +108,7 @@ function getBinaryPath() {
       `This published package does not contain that target.\n` +
       `Build the repository source directly:\n` +
       `  git clone https://github.com/byronwade/dits.git\n` +
-      `  cd dits && cargo build --release -p dits\n\n` +
+      `  cd dits && cargo build --locked --release -p dits\n\n` +
       `Or download from GitHub releases:\n` +
       `  https://github.com/byronwade/dits/releases`
     );

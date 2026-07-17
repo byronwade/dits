@@ -38,17 +38,17 @@ export default function DevelopmentPage() {
       <pre><code>{`git clone https://github.com/byronwade/dits.git
 cd dits
 npm ci
-cargo build -p dits
+cargo build --locked -p dits
 npm --workspace apps/web run build`}</code></pre>
 
       <h2>Run locally</h2>
-      <pre><code>{`cargo run -p dits -- --help
+      <pre><code>{`cargo run --locked -p dits -- --help
 npm --workspace apps/web run dev`}</code></pre>
 
       <h2>Verify</h2>
       <pre><code>{`cargo +nightly fmt --all -- --check
 cargo +stable clippy --all-targets --all-features -- -D warnings
-cargo test --workspace
+cargo test --locked --workspace
 npm --workspace apps/web run lint
 npm --workspace apps/web run test:ci
 bash scripts/check-cli-docs.sh

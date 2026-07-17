@@ -628,7 +628,7 @@ dits log`}
       </p>
       <CodeBlock
         language="bash"
-        code={`cargo build --release -p dits --features fuser
+        code={`cargo build --locked --release -p dits --features fuser
 ./target/release/dits mount /mnt/project
 ./target/release/dits unmount /mnt/project`}
       />

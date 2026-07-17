@@ -9,7 +9,7 @@ test counts are observations for a commit, not permanent product claims.
 
     cargo +nightly fmt --all -- --check
     cargo +stable clippy --all-targets --all-features -- -D warnings
-    cargo test --workspace
+    cargo test --locked --workspace
     bash scripts/check-cli-docs.sh
     bash scripts/check-product-truth.sh
     node scripts/check-markdown-links.mjs

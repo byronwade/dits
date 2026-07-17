@@ -38,7 +38,7 @@ export default function ContributingPage() {
 
       <h2>Before a pull request</h2>
       <pre><code>{`cargo +nightly fmt --all -- --check
-cargo test --workspace
+cargo test --locked --workspace
 npm --workspace apps/web run lint
 npm --workspace apps/web run test:ci
 npm --workspace apps/web run build

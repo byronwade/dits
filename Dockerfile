@@ -32,7 +32,7 @@ COPY . .
 # Build only the dits CLI in release mode; `-p dits --bin dits` skips the
 # wasm/web packages that aren't part of the CLI. The trailing --version is a
 # build-time smoke test: the build fails loudly if the binary can't run.
-RUN cargo build --release -p dits --bin dits \
+RUN cargo build --locked --release -p dits --bin dits \
     && cp target/release/dits /usr/local/bin/dits \
     && /usr/local/bin/dits --version
 

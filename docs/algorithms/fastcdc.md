@@ -54,7 +54,7 @@ determinism, reconstruction, verification, and sequential/parallel agreement.
 Run:
 
 ```bash
-cargo test -p dits-core
+cargo test --locked -p dits-core
 ```
 
 See [Core concepts](../concepts.md), [Manifest format](../data-structures/manifest-spec.md),

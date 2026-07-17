@@ -33,7 +33,7 @@ export default function TestingPage() {
       <CodeBlock
         language="bash"
         code={`# Rust unit and integration tests
-cargo test --workspace
+cargo test --locked --workspace
 
 # CLI documentation parity
 bash scripts/check-cli-docs.sh

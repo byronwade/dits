@@ -202,8 +202,8 @@ compatibility analysis, failure tests, and reproducible evidence.
 ```bash
 git clone https://github.com/byronwade/dits.git
 cd dits
-cargo build --workspace
-cargo test --workspace
+cargo build --locked --workspace
+cargo test --locked --workspace
 bash scripts/check-cli-docs.sh
 ```
 

@@ -44,10 +44,10 @@ Prerequisites:
 git clone https://github.com/YOUR_USERNAME/dits.git
 cd dits
 
-cargo build -p dits
+cargo build --locked -p dits
 npm ci
 
-cargo test --workspace
+cargo test --locked --workspace
 npm --workspace apps/web run test:ci
 ```
 
@@ -101,7 +101,7 @@ before handoff:
 ```bash
 cargo +nightly fmt --all -- --check
 cargo +stable clippy --all-targets --all-features -- -D warnings
-cargo test --workspace
+cargo test --locked --workspace
 
 npm --workspace apps/web run lint
 npm --workspace apps/web run test:ci

@@ -18,7 +18,7 @@ BIN="target/debug/dits"
 
 if [[ ! -x "$BIN" ]]; then
   echo "Building dits (debug) ..."
-  cargo build -q --bin dits
+  cargo build --locked -q --bin dits
 fi
 
 # Authoritative command list, straight from the binary (portable: no

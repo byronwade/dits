@@ -78,7 +78,7 @@ dits --version`}
       <CodeBlock
         language="bash"
         code={`rustc -Vv
-cargo build --release -p dits`}
+cargo build --locked --release -p dits`}
       />
 
       <p>
@@ -203,7 +203,7 @@ dits gc --dry-run`}
 
       <CodeBlock
         language="bash"
-        code={`cargo build --release -p dits --features fuser
+        code={`cargo build --locked --release -p dits --features fuser
 ./target/release/dits mount --help`}
       />
 

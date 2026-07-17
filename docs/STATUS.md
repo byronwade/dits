@@ -176,7 +176,7 @@ Not available:
 ## Verification commands
 
 ```bash
-cargo test --workspace
+cargo test --locked --workspace
 bash scripts/check-cli-docs.sh
 npm --workspace apps/web run test:ci
 npm --workspace apps/web run build

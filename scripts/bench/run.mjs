@@ -149,7 +149,7 @@ const allResults = [];
 // 2026-06-02; these replace them against the canonical engine.)
 {
   const rustBenches = run("cargo", [
-    "test", "-p", "dits", "--release", "--test", "benchmarks",
+    "test", "--locked", "-p", "dits", "--release", "--test", "benchmarks",
     "--", "--ignored", "--nocapture", "--test-threads=1",
   ]);
   allResults.push(...extractBenchLines(rustBenches.stdout));

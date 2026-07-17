@@ -43,7 +43,7 @@ fi
 # cargo fmt --check || exit 1
 
 # Example: Run linter
-# cargo clippy -- -D warnings || exit 1
+# cargo clippy --locked -- -D warnings || exit 1
 
 exit 0
 "#;
@@ -138,7 +138,7 @@ const PRE_PUSH_SAMPLE: &str = r#"#!/bin/sh
 # Exit with non-zero to abort the push.
 
 # Example: Run tests before pushing
-# cargo test || exit 1
+# cargo test --locked || exit 1
 
 # Example: Prevent force push to protected branches
 protected_branches='main master'
@@ -174,7 +174,7 @@ SQUASH=$1
 CHANGED_FILES=$(git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD)
 
 if echo "$CHANGED_FILES" | grep -q 'Cargo.toml\|Cargo.lock'; then
-    echo "Dependencies changed, consider running: cargo build"
+    echo "Dependencies changed, consider running: cargo build --locked"
 fi
 
 if echo "$CHANGED_FILES" | grep -q 'package.json\|package-lock.json'; then
@@ -217,7 +217,7 @@ if [ "$CHECKOUT_TYPE" = "1" ]; then
     
     # Example: Check if dependencies changed
     if git diff "$PREV_HEAD" "$NEW_HEAD" --name-only | grep -q 'Cargo.toml'; then
-        echo "Cargo.toml changed, consider running: cargo build"
+        echo "Cargo.toml changed, consider running: cargo build --locked"
     fi
 fi
 
