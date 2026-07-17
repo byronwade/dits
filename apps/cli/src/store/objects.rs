@@ -1,30 +1,32 @@
-//! Content-Addressable Store (CAS) for chunks, manifests, and commits.
+//! Content-addressable store (CAS) for chunks, manifests, commits, and blobs.
 //!
-//! This is the storage layer of the Universal Bucket architecture.
-//! All objects are stored by their content hash, making duplicates impossible.
+//! Objects are immutable and named by a content hash. Writers stage bytes in a
+//! temporary file in the destination directory and link the completed inode
+//! into place without replacement, so readers never observe a partial object.
 //!
 //! Layout:
 //! ```text
 //! .dits/
 //! ├── objects/
 //! │   ├── chunks/
-//! │   │   ├── a7/b9c3d4...  (chunk data by hash)
+//! │   │   ├── a7/b9c3d4...
 //! │   │   └── ...
 //! │   ├── manifests/
-//! │   │   └── {hash}.json
-//! │   └── commits/
-//! │       └── {hash}.json
+//! │   ├── commits/
+//! │   └── blobs/
 //! └── refs/
 //!     ├── HEAD
 //!     └── branches/
 //! ```
 
 use std::{
-    fs, io,
+    fs::{self, OpenOptions},
+    io::{self, Write},
     path::{Path, PathBuf},
 };
 
 use thiserror::Error;
+use uuid::Uuid;
 
 use crate::{
     core::{Chunk, Commit, Hash, Hasher, Manifest},
@@ -53,13 +55,13 @@ pub enum ObjectError {
 /// Type of object in the store.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ObjectType {
-    /// Raw binary chunk (the "lego blocks")
+    /// Raw binary chunk.
     Chunk,
-    /// Manifest (recipe for reconstructing a file)
+    /// Manifest (recipe for reconstructing a file tree).
     Manifest,
-    /// Commit (snapshot of repository state)
+    /// Commit (snapshot metadata and parent pointer).
     Commit,
-    /// Generic blob (for file-type-specific metadata)
+    /// Generic blob (for file-type-specific metadata).
     Blob,
 }
 
@@ -75,7 +77,68 @@ impl ObjectType {
     }
 }
 
-/// Object store for the local .dits directory.
+/// Write an immutable object without exposing a partial destination file.
+///
+/// The temporary file lives beside the destination, which keeps the final
+/// publication on the same filesystem. A hard link is used instead of rename:
+/// unlike a normal Unix rename, it never replaces a destination created by a
+/// competing writer. The temporary name is removed after publication.
+fn write_atomic_if_missing(path: &Path, data: &[u8]) -> io::Result<bool> {
+    if path.exists() {
+        return Ok(false);
+    }
+
+    let parent = path.parent().ok_or_else(|| {
+        io::Error::new(io::ErrorKind::InvalidInput, "object path has no parent directory")
+    })?;
+    fs::create_dir_all(parent)?;
+
+    let file_name = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("object");
+    let temp_path = parent.join(format!(".{file_name}.{}.tmp", Uuid::new_v4().simple()));
+
+    let write_result = (|| -> io::Result<()> {
+        let mut file = OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&temp_path)?;
+        file.write_all(data)?;
+        file.flush()?;
+        file.sync_all()?;
+        Ok(())
+    })();
+
+    if let Err(error) = write_result {
+        let _ = fs::remove_file(&temp_path);
+        return Err(error);
+    }
+
+    match fs::hard_link(&temp_path, path) {
+        Ok(()) => {
+            let _ = fs::remove_file(&temp_path);
+            Ok(true)
+        },
+        Err(error) if error.kind() == io::ErrorKind::AlreadyExists || path.exists() => {
+            let _ = fs::remove_file(&temp_path);
+            Ok(false)
+        },
+        Err(error) => {
+            let _ = fs::remove_file(&temp_path);
+            Err(error)
+        },
+    }
+}
+
+fn looks_like_json(data: &[u8]) -> bool {
+    matches!(
+        data.iter().copied().find(|byte| !byte.is_ascii_whitespace()),
+        Some(b'{') | Some(b'[')
+    )
+}
+
+/// Object store for the local `.dits` directory.
 pub struct ObjectStore {
     /// Root path of the objects directory.
     root:       PathBuf,
@@ -126,7 +189,6 @@ impl ObjectStore {
     /// Get the path for an object.
     fn object_path(&self, obj_type: ObjectType, hash: &Hash) -> PathBuf {
         let hex = hash.to_hex();
-        // Use first 2 chars as subdirectory for distribution
         self.root
             .join(obj_type.dir_name())
             .join(&hex[..2])
@@ -136,44 +198,30 @@ impl ObjectStore {
     // ========== Chunk Operations ==========
 
     /// Store a chunk. Returns true if it was newly stored, false if it already
-    /// existed. If encryption is enabled, the chunk data will be encrypted
-    /// before storage.
+    /// existed. If encryption is enabled, the chunk data is encrypted before
+    /// storage.
     pub fn store_chunk(&self, chunk: &Chunk) -> Result<bool, ObjectError> {
         let path = self.object_path(ObjectType::Chunk, &chunk.hash);
 
-        if path.exists() {
-            // Already stored (dedup!)
-            return Ok(false);
-        }
-
-        // Create parent directory
-        if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent)?;
-        }
-
-        // Encrypt chunk if encryption is enabled
-        let data_to_store = if let Some(config) = &self.encryption {
-            let encrypted = encrypt_chunk(&chunk.data, &config.user_secret).map_err(|e| {
-                ObjectError::SerializationError(format!("Encryption failed: {}", e))
+        if let Some(config) = &self.encryption {
+            let encrypted = encrypt_chunk(&chunk.data, &config.user_secret).map_err(|error| {
+                ObjectError::SerializationError(format!("Encryption failed: {error}"))
             })?;
-
-            // Store as EncryptedChunk
-            bincode::serialize(&encrypted).map_err(|e| {
-                ObjectError::SerializationError(format!("Serialization failed: {}", e))
-            })?
+            let serialized = bincode::serialize(&encrypted).map_err(|error| {
+                ObjectError::SerializationError(format!("Serialization failed: {error}"))
+            })?;
+            write_atomic_if_missing(&path, &serialized).map_err(ObjectError::Io)
         } else {
-            // Store plaintext
-            chunk.data.clone()
-        };
-
-        // Write data
-        fs::write(&path, &data_to_store)?;
-        Ok(true)
+            // Borrow plaintext directly instead of cloning every chunk before
+            // writing it.
+            write_atomic_if_missing(&path, &chunk.data).map_err(ObjectError::Io)
+        }
     }
 
     /// Load a chunk by hash.
-    /// If encryption is enabled, the chunk data will be decrypted after
-    /// loading.
+    ///
+    /// If encryption is enabled, the stored payload is decrypted before its
+    /// plaintext checksum is verified.
     pub fn load_chunk(&self, hash: &Hash) -> Result<Chunk, ObjectError> {
         let path = self.object_path(ObjectType::Chunk, hash);
 
@@ -183,27 +231,23 @@ impl ObjectStore {
 
         let stored_data = fs::read(&path)?;
 
-        // Decrypt chunk if encryption is enabled
         let plaintext_data = if let Some(config) = &self.encryption {
-            // Try to deserialize as EncryptedChunk first
             match bincode::deserialize::<EncryptedChunk>(&stored_data) {
                 Ok(encrypted_chunk) => {
-                    // Decrypt the chunk
-                    decrypt_chunk(&encrypted_chunk, &config.user_secret).map_err(|e| {
-                        ObjectError::SerializationError(format!("Decryption failed: {}", e))
+                    decrypt_chunk(&encrypted_chunk, &config.user_secret).map_err(|error| {
+                        ObjectError::SerializationError(format!("Decryption failed: {error}"))
                     })?
                 },
                 Err(_) => {
-                    // Fall back to treating as plaintext (backwards compatibility)
+                    // Backwards compatibility for repositories that contain
+                    // plaintext chunks but now have encryption enabled.
                     stored_data
                 },
             }
         } else {
-            // No encryption - data is stored as plaintext
             stored_data
         };
 
-        // CRITICAL: Verify checksum on plaintext
         let computed = Hasher::hash(&plaintext_data);
         if computed != *hash {
             return Err(ObjectError::ChecksumMismatch {
@@ -228,23 +272,13 @@ impl ObjectStore {
     }
 
     // ========== Blob Operations ==========
-    // Generic blob storage for file-type-specific metadata (e.g., MP4 atoms)
 
-    /// Store a blob. Returns the hash and whether it was newly stored.
+    /// Store a generic blob. Returns the hash and whether it was newly stored.
     pub fn store_blob(&self, data: &[u8]) -> Result<(Hash, bool), ObjectError> {
         let hash = Hasher::hash(data);
         let path = self.object_path(ObjectType::Blob, &hash);
-
-        if path.exists() {
-            return Ok((hash, false));
-        }
-
-        if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent)?;
-        }
-
-        fs::write(&path, data)?;
-        Ok((hash, true))
+        let was_new = write_atomic_if_missing(&path, data)?;
+        Ok((hash, was_new))
     }
 
     /// Load a blob by hash.
@@ -256,8 +290,6 @@ impl ObjectStore {
         }
 
         let data = fs::read(&path)?;
-
-        // Verify checksum
         let computed = Hasher::hash(&data);
         if computed != *hash {
             return Err(ObjectError::ChecksumMismatch {
@@ -274,7 +306,7 @@ impl ObjectStore {
         self.object_path(ObjectType::Blob, hash).exists()
     }
 
-    // Legacy MP4 methods - now aliases to blob storage
+    // Legacy MP4 methods - now aliases to blob storage.
     #[deprecated(note = "Use store_blob instead")]
     pub fn store_mp4_ftyp(&self, data: &[u8]) -> Result<(Hash, bool), ObjectError> {
         self.store_blob(data)
@@ -297,28 +329,19 @@ impl ObjectStore {
 
     // ========== Manifest Operations ==========
 
-    /// Store a manifest. Returns the hash.
-    /// Uses binary format for Phase 6 performance optimization.
+    /// Store a manifest as JSON and return its content hash.
     pub fn store_manifest(&self, manifest: &Manifest) -> Result<Hash, ObjectError> {
         let data = manifest.to_json();
         let hash = Hasher::hash(data.as_bytes());
         let path = self.object_path(ObjectType::Manifest, &hash);
-
-        if path.exists() {
-            return Ok(hash);
-        }
-
-        if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent)?;
-        }
-
-        fs::write(&path, data)?;
+        let _ = write_atomic_if_missing(&path, data.as_bytes())?;
         Ok(hash)
     }
 
     /// Load a manifest by hash.
-    /// Supports both binary format (Phase 6+) and legacy JSON format for
-    /// backwards compatibility.
+    ///
+    /// Current writers emit JSON. Binary bincode payloads from older
+    /// experiments remain readable for backwards compatibility.
     pub fn load_manifest(&self, hash: &Hash) -> Result<Manifest, ObjectError> {
         let path = self.object_path(ObjectType::Manifest, hash);
 
@@ -327,8 +350,6 @@ impl ObjectStore {
         }
 
         let data = fs::read(&path)?;
-
-        // Verify checksum
         let computed = Hasher::hash(&data);
         if computed != *hash {
             return Err(ObjectError::ChecksumMismatch {
@@ -337,41 +358,27 @@ impl ObjectStore {
             });
         }
 
-        // Try binary format first (Phase 6+), fall back to JSON for backwards
-        // compatibility
-        match bincode::deserialize::<Manifest>(&data) {
-            Ok(manifest) => Ok(manifest),
-            Err(bincode_err) => {
-                // Fall back to JSON deserialization for legacy manifests
-                match String::from_utf8(data) {
-                    Ok(json) => match Manifest::from_json(&json) {
-                        Ok(manifest) => Ok(manifest),
-                        Err(json_err) => {
-                            eprintln!(
-                                "Warning: Manifest file appears to be corrupted (bincode error: \
-                                 {}, JSON error: {}). This may indicate repository corruption.",
-                                bincode_err, json_err
-                            );
-                            Err(ObjectError::SerializationError(format!(
-                                "Manifest file corrupted: {}",
-                                json_err
-                            )))
-                        },
-                    },
-                    Err(utf8_err) => {
-                        eprintln!(
-                            "Warning: Manifest file contains invalid UTF-8 data (bincode error: \
-                             {}, UTF-8 error: {}). This may indicate repository corruption.",
-                            bincode_err, utf8_err
-                        );
-                        Err(ObjectError::SerializationError(format!(
-                            "Manifest file contains invalid UTF-8: {}",
-                            utf8_err
-                        )))
-                    },
-                }
-            },
-        }
+        let json_error = if looks_like_json(&data) {
+            match std::str::from_utf8(&data)
+                .map_err(|error| error.to_string())
+                .and_then(|json| Manifest::from_json(json).map_err(|error| error.to_string()))
+            {
+                Ok(manifest) => return Ok(manifest),
+                Err(error) => Some(error),
+            }
+        } else {
+            None
+        };
+
+        bincode::deserialize::<Manifest>(&data).map_err(|binary_error| {
+            let json_context = json_error
+                .map(|error| format!("; JSON parse error: {error}"))
+                .unwrap_or_default();
+            ObjectError::SerializationError(format!(
+                "Manifest is neither current JSON nor a supported legacy binary payload: \
+                 {binary_error}{json_context}"
+            ))
+        })
     }
 
     // ========== Commit Operations ==========
@@ -379,17 +386,8 @@ impl ObjectStore {
     /// Store a commit.
     pub fn store_commit(&self, commit: &Commit) -> Result<(), ObjectError> {
         let path = self.object_path(ObjectType::Commit, &commit.hash);
-
-        if path.exists() {
-            return Ok(());
-        }
-
-        if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent)?;
-        }
-
         let json = commit.to_json();
-        fs::write(&path, &json)?;
+        let _ = write_atomic_if_missing(&path, json.as_bytes())?;
         Ok(())
     }
 
@@ -404,7 +402,6 @@ impl ObjectStore {
         let json = fs::read_to_string(&path)?;
         let commit: Commit = serde_json::from_str(&json)?;
 
-        // Verify hash matches
         if commit.hash != *hash {
             return Err(ObjectError::ChecksumMismatch {
                 expected: hash.to_hex(),
@@ -417,7 +414,7 @@ impl ObjectStore {
 
     // ========== Stats ==========
 
-    /// Count objects of each type.
+    /// Count chunks, manifests, and commits.
     pub fn count_objects(&self) -> io::Result<(usize, usize, usize)> {
         let count_dir = |obj_type: ObjectType| -> io::Result<usize> {
             let dir = self.root.join(obj_type.dir_name());
@@ -462,6 +459,16 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_atomic_writer_does_not_replace_an_existing_object() {
+        let temp = tempdir().unwrap();
+        let path = temp.path().join("object");
+
+        assert!(write_atomic_if_missing(&path, b"first").unwrap());
+        assert!(!write_atomic_if_missing(&path, b"second").unwrap());
+        assert_eq!(fs::read(path).unwrap(), b"first");
+    }
+
+    #[test]
     fn test_store_and_load_chunk() {
         let temp = tempdir().unwrap();
         let store = ObjectStore::new(temp.path());
@@ -470,15 +477,12 @@ mod tests {
         let data = b"hello world".to_vec();
         let chunk = Chunk::new(data.clone());
 
-        // Store
         let was_new = store.store_chunk(&chunk).unwrap();
         assert!(was_new);
 
-        // Store again (dedup)
         let was_new = store.store_chunk(&chunk).unwrap();
         assert!(!was_new);
 
-        // Load
         let loaded = store.load_chunk(&chunk.hash).unwrap();
         assert_eq!(loaded.data, data);
         assert!(loaded.verify());
@@ -502,6 +506,29 @@ mod tests {
         let loaded = store.load_manifest(&hash).unwrap();
 
         assert_eq!(manifest.len(), loaded.len());
+    }
+
+    #[test]
+    fn test_load_legacy_binary_manifest() {
+        let temp = tempdir().unwrap();
+        let store = ObjectStore::new(temp.path());
+        store.init().unwrap();
+
+        let mut manifest = Manifest::new();
+        manifest.add(crate::core::ManifestEntry::new(
+            "legacy.bin".to_string(),
+            42,
+            Hash::ZERO,
+            vec![],
+        ));
+
+        let data = bincode::serialize(&manifest).unwrap();
+        let hash = Hasher::hash(&data);
+        let path = store.object_path(ObjectType::Manifest, &hash);
+        assert!(write_atomic_if_missing(&path, &data).unwrap());
+
+        let loaded = store.load_manifest(&hash).unwrap();
+        assert_eq!(loaded.len(), 1);
     }
 
     #[test]
@@ -530,11 +557,9 @@ mod tests {
         let chunk = Chunk::new(b"test data".to_vec());
         store.store_chunk(&chunk).unwrap();
 
-        // Corrupt the stored chunk
         let path = store.object_path(ObjectType::Chunk, &chunk.hash);
         fs::write(&path, b"corrupted data").unwrap();
 
-        // Loading should fail due to checksum mismatch
         let result = store.load_chunk(&chunk.hash);
         assert!(matches!(result, Err(ObjectError::ChecksumMismatch { .. })));
     }
