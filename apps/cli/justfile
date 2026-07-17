@@ -123,10 +123,6 @@ test-massive-concurrency:
 test-git-recovery:
     cd t && ./qa/t1700-git-recovery-creative-assets.sh
 
-# Validate shell tests with the bundled chainlint implementation
-test-chainlint:
-    cd t && find . -name "t[0-9][0-9][0-9][0-9]*.sh" -exec perl chainlint.pl {} \;
-
 # ============================================================================
 # Documentation and product-truth gates
 # ============================================================================

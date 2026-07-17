@@ -152,6 +152,9 @@ forbid .github/workflows/release.yml \
 forbid Dockerfile \
   "The source-built CLI image is described as a supported cross-platform distribution" \
   'supported, cross-platform|supported cross-platform'
+forbid apps/cli/justfile \
+  "The current task file exposes removed backend, client, or package targets" \
+  'dits-server|dits-migrate|docker-compose|crates/dits-client|dits-(parsers|storage|protocol|sdk)'
 
 if [[ -e scripts/install.sh ]]; then
   echo "✗ A shell installer exists while every public install page says none is published"
@@ -186,6 +189,12 @@ require apps/web/src/app/docs/cli/p2p/page.tsx 'every P2P operation fails'
 require .github/workflows/release.yml 'Verify tag matches the source version'
 require .github/workflows/release.yml 'Manual Download'
 require Dockerfile 'not a published or supported Dits image'
+require AGENTS.md 'cargo \+stable clippy --locked --all-targets --all-features'
+require docs/testing/test-plan.md 'cargo \+stable clippy --locked --all-targets --all-features'
+require docs/development/contributing.md 'cargo \+stable clippy --locked --all-targets --all-features'
+require apps/web/src/app/docs/development/page.tsx \
+  'cargo \+stable clippy --locked --all-targets --all-features'
+require apps/cli/justfile 'cargo clippy --locked --all-targets --all-features'
 
 source_version="$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -1)"
 cli_version="$(sed -n 's/^version = "\([^"]*\)"/\1/p' apps/cli/Cargo.toml | head -1)"
