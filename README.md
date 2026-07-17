@@ -54,6 +54,10 @@ new cloud drive or a Git LFS wrapper.
 
 ## Try the local engine
 
+The published v0.1.5 npm artifact contains Apple-silicon macOS and Windows x64
+binaries. Other targets currently require the source build in
+[Getting started](docs/user-guide/getting-started.md).
+
 ```bash
 npm install -g @byronwade/dits
 
@@ -66,10 +70,9 @@ dits status
 dits log
 ```
 
-The npm package downloads a prebuilt binary when one is available for the
-platform. Docker and source builds are documented in
-[Getting started](docs/user-guide/getting-started.md). Dits is not currently
-published to crates.io or Homebrew, and there is no `curl | sh` installer.
+The launcher selects a binary already contained in the package; it does not
+download one during installation. Dits is not currently published to crates.io
+or Homebrew, and there is no `curl | sh` installer.
 
 ## What works today
 

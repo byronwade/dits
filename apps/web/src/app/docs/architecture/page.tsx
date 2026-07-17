@@ -3,12 +3,14 @@ import Link from "next/link";
 
 import { DocPageHeader } from "@/components/doc-page-header";
 import { Callout } from "@/components/ui/callout";
+import { generateMetadata as genMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = genMeta({
   title: "Dits Active Architecture",
   description:
     "The current local-first Rust workspace, module boundaries, trust core, experimental media paths, and future remote protocol boundary.",
-};
+  canonical: "https://dits.dev/docs/architecture",
+});
 
 export default function ArchitecturePage() {
   return (
@@ -52,7 +54,7 @@ export default function ArchitecturePage() {
         <li><code>commands</code> — CLI handlers and presentation.</li>
         <li><code>mp4</code> — selected ISOBMFF/MP4 parsing and round-trip paths.</li>
         <li><code>facr</code>, <code>proxy</code>, <code>segment</code>, <code>vfs</code> — experimental media and access paths.</li>
-        <li><code>security</code> — local locks, encryption, authentication-oriented, and audit behavior.</li>
+        <li><code>security</code> — local advisory locks and audit inspection, plus a disabled legacy encryption experiment.</li>
         <li><code>metadata</code>, <code>dependency</code>, <code>lifecycle</code> — local asset metadata and lifecycle experiments.</li>
         <li><code>p2p</code> — scaffolding only; no peer repository transfer.</li>
       </ul>

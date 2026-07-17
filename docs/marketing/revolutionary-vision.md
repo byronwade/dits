@@ -1,5 +1,9 @@
 # Long-term product vision
 
+**Maturity:** Design
+
+Long-term strategy, not product availability, customer proof, or a delivery commitment.
+
 > Strategy document, not product status. Last reviewed: 2026-07-16. See
 > [`docs/STATUS.md`](../STATUS.md) for what works now and
 > [`docs/marketing/positioning.md`](positioning.md) for approved public language.

@@ -1,300 +1,39 @@
-import { Metadata } from "next";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Callout } from "@/components/ui/callout";
-import { DocPageHeader } from "@/components/doc-page-header";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Server, CheckCircle, Terminal } from "lucide-react";
+import type { Metadata } from "next";
+
+import { DesignBoundaryPage } from "@/components/docs/design-boundary-page";
 
 export const metadata: Metadata = {
-  title: "Docker Deployment",
-  description: "Deploy Dits using Docker and Docker Compose for development and production",
+  title: "Container Packaging Boundary",
+  description:
+    "Current source-build container boundary and future service design; no official Dits server image or production Compose deployment is published.",
 };
 
-export default function DockerPage() {
+export default function DockerBoundaryPage() {
   return (
-    <div className="prose dark:prose-invert max-w-none">
-      <DocPageHeader
-        eyebrow="Deployment"
-        title="Docker Deployment"
-        description="A planned guide for deploying a hosted Dits server with Docker and Docker Compose."
-      />
-
-      <Callout type="important" className="not-prose my-6">
-        <strong>Planned &mdash; not yet available.</strong> There is no
-        <code>dits/dits-server</code> Docker image to run today &mdash; the server
-        component is part of the roadmap and has not been built. Dits today is a
-        local-first Rust CLI; install it with
-        <code>npm install -g @byronwade/dits</code>. The Compose files and commands
-        below are illustrative of the intended design, not working instructions.
-      </Callout>
-
-      <h2>Prerequisites</h2>
-
-      <ul>
-        <li>Docker 20.10 or later</li>
-        <li>Docker Compose v2.0 or later</li>
-        <li>4GB RAM minimum (8GB recommended)</li>
-        <li>20GB disk space minimum</li>
-      </ul>
-
-      <h2>Quick Start with Docker Compose</h2>
-
-      <h3>1. Create docker-compose.yml</h3>
-      <pre className="bg-muted p-4 rounded-lg overflow-x-auto"><code>{`version: "3.8"
-
-services:
-  dits:
-    image: dits/dits-server:latest
-    ports:
-      - "8080:8080"
-    environment:
-      - DATABASE_URL=postgres://dits:ditspass@postgres:5432/dits
-      - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=your-secure-secret-here
-      - STORAGE_TYPE=local
-      - STORAGE_PATH=/data/chunks
-    volumes:
-      - dits-data:/data
-    depends_on:
-      - postgres
-      - redis
-
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_USER=dits
-      - POSTGRES_PASSWORD=ditspass
-      - POSTGRES_DB=dits
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:7-alpine
-    volumes:
-      - redis-data:/data
-
-volumes:
-  dits-data:
-  postgres-data:
-  redis-data:`}</code></pre>
-
-      <h3>2. Start the Stack</h3>
-      <pre className="bg-muted p-4 rounded-lg overflow-x-auto"><code>{`# Start all services
-docker compose up -d
-
-# Check status
-docker compose ps
-
-# View logs
-docker compose logs -f dits`}</code></pre>
-
-      <h3>3. Verify Installation</h3>
-      <pre className="bg-muted p-4 rounded-lg overflow-x-auto"><code>{`# Check health endpoint
-curl http://localhost:8080/health
-
-# Configure CLI to use local server
-dits remote add local http://localhost:8080`}</code></pre>
-
-      <h2>Production Configuration</h2>
-
-      <Tabs defaultValue="compose" className="not-prose my-8">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="compose">Docker Compose</TabsTrigger>
-          <TabsTrigger value="single">Single Container</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="compose" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Server className="h-5 w-5" />
-                Production docker-compose.yml
-              </CardTitle>
-              <CardDescription>
-                Enhanced configuration with security and monitoring
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <pre className="bg-background p-4 rounded-lg overflow-x-auto text-sm"><code>{`version: "3.8"
-
-services:
-  dits:
-    image: dits/dits-server:latest
-    restart: always
-    ports:
-      - "8080:8080"
-    environment:
-      - DATABASE_URL=\${DATABASE_URL}
-      - REDIS_URL=\${REDIS_URL}
-      - JWT_SECRET=\${JWT_SECRET}
-      - LOG_LEVEL=info
-      - METRICS_ENABLED=true
-    volumes:
-      - dits-data:/data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '4'
-          memory: 8G
-
-  postgres:
-    image: postgres:15-alpine
-    restart: always
-    environment:
-      - POSTGRES_USER=dits
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
-      - POSTGRES_DB=dits
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    secrets:
-      - db_password
-
-  redis:
-    image: redis:7-alpine
-    restart: always
-    command: redis-server --appendonly yes
-    volumes:
-      - redis-data:/data
-
-secrets:
-  db_password:
-    file: ./secrets/db_password.txt
-
-volumes:
-  dits-data:
-  postgres-data:
-  redis-data:`}</code></pre>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="single" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Terminal className="h-5 w-5" />
-                Single Container Setup
-              </CardTitle>
-              <CardDescription>
-                For simple deployments with external database
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <pre className="bg-background p-4 rounded-lg overflow-x-auto text-sm"><code>{`docker run -d \\
-  --name dits-server \\
-  -p 8080:8080 \\
-  -e DATABASE_URL="postgres://user:pass@host:5432/dits" \\
-  -e REDIS_URL="redis://redis-host:6379" \\
-  -e JWT_SECRET="your-secret" \\
-  -v dits-data:/data \\
-  --restart always \\
-  dits/dits-server:latest`}</code></pre>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      <h2>Environment Variables</h2>
-
-      <div className="overflow-x-auto my-6">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Variable</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Required</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow>
-              <TableCell className="font-mono">DATABASE_URL</TableCell>
-              <TableCell>PostgreSQL connection string</TableCell>
-              <TableCell><CheckCircle className="h-4 w-4 text-success" /></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="font-mono">REDIS_URL</TableCell>
-              <TableCell>Redis connection URL</TableCell>
-              <TableCell>Optional</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="font-mono">JWT_SECRET</TableCell>
-              <TableCell>Secret for token signing</TableCell>
-              <TableCell><CheckCircle className="h-4 w-4 text-success" /></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="font-mono">STORAGE_PATH</TableCell>
-              <TableCell>Path for chunk storage</TableCell>
-              <TableCell>Default: /data</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="font-mono">LOG_LEVEL</TableCell>
-              <TableCell>Logging verbosity</TableCell>
-              <TableCell>Default: info</TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </div>
-
-      <h2>Maintenance</h2>
-
-      <div className="not-prose grid gap-6 md:grid-cols-2 my-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Backup</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <pre className="bg-background p-4 rounded-lg overflow-x-auto text-sm"><code>{`# Backup database
-docker exec dits-postgres \\
-  pg_dump -U dits dits > backup.sql
-
-# Backup volumes
-docker run --rm \\
-  -v dits-data:/data \\
-  -v $(pwd):/backup \\
-  alpine tar cvzf /backup/data.tar.gz /data`}</code></pre>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Updates</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <pre className="bg-background p-4 rounded-lg overflow-x-auto text-sm"><code>{`# Pull latest images
-docker compose pull
-
-# Restart with new images
-docker compose up -d
-
-# Check status
-docker compose ps`}</code></pre>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Callout type="note" title="Next Steps" className="not-prose my-6">
-        For high-availability production deployments, consider using Kubernetes
-        for automatic scaling and failover.
-      </Callout>
-    </div>
+    <DesignBoundaryPage
+      title="Container Packaging Boundary"
+      summary="A source-built local CLI image is different from a supported hosted-service deployment."
+      status="The source tree contains a Dockerfile that builds the local CLI for a Linux x64 runtime. Dits does not publish an official image, server image, registry release, production Compose stack, or container support contract. The CLI image does not add working remotes or a hosted API."
+      targets={[
+        "Signed, provenance-attested images for an explicitly supported architecture matrix.",
+        "Separate local CLI packaging from any future stateful server and worker images.",
+        "Non-root execution, immutable configuration, health checks, upgrade policy, and persistent-state documentation.",
+      ]}
+      prerequisites={[
+        "A maintained server implementation before server-container documentation can exist.",
+        "Automated image builds, vulnerability scanning, smoke tests, and release retention.",
+        "Documented volume ownership, backup, migration, rollback, and resource requirements.",
+      ]}
+      current={[
+        "Build the repository Dockerfile locally if a source-built CLI container suits a disposable evaluation.",
+        "Mount only backed-up test data and verify host-file ownership after container use.",
+        "Use the npm binaries on their two packaged targets or build the CLI directly from source.",
+      ]}
+      related={[
+        { href: "/docs/installation", label: "Current installation status" },
+        { href: "/docs/deployment", label: "Hosted deployment design boundary" },
+        { href: "/docs/architecture/security", label: "Current security boundary" },
+      ]}
+    />
   );
 }

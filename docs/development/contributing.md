@@ -1,6 +1,6 @@
 # Contributing to Dits
 
-**Maturity:** Current contributor guide
+**Maturity:** Current
 
 Dits is an alpha local-first version-control system for large media and asset
 pipelines. The highest-value contributions improve correctness, format evidence,
@@ -14,7 +14,7 @@ All participation is governed by the repository
 1. [`../STATUS.md`](../STATUS.md) — current, experimental, roadmap, and historical boundaries.
 2. [`../architecture/active-architecture.md`](../architecture/active-architecture.md) — live workspace and dependency direction.
 3. [`../../ROADMAP.md`](../../ROADMAP.md) — dependency-ordered gates.
-4. [`../architecture/decisions/README.md`](../architecture/decisions/README.md) — accepted decisions.
+4. [`../adr/README.md`](../adr/README.md) — accepted decisions.
 5. [`../marketing/positioning.md`](../marketing/positioning.md) — public claim rules.
 
 ## Workspace

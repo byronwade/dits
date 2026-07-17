@@ -5,11 +5,12 @@
 target/
 **/target/
 
-# Node / web app — not part of the CLI build
+# Node / web and npm release packages — not part of the CLI build
 node_modules/
 **/node_modules/
 apps/web/
 packages/dits-wasm/
+packages/npm/
 .next/
 **/.next/
 
@@ -21,6 +22,12 @@ legacy/
 .github/
 .vscode/
 .idea/
+.dits/
+**/.dits/
+.env
+.env.*
+**/.env
+**/.env.*
 
 # Scratch / generated data
 tmp/

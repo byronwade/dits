@@ -12,6 +12,8 @@ const { execFileSync, spawnSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
+let cachedMusl;
+
 // Map Node.js platform/arch to binary directory names
 const PLATFORMS = {
   'darwin-arm64': 'darwin-arm64',
@@ -29,6 +31,7 @@ const PLATFORMS = {
  */
 function isMusl() {
   if (process.platform !== 'linux') return false;
+  if (cachedMusl !== undefined) return cachedMusl;
 
   try {
     // Check ldd version output
@@ -36,22 +39,24 @@ function isMusl() {
       encoding: 'utf8',
       stdio: ['pipe', 'pipe', 'pipe']
     });
-    return output.toLowerCase().includes('musl');
+    cachedMusl = output.toLowerCase().includes('musl');
   } catch {
     // ldd failed, try checking /etc/os-release for Alpine
     try {
       const osRelease = fs.readFileSync('/etc/os-release', 'utf8');
-      return osRelease.toLowerCase().includes('alpine');
+      cachedMusl = osRelease.toLowerCase().includes('alpine');
     } catch {
       // Also check if /lib/ld-musl-* exists
       try {
         const libDir = fs.readdirSync('/lib');
-        return libDir.some(f => f.startsWith('ld-musl'));
+        cachedMusl = libDir.some(f => f.startsWith('ld-musl'));
       } catch {
-        return false;
+        cachedMusl = false;
       }
     }
   }
+
+  return cachedMusl;
 }
 
 /**
@@ -63,17 +68,22 @@ function getPlatformKey() {
 
   // Handle musl variants for Linux
   if (platform === 'linux' && isMusl()) {
-    return arch === 'x64' ? 'linux-x64-musl' : 'linux-arm64-musl';
+    const muslKey = `linux-${arch}-musl`;
+    if (PLATFORMS[muslKey]) {
+      return muslKey;
+    }
   }
 
   const key = `${platform}-${arch}`;
 
   if (!PLATFORMS[key]) {
-    const supported = Object.keys(PLATFORMS).join(', ');
+    const knownTargets = Object.keys(PLATFORMS).join(', ');
     throw new Error(
       `Unsupported platform: ${platform} ${arch}\n` +
-      `Supported platforms: ${supported}\n` +
-      `You can try building from source: cargo install dits`
+      `Known release targets: ${knownTargets}\n\n` +
+      `Build the repository source directly:\n` +
+      `  git clone https://github.com/byronwade/dits.git\n` +
+      `  cd dits && cargo build --release -p dits`
     );
   }
 
@@ -95,9 +105,10 @@ function getBinaryPath() {
     throw new Error(
       `Binary not found for your platform (${process.platform} ${process.arch}).\n` +
       `Expected at: ${binaryPath}\n\n` +
-      `This platform may not be supported in this version.\n` +
-      `Try installing from source:\n` +
-      `  cargo install dits\n\n` +
+      `This published package does not contain that target.\n` +
+      `Build the repository source directly:\n` +
+      `  git clone https://github.com/byronwade/dits.git\n` +
+      `  cd dits && cargo build --release -p dits\n\n` +
       `Or download from GitHub releases:\n` +
       `  https://github.com/byronwade/dits/releases`
     );

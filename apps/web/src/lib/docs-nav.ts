@@ -52,7 +52,7 @@ export const docsNavigation: DocSection[] = [
       { title: "History Commands", href: "/docs/cli/history" },
       { title: "Branch Commands", href: "/docs/cli/branches" },
       { title: "Stash Commands", href: "/docs/cli/stash" },
-      { title: "Remote Commands (Roadmap)", href: "/docs/cli/remotes" },
+      { title: "Remote Commands (Alpha Status)", href: "/docs/cli/remotes" },
       { title: "Lock Commands", href: "/docs/cli/locks" },
       { title: "VFS Commands", href: "/docs/cli/vfs" },
       { title: "Video Commands", href: "/docs/cli/video" },

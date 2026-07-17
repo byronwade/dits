@@ -166,7 +166,7 @@ fn restore_worktree_files(
     for path in paths {
         if let Some(entry) = manifest.entries.get(path) {
             // Restore file from chunks
-            let full_path = repo.root().join(path);
+            let full_path = repo.resolve_worktree_path(path)?;
 
             // Create parent directories
             if let Some(parent) = full_path.parent() {
@@ -187,7 +187,7 @@ fn restore_worktree_files(
             println!("{} Restored '{}'", style("R").green().bold(), style(path).cyan());
         } else {
             // File not in source - check if we should delete it
-            let full_path = repo.root().join(path);
+            let full_path = repo.resolve_worktree_path(path)?;
             if full_path.exists() {
                 println!(
                     "{} Path '{}' not in source commit (file preserved)",

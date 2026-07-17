@@ -1,5 +1,11 @@
 # Engineering Execution Manual — Phase 7 (Dependency Graph)
 
+**Maturity:** Historical
+
+This is a retained execution plan, not current capability status or the active roadmap.
+Completion boxes and phase language must be read against docs/STATUS.md and the root
+ROADMAP.md.
+
 **Project:** Dits (Data-Intensive Version Control System)  
 **Phase:** 7 — The Spiderweb Layer (Dependency Graph)  
 **Objective:** Prevent “Media Offline” by parsing project files to enforce presence of all linked assets; block commits with missing dependencies and auto-fetch on checkout.
@@ -93,5 +99,4 @@ cargo add flate2
 cargo add regex
 ```
 Next: implement Premiere parser to unzip `.prproj`, stream XML, and return referenced file paths.
-
 

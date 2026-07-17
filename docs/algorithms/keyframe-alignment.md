@@ -1,5 +1,10 @@
 # Keyframe Alignment Algorithm
 
+**Maturity:** Experimental
+
+Selected segmentation and media paths use bounded keyframe-aware behavior; exact generic
+chunk identity remains byte-based.
+
 Adjusting chunk boundaries to align with video keyframes (I-frames) for optimal random access and streaming.
 
 ---

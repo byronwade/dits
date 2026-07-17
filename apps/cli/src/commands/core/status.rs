@@ -62,6 +62,17 @@ pub fn status() -> Result<()> {
         println!();
     }
 
+    if !status.deleted.is_empty() {
+        println!("Changes not staged for commit:");
+        println!("  (use \"dits add <file>...\" to stage deleted files)");
+        println!();
+
+        for file in &status.deleted {
+            println!("        {}: {}", style("deleted").red(), file);
+        }
+        println!();
+    }
+
     // Print unstaged renames
     if !status.unstaged_renamed.is_empty() {
         println!("Unstaged renames:");

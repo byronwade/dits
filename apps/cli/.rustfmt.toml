@@ -19,7 +19,7 @@ normalize_comments = true
 normalize_doc_attributes = true
 
 # Functions and control flow
-fn_args_layout = "Tall"
+fn_params_layout = "Tall"
 fn_single_line = false
 control_brace_style = "AlwaysSameLine"
 brace_style = "SameLineWhere"

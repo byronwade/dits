@@ -1,5 +1,11 @@
 # Engineering Execution Manual — Phase 8 (Deep Freeze)
 
+**Maturity:** Historical
+
+This is a retained execution plan, not current capability status or the active roadmap.
+Completion boxes and phase language must be read against docs/STATUS.md and the root
+ROADMAP.md.
+
 **Project:** Dits (Data-Intensive Version Control System)  
 **Phase:** 8 — Deep Freeze Layer (Lifecycle Management)  
 **Objective:** Tier petabyte-scale storage by temperature; keep manifests and proxies hot, push cold data to Glacier/Archive while preserving usability and predictable thaw.
@@ -96,5 +102,4 @@ cargo add aws-sdk-s3
 cargo add chrono
 ```
 Next: implement Lifecycle Manager to evaluate access/refs, tag objects for tiering, and issue restores with ETA handling.
-
 

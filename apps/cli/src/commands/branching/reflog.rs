@@ -59,7 +59,7 @@ pub fn reflog(ref_name: Option<&str>, limit: usize) -> Result<()> {
         .context("Not a Dits repository (or any parent directory)")?;
 
     let ref_name = ref_name.unwrap_or("HEAD");
-    let reflog_path = repo.dits_dir().join("logs").join(ref_name);
+    let reflog_path = reflog_path(&repo, ref_name)?;
 
     // If reflog doesn't exist, try to reconstruct from commits
     if !reflog_path.exists() {
@@ -89,7 +89,7 @@ pub fn reflog(ref_name: Option<&str>, limit: usize) -> Result<()> {
 
         println!();
         println!("{} Reflog is reconstructed from commit history.", style("Note:").cyan());
-        println!("Future actions will be recorded automatically.");
+        println!("The current alpha does not record every ref-changing action.");
 
         return Ok(());
     }
@@ -124,10 +124,11 @@ pub fn record_reflog(
     previous: Option<Hash>,
     action: &str,
 ) -> Result<()> {
-    let logs_dir = repo.dits_dir().join("logs");
-    fs::create_dir_all(&logs_dir)?;
-
-    let reflog_path = logs_dir.join(ref_name);
+    let reflog_path = reflog_path(repo, ref_name)?;
+    let parent = reflog_path
+        .parent()
+        .context("reflog path has no parent directory")?;
+    fs::create_dir_all(parent)?;
     let mut reflog = Reflog::load(&reflog_path)?;
 
     reflog.add(ReflogEntry {
@@ -139,4 +140,57 @@ pub fn record_reflog(
 
     reflog.save(&reflog_path)?;
     Ok(())
+}
+
+fn reflog_path(repo: &Repository, ref_name: &str) -> Result<std::path::PathBuf> {
+    crate::store::validate_ref_name(ref_name)?;
+    Ok(crate::util::safe_join_repo_path(repo.dits_dir(), &format!("logs/{ref_name}"))?)
+}
+
+#[cfg(test)]
+mod tests {
+    use tempfile::tempdir;
+
+    use super::*;
+
+    #[test]
+    fn reflog_names_are_confined_to_repository_metadata() {
+        let temp = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+
+        assert_eq!(
+            reflog_path(&repo, "refs/heads/main").unwrap(),
+            repo.dits_dir().join("logs/refs/heads/main")
+        );
+        for invalid in ["", ".", "..", "../HEAD", "/absolute", "refs/../../HEAD"] {
+            assert!(reflog_path(&repo, invalid).is_err(), "accepted {invalid}");
+        }
+    }
+
+    #[test]
+    fn nested_reflog_names_create_their_parent_directories() {
+        let temp = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+        let hash = Hash::from_bytes([9; 32]);
+
+        record_reflog(&repo, "refs/heads/feature/editor", &hash, None, "test").unwrap();
+
+        assert!(repo
+            .dits_dir()
+            .join("logs/refs/heads/feature/editor")
+            .is_file());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn reflog_names_reject_symlinked_log_storage() {
+        use std::os::unix::fs::symlink;
+
+        let temp = tempdir().unwrap();
+        let outside = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+        symlink(outside.path(), repo.dits_dir().join("logs")).unwrap();
+
+        assert!(reflog_path(&repo, "HEAD").is_err());
+    }
 }

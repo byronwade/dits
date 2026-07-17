@@ -2,7 +2,7 @@
 
 use std::path::Path;
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use console::style;
 
 use crate::store::Repository;
@@ -14,7 +14,11 @@ pub fn commit(message: &str) -> Result<()> {
 
     // Get the number of staged files before committing
     let index = repo.load_index()?;
-    let files_committed = index.len();
+    let files_committed = index
+        .entries
+        .values()
+        .filter(|entry| entry.status != crate::core::FileStatus::Unchanged)
+        .count();
 
     match repo.commit(message) {
         Ok(commit) => {
@@ -32,11 +36,7 @@ pub fn commit(message: &str) -> Result<()> {
             Ok(())
         },
         Err(crate::store::repository::RepoError::NothingToCommit) => {
-            println!(
-                "{} Nothing to commit (use \"dits add\" to stage files)",
-                style("!").yellow().bold()
-            );
-            Ok(())
+            bail!("Nothing to commit (use \"dits add\" to stage changes)")
         },
         Err(e) => Err(e.into()),
     }

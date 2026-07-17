@@ -3,11 +3,13 @@ import Link from "next/link";
 
 import { DocPageHeader } from "@/components/doc-page-header";
 import { Callout } from "@/components/ui/callout";
+import { generateMetadata as genMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = genMeta({
   title: "Contributing to Dits",
   description: "High-value contribution areas, product-truth rules, and the Dits pull-request verification checklist.",
-};
+  canonical: "https://dits.dev/docs/contributing",
+});
 
 export default function ContributingPage() {
   return (

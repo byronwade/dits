@@ -1,5 +1,10 @@
 # Product differentiators under investigation
 
+**Maturity:** Design
+
+Research backlog; candidates require implementation and evidence before entering product
+messaging.
+
 > Research backlog, not shipped capability. Last reviewed: 2026-07-16. Current
 > behavior is defined by [`docs/STATUS.md`](../STATUS.md); public language is
 > defined by [`docs/marketing/positioning.md`](../marketing/positioning.md).

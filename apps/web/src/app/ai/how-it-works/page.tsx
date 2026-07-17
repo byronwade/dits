@@ -10,12 +10,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { generateMetadata as genMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = genMeta({
   title: "How the Dits AI Research Model Works",
   description:
     "Exact content identity, optional similarity indexes, and reproducible derivation for AI artifacts—with current and roadmap boundaries.",
-};
+  canonical: "https://dits.dev/ai/how-it-works",
+});
 
 const layers = [
   {

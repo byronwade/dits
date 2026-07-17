@@ -1,5 +1,10 @@
 # Performance evidence
 
+**Maturity:** Current
+
+Evidence index for named artifacts and commits; values do not generalize beyond their
+recorded method and environment.
+
 > Current benchmark policy and recorded results. Last reviewed: 2026-07-16.
 
 Performance claims are useful only when their workload, environment, code

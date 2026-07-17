@@ -1,6 +1,6 @@
 # Dits Technical Foundations: Deep Architecture Review and Research Agenda
 
-**Maturity:** Design and research  
+**Maturity:** Design
 **Review date:** 2026-07-16  
 **Canonical implementation reviewed:** `apps/cli`, `packages/dits-core`  
 **Historical implementation reviewed:** `legacy/backend-crates`

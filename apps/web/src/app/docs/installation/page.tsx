@@ -19,7 +19,7 @@ export default function InstallationPage() {
       <DocPageHeader
         eyebrow="Getting started"
         title="Installation"
-        description="The published npm package is the recommended path for evaluating Dits v0.1.5 on macOS, Linux, or Windows."
+        description="The v0.1.5 npm artifact packages Apple Silicon macOS and Windows x64. Other targets currently require a source build."
       />
 
       <Callout type="warning" title="Alpha software" className="not-prose my-6">
@@ -29,6 +29,12 @@ export default function InstallationPage() {
 
       <h2>Install from npm</h2>
 
+      <Callout type="note" title="Packaged platforms" className="not-prose my-6">
+        The published v0.1.5 artifact contains <strong>darwin-arm64</strong> and
+        <strong> win32-x64</strong> binaries. It does not contain Linux, Intel
+        macOS, or Windows arm64 binaries.
+      </Callout>
+
       <CodeBlock
         language="bash"
         code={`npm install -g @byronwade/dits
@@ -36,8 +42,8 @@ dits --version`}
       />
 
       <p>
-        The package requires Node.js 16 or later and selects its packaged binary
-        for the current platform. Equivalent package-manager commands are:
+        On either packaged target, the launcher requires Node.js 16 or later.
+        Equivalent package-manager commands are:
       </p>
 
       <CodeBlock

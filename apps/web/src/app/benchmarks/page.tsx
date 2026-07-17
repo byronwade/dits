@@ -16,12 +16,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { MEASURED_BENCHMARKS } from "@/lib/product-story";
+import { generateMetadata as genMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = genMeta({
   title: "Dits Benchmarks - Reproducible Performance Evidence",
   description:
     "The measured Dits component benchmarks, their environment and limitations, and the end-to-end evidence still needed.",
-};
+  canonical: "https://dits.dev/benchmarks",
+});
 
 const requiredSuite = [
   "A public corpus with generated fixtures and documented real-file characteristics",

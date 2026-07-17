@@ -37,8 +37,9 @@ export default function DownloadPage() {
                 Install the local Dits alpha
               </h1>
               <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-                The published npm package is the supported distribution path for
-                evaluation. No account or remote service is required.
+                The v0.1.5 npm package contains binaries for Apple Silicon macOS
+                and Windows x64. Other targets currently require a source build.
+                No account or remote service is required.
               </p>
             </div>
           </div>
@@ -58,18 +59,19 @@ export default function DownloadPage() {
                   <Package className="mb-2 size-6 text-brand" aria-hidden="true" />
                   <div className="flex flex-wrap items-center gap-2">
                     <CardTitle>Install from npm</CardTitle>
-                    <Badge variant="secondary">Recommended</Badge>
+                    <Badge variant="secondary">Two packaged targets</Badge>
                   </div>
                   <CardDescription>
-                    Requires Node.js 16 or later and selects the packaged binary
-                    for the current platform.
+                    Requires Node.js 16 or later. Confirmed package targets:
+                    macOS arm64 and Windows x64.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <pre className="overflow-x-auto rounded-xl border border-border bg-muted p-4 text-sm"><code>{`npm install -g @byronwade/dits
 dits --version`}</code></pre>
                   <p className="mt-4 text-sm text-muted-foreground">
-                    Bun, pnpm, and Yarn can install the same npm package.
+                    Linux, Intel macOS, and Windows arm64 binaries are not present
+                    in the published v0.1.5 npm artifact.
                   </p>
                 </CardContent>
               </Card>
@@ -79,8 +81,8 @@ dits --version`}</code></pre>
                   <Terminal className="mb-2 size-6 text-brand" aria-hidden="true" />
                   <CardTitle>Build the source</CardTitle>
                   <CardDescription>
-                    Use the Rust workspace when contributing or reviewing the
-                    implementation directly.
+                    Use the Rust workspace on targets not packaged by npm, or
+                    when reviewing the implementation directly.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

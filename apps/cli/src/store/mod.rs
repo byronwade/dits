@@ -27,7 +27,7 @@ pub use git_engine::{
 pub use {
     locks::{Lock, LockError, LockStore},
     objects::ObjectStore,
-    refs::RefStore,
+    refs::{validate_ref_name, HeadRef, RefStore},
     remote::{Remote, RemoteError, RemoteStore, RemoteType},
     repository::{
         AddResult, CheckoutResult, FileDedupStats, FileStats, RepoDedupStats, RepoError, RepoStats,

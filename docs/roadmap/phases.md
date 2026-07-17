@@ -1,6 +1,6 @@
 # Engineering Milestones
 
-**Maturity:** Design. This mirrors [`../../ROADMAP.md`](../../ROADMAP.md).
+**Maturity:** Design
 
 The former nine-phase roadmap mixed completed local commands with unfinished
 network, cloud, and semantic systems. Dits now uses dependency-ordered

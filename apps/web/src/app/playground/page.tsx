@@ -12,7 +12,7 @@ import { PlaygroundClient } from "./playground-client";
 export const metadata: Metadata = genMeta({
   title: "Playground - Run the Dits Engine in Your Browser",
   description:
-    "Interactive playground for Dits. Drop a file or edit text and watch the real Dits engine chunk, hash, and deduplicate it live in your browser via WebAssembly — nothing uploaded.",
+    "Use the Dits WebAssembly engine locally in your browser to inspect content-defined chunk identities and exact reuse across controlled edits.",
   canonical: "https://dits.dev/playground",
   keywords: [
     "dits playground",
@@ -54,7 +54,7 @@ export default function PlaygroundPage() {
             <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
               Drop a file or edit the text below. The actual Dits chunking and BLAKE3 hashing — the
               same code the CLI runs — executes on your data, in your browser, with nothing
-              uploaded. Edit it and watch how few chunks actually change.
+              uploaded. Record a version, edit it, and inspect which exact chunk identities change.
             </p>
           </div>
         </section>

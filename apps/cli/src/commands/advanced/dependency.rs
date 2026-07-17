@@ -176,7 +176,6 @@ pub fn dep_graph(file: &str, format: Option<&str>) -> Result<()> {
         println!("  • {} - DaVinci Resolve", style(".drp").cyan());
         println!("  • {} - Final Cut Pro X", style(".fcpxml").cyan());
         println!("  • {} - After Effects", style(".aep").cyan());
-        println!("  • {} - Avid Media Composer", style(".avp").cyan());
         println!();
         println!("Use {} to list detected project files.", style("dits dep-list").cyan());
         return Ok(());

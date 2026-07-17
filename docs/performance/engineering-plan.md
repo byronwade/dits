@@ -1,6 +1,6 @@
 # Performance Engineering Plan
 
-**Maturity:** Design with immediate implementation priorities.
+**Maturity:** Design
 
 The goal is not a single headline throughput number. The goal is predictable
 resource use, verified reconstruction, good reuse on appropriate mutations,

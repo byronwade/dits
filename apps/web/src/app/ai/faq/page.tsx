@@ -9,12 +9,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { generateMetadata as genMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = genMeta({
   title: "Dits for AI Research FAQ",
   description:
     "Current boundaries and open questions for applying Dits to model, checkpoint, dataset, and research artifacts.",
-};
+  canonical: "https://dits.dev/ai/faq",
+});
 
 const faqs = [
   {

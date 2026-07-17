@@ -14,35 +14,17 @@ import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Repository Configuration",
-  description: "Configure settings for individual Dits repositories",
+  description: "Repository-local Dits configuration and chunking settings",
 };
 
-const options = [
+const chunkingKeys = [
+  { key: "chunking.min_size", defaultValue: "16KB", role: "Minimum chunk size" },
   {
-    key: "core.filemode",
-    description: "Track file permission changes",
-    default: "true",
+    key: "chunking.target_size",
+    defaultValue: "64KB",
+    role: "Target/average chunk size",
   },
-  {
-    key: "core.ignorecase",
-    description: "Ignore case in file names",
-    default: "false (true on macOS/Windows)",
-  },
-  {
-    key: "core.autocrlf",
-    description: "Line ending conversion",
-    default: "false",
-  },
-  {
-    key: "core.compression",
-    description: "Compression level (0-9)",
-    default: "6",
-  },
-  {
-    key: "core.bigFileThreshold",
-    description: "Size above which files use streaming",
-    default: "512MB",
-  },
+  { key: "chunking.max_size", defaultValue: "256KB", role: "Maximum chunk size" },
 ];
 
 export default function RepositoryConfigPage() {
@@ -51,269 +33,111 @@ export default function RepositoryConfigPage() {
       <DocPageHeader
         eyebrow="Configuration"
         title="Repository Configuration"
-        description="Repository-level configuration applies only to the current repository and is stored in .dits/config."
+        description="Repository-local settings live in .dits/config.toml; chunking is the active runtime use."
       />
 
-      <h2>Configuration File Location</h2>
-      <p>
-        Repository configuration is stored at <code>.dits/config</code> in your
-        repository root. It overrides global and system configuration.
-      </p>
-
+      <h2>Location and selection</h2>
       <CodeBlock
-        language="bash"
+        language="text"
         code={`my-project/
 ├── .dits/
-│   ├── config          ← Repository configuration
-│   ├── HEAD
+│   ├── config.toml     # Managed by dits config
+│   ├── remotes         # Separate remote metadata
 │   └── ...
 └── ...`}
       />
+      <p>
+        While inside a repository, <code>dits config</code> selects{" "}
+        <code>.dits/config.toml</code> unless <code>--global</code> is present. There is
+        no <code>--local</code> flag and no layered merge with global settings.
+      </p>
 
-      <h2>Setting Repository Options</h2>
-      <CodeBlock
-        language="bash"
-        code={`# Set a repository-specific value
-$ dits config user.email "project-specific@example.com"
-
-# View repository config
-$ dits config --list --local
-user.email=project-specific@example.com
-core.compression=9
-remote.origin.url=https://example.com/project`}
-      />
-
-      <h2>Core Options</h2>
+      <h2>Chunking configuration</h2>
       <Table className="not-prose my-6">
         <TableHeader>
           <TableRow>
-            <TableHead>Option</TableHead>
-            <TableHead>Description</TableHead>
+            <TableHead>Key</TableHead>
             <TableHead>Default</TableHead>
+            <TableHead>Role</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {options.map((opt) => (
-            <TableRow key={opt.key}>
-              <TableCell className="font-mono text-sm">{opt.key}</TableCell>
-              <TableCell>{opt.description}</TableCell>
-              <TableCell className="text-muted-foreground">{opt.default}</TableCell>
+          {chunkingKeys.map((item) => (
+            <TableRow key={item.key}>
+              <TableCell className="font-mono text-sm">{item.key}</TableCell>
+              <TableCell className="font-mono text-sm">{item.defaultValue}</TableCell>
+              <TableCell>{item.role}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-
-      <h3>core.filemode</h3>
-      <p>
-        When true, Dits tracks file permission changes (executable bit). Disable
-        on systems where permissions aren&apos;t meaningful.
-      </p>
       <CodeBlock
         language="bash"
-        code={`$ dits config core.filemode false`}
+        code={`dits config chunking.min_size 32KB
+dits config chunking.target_size 128KB
+dits config chunking.max_size 512KB
+dits config --list`}
       />
-
-      <h3>core.ignorecase</h3>
-      <p>
-        Enable case-insensitive file matching. Automatically enabled on
-        case-insensitive file systems.
-      </p>
-
-      <h3>core.autocrlf</h3>
-      <p>
-        Control automatic line ending conversion:
-      </p>
-      <ul>
-        <li><code>false</code> - No conversion (recommended for binary-heavy repos)</li>
-        <li><code>true</code> - Convert to CRLF on checkout, LF on commit</li>
-        <li><code>input</code> - Convert to LF on commit only</li>
-      </ul>
-
-      <h3>core.compression</h3>
-      <p>
-        Set compression level for stored chunks (0-9):
-      </p>
-      <ul>
-        <li><code>0</code> - No compression (fastest)</li>
-        <li><code>6</code> - Balanced (default)</li>
-        <li><code>9</code> - Maximum compression (slowest)</li>
-      </ul>
-      <CodeBlock
-        language="bash"
-        code={`# For already-compressed video files, lower compression
-$ dits config core.compression 3`}
-      />
-
-      <h2>Remote Configuration</h2>
-      <p>
-        Remote repositories are configured under <code>[remote &quot;name&quot;]</code> sections:
-      </p>
-
-      <CodeBlock
-        language="bash"
-        code={`# .dits/config
-[remote "origin"]
-    url = https://example.com/team/project
-    fetch = +refs/heads/*:refs/remotes/origin/*
-    pushurl = ssh://git@example.com/team/project
-
-[remote "backup"]
-    url = https://backup.example.com/project
-    fetch = +refs/heads/*:refs/remotes/backup/*`}
-      />
-
-      <h3>Remote Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Set fetch URL
-$ dits config remote.origin.url https://example.com/project
-
-# Set separate push URL
-$ dits config remote.origin.pushurl ssh://git@example.com/project
-
-# Add multiple fetch refspecs
-$ dits config --add remote.origin.fetch +refs/tags/*:refs/tags/*`}
-      />
-
-      <h2>Branch Configuration</h2>
-      <p>
-        Configure tracking relationships and merge behavior per branch:
-      </p>
-
-      <CodeBlock
-        language="bash"
-        code={`# .dits/config
-[branch "main"]
-    remote = origin
-    merge = refs/heads/main
-    rebase = true
-
-[branch "develop"]
-    remote = origin
-    merge = refs/heads/develop`}
-      />
-
-      <h3>Branch Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Set upstream branch
-$ dits config branch.main.remote origin
-$ dits config branch.main.merge refs/heads/main
-
-# Enable rebase on pull for this branch
-$ dits config branch.main.rebase true
-
-# Or set via push
-$ dits push -u origin main`}
-      />
-
-      <h2>Hooks Configuration</h2>
-      <p>
-        Configure which hooks are enabled:
-      </p>
-
-      <CodeBlock
-        language="json"
-        code={`[hooks]
-    pre-commit = true
-    pre-push = true
-    post-checkout = true`}
-      />
-
-      <Callout type="note" title="Hook Scripts" className="not-prose my-6">
-        Hook scripts are stored in <code>.dits/hooks/</code>. Create executable
-        scripts named <code>pre-commit</code>, <code>pre-push</code>, etc.
+      <Callout type="warning" title="Preserve valid bounds" className="not-prose my-6">
+        Keep <code>min_size &lt;= target_size &lt;= max_size</code>. The parser accepts
+        individual sizes but does not yet validate the relationship among them. Changing
+        chunking parameters can also reduce deduplication with objects created under a
+        different profile.
       </Callout>
 
-      <h2>Media-Specific Configuration</h2>
+      <h2>Stored-only repository keys</h2>
       <p>
-        Configure video and large file handling:
+        The repository file can also store <code>user.name</code>,{" "}
+        <code>user.email</code>, <code>core.default_branch</code>, and{" "}
+        <code>core.verbose</code>. They are not currently connected to commit identity,
+        branch initialization, or command verbosity.
       </p>
-
       <CodeBlock
-        language="json"
-        code={`[media]
-    # Video file extensions for special handling
-    videoExtensions = mp4,mov,mxf,avi,mkv,prores
+        language="toml"
+        code={`[core]
+default_branch = "main"
+verbose = false
 
-    # Enable keyframe-aligned chunking
-    keyframeAligned = true
-
-    # Generate proxy files on add
-    generateProxies = false
-
-    # Proxy resolution
-    proxyResolution = 1280x720`}
+[chunking]
+target_size = 131072
+min_size = 32768
+max_size = 524288`}
       />
 
-      <h2>Cache Configuration</h2>
+      <h2>Separate repository metadata</h2>
       <p>
-        Control local caching behavior:
+        Remote names and URLs do not live in this TOML document. Manage their JSON file
+        with <code>dits remote</code>:
       </p>
-
-      <CodeBlock
-        language="json"
-        code={`[cache]
-    # Maximum cache size
-    size = 50GB
-
-    # Cache directory (relative to .dits)
-    path = cache
-
-    # Enable chunk deduplication
-    deduplicate = true`}
-      />
-
-      <h2>Example Full Configuration</h2>
       <CodeBlock
         language="bash"
-        code={`# .dits/config
-[core]
-    repositoryformatversion = 0
-    filemode = true
-    compression = 6
-    bigFileThreshold = 512MB
-
-[user]
-    name = Project Bot
-    email = bot@example.com
-
-[remote "origin"]
-    url = https://example.com/team/project
-    fetch = +refs/heads/*:refs/remotes/origin/*
-
-[branch "main"]
-    remote = origin
-    merge = refs/heads/main
-
-[media]
-    keyframeAligned = true
-    videoExtensions = mp4,mov,mxf
-
-[cache]
-    size = 100GB`}
+        code={`dits remote add origin /path/to/another-repository
+dits remote --verbose`}
       />
+      <p>
+        Recording a remote works, but <code>push</code>, <code>pull</code>,{" "}
+        <code>fetch</code>, and <code>sync</code> fail closed without transferring data
+        in this alpha. Sparse-checkout also uses a separate <code>.dits/config</code>{" "}
+        file; it is not managed by <code>dits config</code>.
+      </p>
 
-      <h2>Editing Configuration</h2>
-      <CodeBlock
-        language="bash"
-        code={`# Edit in default editor
-$ dits config --edit
+      <h2>Unsupported repository settings</h2>
+      <p>
+        File-mode, line-ending, compression, media, cache, hook-enable, branch-tracking,
+        and remote-refspec sections are design-only and are rejected by the current
+        dot-notation setter.
+      </p>
 
-# Edit specific file
-$ dits config --local --edit`}
-      />
-
-      <h2>Related Topics</h2>
+      <h2>Related topics</h2>
       <ul>
         <li>
-          <Link href="/docs/configuration/global">Global Configuration</Link>
+          <Link href="/docs/configuration">Configuration overview</Link>
         </li>
         <li>
-          <Link href="/docs/configuration/env">Environment Variables</Link>
+          <Link href="/docs/configuration/global">Global configuration</Link>
         </li>
         <li>
-          <Link href="/docs/configuration">Configuration Overview</Link>
+          <Link href="/docs/configuration/env">Environment variables</Link>
         </li>
       </ul>
     </div>

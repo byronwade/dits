@@ -1,368 +1,94 @@
-# Compatibility Matrix
-
-> ⚠️ Network/server rows below (server OS, server database, transport protocols such as HTTP/3/QUIC, and remote/library "sync") describe the quarantined/legacy backend (legacy/backend-crates) and roadmap transport — **not implemented** in the current local-first CLI. Treat them as design reference. Local platform/format support is accurate.
-
-Supported platforms, formats, and application versions.
-
----
-
-## Operating Systems
-
-### Desktop Clients
-
-> ℹ️ **Install today:** `npm install -g @byronwade/dits` (or bun/pnpm) or `cargo build
-> --release`. The packaged artifacts referenced in the Notes column (.deb, .rpm, AppImage,
-> AUR, notarized installers) are **not yet published** — treat them as planned distribution.
-
-| OS | Version | Architecture | Status | Notes |
-|----|---------|--------------|--------|-------|
-| **macOS** | 12 (Monterey)+ | x86_64 | Supported | Notarized |
-| | 12+ | arm64 (Apple Silicon) | Supported | Native binary |
-| **Windows** | 10 (1903+) | x86_64 | Supported | |
-| | 11 | x86_64 | Supported | |
-| | 11 | arm64 | Planned | Q3 2025 |
-| **Linux** | Ubuntu 22.04+ | x86_64 | Supported | .deb, AppImage |
-| | Fedora 38+ | x86_64 | Supported | .rpm |
-| | Debian 12+ | x86_64 | Supported | .deb |
-| | Arch | x86_64 | Community | AUR |
-| | Alpine | x86_64 | Docker only | |
-
-### Server
-
-| OS | Version | Status |
-|----|---------|--------|
-| Linux (any) | Kernel 5.10+ | Supported |
-| Container | Docker 20.10+ | Supported |
-| Kubernetes | 1.25+ | Supported |
-
----
-
-## Video Formats
-
-### Containers
-
-| Format | Extension | Read | Write | Chunking | Notes |
-|--------|-----------|------|-------|----------|-------|
-| **QuickTime** | .mov | Full | Full | Structure-aware | Primary target |
-| **ISOBMFF/MP4** | .mp4 | Full | Full | Structure-aware | |
-| **MXF** | .mxf | Full | Full | Structure-aware | Broadcast |
-| **AVI** | .avi | Full | Full | Generic | Legacy |
-| **MKV** | .mkv | Read | Read | Generic | Planned structure-aware |
-| **WebM** | .webm | Read | Read | Generic | |
-
-### Video Codecs
-
-| Codec | Support | Keyframe Detection | Notes |
-|-------|---------|-------------------|-------|
-| **ProRes** | Full | All I-frame | Every frame is keyframe |
-| **ProRes RAW** | Full | All I-frame | |
-| **DNxHD/DNxHR** | Full | All I-frame | |
-| **H.264/AVC** | Full | GOP analysis | Long GOP handling |
-| **H.265/HEVC** | Full | GOP analysis | |
-| **AV1** | Full | GOP analysis | |
-| **VP9** | Full | GOP analysis | |
-| **MPEG-2** | Full | GOP analysis | Legacy broadcast |
-| **JPEG 2000** | Full | All I-frame | DCI/archival |
-| **RED RAW** | Full | All I-frame | .r3d |
-| **ARRI RAW** | Full | All I-frame | .ari |
-| **Blackmagic RAW** | Full | Partial I | .braw |
-| **Canon Cinema RAW** | Full | All I-frame | .crm |
-| **Sony RAW** | Full | All I-frame | .mxf |
-
-### Audio Codecs
-
-| Codec | Support | Notes |
-|-------|---------|-------|
-| **PCM/WAV** | Full | Uncompressed |
-| **AAC** | Full | |
-| **MP3** | Full | |
-| **FLAC** | Full | Lossless |
-| **ALAC** | Full | Apple Lossless |
-| **Opus** | Full | |
-| **AC-3/E-AC-3** | Full | Dolby |
-| **DTS** | Full | |
-
----
-
-## Image Formats
-
-### Still Images
-
-| Format | Extension | Read | Write | Chunking | Notes |
-|--------|-----------|------|-------|----------|-------|
-| **JPEG** | .jpg, .jpeg | Full | Full | Generic | v1.1+ |
-| **PNG** | .png | Full | Full | Generic | |
-| **TIFF** | .tif, .tiff | Full | Full | Structure-aware | v1.2+ |
-| **OpenEXR** | .exr | Full | Full | Structure-aware | VFX |
-| **DPX** | .dpx | Full | Full | Structure-aware | Film scan |
-| **PSD** | .psd | Full | Full | Layer-aware | v1.3+ |
-| **HEIF/HEIC** | .heif, .heic | Full | Full | Generic | |
-| **WebP** | .webp | Full | Full | Generic | |
-| **RAW** | Various | Full | Full | Generic | See below |
-
-### Camera RAW Formats
-
-| Format | Extensions | Support |
-|--------|------------|---------|
-| Canon | .cr2, .cr3 | Full |
-| Nikon | .nef, .nrw | Full |
-| Sony | .arw | Full |
-| Fujifilm | .raf | Full |
-| Adobe DNG | .dng | Full |
-| Olympus | .orf | Full |
-| Panasonic | .rw2 | Full |
-| Leica | .rwl | Full |
-| Phase One | .iiq | Full |
-| Hasselblad | .3fr | Full |
-
----
-
-## Project File Formats
-
-### Video Editing (NLE)
-
-| Application | Format | Version | Support | Dependency Extraction |
-|-------------|--------|---------|---------|----------------------|
-| **Adobe Premiere Pro** | .prproj | 2020+ | Full | Full |
-| **DaVinci Resolve** | .drp | 17+ | Full | Full |
-| **Final Cut Pro X** | .fcpxml | 1.8+ | Full | Full |
-| **Avid Media Composer** | .avp | 2021+ | Partial | Partial |
-| **Vegas Pro** | .veg | 18+ | Read only | None |
-
-### Motion Graphics / VFX
-
-| Application | Format | Version | Support | Dependency Extraction |
-|-------------|--------|---------|---------|----------------------|
-| **After Effects** | .aep | 2020+ | Full | Full |
-| **Nuke** | .nk | 12+ | Read only | Partial |
-| **Fusion** | .comp | 17+ | Read only | Partial |
-| **Houdini** | .hip, .hipnc | 19+ | Read only | None |
-
-### Audio
-
-| Application | Format | Version | Support |
-|-------------|--------|---------|---------|
-| **Pro Tools** | .ptx | 2021+ | Read only |
-| **Logic Pro** | .logicx | 10.6+ | Read only |
-| **Ableton Live** | .als | 11+ | Read only |
-
-### Graphics
-
-| Application | Format | Support |
-|-------------|--------|---------|
-| **Photoshop** | .psd | Full |
-| **Illustrator** | .ai | Read only |
-| **InDesign** | .indd | Read only |
-| **Figma** | .fig | Planned |
-| **Sketch** | .sketch | Planned |
-
----
-
-## Cloud Storage
-
-### Object Storage
-
-| Provider | Service | Support | Notes |
-|----------|---------|---------|-------|
-| **AWS** | S3 | Full | Primary target |
-| | S3 Glacier | Full | Lifecycle |
-| | S3 Express | Planned | Low latency |
-| **Google Cloud** | Cloud Storage | Full | |
-| | Coldline/Archive | Full | Lifecycle |
-| **Azure** | Blob Storage | Full | |
-| | Cool/Archive | Full | Lifecycle |
-| **Cloudflare** | R2 | Full | S3-compatible |
-| **Backblaze** | B2 | Full | S3-compatible |
-| **MinIO** | Self-hosted | Full | S3-compatible |
-| **Wasabi** | | Full | S3-compatible |
-
-### Authentication Providers
-
-| Provider | Protocol | Support |
-|----------|----------|---------|
-| **AWS IAM** | STS | Full |
-| **Google** | OAuth 2.0 / Service Account | Full |
-| **Azure AD** | OAuth 2.0 / Managed Identity | Full |
-| **OIDC** | Generic | Full |
-| **SAML** | 2.0 | Enterprise |
-| **LDAP** | v3 | Enterprise |
-
----
-
-## Database
-
-### Server Database
-
-| Database | Version | Support | Notes |
-|----------|---------|---------|-------|
-| **PostgreSQL** | 14+ | Full | Primary |
-| | 15+ | Recommended | Better performance |
-| | 16+ | Recommended | Latest features |
-| **CockroachDB** | 23.1+ | Full | Distributed |
-
-### Client Database
-
-| Database | Support | Notes |
-|----------|---------|-------|
-| **SQLite** | Full | Local metadata |
-| **sled** | Full | Embedded KV store |
-
-### Cache
-
-| System | Version | Support |
-|--------|---------|---------|
-| **Redis** | 7+ | Full |
-| **KeyDB** | 6+ | Full |
-| **DragonflyDB** | 1.0+ | Partial |
-
----
-
-## Network
-
-### Protocols
-
-| Protocol | Support | Notes |
-|----------|---------|-------|
-| **HTTPS** | Full | REST API |
-| **HTTP/2** | Full | Multiplexing |
-| **HTTP/3 (QUIC)** | Full | Chunk transfer |
-| **WebSocket** | Full | Real-time events |
-| **SSH** | Full | Git-style auth |
-
-### Proxy Support
-
-| Type | Support |
-|------|---------|
-| HTTP Proxy | Full |
-| HTTPS Proxy | Full |
-| SOCKS5 | Full |
-| PAC | Planned |
-
----
-
-## IDE Integrations
+# Compatibility
 
-### VS Code
-
-| Feature | Support |
-|---------|---------|
-| Extension | Full |
-| Source Control | Full |
-| File decorations | Full |
-| Diff view | Partial |
+**Maturity:** Current
 
-### JetBrains IDEs
+This is the compatibility status of the current alpha, not a support guarantee.
 
-| IDE | Support |
-|-----|---------|
-| IntelliJ IDEA | Full |
-| PyCharm | Full |
-| WebStorm | Full |
-| CLion | Full |
-| Rider | Full |
+**Last reviewed:** 2026-07-16
 
-### Other Editors
+Dits v0.1.5 is pre-1.0 evaluation software. This page distinguishes packaged
+targets from source-build possibilities and tested paths from broad format
+support. Keep independent backups and verify restored files.
 
-| Editor | Support |
-|--------|---------|
-| Sublime Text | Plugin (community) |
-| Vim/Neovim | Plugin (community) |
-| Emacs | Plugin (community) |
+## Published npm package
 
----
+The published `@byronwade/dits` v0.1.5 artifact contains exactly these native
+binaries:
 
-## NLE Plugin Support
+| Operating system | Architecture | Package target |
+| --- | --- | --- |
+| macOS | Apple silicon | `darwin-arm64` |
+| Windows | x64 | `win32-x64` |
 
-### Adobe Premiere Pro
+Install the package with:
 
-| Feature | Support |
-|---------|---------|
-| Panel extension | Full |
-| Import from Dits | Full |
-| Export to Dits | Full |
-| Version browser | Full |
-| Lock status | Full |
+```bash
+npm install -g @byronwade/dits
+dits --version
+```
 
-### DaVinci Resolve
+Linux, Intel macOS, and Windows ARM64 require a source build for v0.1.5. A target
+appearing in CI or a release workflow does not mean its binary is present in the
+published package. There is no published crates.io package, Homebrew tap, shell
+installer, official container image, or server distribution.
 
-| Feature | Support |
-|---------|---------|
-| Script extension | Full |
-| Media pool sync | Full |
-| Timeline backup | Full |
+For package details, see the [`npm package README`](../../packages/npm/README.md).
 
-### Final Cut Pro X
+## Source builds
 
-| Feature | Support |
-|---------|---------|
-| Workflow extension | Planned |
-| Library sync | Planned |
+A Rust toolchain can build the current workspace from source:
 
----
+```bash
+git clone https://github.com/byronwade/dits.git
+cd dits
+cargo build --release -p dits
+./target/release/dits --version
+```
 
-## Browser Support (Web UI)
+Source buildability on a machine is not a promise of a supported binary, OS
+version, installer, or long-term compatibility. The optional FUSE mount path is
+local-only, requires the `fuser` Cargo feature and an OS FUSE installation, and
+should be treated as experimental.
 
-| Browser | Version | Support |
-|---------|---------|---------|
-| **Chrome** | 100+ | Full |
-| **Firefox** | 100+ | Full |
-| **Safari** | 15+ | Full |
-| **Edge** | 100+ | Full |
+## Files and media
 
-### Mobile Browsers
+- General files use content-defined chunking and BLAKE3-addressed local storage.
+  Only byte-identical chunks deduplicate; no space-saving percentage is promised.
+- MP4/ISOBMFF support covers selected, tested parse, deconstruct, and reconstruct
+  paths. It is not universal MP4 or MOV compatibility.
+- FACR video/photo, proxy, segmentation, and related FFmpeg-backed paths are
+  experimental. Imported masters remain the source of truth.
+- Dits does not claim full semantic support for MXF, AVI, MKV, WebM, camera RAW,
+  NLE project formats, or editor plug-ins.
 
-| Browser | Support |
-|---------|---------|
-| Chrome (Android) | Full |
-| Safari (iOS) | Full |
-| Firefox (Android) | Partial |
+Compatibility is bounded by the checked-in test corpus and the exact command path
+being evaluated. A file extension or codec name alone is not evidence that every
+variant round-trips correctly.
 
----
+## Repository and network compatibility
 
-## API Client SDKs
+The pre-1.0 repository encoding is not a stable public contract for third-party
+readers or cross-version interoperability. Use the same reviewed build for an
+evaluation and retain the original source files.
 
-> 🚧 **Roadmap — none of these SDK packages are published.** They depend on the hosted REST
-> API (api.dits.io), which does not exist yet. `dits-sdk`, `dits-py`, `@dits/sdk`, and
-> `dits-go` are **not** on any registry. Treat the whole table as roadmap/design reference.
+Local-filesystem clone is the only current repository-copy workflow. `push`,
+`pull`, `fetch`, and `sync` return a nonzero error for both local-path and Internet
+remotes without changing objects, refs, or the working tree. There are no current
+public SDK packages, hosted APIs, P2P transfer, remote VFS hydration, or network
+clone compatibility promises.
 
-| Language | Package | Support |
-|----------|---------|---------|
-| **Rust** | `dits-sdk` | 🚧 Roadmap (not published) |
-| **Python** | `dits-py` | 🚧 Roadmap (not published) |
-| **JavaScript/TypeScript** | `@dits/sdk` | 🚧 Roadmap (not published) |
-| **Go** | `dits-go` | 🚧 Roadmap (not published) |
-| **C/C++** | `libdits` | 🚧 Roadmap (not published) |
-| **Swift** | `DitsKit` | 🚧 Roadmap (not published) |
-| **Kotlin** | `dits-kotlin` | 🚧 Roadmap (not published) |
+## Verification policy
 
----
+Before describing a platform or format as compatible:
 
-## Deprecated / Unsupported
+1. Record the exact Dits version or commit, OS, architecture, filesystem, and
+   external-tool versions.
+2. Test representative fixtures, including malformed and boundary cases.
+3. Compare restored output with an independent byte hash.
+4. Report measured results with their fixture and environment; do not generalize
+   them into universal support.
 
-### Operating Systems
-
-- Windows 7, 8, 8.1
-- macOS < 12
-- 32-bit systems
-
-### Formats
-
-- Real Media (.rm, .rmvb)
-- Windows Media (.wmv, .asf)
-- Flash Video (.flv)
-
-### Browsers
-
-- Internet Explorer (all versions)
-- Chrome < 100
-- Firefox < 100
-
----
-
-## Notes
-
-- "Full" = Complete feature support with testing
-- "Partial" = Basic functionality, some features missing
-- "Planned" = On roadmap, not yet implemented
-- "Community" = Third-party maintained
-- Version requirements are minimum supported
+Use [`../STATUS.md`](../STATUS.md) as the implementation authority, the
+[`getting-started guide`](../user-guide/getting-started.md) for a disposable local
+evaluation, and the [`benchmark policy`](../performance/benchmarks.md) when
+publishing performance observations.

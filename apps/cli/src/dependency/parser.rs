@@ -14,7 +14,10 @@ use std::{
 };
 
 use flate2::read::GzDecoder;
-use quick_xml::{events::Event, Reader};
+use quick_xml::{
+    events::{BytesRef, Event},
+    Reader, XmlVersion,
+};
 use regex::Regex;
 use thiserror::Error;
 use zip::ZipArchive;
@@ -236,6 +239,7 @@ fn parse_premiere_xml(xml: &str, project_dir: &Path) -> Result<Vec<MediaReferenc
     let mut buf = Vec::new();
     let mut in_file_path = false;
     let mut in_actual_media_file_path = false;
+    let mut path_text = String::new();
 
     loop {
         match reader.read_event_into(&mut buf) {
@@ -245,15 +249,20 @@ fn parse_premiere_xml(xml: &str, project_dir: &Path) -> Result<Vec<MediaReferenc
                 if local_name == "FilePath" || local_name == "ActualMediaFilePath" {
                     in_file_path = local_name == "FilePath";
                     in_actual_media_file_path = local_name == "ActualMediaFilePath";
+                    path_text.clear();
                 }
             },
             Ok(Event::Text(e)) => {
                 if in_file_path || in_actual_media_file_path {
-                    let path_str = e.unescape().map_err(|e| ParseError::Xml(e.to_string()))?;
-                    let path_str = path_str.trim();
-                    if !path_str.is_empty() {
-                        references.insert(path_str.to_string());
-                    }
+                    path_text.push_str(
+                        &e.xml10_content()
+                            .map_err(|e| ParseError::Xml(e.to_string()))?,
+                    );
+                }
+            },
+            Ok(Event::GeneralRef(e)) => {
+                if in_file_path || in_actual_media_file_path {
+                    append_xml_reference(&mut path_text, &e)?;
                 }
             },
             Ok(Event::End(ref e)) => {
@@ -264,6 +273,13 @@ fn parse_premiere_xml(xml: &str, project_dir: &Path) -> Result<Vec<MediaReferenc
                 }
                 if local_name == "ActualMediaFilePath" {
                     in_actual_media_file_path = false;
+                }
+                if local_name == "FilePath" || local_name == "ActualMediaFilePath" {
+                    let path_str = path_text.trim();
+                    if !path_str.is_empty() {
+                        references.insert(path_str.to_string());
+                    }
+                    path_text.clear();
                 }
             },
             Ok(Event::Eof) => break,
@@ -359,6 +375,7 @@ fn parse_resolve_xml(xml: &str, project_dir: &Path) -> Result<Vec<MediaReference
     let mut buf = Vec::new();
     let mut capture_text = false;
     let mut current_element = String::new();
+    let mut path_text = String::new();
 
     // Elements that typically contain file paths in Resolve projects
     let path_elements = ["SysPath", "FilePath", "MediaPath", "ClipPath", "Source"];
@@ -371,13 +388,16 @@ fn parse_resolve_xml(xml: &str, project_dir: &Path) -> Result<Vec<MediaReference
                 if path_elements.contains(&local_name) {
                     capture_text = true;
                     current_element = local_name.to_string();
+                    path_text.clear();
                 }
 
                 // Also check for path attributes
                 for attr in e.attributes().flatten() {
                     let key = std::str::from_utf8(attr.key.as_ref()).unwrap_or("");
                     if key.to_lowercase().contains("path") || key.to_lowercase().contains("file") {
-                        if let Ok(value) = attr.unescape_value() {
+                        if let Ok(value) = attr
+                            .decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder())
+                        {
                             let value_str = value.trim();
                             if !value_str.is_empty() && looks_like_path(value_str) {
                                 references.insert(value_str.to_string());
@@ -388,19 +408,28 @@ fn parse_resolve_xml(xml: &str, project_dir: &Path) -> Result<Vec<MediaReference
             },
             Ok(Event::Text(e)) => {
                 if capture_text {
-                    let text = e.unescape().map_err(|e| ParseError::Xml(e.to_string()))?;
-                    let text = text.trim();
-                    if !text.is_empty() && looks_like_path(text) {
-                        references.insert(text.to_string());
-                    }
+                    path_text.push_str(
+                        &e.xml10_content()
+                            .map_err(|e| ParseError::Xml(e.to_string()))?,
+                    );
+                }
+            },
+            Ok(Event::GeneralRef(e)) => {
+                if capture_text {
+                    append_xml_reference(&mut path_text, &e)?;
                 }
             },
             Ok(Event::End(ref e)) => {
                 let name = e.name();
                 let local_name = std::str::from_utf8(name.as_ref()).unwrap_or("");
                 if local_name == current_element {
+                    let text = path_text.trim();
+                    if !text.is_empty() && looks_like_path(text) {
+                        references.insert(text.to_string());
+                    }
                     capture_text = false;
                     current_element.clear();
+                    path_text.clear();
                 }
             },
             Ok(Event::Eof) => break,
@@ -471,7 +500,9 @@ fn parse_fcpxml(xml: &str, project_dir: &Path) -> Result<Vec<MediaReference>, Pa
                 for attr in e.attributes().flatten() {
                     let key = std::str::from_utf8(attr.key.as_ref()).unwrap_or("");
                     if key == "src" || key == "ref" || key.contains("path") {
-                        if let Ok(value) = attr.unescape_value() {
+                        if let Ok(value) = attr
+                            .decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder())
+                        {
                             let value_str = value.trim();
                             // FCPXML often uses file:// URLs
                             let path_str = if value_str.starts_with("file://") {
@@ -503,6 +534,36 @@ fn parse_fcpxml(xml: &str, project_dir: &Path) -> Result<Vec<MediaReference>, Pa
         .into_iter()
         .map(|p| create_media_reference(&p, project_dir))
         .collect())
+}
+
+/// Append a character or predefined XML entity reference to text being
+/// captured.
+///
+/// quick-xml 0.41 emits references as their own events. Rejecting unknown named
+/// entities keeps project parsing deterministic and avoids silently corrupting
+/// a media path.
+fn append_xml_reference(output: &mut String, reference: &BytesRef<'_>) -> Result<(), ParseError> {
+    if let Some(character) = reference
+        .resolve_char_ref()
+        .map_err(|e| ParseError::Xml(e.to_string()))?
+    {
+        output.push(character);
+        return Ok(());
+    }
+
+    let name = reference
+        .decode()
+        .map_err(|e| ParseError::Xml(e.to_string()))?;
+    let value = match name.as_ref() {
+        "lt" => "<",
+        "gt" => ">",
+        "amp" => "&",
+        "apos" => "'",
+        "quot" => "\"",
+        _ => return Err(ParseError::Xml(format!("unsupported XML entity reference: &{name};"))),
+    };
+    output.push_str(value);
+    Ok(())
 }
 
 // ============================================================================
@@ -702,5 +763,29 @@ mod tests {
             decode_file_url("file:///Users/test/My%20Video.mp4"),
             "/Users/test/My Video.mp4"
         );
+    }
+
+    #[test]
+    fn test_premiere_xml_reassembles_named_and_numeric_references() {
+        let references = parse_premiere_xml(
+            "<Project><FilePath>/Media/A&amp;B&#46;mov</FilePath></Project>",
+            Path::new("/project"),
+        )
+        .unwrap();
+
+        assert_eq!(references.len(), 1);
+        assert_eq!(references[0].original_path, "/Media/A&B.mov");
+    }
+
+    #[test]
+    fn test_resolve_xml_reassembles_named_and_hex_references() {
+        let references = parse_resolve_xml(
+            "<Project><SysPath>C:/Media/A&amp;B&#x2e;mov</SysPath></Project>",
+            Path::new("/project"),
+        )
+        .unwrap();
+
+        assert_eq!(references.len(), 1);
+        assert_eq!(references[0].original_path, "C:/Media/A&B.mov");
     }
 }

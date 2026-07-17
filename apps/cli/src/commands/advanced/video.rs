@@ -12,6 +12,7 @@ use dits::{
 
 /// Initialize a new video timeline project.
 pub fn video_init(name: &str) -> Result<()> {
+    validate_project_name(name)?;
     let cwd = std::env::current_dir()?;
     let repo = Repository::open(&cwd).context("Not a dits repository")?;
 
@@ -63,6 +64,7 @@ pub fn video_add_clip(
     start: f64,
     track_id: Option<&str>,
 ) -> Result<()> {
+    validate_project_name(project_name)?;
     let cwd = std::env::current_dir()?;
     let repo = Repository::open(&cwd).context("Not a dits repository")?;
 
@@ -122,6 +124,7 @@ pub fn video_add_clip(
 
 /// Show a video timeline.
 pub fn video_show(project_name: &str) -> Result<()> {
+    validate_project_name(project_name)?;
     let cwd = std::env::current_dir()?;
     let repo = Repository::open(&cwd).context("Not a dits repository")?;
 
@@ -187,7 +190,7 @@ pub fn video_list() -> Result<()> {
     let cwd = std::env::current_dir()?;
     let repo = Repository::open(&cwd).context("Not a dits repository")?;
 
-    let projects_dir = repo.dits_dir().join("projects");
+    let projects_dir = dits::util::safe_join_repo_path(repo.dits_dir(), "projects")?;
 
     if !projects_dir.exists() {
         println!("{}", style("No video projects yet.").dim());
@@ -202,6 +205,9 @@ pub fn video_list() -> Result<()> {
 
     for entry in std::fs::read_dir(&projects_dir)? {
         let entry = entry?;
+        if !entry.file_type()?.is_file() {
+            continue;
+        }
         let name = entry.file_name().to_string_lossy().to_string();
 
         if let Ok(hash_hex) = std::fs::read_to_string(entry.path()) {
@@ -226,10 +232,10 @@ pub fn video_list() -> Result<()> {
 
 /// Save project reference to .dits/projects/<name>.
 fn save_project_ref(repo: &Repository, name: &str, hash: &Hash) -> Result<()> {
-    let projects_dir = repo.dits_dir().join("projects");
+    let ref_path = project_ref_path(repo, name)?;
+    let projects_dir = dits::util::safe_join_repo_path(repo.dits_dir(), "projects")?;
     std::fs::create_dir_all(&projects_dir)?;
 
-    let ref_path = projects_dir.join(name);
     std::fs::write(&ref_path, hash.to_hex())?;
 
     Ok(())
@@ -237,7 +243,7 @@ fn save_project_ref(repo: &Repository, name: &str, hash: &Hash) -> Result<()> {
 
 /// Load project reference from .dits/projects/<name>.
 fn load_project_ref(repo: &Repository, name: &str) -> Result<Option<Hash>> {
-    let ref_path = repo.dits_dir().join("projects").join(name);
+    let ref_path = project_ref_path(repo, name)?;
 
     if !ref_path.exists() {
         return Ok(None);
@@ -249,10 +255,36 @@ fn load_project_ref(repo: &Repository, name: &str) -> Result<Option<Hash>> {
     Ok(Some(hash))
 }
 
+/// Resolve one project name to a metadata path without permitting path
+/// separators, platform-specific prefixes, or symlink escapes.
+fn project_ref_path(repo: &Repository, name: &str) -> Result<std::path::PathBuf> {
+    validate_project_name(name)?;
+
+    Ok(dits::util::safe_join_repo_path(repo.dits_dir(), &format!("projects/{name}"))?)
+}
+
+fn validate_project_name(name: &str) -> Result<()> {
+    if name.is_empty()
+        || matches!(name, "." | "..")
+        || name.ends_with('.')
+        || name.ends_with(' ')
+        || name
+            .chars()
+            .any(|character| character.is_control() || matches!(character, '/' | '\\' | ':'))
+    {
+        bail!(
+            "Invalid project name '{}': use a non-empty filename without path separators, control \
+             characters, or a trailing dot/space",
+            name
+        );
+    }
+    Ok(())
+}
+
 /// Get project hashes from a commit (placeholder - projects stored separately
 /// for now).
 fn get_commit_projects(repo: &Repository, _commit_hash: &Hash) -> Result<Vec<Hash>> {
-    let projects_dir = repo.dits_dir().join("projects");
+    let projects_dir = dits::util::safe_join_repo_path(repo.dits_dir(), "projects")?;
 
     if !projects_dir.exists() {
         return Ok(Vec::new());
@@ -261,6 +293,9 @@ fn get_commit_projects(repo: &Repository, _commit_hash: &Hash) -> Result<Vec<Has
     let mut hashes = Vec::new();
     for entry in std::fs::read_dir(&projects_dir)? {
         let entry = entry?;
+        if !entry.file_type()?.is_file() {
+            continue;
+        }
         if let Ok(hash_hex) = std::fs::read_to_string(entry.path()) {
             if let Ok(hash) = Hash::from_hex(hash_hex.trim()) {
                 hashes.push(hash);
@@ -269,4 +304,42 @@ fn get_commit_projects(repo: &Repository, _commit_hash: &Hash) -> Result<Vec<Has
     }
 
     Ok(hashes)
+}
+
+#[cfg(test)]
+mod tests {
+    use tempfile::tempdir;
+
+    use super::*;
+
+    #[test]
+    fn project_refs_reject_path_escape_names_without_mutating_head() {
+        let temp = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+        let original_head = std::fs::read(repo.dits_dir().join("HEAD")).unwrap();
+        let hash = Hash::from_bytes([7; 32]);
+
+        for invalid in ["", ".", "..", "../HEAD", "/absolute", "nested/name", "C:escape"] {
+            assert!(save_project_ref(&repo, invalid, &hash).is_err(), "accepted {invalid}");
+            assert!(load_project_ref(&repo, invalid).is_err(), "loaded {invalid}");
+        }
+
+        assert_eq!(std::fs::read(repo.dits_dir().join("HEAD")).unwrap(), original_head);
+        assert!(!repo.dits_dir().join("projects").exists());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn project_refs_reject_symlinked_metadata_directory() {
+        use std::os::unix::fs::symlink;
+
+        let temp = tempdir().unwrap();
+        let outside = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+        symlink(outside.path(), repo.dits_dir().join("projects")).unwrap();
+
+        let hash = Hash::from_bytes([8; 32]);
+        assert!(save_project_ref(&repo, "timeline", &hash).is_err());
+        assert!(!outside.path().join("timeline").exists());
+    }
 }

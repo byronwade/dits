@@ -64,11 +64,7 @@ pub struct TelemetryManager {
 
 impl TelemetryManager {
     pub fn new(config: Arc<Mutex<Config>>) -> Self {
-        Self {
-            config,
-            session_id: generate_random_id(),
-            events: Arc::new(Mutex::new(Vec::new())),
-        }
+        Self { config, session_id: generate_random_id(), events: Arc::new(Mutex::new(Vec::new())) }
     }
 
     /// Check whether telemetry is explicitly enabled.
@@ -104,9 +100,7 @@ impl TelemetryManager {
             .get(TELEMETRY_CONFIG_KEY)
             .and_then(|value| value.parse::<bool>().ok())
             .unwrap_or(false);
-        let user_id = config
-            .get(TELEMETRY_USER_ID_KEY)
-            .unwrap_or_default();
+        let user_id = config.get(TELEMETRY_USER_ID_KEY).unwrap_or_default();
         let last_sent = config
             .get(TELEMETRY_LAST_SENT_KEY)
             .and_then(|value| value.parse::<u64>().ok())
@@ -261,7 +255,10 @@ pub mod events {
         properties.insert("arg_count".to_string(), args.len().into());
         properties.insert(
             "flag_count".to_string(),
-            args.iter().filter(|argument| argument.starts_with('-')).count().into(),
+            args.iter()
+                .filter(|argument| argument.starts_with('-'))
+                .count()
+                .into(),
         );
         properties.insert(
             "has_paths".to_string(),

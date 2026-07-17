@@ -1,459 +1,261 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { Callout } from "@/components/ui/callout";
-import { DocPageHeader } from "@/components/doc-page-header";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CodeBlock } from "@/components/ui/code-block";
 
-import { generateMetadata as genMeta, generateArticleSchema, generateHowToSchema, generateBreadcrumbSchema } from "@/lib/seo";
-import Script from "next/script";
+import { DocPageHeader } from "@/components/doc-page-header";
+import { CodeBlock } from "@/components/ui/code-block";
+import { Callout } from "@/components/ui/callout";
+import { generateMetadata as genMeta } from "@/lib/seo";
 
 export const metadata: Metadata = genMeta({
-  title: "Troubleshooting Guide - Common Issues and Solutions for Dits",
-  description: "Common issues and solutions for Dits version control. Troubleshooting guide for installation, basic usage, performance problems, and advanced configuration issues.",
+  title: "Troubleshooting the Dits Alpha",
+  description:
+    "Current troubleshooting guidance for package targets, local repositories, integrity checks, disabled remotes, report-only GC, and experimental paths.",
   canonical: "https://dits.dev/docs/troubleshooting",
-  keywords: [
-    "dits troubleshooting",
-    "dits issues",
-    "dits problems",
-    "dits errors",
-    "dits help",
-    "version control troubleshooting",
-  ],
-  openGraph: {
-    type: "article",
-    images: [
-      {
-        url: "/dits.png",
-        width: 1200,
-        height: 630,
-        alt: "Dits Troubleshooting Guide",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-  },
 });
 
 export default function TroubleshootingPage() {
-  const articleSchema = generateArticleSchema({
-    headline: "Troubleshooting Guide - Common Issues and Solutions for Dits",
-    description: "Common issues and solutions for Dits version control. Troubleshooting guide for installation, basic usage, performance problems, and advanced configuration issues.",
-    datePublished: "2024-01-01",
-    dateModified: new Date().toISOString().split("T")[0],
-    author: "Byron Wade",
-    section: "Documentation",
-    tags: ["troubleshooting", "help", "issues", "solutions"],
-  });
-
-  const howToSchema = generateHowToSchema({
-    name: "How to Troubleshoot Dits Issues",
-    description: "Step-by-step troubleshooting guide for common Dits problems",
-    step: [
-      {
-        name: "Identify the Issue",
-        text: "Determine the category: installation, basic usage, performance, or advanced",
-      },
-      {
-        name: "Check Error Messages",
-        text: "Review error messages and logs for specific error codes or messages",
-      },
-      {
-        name: "Consult Documentation",
-        text: "Search the troubleshooting guide for your specific issue",
-      },
-      {
-        name: "Try Solutions",
-        text: "Apply recommended solutions in order, testing after each step",
-      },
-      {
-        name: "Get Community Help",
-        text: "If issues persist, check GitHub Issues or community discussions",
-      },
-    ],
-  });
-
-  const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: "Home", url: "/" },
-    { name: "Documentation", url: "/docs" },
-    { name: "Troubleshooting", url: "/docs/troubleshooting" },
-  ]);
-
   return (
-    <>
-      <Script
-        id="article-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(articleSchema),
-        }}
+    <div className="prose max-w-none dark:prose-invert">
+      <DocPageHeader
+        eyebrow="Support"
+        title="Troubleshooting the Alpha"
+        description="Start with the current product boundary: local history works, while remote transfer, destructive GC, and supported repository encryption do not."
       />
-      <Script
-        id="howto-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(howToSchema),
-        }}
-      />
-      <Script
-        id="breadcrumb-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbSchema),
-        }}
-      />
-      <div className="prose dark:prose-invert max-w-none">
-      <DocPageHeader eyebrow="Community" title="Troubleshooting Guide" />
-      <p>
-        Common issues and their solutions. If you can&apos;t find your issue here,
-        check the <Link href="https://github.com/byronwade/dits/issues">GitHub Issues</Link> or
-        join our <Link href="https://github.com/byronwade/dits/discussions">community discussions</Link>.
-      </p>
 
-      <Tabs defaultValue="installation" className="not-prose my-8">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="installation">Installation</TabsTrigger>
-          <TabsTrigger value="basic-usage">Basic Usage</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="advanced">Advanced</TabsTrigger>
-        </TabsList>
+      <Callout type="warning" title="Protect the evidence" className="not-prose my-6">
+        Work on a disposable fixture or a copy with an independently verified
+        backup. Do not manually edit <code>.dits</code> while diagnosing a
+        problem, and preserve the original error text for a bug report.
+      </Callout>
 
-        <TabsContent value="installation" className="mt-6">
-          <h2>Installation Issues</h2>
+      <h2>Quick triage</h2>
 
-          <h3>Command not found after installation</h3>
-          <Callout type="note" title="Solution" className="not-prose my-4">
-              <p>Check if Dits is in your PATH:</p>
-              <CodeBlock
-        language="bash"
-        code={`# Check where dits was installed
-which dits
-
-# If not found, add to PATH
-export PATH="$HOME/.dits/bin:$PATH"
-
-# Or move to system location (requires sudo)
-sudo cp $(which dits) /usr/local/bin/`}
-      />
-          </Callout>
-
-          <h3>Permission denied during installation</h3>
-          <Callout type="note" title="Solution" className="not-prose my-4">
-              <p>Use a user-owned npm prefix:</p>
-              <CodeBlock
-        language="bash"
-        code={`npm config set prefix "$HOME/.local"
-npm install -g @byronwade/dits
-
-# Add npm's user bin directory to PATH
-export PATH="$HOME/.local/bin:$PATH"`}
-      />
-          </Callout>
-
-          <h3>Rust toolchain not found</h3>
-          <Callout type="warning" title="For building from source" className="not-prose my-4">
-              <p>Install Rust using rustup:</p>
-              <CodeBlock
-        language="bash"
-        code={`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-source ~/.cargo/env
-
-# Verify installation
-rustc --version
-cargo --version`}
-      />
-          </Callout>
-        </TabsContent>
-
-        <TabsContent value="basic-usage" className="mt-6">
-          <h2>Basic Usage Issues</h2>
-
-          <h3>&quot;Repository not found&quot; error</h3>
-          <Callout type="note" title="Solution" className="not-prose my-4">
-              <p>You need to initialize a Dits repository first:</p>
-              <CodeBlock
-        language="bash"
-        code={`# Initialize in current directory
-dits init
-
-# Check if .dits directory was created
-ls -la .dits/`}
-      />
-          </Callout>
-
-          <h3>Files not showing in status</h3>
-          <Callout type="note" title="Solution" className="not-prose my-4">
-              <p>Files need to be explicitly added to staging:</p>
-              <CodeBlock
-        language="bash"
-        code={`# Add specific file
-dits add myfile.mp4
-
-# Add all files in directory
-dits add .
-
-# Check status
-dits status`}
-      />
-          </Callout>
-
-          <h3>Commit fails with no changes</h3>
-          <Callout type="warning" title="Solution" className="not-prose my-4">
-              <p>You need staged changes to commit:</p>
-              <CodeBlock
-        language="bash"
-        code={`# Check what's staged
-dits status
-
-# Stage files if needed
-dits add .
-
-# Then commit
-dits commit -m "Your message"`}
-      />
-          </Callout>
-
-          <h3>Large files causing out of memory</h3>
-          <Callout type="note" title="Solution" className="not-prose my-4">
-              <p>Dits uses streaming chunking, but very large files may need more memory:</p>
-              <CodeBlock
-        language="bash"
-        code={`# Increase available memory
-export DITS_CHUNK_MEMORY_MB=1024
-
-# Or use smaller chunk sizes (trades speed for memory)
-dits config chunk.avg_size 32KB`}
-      />
-          </Callout>
-        </TabsContent>
-
-        <TabsContent value="performance" className="mt-6">
-          <h2>Performance Issues</h2>
-
-          <h3>Slow chunking of large files</h3>
-          <Callout type="note" title="Expected behavior" className="not-prose my-4">
-              <p>Chunking is CPU-intensive but should be reasonable:</p>
-              <ul className="mt-2 space-y-1">
-                <li><strong>10GB file:</strong> ~30-60 seconds on modern hardware</li>
-                <li><strong>100GB file:</strong> ~5-10 minutes</li>
-                <li><strong>SSD storage:</strong> Much faster than HDD</li>
-              </ul>
-              <p className="mt-2">If significantly slower, check:</p>
-              <CodeBlock
-        language="bash"
-        code={`# CPU usage during chunking
-top -p $(pgrep dits)
-
-# Disk I/O
-iostat -x 1`}
-      />
-          </Callout>
-
-          <h3>Slow network transfers</h3>
-          <Callout type="note" title="Solution" className="not-prose my-4">
-              <p>Optimize network settings:</p>
-              <CodeBlock
-        language="bash"
-        code={`# Increase connection pool
-dits config network.max_connections 16
-
-# Use resumable uploads
-dits config network.resumable_uploads true
-
-# Check network speed
-dits config network.bandwidth_test`}
-      />
-          </Callout>
-
-          <h3>High memory usage</h3>
-          <Callout type="note" title="Solution" className="not-prose my-4">
-              <p>Configure memory limits:</p>
-              <CodeBlock
-        language="bash"
-        code={`# Limit memory per operation
-dits config memory.max_per_operation 512MB
-
-# Use disk buffering for large files
-dits config storage.use_disk_buffer true
-
-# Monitor memory usage
-dits config debug.memory_profile true`}
-      />
-          </Callout>
-        </TabsContent>
-
-        <TabsContent value="advanced" className="mt-6">
-          <h2>Advanced Issues</h2>
-
-          <h3>VFS mount not working</h3>
-          <Callout type="note" title="FUSE Requirements" className="not-prose my-4">
-              <p>Install FUSE for your platform:</p>
-              <CodeBlock
-        language="bash"
-        code={`# macOS
-brew install macfuse
-
-# Ubuntu/Debian
-sudo apt install fuse3 libfuse3-dev
-
-# CentOS/RHEL
-sudo yum install fuse3 fuse3-devel
-
-# Test FUSE
-dits mount --test /tmp/test-mount`}
-      />
-          </Callout>
-
-          <h3>Chunk verification failures</h3>
-          <Callout type="important" title="Critical: Check data integrity" className="not-prose my-4">
-              <p>This indicates data corruption:</p>
-              <CodeBlock
-        language="bash"
-        code={`# Verify repository integrity
-dits fsck
-
-# Find corrupted chunks
-dits fsck --verbose
-
-# Recover from an independently verified backup.
-# Network pull is not implemented in the current alpha.`}
-      />
-              <p className="mt-2 text-sm">
-                <strong>Never ignore checksum failures.</strong> They indicate data corruption that needs immediate attention.
-              </p>
-          </Callout>
-
-          <h3>Lock conflicts with team collaboration</h3>
-          <Callout type="note" title="Solution" className="not-prose my-4">
-              <p>Check and resolve locks:</p>
-              <CodeBlock
-        language="bash"
-        code={`# See all locks
-dits locks
-
-# Unlock specific file
-dits unlock path/to/file.mp4
-
-# Force unlock (admin only)
-dits unlock path/to/file.mp4 --force`}
-      />
-          </Callout>
-
-          <h3>Storage quota exceeded</h3>
-          <Callout type="note" title="Solution" className="not-prose my-4">
-              <p>Manage storage usage:</p>
-              <CodeBlock
-        language="bash"
-        code={`# Check storage usage
-dits repo-stats
-
-# Run garbage collection
-dits gc
-
-# Clean old branches/tags
-dits branch --list --merged | xargs dits branch -d
-
-# Move to cold storage
-dits storage archive --older-than 90d`}
-      />
-          </Callout>
-        </TabsContent>
-      </Tabs>
-
-      <h2>Getting More Help</h2>
-
-      <div className="not-prose grid gap-4 md:grid-cols-3 my-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Documentation</CardTitle>
-            <CardDescription>Explore comprehensive guides</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="text-sm space-y-1">
-              <li><Link href="/docs/cli-reference">CLI Reference</Link></li>
-              <li><Link href="/docs/configuration">Configuration Guide</Link></li>
-              <li><Link href="/docs/api/rest">API Documentation</Link></li>
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Community Support</CardTitle>
-            <CardDescription>Get help from the community</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="text-sm space-y-1">
-              <li><Link href="https://github.com/byronwade/dits/discussions">GitHub Discussions</Link></li>
-              <li><Link href="https://github.com/byronwade/dits/issues">Report Issues</Link></li>
-              <li><Link href="/docs/contributing">Contributing Guide</Link></li>
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Debug Information</CardTitle>
-            <CardDescription>Collect info for bug reports</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <CodeBlock
+      <CodeBlock
         language="bash"
         code={`dits --version
-dits config --list
-dits repo-stats
-uname -a`}
+dits status
+dits fsck
+dits config --list`}
       />
-          </CardContent>
-        </Card>
-      </div>
 
-      <h3>Telemetry Issues</h3>
+      <p>
+        Run only the commands relevant to the affected repository. Record the
+        exact version, OS, architecture, filesystem, command, exit status, and
+        smallest redistributable fixture that reproduces the issue.
+      </p>
 
-      <h4>Check if telemetry is enabled</h4>
-      <Callout type="note" title="Telemetry Status" className="not-prose my-4">
-          <p>Check your current telemetry settings:</p>
-          <CodeBlock
+      <h2>Installation and command discovery</h2>
+
+      <h3><code>dits</code> is not found</h3>
+
+      <p>
+        Confirm the npm global prefix and whether the executable is on your
+        shell&apos;s path:
+      </p>
+
+      <CodeBlock
         language="bash"
-        code={`dits telemetry status`}
+        code={`npm config get prefix
+command -v dits
+dits --version`}
       />
-          <p className="text-sm mt-2">
-            This shows if telemetry is enabled, your anonymized user ID, and when data was last uploaded.
-          </p>
-      </Callout>
 
-      <h4>Disable telemetry if needed</h4>
-      <Callout type="tip" title="Disable Telemetry" className="not-prose my-4">
-          <p>To disable telemetry collection:</p>
-          <CodeBlock
+      <p>
+        The published v0.1.5 package contains only Apple-silicon macOS and
+        Windows x64 binaries. Linux, Intel macOS, and Windows ARM64 require a
+        source build. On an unsupported target, the package launcher reports that
+        no matching binary is present; reinstalling the same artifact does not
+        add one. See <Link href="/docs/installation">installation status</Link>.
+      </p>
+
+      <h3>A source build fails</h3>
+
+      <p>
+        Capture the full Rust diagnostic and toolchain version. Build the active
+        package from the repository root:
+      </p>
+
+      <CodeBlock
         language="bash"
-        code={`dits telemetry disable`}
+        code={`rustc -Vv
+cargo build --release -p dits`}
       />
-          <p className="text-sm mt-2">
-            This immediately stops all telemetry collection and clears any pending data.
-          </p>
-      </Callout>
 
-      <h4>Network connectivity issues with telemetry</h4>
-      <Callout type="note" title="Offline Mode" className="not-prose my-4">
-          <p>If telemetry uploads are failing due to network issues:</p>
-          <ul className="text-sm mt-2 space-y-1">
-            <li>Telemetry data is stored locally until network is available</li>
-            <li>Failed uploads are retried automatically on next use</li>
-            <li>You can disable telemetry if network issues persist</li>
-          </ul>
-      </Callout>
+      <p>
+        Optional all-feature builds can require platform FUSE libraries. A
+        failure caused by a missing optional dependency is not evidence that a
+        prebuilt binary exists for that platform.
+      </p>
 
-      <Callout type="tip" title="Debug Mode" className="not-prose my-6">
-          For advanced troubleshooting, enable debug logging:
-          <CodeBlock
+      <h2>Local repository errors</h2>
+
+      <h3>&ldquo;Not a Dits repository&rdquo;</h3>
+
+      <p>
+        Change to the intended project directory or initialize a new disposable
+        evaluation repository. Do not initialize over unrelated data merely to
+        silence the error.
+      </p>
+
+      <CodeBlock
         language="bash"
-        code={`dits config debug.enabled true`}
+        code={`cd /path/to/evaluation-project
+dits status
+
+# Only for a directory you intentionally want to initialize
+dits init`}
       />
+
+      <h3>A file is absent from the next commit</h3>
+
+      <p>
+        The current <code>add</code> command requires one or more paths and has no
+        <code> --all</code> flag. Stage the path, inspect status, then commit.
+      </p>
+
+      <CodeBlock
+        language="bash"
+        code={`dits add path/to/file
+dits status
+dits commit --message "Add file"`}
+      />
+
+      <h3>A restore or merge conflict is incomplete</h3>
+
+      <p>
+        Preserve the worktree and <code>dits status</code> output before trying
+        another operation. Restore does not yet cover complete merge-conflict
+        resolution. Use an independently verified backup to recover important
+        bytes instead of guessing at internal state.
+      </p>
+
+      <h2>Remote commands fail</h2>
+
+      <Callout type="note" title="Expected fail-closed behavior" className="not-prose my-6">
+        <code>push</code>, <code>pull</code>, <code>fetch</code>, and
+        <code> sync</code> return nonzero for local-path and Internet remotes
+        without changing objects, refs, or the working tree. Network clone is
+        also unavailable. A configured URL is not a backup destination.
       </Callout>
+
+      <p>
+        Use <Link href="/docs/cli/repository">local-filesystem clone</Link> for a
+        current repository-copy workflow, then place verified copies in separate
+        failure domains with your normal backup tooling.
+      </p>
+
+      <h2>Integrity and storage</h2>
+
+      <h3><code>fsck</code> reports an error</h3>
+
+      <CodeBlock
+        language="bash"
+        code={`dits fsck
+dits fsck --verbose`}
+      />
+
+      <p>
+        Treat a digest mismatch or missing object as possible corruption.
+        <code> fsck</code> detects problems but has no repair or remote-fetch
+        mode. Preserve the repository, recover from a known-good backup, and
+        compare restored files with an independent standard hash.
+      </p>
+
+      <h3>The disk is full</h3>
+
+      <CodeBlock
+        language="bash"
+        code={`dits repo-stats
+dits gc --dry-run`}
+      />
+
+      <p>
+        The GC dry-run only reports candidates and does not reclaim space. Free
+        space outside the repository or move a complete, backed-up repository to
+        a larger volume. Never delete object files by hand.
+      </p>
+
+      <h2>High memory or slow ingest</h2>
+
+      <p>
+        Current large-file ingest is not bounded by the target streaming-memory
+        formula and can hold file-sized and copied buffers. There is no supported
+        memory-limit, disk-buffer, or debug-profile configuration key. Reproduce
+        with a smaller backed-up fixture, monitor the process with OS tools, and
+        report the file size, format, hardware, filesystem, and elapsed time.
+      </p>
+
+      <p>
+        Do not compare an observation with a generic throughput promise. Use the
+        <Link href="/docs/benchmarks"> benchmark methodology</Link> for measured
+        results tied to an environment and commit.
+      </p>
+
+      <h2>Experimental FUSE mount</h2>
+
+      <p>
+        <code>mount</code> and <code>unmount</code> appear only in a source build
+        compiled with the optional <code>fuser</code> feature and require an OS
+        FUSE installation. The path is local-only and has no <code>--test</code>
+        option. If the commands are absent from help, the binary was built without
+        that feature.
+      </p>
+
+      <CodeBlock
+        language="bash"
+        code={`cargo build --release -p dits --features fuser
+./target/release/dits mount --help`}
+      />
+
+      <h2>Legacy encryption state</h2>
+
+      <p>
+        A repository containing the old experimental keystore fails closed before
+        normal operations. Inspect the diagnostic state; do not treat that
+        keystore as complete repository encryption.
+      </p>
+
+      <CodeBlock
+        language="bash"
+        code={`dits encrypt-status
+
+# Clears a legacy cached key; it does not enable encryption
+dits logout`}
+      />
+
+      <p>
+        <code>encrypt-init</code>, <code>login</code>, and
+        <code> change-password</code> intentionally fail without modifying a
+        keystore. See <Link href="/docs/cli/encryption">encryption status</Link>.
+      </p>
+
+      <h2>Conflicting lock record</h2>
+
+      <p>
+        Locks are local advisory metadata, not server-enforced team leases.
+        Inspect the record before releasing it; <code>--force</code> only
+        overrides the owner check in this local store.
+      </p>
+
+      <CodeBlock
+        language="bash"
+        code={`dits locks --verbose
+dits unlock path/to/file
+
+# Use only after confirming the local record is stale
+dits unlock path/to/file --force`}
+      />
+
+      <h2>Report a reproducible problem</h2>
+
+      <p>
+        Search <Link href="https://github.com/byronwade/dits/issues">GitHub issues</Link>
+        and <Link href="https://github.com/byronwade/dits/discussions">discussions</Link>.
+        A new report should include the exact command and error, Dits version,
+        platform details, expected behavior, and a minimal fixture you have
+        permission to share. Remove secrets, personal data, proprietary media,
+        and private repository paths first.
+      </p>
     </div>
-    </>
   );
 }

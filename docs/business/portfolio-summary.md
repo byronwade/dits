@@ -1,5 +1,10 @@
 # Dits product brief
 
+**Maturity:** Current
+
+Current alpha product brief with future layers explicitly separated from shipped local
+behavior.
+
 > Current strategy summary. Last reviewed: 2026-07-16.
 
 ## One sentence
@@ -105,5 +110,5 @@ dits init
 dits status
 ```
 
-Then read the [getting-started guide](../guides/getting-started.md), the
+Then read the [getting-started guide](../user-guide/getting-started.md), the
 [current status](../STATUS.md), and the [roadmap](../../ROADMAP.md).

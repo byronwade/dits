@@ -1,5 +1,10 @@
 # Implementation Safety Checklist
 
+**Maturity:** Current
+
+Contributor checklist and release gate; an unchecked or described mitigation is not
+evidence that the product already enforces it.
+
 > Pre-flight verification checklist for implementing Dits features safely. Use this document to verify each component meets safety requirements before deployment.
 
 ## How to Use This Checklist
@@ -519,4 +524,4 @@ _________________________________
 - [Known Issues and Solutions](./known-issues-and-solutions.md)
 - [Edge Cases and Failure Modes](./edge-cases-failure-modes.md)
 - [Security Architecture](./security.md)
-- [Operations Runbook](../operations/runbook.md)
+- [Historical Hosted-Service Runbooks](../operations/runbooks/README.md)

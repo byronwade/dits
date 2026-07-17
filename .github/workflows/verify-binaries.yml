@@ -11,19 +11,25 @@ on:
       version:
         description: 'Published npm version to verify (e.g. 0.1.6)'
         required: true
-        default: '0.1.6'
 
 jobs:
   verify-linux:
     name: Verify Linux binaries (QEMU)
     runs-on: ubuntu-latest
     steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Set up QEMU (multi-arch emulation)
         uses: docker/setup-qemu-action@v3
 
       - name: Download the published package
+        env:
+          PACKAGE_VERSION: ${{ inputs.version }}
         run: |
-          npm pack "@byronwade/dits@${{ inputs.version }}"
+          npm pack "@byronwade/dits@$PACKAGE_VERSION"
           tar -xzf byronwade-dits-*.tgz
           echo "Bundled binaries:"
           ls -1 package/bin

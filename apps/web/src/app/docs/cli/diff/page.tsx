@@ -1,201 +1,83 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { Callout } from "@/components/ui/callout";
+
 import { DocPageHeader } from "@/components/doc-page-header";
+import { Callout } from "@/components/ui/callout";
 import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
-    title: "Diff Commands",
-    description: "Compare changes between commits, branches, and files with Dits diff",
+  title: "Local Diff Command",
+  description: "Current alpha syntax and limits for working-tree and staged Dits diffs.",
 };
 
 export default function DiffPage() {
-    return (
-        <div className="prose dark:prose-invert max-w-none">
-            <DocPageHeader
-                eyebrow="CLI Reference"
-                title="Diff & Compare Commands"
-                description="View differences between commits, branches, working directory, and staged changes. Understand exactly what changed and when."
-            />
+  return (
+    <div className="prose max-w-none dark:prose-invert">
+      <DocPageHeader
+        eyebrow="CLI Reference · Current"
+        title="Local diff"
+        description="Inspect working-tree or staged changes through the narrow diff surface implemented by the alpha."
+      />
 
-            <h2>dits diff</h2>
-            <p>
-                Show changes between the working directory and the index (staging area),
-                or between commits.
-            </p>
+      <h2><code>dits diff</code></h2>
+      <CodeBlock
+        language="text"
+        code={`dits diff [OPTIONS] [FILE]
 
-            <h3>Synopsis</h3>
-            <CodeBlock
-                language="bash"
-                code={`dits diff [OPTIONS] [<commit>] [--] [<path>...]
-dits diff [OPTIONS] <commit> <commit> [--] [<path>...]`}
-            />
+Options:
+    --staged             Show staged changes
+-c, --commit <COMMIT>    Resolve a commit before diffing
+-h, --help               Show command help`}
+      />
 
-            <h3>Options</h3>
-            <CodeBlock
-                language="bash"
-                code={`--staged, --cached    Compare staged changes to last commit
---stat               Show diffstat summary
---name-only          Only show changed file names
---name-status        Show name and status (A/M/D)
--p, --patch          Show full patch (default)
---no-color           Disable colored output
--w, --ignore-space   Ignore whitespace changes
---word-diff          Show word-level differences
---binary             Show binary file differences
---chunk-diff         Show chunk-level differences (Dits-specific)`}
-            />
+      <h3>Implemented modes</h3>
+      <ul>
+        <li>
+          With no flag, Dits shows tracked modified or deleted working-tree paths
+          against the current HEAD state.
+        </li>
+        <li>
+          <code>--staged</code> reports staged additions, modifications, deletions,
+          renames, type changes, and mode changes.
+        </li>
+        <li>
+          The optional <code>FILE</code> is one exact repository-relative path, not a
+          pathspec, directory expansion, or glob.
+        </li>
+        <li>
+          Working-tree text files receive a line diff. Binary files receive a
+          changed marker and size information, not a semantic or chunk-region diff.
+        </li>
+      </ul>
 
-            <h3>Common Use Cases</h3>
+      <CodeBlock
+        language="bash"
+        code={`dits diff
+dits diff README.md
+dits diff --staged
+dits diff --staged footage/scene.mov`}
+      />
 
-            <h4>View Unstaged Changes</h4>
-            <CodeBlock
-                language="bash"
-                code={`# See what you've changed but not staged
-$ dits diff
-diff --dits a/src/main.ts b/src/main.ts
---- a/src/main.ts
-+++ b/src/main.ts
-@@ -10,7 +10,8 @@
- function main() {
--  console.log("Hello");
-+  console.log("Hello, World!");
-+  console.log("Welcome to Dits");
- }`}
-            />
+      <Callout type="important" title="--commit is not a historical comparison yet" className="not-prose my-6">
+        The current implementation validates that the supplied commit resolves, then
+        still renders the working tree against HEAD. It does not compare two commits
+        or branches. Do not use it as evidence of a historical diff.
+      </Callout>
 
-            <h4>View Staged Changes</h4>
-            <CodeBlock
-                language="bash"
-                code={`# See what will be committed
-$ dits diff --staged
+      <h2>Unsupported Git-like syntax</h2>
+      <p>
+        Dits does not currently accept two commit operands, revision ranges,{" "}
+        <code>--cached</code>, <code>--stat</code>, <code>--name-only</code>,{" "}
+        <code>--word-diff</code>, <code>--chunk-diff</code>, or a <code>--</code>
+        pathspec separator on this command. There is no <code>difftool</code> command
+        or alias configuration surface.
+      </p>
 
-# Same as
-$ dits diff --cached`}
-            />
-
-            <h4>Compare Commits</h4>
-            <CodeBlock
-                language="bash"
-                code={`# Compare two commits
-$ dits diff abc1234 def5678
-
-# Compare with parent commit
-$ dits diff HEAD~1 HEAD
-
-# Compare branch with main
-$ dits diff main feature/new-ui`}
-            />
-
-            <h4>Diff Specific Files</h4>
-            <CodeBlock
-                language="bash"
-                code={`# Diff a specific file
-$ dits diff -- src/config.ts
-
-# Diff multiple files
-$ dits diff -- src/*.ts
-
-# Diff directory
-$ dits diff -- src/components/`}
-            />
-
-            <h2>dits diff --stat</h2>
-            <p>Get a summary of changes without the full diff:</p>
-
-            <CodeBlock
-                language="bash"
-                code={`$ dits diff --stat HEAD~5
- src/index.ts         |  23 +++++++++++----
- src/utils/helpers.ts |   8 ++---
- package.json         |   3 +-
- README.md            | 156 +++++++++++++++++++++++++++++++++++++
- 4 files changed, 175 insertions(+), 15 deletions(-)`}
-            />
-
-            <h2>dits diff --chunk-diff</h2>
-            <p>
-                Dits-specific feature to see differences at the chunk level.
-                Useful for understanding how binary files changed:
-            </p>
-
-            <CodeBlock
-                language="bash"
-                code={`$ dits diff --chunk-diff video.mov
-Chunk changes for video.mov:
-  Total chunks: 1,234 -> 1,256
-  New chunks: 45
-  Removed chunks: 23
-  Unchanged: 1,189 (96.4%)
-
-  Affected regions:
-    0:00:00 - 0:02:30  (unchanged)
-    0:02:30 - 0:05:45  (modified, 22 new chunks)
-    0:05:45 - 0:15:00  (unchanged)
-    0:15:00 - 0:18:30  (modified, 23 new chunks)`}
-            />
-
-            <Callout type="note" title="Binary File Diffing" className="not-prose my-6">
-                Unlike Git, Dits can show meaningful diffs for binary files by comparing
-                at the chunk level. Use <code>--chunk-diff</code> for video, images, and other binaries.
-            </Callout>
-
-            <h2>dits show</h2>
-            <p>Show details of a specific commit, including the diff:</p>
-
-            <CodeBlock
-                language="bash"
-                code={`# Show most recent commit
-$ dits show
-
-# Show specific commit
-$ dits show abc1234
-
-# Show only the files changed
-$ dits show --name-only abc1234
-
-# Show a file at a specific commit
-$ dits show abc1234:src/main.ts`}
-            />
-
-            <h2>dits difftool</h2>
-            <p>Open differences in an external diff viewer:</p>
-
-            <CodeBlock
-                language="bash"
-                code={`# Configure diff tool
-$ dits config --global diff.tool vscode
-$ dits config --global difftool.vscode.cmd 'code --wait --diff $LOCAL $REMOTE'
-
-# Use difftool
-$ dits difftool HEAD~1 HEAD
-
-# Diff specific file with tool
-$ dits difftool -- src/main.ts`}
-            />
-
-            <h2>Useful Aliases</h2>
-
-            <CodeBlock
-                language="bash"
-                code={`# Add these to your config
-dits config --global alias.d 'diff'
-dits config --global alias.ds 'diff --staged'
-dits config --global alias.dstat 'diff --stat'
-dits config --global alias.last 'diff HEAD~1 HEAD'
-
-# Usage
-$ dits ds        # Staged changes
-$ dits dstat     # Change summary
-$ dits last      # What changed in last commit`}
-            />
-
-            <h2>Related Commands</h2>
-            <ul>
-                <li><Link href="/docs/cli/history">log, history</Link> - View commit history</li>
-                <li><Link href="/docs/cli/files">status</Link> - See changed files</li>
-                <li><Link href="/docs/cli/branches">branch</Link> - Compare branches</li>
-            </ul>
-        </div>
-    );
+      <p>
+        Use <Link href="/docs/cli/history">history commands</Link> for commit
+        inspection and <Link href="/docs/cli/files">file commands</Link> for status
+        and staging. Exact syntax comes from <code>dits diff --help</code>.
+      </p>
+    </div>
+  );
 }

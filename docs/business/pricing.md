@@ -1,5 +1,10 @@
 # Business model and pricing principles
 
+**Maturity:** Design
+
+Business-model principles only; Dits has no hosted paid plan, price sheet, quota, or
+support contract.
+
 > Strategy, not a price sheet. Last reviewed: 2026-07-16. Dits has no hosted
 > paid product today.
 

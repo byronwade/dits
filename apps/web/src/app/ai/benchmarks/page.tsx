@@ -6,12 +6,14 @@ import { Header } from "@/components/header";
 import { StatusPill } from "@/components/status-pill";
 import { Button } from "@/components/ui/button";
 import { Callout } from "@/components/ui/callout";
+import { generateMetadata as genMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = genMeta({
   title: "Dits AI Research Benchmarks",
   description:
     "The AI-specific benchmark evidence Dits has and the model, checkpoint, and dataset workloads still required.",
-};
+  canonical: "https://dits.dev/ai/benchmarks",
+});
 
 export default function AiBenchmarksPage() {
   return (

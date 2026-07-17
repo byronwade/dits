@@ -1,5 +1,10 @@
 # Product positioning
 
+**Maturity:** Current
+
+Public messaging authority; capability claims remain subordinate to docs/STATUS.md and
+measured evidence.
+
 > Public messaging authority. Last reviewed: 2026-07-16. Product maturity and
 > feature availability are governed by [`docs/STATUS.md`](../STATUS.md).
 

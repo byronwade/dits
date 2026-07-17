@@ -32,7 +32,6 @@ export function DocsShell({
     pathname?.startsWith("/docs/deployment") ||
     pathname === "/docs/architecture/protocol" ||
     pathname === "/docs/concepts/peer-to-peer" ||
-    pathname === "/docs/cli/remotes" ||
     pathname === "/docs/cli/p2p";
 
   return (
@@ -73,7 +72,11 @@ export function DocsShell({
           </aside>
 
           {/* Main Content */}
-          <main className="flex-1 min-w-0 w-full">
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className="flex-1 min-w-0 w-full focus:outline-none"
+          >
             <div
               id="doc-content"
               className="mx-auto flex w-full max-w-5xl min-w-0 flex-1 flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8 md:px-10 lg:py-10"

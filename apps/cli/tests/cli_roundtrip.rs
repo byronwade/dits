@@ -2,10 +2,10 @@
 //!
 //! These run the real `dits` binary on real files and assert the properties
 //! that matter most for a VCS: that committing and restoring content — text,
-//! binary, encrypted — is byte-exact, and that the porcelain
-//! (diff/blame/archive/stash) handles BOTH storage strategies (GitText +
-//! chunks). This whole class of bugs existed because real files were never run
-//! through the real binary.
+//! and binary — is byte-exact, that disabled security paths fail closed, and
+//! that the porcelain (diff/blame/archive/stash) handles BOTH storage
+//! strategies (GitText + chunks). This whole class of bugs existed because real
+//! files were never run through the real binary.
 
 use std::{fs, path::Path};
 
@@ -127,51 +127,47 @@ fn stash_resets_then_pop_restores() {
 }
 
 #[test]
-fn encrypted_roundtrip_is_byte_exact_and_leaks_no_plaintext() {
+fn experimental_encryption_paths_fail_closed_without_mutation() {
     let tmp = init_repo();
     let dir = tmp.path();
-    dits(dir)
+    let init = dits(dir)
         .args(["encrypt-init", "-p", "testpass123"])
         .assert()
-        .success();
+        .failure();
+    let stderr = String::from_utf8_lossy(&init.get_output().stderr);
+    assert!(stderr.contains("encryption is disabled"), "unexpected error:\n{stderr}");
+    assert!(!dir.join(".dits/keystore.enc").exists());
+    assert!(!dir.join(".dits/keys.cache").exists());
 
-    let secret = b"top secret payroll figures\nrow2,row3\n";
-    fs::write(dir.join("secret.txt"), secret).unwrap();
-    dits(dir).args(["add", "secret.txt"]).assert().success();
-    dits(dir).args(["commit", "-m", "c"]).assert().success();
+    let status = dits(dir).arg("encrypt-status").assert().success();
+    let stdout = String::from_utf8_lossy(&status.get_output().stdout);
+    assert!(stdout.contains("UNAVAILABLE IN THIS ALPHA"));
 
-    fs::remove_file(dir.join("secret.txt")).unwrap();
-    dits(dir).args(["checkout", "HEAD"]).assert().success();
-    assert_eq!(
-        fs::read(dir.join("secret.txt")).unwrap(),
-        secret,
-        "encrypted round-trip byte-exact"
-    );
+    dits(dir)
+        .args(["login", "-p", "testpass123"])
+        .assert()
+        .failure();
+    dits(dir)
+        .args(["change-password", "--old", "old", "--new", "new"])
+        .assert()
+        .failure();
+    assert!(!dir.join(".dits/keys.cache").exists());
 
-    // The plaintext must not appear anywhere under .dits/ (objects are encrypted).
-    let mut leaked = false;
-    for entry in walk(&dir.join(".dits")) {
-        if let Ok(bytes) = fs::read(&entry) {
-            if bytes.windows(b"payroll".len()).any(|w| w == b"payroll") {
-                leaked = true;
-                break;
-            }
-        }
-    }
-    assert!(!leaked, "plaintext leaked into .dits/ objects");
-}
+    // The presence of a legacy keystore locks normal repository operations
+    // before they can read or mutate repository state. Status and logout remain
+    // available so users can diagnose the state and clear the unsafe old cache.
+    fs::write(dir.join(".dits/keystore.enc"), b"legacy experiment marker").unwrap();
+    fs::write(dir.join(".dits/keys.cache"), b"legacy cached key").unwrap();
 
-fn walk(dir: &Path) -> Vec<std::path::PathBuf> {
-    let mut out = Vec::new();
-    if let Ok(rd) = fs::read_dir(dir) {
-        for e in rd.flatten() {
-            let p = e.path();
-            if p.is_dir() {
-                out.extend(walk(&p));
-            } else {
-                out.push(p);
-            }
-        }
-    }
-    out
+    let repo_status = dits(dir).arg("status").assert().failure();
+    let stderr = String::from_utf8_lossy(&repo_status.get_output().stderr);
+    assert!(stderr.contains("Repository encryption is disabled"), "unexpected error:\n{stderr}");
+
+    let encryption_status = dits(dir).arg("encrypt-status").assert().success();
+    let stdout = String::from_utf8_lossy(&encryption_status.get_output().stdout);
+    assert!(stdout.contains("EXPERIMENTAL KEYSTORE PRESENT; REPOSITORY LOCKED"));
+
+    dits(dir).arg("logout").assert().success();
+    assert!(!dir.join(".dits/keys.cache").exists());
+    assert!(dir.join(".dits/keystore.enc").exists());
 }

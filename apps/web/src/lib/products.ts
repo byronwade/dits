@@ -47,7 +47,6 @@ export const PRODUCTS: Product[] = [
       { title: "Docs", href: "/docs" },
       { title: "How it works", href: "/how-it-works" },
       { title: "Benchmarks", href: "/benchmarks" },
-      { title: "Playground", href: "/playground" },
       { title: "FAQ", href: "/faq" },
       { title: "About", href: "/about" },
       { title: "Community", href: "/community" },

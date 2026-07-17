@@ -37,6 +37,19 @@ jobs:
       - name: Install cargo-audit
         run: cargo install --locked cargo-audit
 
+      # Temporary bootstrap for repositories created before the application
+      # lockfile was committed. The artifact lets maintainers review and add the
+      # exact graph; once Cargo.lock exists, this command is a no-op update.
+      - name: Resolve application dependency graph
+        run: cargo generate-lockfile
+
+      - name: Upload resolved Cargo lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: cargo-lockfile
+          path: Cargo.lock
+          if-no-files-found: error
+
       # `--deny warnings` would also fail on informational advisories
       # (unmaintained / unsound) that have no patched release in our current
       # dependency tree. Each is tracked with a rationale in .cargo/audit.toml
@@ -47,8 +60,6 @@ jobs:
           cargo audit --deny warnings
           --ignore RUSTSEC-2025-0141
           --ignore RUSTSEC-2025-0119
-          --ignore RUSTSEC-2026-0008
-          --ignore RUSTSEC-2026-0002
 
       - name: Check for vulnerable dependencies
         run: cargo audit --format json | jq -e '.vulnerabilities.found == false'
@@ -102,32 +113,13 @@ jobs:
       - name: Check public product claims
         run: bash scripts/check-product-truth.sh
 
+      - name: Check maintained Markdown links
+        run: node scripts/check-markdown-links.mjs
+
   # Rust unit tests
   test-rust:
     name: Test Rust
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: dits_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-      redis:
-        image: redis:7
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
     steps:
       - uses: actions/checkout@v4
 
@@ -196,6 +188,15 @@ jobs:
           DITS_BUILD_DIR: ${{ github.workspace }}/target/release
         run: ./t/run-tests.sh
 
+      # The historical runner only discovers top-level tNNNN wrappers. Keep
+      # this real remote fail-closed regression explicit until the QA tree is
+      # migrated into the canonical integration suite.
+      - name: Run fail-closed remote regression
+        working-directory: apps/cli/t
+        env:
+          DITS_BUILD_DIR: ${{ github.workspace }}/target/release
+        run: ./qa/t1400-network-failures.sh
+
   # Build CLI binaries
   build-cli:
     name: Build CLI ${{ matrix.target }}
@@ -236,7 +237,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cli-${{ matrix.target }}
-          path: apps/cli/target/${{ matrix.target }}/release/dits${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+          path: target/${{ matrix.target }}/release/dits${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+          if-no-files-found: error
 
   # Web app linting
   lint-web:
@@ -321,6 +323,9 @@ jobs:
       - name: Comparative harness unit tests
         run: npm run bench:comparative:test
 
+      - name: npm launcher resolver tests
+        run: npm test --workspace packages/npm
+
       - name: Engine micro-benchmarks (FastCDC / BLAKE3 / SHA-256)
         run: cargo test -p dits --release --test benchmarks -- --ignored --nocapture --test-threads=1
 
@@ -368,13 +373,17 @@ jobs:
       - name: Install cargo-audit
         run: cargo install --locked cargo-audit
 
+      # Keep the bootstrap CI run auditable before the generated application
+      # lockfile is committed. Remove this alongside the Security Audit
+      # bootstrap step once Cargo.lock is in the repository.
+      - name: Resolve application dependency graph
+        run: cargo generate-lockfile
+
       - name: Scan Rust dependencies
         run: >-
           cargo audit --deny warnings
           --ignore RUSTSEC-2025-0141
           --ignore RUSTSEC-2025-0119
-          --ignore RUSTSEC-2026-0008
-          --ignore RUSTSEC-2026-0002
 
       # This repo uses npm (root package-lock.json), not pnpm. `--audit-level
       # high` gates on genuinely actionable advisories without failing on the
@@ -396,7 +405,7 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: rust, javascript
+          languages: rust, javascript-typescript
           config-file: .github/codeql/codeql-config.yml
 
       - name: Setup Node.js
@@ -419,15 +428,11 @@ jobs:
       - name: Build web app
         run: npm run build --workspace apps/web
 
-      - name: Perform CodeQL Analysis
+      # One analyze invocation finalizes and uploads every database initialized
+      # above. Running it once per language would try to finalize the same
+      # multi-language databases twice.
+      - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v3
-        with:
-          category: "/language:rust"
-          fail_on: none
-      - uses: github/codeql-action/analyze@v3
-        with:
-          category: "/language:javascript"
-          fail_on: none
 
   # Docker image build — guards the Dockerfile and the from-source build path so
   # a dependency or compiler change can't silently break `docker build` again
@@ -467,35 +472,18 @@ jobs:
     if: always()
     steps:
       - name: Check all jobs
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
         run: |
-          if [[ "${{ needs.security.result }}" != "success" ]]; then
-            echo "Security checks failed"
-            exit 1
-          fi
-          if [[ "${{ needs.lint-rust.result }}" != "success" ]]; then
-            echo "Rust linting failed"
-            exit 1
-          fi
-          if [[ "${{ needs.test-rust.result }}" != "success" ]]; then
-            echo "Rust tests failed"
-            exit 1
-          fi
-          if [[ "${{ needs.test-integration.result }}" != "success" ]]; then
-            echo "Integration tests failed"
-            exit 1
-          fi
-          if [[ "${{ needs.docker-build.result }}" != "success" ]]; then
-            echo "Docker build failed"
-            exit 1
-          fi
-          if [[ "${{ needs.lint-web.result }}" != "success" ]]; then
-            echo "Web linting failed"
-            exit 1
-          fi
-          if [[ "${{ needs.test-web.result }}" != "success" ]]; then
-            echo "Web tests failed"
+          set -euo pipefail
+          failures="$(jq -r '
+            to_entries[]
+            | select(.value.result != "success")
+            | "\(.key): \(.value.result)"
+          ' <<<"$NEEDS_JSON")"
+          if [[ -n "$failures" ]]; then
+            echo "The following required CI jobs did not succeed:"
+            echo "$failures"
             exit 1
           fi
           echo "All CI checks passed!"
-
-

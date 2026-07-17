@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -28,6 +29,14 @@ import {
   PRODUCT_MILESTONES,
   PRODUCT_POSITIONING,
 } from "@/lib/product-story";
+import { generateMetadata as genMeta } from "@/lib/seo";
+
+export const metadata: Metadata = genMeta({
+  title: "Dits - Local-First Version Control for Media & Assets",
+  description:
+    "Dits is open, local-first version control for large media and asset pipelines. Evaluate the local alpha and help shape its open format.",
+  canonical: "https://dits.dev",
+});
 
 const layerIcons = [GitBranch, Boxes, Waypoints, Network];
 
@@ -71,7 +80,7 @@ export default function HomePage() {
                   <span className="size-2 rounded-full bg-destructive" />
                   <span className="size-2 rounded-full bg-warning" />
                   <span className="size-2 rounded-full bg-success" />
-                  <span className="ml-2">local evaluation</span>
+                  <span className="ml-2">packaged: macOS arm64 · Windows x64</span>
                 </div>
                 <pre className="overflow-x-auto text-sm leading-7 text-foreground"><code>{`npm install -g @byronwade/dits
 mkdir dits-evaluation && cd dits-evaluation
@@ -81,7 +90,9 @@ dits commit -m "First exact snapshot"
 dits log`}</code></pre>
               </div>
               <p className="mt-4 text-sm text-muted-foreground">
-                Alpha software. Use a disposable or independently backed-up project.
+                Alpha software. The v0.1.5 npm artifact packages Apple Silicon
+                macOS and Windows x64; other targets require a source build. Use
+                a disposable or independently backed-up project.
               </p>
             </div>
           </div>

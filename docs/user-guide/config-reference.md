@@ -1,912 +1,177 @@
 # Configuration Reference
 
-Complete reference for all Dits configuration files and options.
+**Maturity:** Current
 
-> 🚧 **Roadmap notice.** Dits is **local-first** today (alpha, version 0.1.5). Config
-> sections for networked features — `[transfer]`, `[http]`, `[quic]`, `[credential]`,
-> remote/LFS server URLs, and `[remote.*]` push/fetch — describe the **unimplemented**
-> networked sync layer. `push`/`pull`/`fetch`/`sync` transfer no data and network `clone` is
-> roadmap, so those keys have no effect yet. Remote-auth env vars (`DITS_TOKEN`,
-> `DITS_SSH_KEY`) are also roadmap. Core, user, chunking, hashing, compression, cache, color,
-> alias, hook, and `.ditsignore`/`.ditsattributes` settings apply locally today.
->
-> **FastCDC profiles:** the `[chunking]` values below (16KB/64KB/256KB min/avg/max) are the
-> code's `default` profile. Named profiles also exist — `media` (64KB/256KB/1MB), `large`
-> (256KB/1MB/4MB), and `project` (4KB/16KB/64KB). Name a profile rather than citing a single
-> contradictory chunk size.
+Current-alpha TOML and environment behavior; broader layered configuration remains Design.
 
-## Configuration Hierarchy
+This page documents the configuration behavior implemented by the current Dits alpha.
 
-Configuration is read in order (later overrides earlier):
+> **Current boundary:** Dits does not yet implement a Git-style layered configuration
+> stack. The CLI selects either one repository file or one global file. System,
+> worktree, command-line override, and arbitrary environment-variable layers are design
+> work, not current behavior.
 
+## Files and selection rules
+
+| Scope | File | How to select it |
+| :--- | :--- | :--- |
+| Repository | `.dits/config.toml` | Run `dits config` inside a repository without `--global` |
+| Global | the platform configuration directory plus `dits/config.toml` | Pass `--global` |
+
+Common global locations are
+`${XDG_CONFIG_HOME:-$HOME/.config}/dits/config.toml` on Linux,
+`~/Library/Application Support/dits/config.toml` on macOS, and the roaming application
+data directory plus `dits\config.toml` on Windows. Dits derives this location from the
+operating system; there is no `DITS_CONFIG_GLOBAL` override.
+
+Selection is intentionally simple in this alpha:
+
+- inside a repository, an unqualified get, set, unset, or list reads only
+  `.dits/config.toml`;
+- `--global` always selects the global file;
+- outside a repository, `dits config` and `dits config --list` select the global file;
+- outside a repository, a keyed operation such as `dits config user.name` requires
+  `--global` and otherwise returns a repository error; and
+- values from the two files are not merged into an effective view.
+
+Repository operations currently use repository-local chunking values or built-in
+defaults. They do not inherit chunking values written with `--global`.
+
+## Command
+
+```text
+dits config [OPTIONS] [KEY] [VALUE]
+
+Arguments:
+  [KEY]    Dot-notation key, for example user.name
+  [VALUE]  New value; omit it to read the key
+
+Options:
+      --global  Use the global file
+  -l, --list    List public values from the selected file
+      --unset   Remove an optional key
+  -h, --help    Show command help
 ```
-1. System config:    /etc/dits/config.toml
-2. Global config:    ~/.ditsconfig
-3. Repository config: .dits/config
-4. Worktree config:   .dits/worktrees/{name}/config
-5. Environment vars:  DITS_*
-6. Command line:      --config-key=value
+
+Examples:
+
+```bash
+# Repository file
+dits config chunking.target_size 128KB
+dits config chunking.target_size
+dits config --list
+
+# Global file
+dits config --global telemetry.enabled false
+dits config --global --list
+
+# Only optional identity fields can be unset
+dits config --global --unset user.email
 ```
 
-## Global Configuration (~/.ditsconfig)
+`--local`, `--system`, `--edit`, `--show-origin`, `--get-all`, `--add`, and top-level
+`-c`/`--config` overrides do not exist.
 
-User-level settings that apply to all repositories.
+## Accepted keys
+
+| Key | Type/default | Current effect | Can unset? |
+| :--- | :--- | :--- | :--- |
+| `user.name` | optional string | Stored for compatibility; commits do not read it yet | Yes |
+| `user.email` | optional string | Stored for compatibility; commits do not read it yet | Yes |
+| `core.default_branch` | string, `main` | Stored only; new repositories still start on `main` | No |
+| `core.verbose` | Boolean, `false` | Stored only; it is not a global verbosity switch | No |
+| `chunking.target_size` | size, `64KB` | Repository-local target/average FastCDC size | No |
+| `chunking.min_size` | size, `16KB` | Repository-local minimum FastCDC size | No |
+| `chunking.max_size` | size, `256KB` | Repository-local maximum FastCDC size | No |
+| `telemetry.enabled` | Boolean, `false` | Global opt-in telemetry switch | No |
+
+Booleans are `true` or `false`. Sizes accept a byte count or a value suffixed with
+`B`, `KB`, `MB`, or `GB`, case-insensitively. Keep
+`min_size <= target_size <= max_size`; the current parser does not validate the
+relationship among the three fields.
+
+The file also contains internal `telemetry.user_id` and `telemetry.last_sent` fields.
+They are intentionally omitted from `--list`; prefer `dits telemetry enable`,
+`dits telemetry disable`, and `dits telemetry status` over editing telemetry internals.
+
+Unknown keys passed to `dits config` return an error. Extra TOML sections added by hand
+may round-trip through serialization, but the core configuration system does not give
+them any behavior.
+
+## Runtime support versus stored preferences
+
+Only two parts of this schema currently drive product behavior:
+
+- repository-local `chunking.*` values configure chunking when a repository is opened;
+- global `telemetry.enabled` controls the opt-in CLI telemetry client.
+
+The `user.*` and `core.*` keys are accepted and persisted but are not connected to
+commit identity, branch initialization, verbosity, an editor, or a pager. This is a
+current-alpha limitation, not an implied guarantee that those settings take effect.
+
+## Commit identity environment
+
+Commits currently read identity from environment variables rather than `user.*`
+configuration:
+
+| Value | Lookup order |
+| :--- | :--- |
+| Author name | `DITS_AUTHOR_NAME`, then `GIT_AUTHOR_NAME`, then `USER`, then `Unknown` |
+| Author email | `DITS_AUTHOR_EMAIL`, then `GIT_AUTHOR_EMAIL`, then `<name>@localhost` |
+
+```bash
+export DITS_AUTHOR_NAME="Jane Editor"
+export DITS_AUTHOR_EMAIL="jane@example.com"
+dits commit -m "Describe the change"
+```
+
+`DITS_AUTHOR_DATE`, `DITS_COMMITTER_*`, `DITS_DIR`, `DITS_WORK_TREE`,
+`DITS_CACHE_DIR`, `DITS_EDITOR`, `DITS_PAGER`, `DITS_TRACE`, and remote-auth variables
+are not read as CLI configuration in the current implementation. Hook processes do
+receive `DITS_DIR` and `DITS_HOOK` from Dits; those are hook context, not user-facing
+configuration overrides.
+
+## TOML format
+
+Both supported files use TOML:
 
 ```toml
-# ~/.ditsconfig
-
-# ============================================
-# USER IDENTITY
-# ============================================
-
 [user]
-# Your name (appears in commits)
-name = "Jane Developer"
-
-# Your email (appears in commits)
+name = "Jane Editor"
 email = "jane@example.com"
 
-# SSH signing key (for signed commits)
-# Can be: key fingerprint, path to key file, or "ssh-agent"
-signingkey = "~/.ssh/id_ed25519.pub"
-
-# GPG key for signing (alternative to SSH)
-# gpgkey = "ABCD1234EFGH5678"
-
-# ============================================
-# CREDENTIALS
-# ============================================
-
-[credential]
-# Credential helper for authentication
-# Options: "cache", "store", "osxkeychain", "manager-core", custom command
-helper = "osxkeychain"
-
-# Cache timeout in seconds (for "cache" helper)
-# cache_timeout = 900
-
-# OAuth token storage
-# token_path = "~/.dits/tokens"
-
-[credential "https://dits.example.com"]
-# Per-host credential settings
-username = "jane"
-helper = "store"
-
-# ============================================
-# CORE SETTINGS
-# ============================================
-
 [core]
-# Default editor for commit messages
-editor = "code --wait"
-
-# Pager for output (false to disable)
-pager = "less -FRX"
-
-# Enable file mode tracking (executable bit)
-filemode = true
-
-# Handle symlinks (false = store as plain files)
-symlinks = true
-
-# Enable case-insensitive paths (set true on macOS/Windows)
-ignorecase = true
-
-# Line ending conversion
-# "true" = convert to LF on commit, native on checkout
-# "input" = convert to LF on commit, no conversion on checkout
-# "false" = no conversion
-autocrlf = false
-
-# Warn about mixed line endings
-safecrlf = true
-
-# ============================================
-# CHUNKING & HASHING
-# ============================================
+default_branch = "main"
+verbose = false
 
 [chunking]
-# Chunking algorithm: "fastcdc", "fixed", "video-aware"
-algorithm = "fastcdc"
-
-# Target average chunk size (bytes)
-avg_size = 65536  # 64 KB
-
-# Minimum chunk size
-min_size = 16384  # 16 KB
-
-# Maximum chunk size
-max_size = 262144  # 256 KB
-
-# Normalize chunk sizes (0-2, higher = more uniform)
-normalization = 1
-
-[video]
-# Enable keyframe-aligned chunking for video files
-keyframe_align = true
-
-# Track media containers separately (moov/mdat split)
-container_aware = true
-
-# Parse and index video metadata
-index_metadata = true
-
-[hashing]
-# Hash algorithm: "blake3" (default), "sha256"
-algorithm = "blake3"
-
-# ============================================
-# COMPRESSION
-# ============================================
-
-[compression]
-# Compression algorithm: "zstd" (default), "lz4", "none"
-algorithm = "zstd"
-
-# Compression level (1-22 for zstd, 1-12 for lz4)
-level = 3
-
-# Minimum size to compress (smaller files stored uncompressed)
-min_size = 1024  # 1 KB
-
-# File patterns to never compress (already compressed)
-skip_patterns = [
-    "*.jpg", "*.jpeg", "*.png", "*.gif", "*.webp",
-    "*.mp4", "*.mov", "*.avi", "*.mkv", "*.webm",
-    "*.mp3", "*.aac", "*.flac", "*.ogg",
-    "*.zip", "*.gz", "*.bz2", "*.xz", "*.zst"
-]
-
-# ============================================
-# NETWORK & TRANSFER
-# ============================================
-
-[transfer]
-# Maximum concurrent uploads/downloads
-concurrency = 8
-
-# Bandwidth limit (bytes/sec, 0 = unlimited)
-bandwidth_limit = 0
-
-# Enable resumable transfers
-resumable = true
-
-# Chunk verification after transfer
-verify = true
-
-# Timeout for network operations (seconds)
-timeout = 300
-
-# Retry failed transfers
-retry_count = 3
-retry_delay_seconds = 5
-
-[http]
-# HTTP proxy
-# proxy = "http://proxy.example.com:8080"
-
-# SSL certificate verification
-ssl_verify = true
-
-# Extra CA certificates
-# ssl_ca_info = "/path/to/ca-bundle.crt"
-
-# User agent string
-user_agent = "dits/0.1.5"
-
-# Low speed limit (abort if below this for low_speed_time)
-low_speed_limit = 1000  # bytes/sec
-low_speed_time = 60     # seconds
-
-[quic]
-# QUIC transport settings
-# NOTE: QUIC transport is NOT implemented yet (roadmap). These keys are reserved
-# for a future networked sync engine and have no effect today.
-port = 4433
-
-# Maximum streams per connection
-max_streams = 100
-
-# Initial congestion window (packets)
-initial_cwnd = 10
-
-# Keep-alive interval (seconds)
-keep_alive = 30
-
-# Idle timeout (seconds)
-idle_timeout = 300
-
-# ============================================
-# CACHING
-# ============================================
-
-[cache]
-# Enable local chunk cache
-enabled = true
-
-# Maximum cache size (bytes)
-max_size = 10737418240  # 10 GB
-
-# Cache location (default: .dits/cache)
-# path = "~/.dits/global-cache"
-
-# Cache eviction policy: "lru", "lfu", "fifo"
-eviction = "lru"
-
-# Time-to-live for cached remote chunks (hours)
-ttl_hours = 168  # 7 days
-
-# Prefetch related chunks
-prefetch = true
-
-# Number of chunks to prefetch
-prefetch_count = 10
-
-# ============================================
-# LARGE FILE STORAGE (LFS)
-# ============================================
-
-[lfs]
-# Enable LFS for large files
-enabled = true
-
-# Auto-track files larger than this (bytes)
-threshold = 104857600  # 100 MB
-
-# File patterns to always use LFS
-patterns = [
-    "*.psd",
-    "*.ai",
-    "*.indd",
-    "raw/**/*.arw",
-    "raw/**/*.cr2",
-    "raw/**/*.nef"
-]
-
-# LFS server URL (if different from main remote)
-# url = "https://lfs.example.com"
-
-# ============================================
-# DIFF & MERGE
-# ============================================
-
-[diff]
-# Diff tool for binary files
-tool = "ffmpeg-diff"
-
-# External diff command
-# external = "diff-so-fancy"
-
-# Color output
-color = true
-
-# Context lines in diff output
-context = 3
-
-[merge]
-# Default merge strategy
-strategy = "recursive"
-
-# Merge tool
-tool = "code"
-
-# Conflict style: "merge", "diff3", "zdiff3"
-conflictstyle = "diff3"
-
-# Auto-stash before merge
-autostash = true
-
-[mergetool "code"]
-cmd = "code --wait --merge $REMOTE $LOCAL $BASE $MERGED"
-trustExitCode = true
-
-[mergetool "premiere"]
-cmd = "open -a 'Adobe Premiere Pro 2024' $LOCAL $REMOTE"
-trustExitCode = false
-
-# ============================================
-# UI & OUTPUT
-# ============================================
-
-[color]
-# Enable colored output
-ui = true
-
-# Color settings per command
-status = "auto"
-diff = "auto"
-branch = "auto"
-
-[color.status]
-added = "green bold"
-changed = "yellow"
-untracked = "red"
-branch = "cyan bold"
-
-[color.diff]
-meta = "yellow bold"
-old = "red"
-new = "green"
-frag = "magenta bold"
-
-[format]
-# Default log format
-pretty = "medium"
-
-# Date format: "relative", "local", "iso", "rfc", "short"
-date = "relative"
-
-# ============================================
-# ALIASES
-# ============================================
-
-[alias]
-# Command aliases
-st = "status"
-co = "checkout"
-ci = "commit"
-br = "branch"
-lg = "log --oneline --graph --decorate"
-unstage = "reset HEAD --"
-last = "log -1 HEAD"
-amend = "commit --amend --no-edit"
-undo = "reset --soft HEAD~1"
-
-# Shell commands (prefix with !)
-visual = "!dits log --oneline --graph | head -20"
-
-# ============================================
-# HOOKS
-# ============================================
-
-[hooks]
-# Enable hooks
-enabled = true
-
-# Hook timeout (seconds)
-timeout = 300
-
-# Run hooks in parallel where possible
-parallel = false
-
-# ============================================
-# SECURITY
-# ============================================
-
-[security]
-# Sign all commits
-sign_commits = false
-
-# Verify signatures on fetch
-verify_signatures = false
-
-# Allowed signers file
-# allowed_signers = "~/.ssh/allowed_signers"
-
-[encryption]
-# Enable client-side encryption
+target_size = 65536
+min_size = 16384
+max_size = 262144
+
+[telemetry]
 enabled = false
-
-# End-to-end encryption mode
-e2ee = false
-
-# Encrypt filenames
-encrypt_filenames = false
-
-# Key agent settings
-agent_timeout = 3600  # seconds
-
-# ============================================
-# PERFORMANCE
-# ============================================
-
-[performance]
-# Enable parallel processing
-parallel = true
-
-# Worker thread count (0 = auto-detect)
-threads = 0
-
-# Memory limit for operations (bytes, 0 = unlimited)
-memory_limit = 0
-
-# Index preload for faster status
-preload_index = true
-
-# Untracked cache
-untracked_cache = true
-
-# Split index for large repos
-split_index = false
-
-# ============================================
-# EXPERIMENTAL
-# ============================================
-
-[experimental]
-# Enable experimental features
-enabled = false
-
-# Virtual filesystem mount
-vfs = false
-
-# Watch mode for auto-staging
-watch = false
-
-# AI-powered commit messages
-ai_commits = false
+last_sent = 0
 ```
 
-## Repository Configuration (.dits/config)
-
-Per-repository settings. Same format as global config with additional sections.
-
-```toml
-# .dits/config
-
-[core]
-# Repository format version
-repositoryformatversion = 1
-
-# Object format
-objectformat = "blake3"
-
-# Bare repository (no working directory)
-bare = false
-
-# Working directory location (for bare repos with worktree)
-# worktree = "/path/to/worktree"
-
-# ============================================
-# REMOTES
-# ============================================
-
-[remote "origin"]
-# Remote URL
-url = "https://dits.example.com/user/repo.dits"
-
-# Alternative push URL
-# pushurl = "git@dits.example.com:user/repo.dits"
-
-# Fetch refspec
-fetch = "+refs/heads/*:refs/remotes/origin/*"
-
-# Push refspec
-push = "refs/heads/*:refs/heads/*"
-
-# Prune stale remote-tracking branches
-prune = true
-
-# Push tags
-tagopt = "--tags"
-
-# Mirror mode
-# mirror = true
-
-[remote "upstream"]
-url = "https://dits.example.com/org/repo.dits"
-fetch = "+refs/heads/*:refs/remotes/upstream/*"
-
-# ============================================
-# BRANCHES
-# ============================================
-
-[branch "main"]
-# Track this remote branch
-remote = "origin"
-merge = "refs/heads/main"
-
-# Rebase instead of merge on pull
-rebase = true
-
-[branch "develop"]
-remote = "origin"
-merge = "refs/heads/develop"
-rebase = false
-
-# ============================================
-# SUBMODULES
-# ============================================
-
-[submodule "lib/common"]
-path = "lib/common"
-url = "https://dits.example.com/org/common.dits"
-branch = "main"
-update = "merge"
-
-# ============================================
-# LFS OVERRIDES
-# ============================================
-
-[lfs]
-# Repository-specific LFS settings
-url = "https://lfs.example.com/user/repo"
-
-# Local LFS storage path
-# storage_path = ".dits/lfs"
-
-# ============================================
-# PROJECT-SPECIFIC
-# ============================================
-
-[project]
-# NLE project type: "premiere", "resolve", "aftereffects", "fcpx"
-nle_type = "premiere"
-
-# Media root (for relative path resolution)
-media_root = "./media"
-
-# Proxy generation
-generate_proxies = true
-proxy_preset = "1080p_h264"
-```
-
-## Environment Variables
-
-Override any config with environment variables:
-
-```bash
-# User identity
-export DITS_AUTHOR_NAME="Jane Developer"
-export DITS_AUTHOR_EMAIL="jane@example.com"
-export DITS_COMMITTER_NAME="Jane Developer"
-export DITS_COMMITTER_EMAIL="jane@example.com"
-
-# Date override (for reproducible commits)
-export DITS_AUTHOR_DATE="2024-01-15T10:30:00Z"
-export DITS_COMMITTER_DATE="2024-01-15T10:30:00Z"
-
-# Directories
-export DITS_DIR="/path/to/.dits"
-export DITS_WORK_TREE="/path/to/project"
-export DITS_OBJECT_DIRECTORY="/path/to/objects"
-export DITS_COMMON_DIR="/path/to/common"
-
-# Authentication
-export DITS_TOKEN="dits_abc123..."
-export DITS_SSH_KEY="~/.ssh/id_ed25519"
-
-# Network
-export DITS_PROXY="http://proxy:8080"
-export DITS_NO_PROXY="localhost,*.local"
-export DITS_SSL_NO_VERIFY="1"  # Disable SSL verification (not recommended)
-
-# Behavior
-export DITS_PAGER="less"
-export DITS_EDITOR="vim"
-export DITS_TERMINAL_PROMPT="0"  # Disable terminal prompts (for scripts)
-
-# Debugging
-export DITS_TRACE="1"
-export DITS_TRACE_PACKET="1"
-export DITS_TRACE_PERFORMANCE="1"
-export DITS_DEBUG="1"
-
-# Config overrides (flat key format)
-export DITS_CONFIG_core.compression="zstd"
-export DITS_CONFIG_transfer.concurrency="16"
-```
-
-## .ditsignore
-
-Patterns for files to ignore (same syntax as .gitignore):
-
-```gitignore
-# .ditsignore
-
-# ============================================
-# GENERAL PATTERNS
-# ============================================
-
-# Backup files
-*~
-*.bak
-*.swp
-*.swo
-
-# OS files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-desktop.ini
-
-# ============================================
-# RENDER OUTPUTS
-# ============================================
-
-# Output directories
-renders/
-output/
-exports/
-deliverables/
-
-# Temporary renders
-*.tmp.mp4
-*.tmp.mov
-*_temp.*
-
-# ============================================
-# NLE CACHE & TEMP FILES
-# ============================================
-
-# Adobe Premiere Pro
-*.pkf
-*.pek
-*.cfa
-*.cpf
-Media Cache/
-Media Cache Files/
-Peak Files/
-Adobe Premiere Pro Auto-Save/
-
-# DaVinci Resolve
-*.dvr
-*.dvr-*
-CacheClip/
-.gallery/
-
-# After Effects
-Adobe After Effects Auto-Save/
-*.aep.autosave*
-
-# Final Cut Pro
-*.fcpcache/
-Render Files/
-Waveform Data/
-
-# ============================================
-# PROXIES
-# ============================================
-
-# Proxy files (regenerate as needed)
-proxies/
-*.proxy.mp4
-*.proxy.mov
-
-# ============================================
-# LOGS
-# ============================================
-
-*.log
-logs/
-crash_reports/
-
-# ============================================
-# BUILD ARTIFACTS
-# ============================================
-
-# Generic
-build/
-dist/
-node_modules/
-__pycache__/
-*.pyc
-
-# ============================================
-# SECRETS
-# ============================================
-
-# Never commit these
-.env
-.env.local
-*.pem
-*.key
-credentials.json
-secrets/
-```
-
-## .ditsattributes
-
-Path-specific attributes:
-
-```gitattributes
-# .ditsattributes
-
-# ============================================
-# LFS PATTERNS
-# ============================================
-
-# Video files -> LFS
-*.mp4 lfs
-*.mov lfs
-*.avi lfs
-*.mkv lfs
-*.mxf lfs
-*.webm lfs
-*.wmv lfs
-
-# Audio files -> LFS
-*.wav lfs
-*.aiff lfs
-*.flac lfs
-
-# Image files -> LFS (large ones)
-*.psd lfs
-*.psb lfs
-*.tif lfs
-*.tiff lfs
-*.exr lfs
-*.dpx lfs
-
-# Raw camera files
-*.arw lfs
-*.cr2 lfs
-*.cr3 lfs
-*.nef lfs
-*.dng lfs
-
-# NLE project files
-*.prproj lfs
-*.drp lfs
-*.aep lfs
-*.fcp lfs
-*.fcpbundle lfs
-
-# ============================================
-# CHUNKING STRATEGIES
-# ============================================
-
-# Video: keyframe-aligned chunking
-*.mp4 chunking=keyframe
-*.mov chunking=keyframe
-*.mxf chunking=keyframe
-
-# Large still images: larger chunks
-*.psd chunking=large
-*.psb chunking=large
-
-# Small files: fixed chunking
-*.json chunking=fixed
-*.xml chunking=fixed
-
-# ============================================
-# MERGE STRATEGIES
-# ============================================
-
-# Binary files: no merge possible
-*.mp4 merge=binary
-*.mov merge=binary
-*.wav merge=binary
-*.psd merge=binary
-
-# NLE projects: timeline-aware merge
-*.prproj merge=nle-recursive
-*.drp merge=nle-recursive
-*.fcpbundle merge=nle-recursive
-
-# After Effects: binary only (too complex)
-*.aep merge=binary
-
-# ============================================
-# DIFF SETTINGS
-# ============================================
-
-# Video: use video diff tool
-*.mp4 diff=video
-*.mov diff=video
-
-# Images: use image diff
-*.jpg diff=image
-*.png diff=image
-*.psd diff=image
-
-# NLE: use project diff
-*.prproj diff=nle
-*.drp diff=nle
-
-# ============================================
-# TEXT HANDLING
-# ============================================
-
-# Force text handling
-*.txt text
-*.md text
-*.json text
-*.xml text
-
-# Force LF line endings
-*.sh text eol=lf
-*.bash text eol=lf
-
-# Force CRLF (Windows scripts)
-*.bat text eol=crlf
-*.ps1 text eol=crlf
-
-# ============================================
-# EXPORT SETTINGS
-# ============================================
-
-# Don't export these to releases
-.ditsattributes export-ignore
-.ditsignore export-ignore
-.editorconfig export-ignore
-
-# ============================================
-# LOCKING
-# ============================================
-
-# These files should be locked when editing
-*.prproj lockable
-*.drp lockable
-*.aep lockable
-*.psd lockable
-
-# ============================================
-# CUSTOM FILTERS
-# ============================================
-
-# Apply custom filters
-# *.mp4 filter=video-metadata
-```
-
-## Config File Locations Summary
-
-| Config Type | Location | Scope |
-|-------------|----------|-------|
-| System | `/etc/dits/config.toml` | All users on system |
-| Global | `~/.ditsconfig` | Current user, all repos |
-| Repository | `.dits/config` | Current repository |
-| Worktree | `.dits/worktrees/{name}/config` | Specific worktree |
-| Local | `.dits/config.local` | Local overrides (not committed) |
-
-## Reading Configuration Programmatically
-
-```rust
-use dits_core::config::{Config, ConfigLevel};
-
-// Load full config stack
-let config = Config::load()?;
-
-// Get a value
-let name: String = config.get("user.name")?;
-let threads: u32 = config.get_or("performance.threads", 0)?;
-
-// Get with level
-let (value, level) = config.get_with_level("core.editor")?;
-println!("editor = {} (from {:?})", value, level);
-
-// Set a value
-config.set(ConfigLevel::Global, "user.name", "Jane Developer")?;
-
-// List all settings
-for (key, value, level) in config.iter() {
-    println!("{:?}: {} = {}", level, key, value);
-}
-```
-
-## Command-Line Config
-
-Override any setting via command line:
-
-```bash
-# Single operation override
-dits -c user.name="Temp User" commit -m "Quick fix"
-
-# Multiple overrides
-dits -c core.compression=none -c transfer.concurrency=16 push
-
-# View config
-dits config --list                    # All settings
-dits config --list --global           # Global only
-dits config --list --local            # Repository only
-
-# Get specific value
-dits config user.name
-dits config --get-all remote.origin.fetch
-
-# Set value
-dits config user.name "Jane Developer"
-dits config --global user.email "jane@example.com"
-
-# Unset value
-dits config --unset user.signingkey
-
-# Edit config file
-dits config --edit                    # Open in editor
-dits config --global --edit           # Edit global config
-```
+The `dits config` command writes a complete normalized document, including defaulted
+public fields. A malformed repository TOML file prevents the repository from opening
+and is left untouched. A malformed global file disables telemetry for unrelated
+commands; telemetry status and mutations fail until it is repaired.
+
+## Separate repository metadata
+
+Not every repository setting belongs to `config.toml`:
+
+- `dits remote` stores remote names and URLs in `.dits/remotes` as JSON. Transfer
+  commands still fail closed in this alpha.
+- `.ditsignore` controls ignored paths.
+- sparse-checkout commands maintain their own `.dits/config` file. It is distinct from
+  `.dits/config.toml` and is not managed by `dits config`.
+
+## Design-only configuration
+
+System-wide and worktree-specific files, layered precedence, aliases, editor/pager
+selection, color settings, cache limits, credentials, transfer tuning, arbitrary
+`DITS_CONFIG_*` overrides, and remote authentication remain design work. Do not add
+those keys to current files expecting them to change CLI behavior.

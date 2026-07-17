@@ -16,8 +16,10 @@ npm install -g @byronwade/dits
 dits --version
 ```
 
-The launcher selects the packaged binary for the current platform. Node.js 16
-or later is required.
+Node.js 16 or later is required. The published v0.1.5 artifact contains
+Apple-silicon macOS (`darwin-arm64`) and Windows x64 (`win32-x64`) binaries.
+On another target the package may install, but its launcher will fail with
+source-build instructions because no matching binary is present.
 
 ## Start a local evaluation
 
@@ -43,8 +45,8 @@ dits log
 ## What it does not include
 
 Network `push`, `pull`, `fetch`, `sync`, network clone, P2P, QUIC transfer, a
-hosted Dits service, supported SDKs, and NLE plug-ins are roadmap. Placeholder
-commands do not transfer repository data.
+hosted Dits service, supported SDKs, and NLE plug-ins are roadmap. The remote
+commands exit nonzero without changing objects, refs, or working-tree files.
 
 ## Other package managers
 
@@ -68,10 +70,17 @@ cargo build --release -p dits
 
 ## Platforms
 
-The npm package contains launch paths for macOS, Linux, and Windows on supported
-x64 and arm64 variants. Packaging presence is not a guarantee that every
-filesystem, media format, or experimental feature has been validated on every
-combination; please report exact platform details with failures.
+The published v0.1.5 npm artifact contains exactly these native binaries:
+
+| OS | Architecture | Package target |
+| --- | --- | --- |
+| macOS | Apple silicon | `darwin-arm64` |
+| Windows | x64 | `win32-x64` |
+
+Linux, Intel macOS, and Windows arm64 require a source build for v0.1.5. The
+release workflow is being hardened to assemble and verify a broader matrix
+before a future package is published; configured future targets are not current
+package support.
 
 ## Learn and contribute
 

@@ -1,5 +1,10 @@
 # AI assistant guide
 
+**Maturity:** Current
+
+Contributor guidance for the active local-first workspace; product claims still follow
+docs/STATUS.md.
+
 This file is the short entry point for coding assistants working on Dits. It is
 deliberately a map to authoritative documents rather than a second architecture
 specification.
@@ -12,7 +17,7 @@ specification.
    — the live system boundary and dependency direction.
 3. [`../concepts.md`](../concepts.md) — user-facing concepts and vocabulary.
 4. [`../../ROADMAP.md`](../../ROADMAP.md) — dependency-ordered product gates.
-5. [`../architecture/decisions/README.md`](../architecture/decisions/README.md)
+5. [`../adr/README.md`](../adr/README.md)
    — accepted architectural decisions.
 6. [`../research/technical-foundations.md`](../research/technical-foundations.md)
    — evidence and proposed future architecture.

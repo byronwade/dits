@@ -1,5 +1,11 @@
 # Phase 3.5: Git Parity (Core VCS Features)
 
+**Maturity:** Historical
+
+This is a retained execution plan, not current capability status or the active roadmap.
+Completion boxes and phase language must be read against docs/STATUS.md and the root
+ROADMAP.md.
+
 > **Status: ✅ COMPLETE** - All Phase 3.5 Git parity features have been implemented.
 
 **Project:** Dits (Data-Intensive Version Control System)

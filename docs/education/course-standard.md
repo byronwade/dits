@@ -1,6 +1,6 @@
 # Dits Systems Course Standard
 
-**Maturity:** Design  
+**Maturity:** Design
 **Purpose:** Turn Dits into an executable, open course in storage systems,
 version control, distributed protocols, media computing, and trustworthy
 software engineering.

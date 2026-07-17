@@ -3,12 +3,14 @@ import Link from "next/link";
 
 import { DocPageHeader } from "@/components/doc-page-header";
 import { Callout } from "@/components/ui/callout";
+import { generateMetadata as genMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = genMeta({
   title: "Dits Core Concepts",
   description:
     "The repository, object, chunk, manifest, history, exact-identity, and derivation concepts behind the Dits local alpha.",
-};
+  canonical: "https://dits.dev/docs/concepts",
+});
 
 export default function ConceptsPage() {
   return (

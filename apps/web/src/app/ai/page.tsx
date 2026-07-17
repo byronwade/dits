@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Boxes, BrainCircuit, FlaskConical, Waypoints } from "lucide-react";
 
@@ -12,6 +13,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { generateMetadata as genMeta } from "@/lib/seo";
+
+export const metadata: Metadata = genMeta({
+  title: "Dits for AI Research — Models, Datasets & Derivation",
+  description:
+    "A Dits research track exploring exact history and reproducible derivation for model, dataset, and scientific artifacts. Not a separate shipped product.",
+  canonical: "https://dits.dev/ai",
+});
 
 const questions = [
   {

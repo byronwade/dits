@@ -1,5 +1,10 @@
 # Audience and go-to-market strategy
 
+**Maturity:** Design
+
+Audience and go-to-market hypothesis; differentiation must be validated rather than
+presented as proven.
+
 > Planning document. Last reviewed: 2026-07-16. All public copy must follow
 > [`positioning.md`](positioning.md), and all feature claims must follow
 > [`docs/STATUS.md`](../STATUS.md).

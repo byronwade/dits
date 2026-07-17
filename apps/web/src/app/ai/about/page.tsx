@@ -6,12 +6,14 @@ import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { StatusPill } from "@/components/status-pill";
 import { Button } from "@/components/ui/button";
+import { generateMetadata as genMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = genMeta({
   title: "About Dits for AI Research",
   description:
     "Why model and dataset workflows are a research application of the Dits asset-history thesis, not a second shipped product.",
-};
+  canonical: "https://dits.dev/ai/about",
+});
 
 export default function AiAboutPage() {
   return (

@@ -31,6 +31,7 @@ const communityLinks = [
 const legalLinks = [
   { title: "License (Apache-2.0 / MIT)", href: "/license" }, // AGENTS.md: Non-breaking spaces
   { title: "Privacy Policy", href: "/privacy" },
+  { title: "Contact", href: "/contact" },
 ];
 
 /**

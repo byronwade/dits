@@ -1,729 +1,142 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Callout } from "@/components/ui/callout";
-import { DocPageHeader } from "@/components/doc-page-header";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Shield,
-  Lock,
-  Key,
-  Database,
-} from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Security Architecture",
-  description: "Dits security framework, encryption, and compliance features",
-};
+import { DocPageHeader } from "@/components/doc-page-header";
+import { Callout } from "@/components/ui/callout";
+import { CodeBlock } from "@/components/ui/code-block";
+import { generateMetadata as genMeta } from "@/lib/seo";
+
+export const metadata: Metadata = genMeta({
+  title: "Dits Security Model - Local Alpha",
+  description:
+    "The current Dits trust boundary, integrity checks, disabled encryption and transfer paths, telemetry behavior, and safe evaluation guidance.",
+  canonical: "https://dits.dev/docs/architecture/security",
+});
 
 export default function SecurityPage() {
   return (
-    <div className="prose dark:prose-invert max-w-none">
+    <div className="prose max-w-none dark:prose-invert">
       <DocPageHeader
         eyebrow="Architecture"
-        title="Security Architecture"
-        description="Dits implements a comprehensive security framework designed for handling sensitive creative assets with end-to-end encryption, access controls, and compliance features."
+        title="Security model"
+        description="Dits is a local alpha, not a hosted security platform. This page separates implemented integrity checks from confidentiality, authentication, and network features that do not exist."
       />
 
-      <Callout type="note" title="Security First Design" className="not-prose my-6">
-        Security is built into every layer of Dits, from the wire protocol
-        to data storage, ensuring your creative assets remain protected.
+      <Callout type="warning" title="Alpha boundary" className="not-prose my-6">
+        Use Dits only with disposable or independently backed-up data. There is no
+        supported repository encryption, remote authentication, authorization
+        system, managed backup, compliance certification, security SLA, or 24/7
+        incident-response service.
       </Callout>
 
-      <h2>Security Principles</h2>
+      <h2>Current trust boundary</h2>
+      <ul>
+        <li>
+          Repository files and objects live under the permissions and protections
+          of the local operating system and filesystem.
+        </li>
+        <li>
+          Objects are content-addressed and checked against their hashes when read;
+          <code> dits fsck</code> re-hashes repository objects and checks manifests,
+          commits, refs, and graph structure.
+        </li>
+        <li>
+          Hash checks can detect many forms of corruption. They do not encrypt data,
+          establish the author&apos;s identity, or stop an attacker who can replace both
+          content and references.
+        </li>
+        <li>
+          Commits and repository metadata are not cryptographically signed by a
+          supported identity system.
+        </li>
+      </ul>
 
-      <div className="grid gap-4 md:grid-cols-2 my-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lock className="h-5 w-5 text-success" />
-              Defense in Depth
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="text-sm space-y-2">
-              <li>Multiple security layers</li>
-              <li>No single point of failure</li>
-              <li>Secure defaults</li>
-              <li>Principle of least privilege</li>
-            </ul>
-          </CardContent>
-        </Card>
+      <CodeBlock
+        language="bash"
+        code={`# Check internal repository consistency
+dits fsck
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Key className="h-5 w-5 text-info" />
-              Zero Trust Architecture
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="text-sm space-y-2">
-              <li>Verify all access requests</li>
-              <li>End-to-end encryption</li>
-              <li>Continuous authentication</li>
-              <li>Micro-segmentation</li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
+# Record independent hashes for important restored files
+shasum -a 256 path/to/file             # macOS
+sha256sum path/to/file                 # Linux
+Get-FileHash path/to/file -Algorithm SHA256  # PowerShell`}
+      />
 
-      <h2>Encryption Layers</h2>
+      <h2>Confidentiality and keys</h2>
+      <p>
+        The repository-encryption experiment is disabled because it did not cover
+        every storage engine or metadata path. <code>encrypt-init</code>,{" "}
+        <code>login</code>, and <code>change-password</code> fail nonzero without
+        changing repository or keystore data. Repositories containing the legacy
+        experimental keystore fail closed.
+      </p>
+      <p>
+        Use filesystem permissions, full-disk or volume encryption, encrypted
+        backups, and physical access controls appropriate to your environment. See
+        the <Link href="/docs/advanced/encryption">encryption status page</Link> for
+        recovery cautions.
+      </p>
 
-      <div className="space-y-6 my-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Transport Layer Security (TLS 1.3)</CardTitle>
-            <CardDescription>All network communications are encrypted</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <h4 className="font-semibold mb-2">Features</h4>
-                <ul className="text-sm space-y-1">
-                  <li>Perfect forward secrecy</li>
-                  <li>Certificate pinning support</li>
-                  <li>Mutual TLS for service-to-service</li>
-                  <li>HSTS headers</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Protocols</h4>
-                <ul className="text-sm space-y-1">
-                  <li>HTTPS for web traffic</li>
-                  <li>QUIC for chunk transfers</li>
-                  <li>SSH for Git operations</li>
-                  <li>mTLS for internal services</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Content Encryption (Phase 9)</CardTitle>
-            <CardDescription>End-to-end encryption for stored data</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <h4 className="font-semibold mb-2">At Rest</h4>
-                <ul className="text-sm space-y-1">
-                  <li>AES-256-GCM encryption</li>
-                  <li>Convergent encryption for deduplication</li>
-                  <li>Key wrapping with user keys</li>
-                  <li>Hardware security modules (HSM)</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">In Transit</h4>
-                <ul className="text-sm space-y-1">
-                  <li>TLS 1.3 with PFS</li>
-                  <li>QUIC with built-in encryption</li>
-                  <li>Forward secrecy</li>
-                  <li>Certificate validation</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Key Management</CardTitle>
-            <CardDescription>Secure key lifecycle and storage</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-semibold mb-2">Key Types</h4>
-                <Table className="not-prose">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Key Type</TableHead>
-                      <TableHead>Purpose</TableHead>
-                      <TableHead>Storage</TableHead>
-                      <TableHead>Rotation</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell className="font-medium">Master Keys</TableCell>
-                      <TableCell>Encrypt data encryption keys</TableCell>
-                      <TableCell>HSM/KMS</TableCell>
-                      <TableCell>Annual</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium">Data Keys</TableCell>
-                      <TableCell>Encrypt chunk data</TableCell>
-                      <TableCell>Database (encrypted)</TableCell>
-                      <TableCell>Per upload</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium">User Keys</TableCell>
-                      <TableCell>User authentication</TableCell>
-                      <TableCell>Derived from password</TableCell>
-                      <TableCell>On password change</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </div>
-
-              <Callout type="note" title="Convergent Encryption" className="not-prose my-4">
-                Dits uses convergent encryption for chunks, allowing deduplication while maintaining
-                security. The same data always produces the same ciphertext, enabling efficient storage
-                without compromising confidentiality.
-              </Callout>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <h2>Access Control</h2>
-
-      <div className="grid gap-6 md:grid-cols-2 my-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Authentication</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="text-sm">
-              <strong>JWT Tokens:</strong>
-              <p className="text-muted-foreground">Stateless authentication with expiration</p>
-            </div>
-            <div className="text-sm">
-              <strong>API Keys:</strong>
-              <p className="text-muted-foreground">Scoped tokens for programmatic access</p>
-            </div>
-            <div className="text-sm">
-              <strong>SSH Keys:</strong>
-              <p className="text-muted-foreground">Git-compatible authentication</p>
-            </div>
-            <div className="text-sm">
-              <strong>SAML/OAuth:</strong>
-              <p className="text-muted-foreground">Enterprise SSO integration</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Authorization</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="text-sm">
-              <strong>Role-Based Access Control (RBAC):</strong>
-              <ul className="mt-1 space-y-1">
-                <li>Owner, Admin, Member, Guest roles</li>
-                <li>Repository-level permissions</li>
-                <li>Fine-grained access control</li>
-              </ul>
-            </div>
-            <div className="text-sm">
-              <strong>Object-Level Permissions:</strong>
-              <ul className="mt-1 space-y-1">
-                <li>File and directory access</li>
-                <li>Branch protection rules</li>
-                <li>Lock management</li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <h2>Data Integrity & Verification</h2>
-
-      <div className="grid gap-4 md:grid-cols-3 my-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Content Verification</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="text-sm space-y-1">
-              <li>BLAKE3 hash verification</li>
-              <li>Manifest integrity checks</li>
-              <li>Chunk validation on read</li>
-              <li>Corruption detection</li>
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Audit Logging</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="text-sm space-y-1">
-              <li>All API operations logged</li>
-              <li>File access tracking</li>
-              <li>Authentication events</li>
-              <li>Compliance reporting</li>
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Backup Security</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="text-sm space-y-1">
-              <li>Encrypted backups</li>
-              <li>Secure key storage</li>
-              <li>Integrity verification</li>
-              <li>Point-in-time recovery</li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
-
-      <h2>Network Security</h2>
-
-      <Card className="my-6">
-        <CardHeader>
-          <CardTitle>Firewall & Network Controls</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-6 md:grid-cols-2">
-            <div>
-              <h4 className="font-semibold mb-3">Perimeter Security</h4>
-              <ul className="text-sm space-y-2">
-                <li><strong>Web Application Firewall (WAF):</strong> SQL injection, XSS prevention</li>
-                <li><strong>DDoS Protection:</strong> Rate limiting, traffic filtering</li>
-                <li><strong>SSL/TLS Termination:</strong> Certificate management, HSTS</li>
-                <li><strong>API Gateway:</strong> Request validation, throttling</li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-3">Internal Security</h4>
-              <ul className="text-sm space-y-2">
-                <li><strong>Service Mesh:</strong> mTLS between services</li>
-                <li><strong>Network Segmentation:</strong> Zero trust networking</li>
-                <li><strong>Container Security:</strong> Image scanning, runtime protection</li>
-                <li><strong>Secrets Management:</strong> Encrypted secret storage</li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <h2>Compliance & Standards</h2>
-
-      <div className="grid gap-4 md:grid-cols-2 my-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Industry Standards</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="text-sm space-y-2">
-              <li><Badge variant="outline" className="mr-2">SOC 2</Badge> Security, availability, and confidentiality</li>
-              <li><Badge variant="outline" className="mr-2">ISO 27001</Badge> Information security management</li>
-              <li><Badge variant="outline" className="mr-2">GDPR</Badge> Data protection and privacy</li>
-              <li><Badge variant="outline" className="mr-2">CCPA</Badge> California privacy rights</li>
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Creative Industry Compliance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="text-sm space-y-2">
-              <li><Badge variant="outline" className="mr-2">MPAA</Badge> Content security standards</li>
-              <li><Badge variant="outline" className="mr-2">SMPTE</Badge> Media technology standards</li>
-              <li><Badge variant="outline" className="mr-2">C2PA</Badge> Content provenance and authenticity</li>
-              <li><Badge variant="outline" className="mr-2">DDEX</Badge> Music industry standards</li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
-
-      <h2>Security Monitoring</h2>
-
-      <div className="space-y-4 my-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Real-time Monitoring</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div>
-                <h4 className="font-semibold mb-2">Access Monitoring</h4>
-                <ul className="text-sm space-y-1">
-                  <li>Authentication failures</li>
-                  <li>Unauthorized access attempts</li>
-                  <li>Suspicious activity patterns</li>
-                  <li>Geographic access anomalies</li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="font-semibold mb-2">Data Protection</h4>
-                <ul className="text-sm space-y-1">
-                  <li>Encryption key access</li>
-                  <li>Data exfiltration attempts</li>
-                  <li>Backup integrity</li>
-                  <li>Storage access patterns</li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="font-semibold mb-2">System Security</h4>
-                <ul className="text-sm space-y-1">
-                  <li>Network intrusion attempts</li>
-                  <li>Malware detection</li>
-                  <li>Configuration changes</li>
-                  <li>Performance anomalies</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Incident Response</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-semibold mb-2">Response Plan</h4>
-                <ol className="text-sm space-y-1 list-decimal list-inside">
-                  <li><strong>Detection:</strong> Automated monitoring and alerting</li>
-                  <li><strong>Assessment:</strong> Security team evaluation within 15 minutes</li>
-                  <li><strong>Containment:</strong> Isolate affected systems</li>
-                  <li><strong>Recovery:</strong> Restore from secure backups</li>
-                  <li><strong>Lessons Learned:</strong> Post-incident review and improvements</li>
-                </ol>
-              </div>
-
-              <Callout type="note" title="24/7 Security Operations" className="not-prose my-4">
-                Enterprise deployments include dedicated security operations center (SOC)
-                with 24/7 monitoring and incident response capabilities.
-              </Callout>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <h2>Privacy & Data Protection</h2>
-
-      <Card className="my-6">
-        <CardHeader>
-          <CardTitle>Data Minimization & Privacy</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-6 md:grid-cols-2">
-            <div>
-              <h4 className="font-semibold mb-3">Data Collection</h4>
-              <ul className="text-sm space-y-2">
-                <li><strong>Minimal Data:</strong> Only collect necessary user information</li>
-                <li><strong>Purpose Limitation:</strong> Data used only for stated purposes</li>
-                <li><strong>Retention Limits:</strong> Data deleted when no longer needed</li>
-                <li><strong>Consent Management:</strong> Clear user consent for data processing</li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-3">User Rights</h4>
-              <ul className="text-sm space-y-2">
-                <li><strong>Access:</strong> Users can view their data</li>
-                <li><strong>Portability:</strong> Export data in standard formats</li>
-                <li><strong>Correction:</strong> Update inaccurate information</li>
-                <li><strong>Deletion:</strong> Right to be forgotten</li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <h2>Telemetry & Usage Analytics</h2>
-
-      <Callout type="tip" title="Privacy-First Telemetry" className="not-prose my-6">
-        Dits includes optional, privacy-focused telemetry to help us improve the product.
-        Unlike Git which has no telemetry, Dits collects anonymized usage data when enabled.
+      <h2>Network surfaces</h2>
+      <p>
+        <code>push</code>, <code>pull</code>, <code>fetch</code>, and <code>sync</code>{" "}
+        are disabled and return nonzero without transferring data or changing a
+        repository. Local-path clone works; network clone does not.
+      </p>
+      <Callout type="important" title="Do not expose dits serve" className="not-prose my-6">
+        The experimental <code>dits serve</code> utility binds to all interfaces and
+        does not implement authentication, authorization, or TLS. Treat it as a
+        developer fixture for an isolated, trusted network only. Do not expose it to
+        the internet or an untrusted LAN.
       </Callout>
 
-      <div className="grid gap-6 md:grid-cols-2 my-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5 text-info" />
-              What We Collect
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div>
-                <h4 className="font-semibold text-sm mb-2">Usage Statistics</h4>
-                <ul className="text-xs space-y-1 text-muted-foreground">
-                  <li>Command usage frequency (e.g., &quot;add&quot;, &quot;commit&quot;, &quot;push&quot;)</li>
-                  <li>Performance metrics (operation duration, file sizes)</li>
-                  <li>Error occurrences (anonymized error types)</li>
-                  <li>Platform information (OS, architecture)</li>
-                </ul>
-              </div>
+      <h2>CLI telemetry</h2>
+      <p>
+        CLI telemetry is disabled by default. When explicitly enabled, the current
+        client records a limited command event: command name, argument count, flag
+        count, whether any argument looks like a path, CLI version, platform, a
+        random installation identifier, a random process identifier, and a
+        timestamp. The event constructor does not include argument values, file
+        paths, repository names, usernames, machine IDs, or file contents.
+      </p>
+      <p>
+        Enabled telemetry attempts an HTTPS POST to the endpoint compiled into the
+        CLI. Disabling telemetry stops future event recording and delivery attempts;
+        it does not by itself remove the persisted random identifier or last-send
+        timestamp from global configuration.
+      </p>
+      <CodeBlock
+        language="bash"
+        code={`dits telemetry status
+dits telemetry enable
+dits telemetry disable`}
+      />
+      <p>
+        Website behavior is documented separately in the{" "}
+        <Link href="/privacy">website privacy notice</Link>.
+      </p>
 
-              <div>
-                <h4 className="font-semibold text-sm mb-2">Anonymized Data Only</h4>
-                <ul className="text-xs space-y-1 text-muted-foreground">
-                  <li>No file names, paths, or content</li>
-                  <li>No user identifiers or personal data</li>
-                  <li>No repository contents or metadata</li>
-                  <li>Randomly generated session IDs</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <h2>Safe evaluation practices</h2>
+      <ol>
+        <li>Keep an independent source copy and test restores before relying on them.</li>
+        <li>Run with the least filesystem privileges practical.</li>
+        <li>Do not place secrets in a repository assumed to be encrypted by Dits.</li>
+        <li>Do not treat a configured remote as a backup; transfer is disabled.</li>
+        <li>Record the exact Dits version when preserving or exchanging a repository.</li>
+        <li>Re-run integrity checks after interruption, migration, or suspected damage.</li>
+      </ol>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-success" />
-              Privacy Guarantees
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div>
-                <h4 className="font-semibold text-sm mb-2">Data Protection</h4>
-                <ul className="text-xs space-y-1 text-muted-foreground">
-                  <li><strong>Opt-in only:</strong> Disabled by default</li>
-                  <li><strong>Local storage:</strong> Data stored locally until uploaded</li>
-                  <li><strong>Encrypted transmission:</strong> HTTPS/TLS 1.3</li>
-                  <li><strong>Data minimization:</strong> Only essential metrics</li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-sm mb-2">User Control</h4>
-                <ul className="text-xs space-y-1 text-muted-foreground">
-                  <li>Easy disable: <code>dits telemetry off</code></li>
-                  <li>Status check: <code>dits telemetry status</code></li>
-                  <li>Manual upload control</li>
-                  <li>Clear data retention policies</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="my-8">
-        <CardHeader>
-          <CardTitle>Telemetry vs Git</CardTitle>
-          <CardDescription>
-            Understanding how Dits telemetry differs from Git&apos;s approach
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Aspect</TableHead>
-                <TableHead>Git</TableHead>
-                <TableHead>Dits</TableHead>
-                <TableHead>Reason</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell className="font-medium">Telemetry</TableCell>
-                <TableCell>
-                  <Badge variant="secondary" className="text-xs">None</Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="default" className="text-xs">Optional</Badge>
-                </TableCell>
-                <TableCell className="text-sm">
-                  Git is purely local. Dits includes server features that benefit from usage insights.
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Architecture</TableCell>
-                <TableCell>Distributed, offline-first</TableCell>
-                <TableCell>Hybrid (local + optional cloud)</TableCell>
-                <TableCell className="text-sm">
-                  Ditshub provides hosted collaboration features that Git doesn&apos;t offer.
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Data Collection</TableCell>
-                <TableCell>Zero data collection</TableCell>
-                <TableCell>Anonymized usage statistics</TableCell>
-                <TableCell className="text-sm">
-                  Helps improve Ditshub services and user experience.
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Privacy Controls</TableCell>
-                <TableCell>N/A (no data collected)</TableCell>
-                <TableCell>Opt-in, easy disable</TableCell>
-                <TableCell className="text-sm">
-                  Users have full control over data sharing preferences.
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      <Card className="my-8">
-        <CardHeader>
-          <CardTitle>Telemetry Commands</CardTitle>
-          <CardDescription>
-            Control telemetry settings from the command line
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="bg-muted p-4 rounded-lg">
-              <h4 className="font-semibold text-sm mb-2">Enable Telemetry</h4>
-              <code className="text-sm bg-background px-2 py-1 rounded">
-                dits telemetry enable
-              </code>
-              <p className="text-xs text-muted-foreground mt-2">
-                Opt into telemetry and help improve Dits
-              </p>
-            </div>
-
-            <div className="bg-muted p-4 rounded-lg">
-              <h4 className="font-semibold text-sm mb-2">Disable Telemetry</h4>
-              <code className="text-sm bg-background px-2 py-1 rounded">
-                dits telemetry disable
-              </code>
-              <p className="text-xs text-muted-foreground mt-2">
-                Turn off all telemetry collection
-              </p>
-            </div>
-
-            <div className="bg-muted p-4 rounded-lg">
-              <h4 className="font-semibold text-sm mb-2">Check Status</h4>
-              <code className="text-sm bg-background px-2 py-1 rounded">
-                dits telemetry status
-              </code>
-              <p className="text-xs text-muted-foreground mt-2">
-                View current telemetry settings and last upload
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Callout type="tip" title="Transparency Commitment" className="not-prose my-4">
-        We believe in transparency about data practices. Telemetry helps us build better tools
-        for creative professionals while respecting user privacy. You can always disable it,
-        and we only collect the minimum data needed to improve Dits.
-      </Callout>
-
-      <h2>Security Best Practices</h2>
-
-      <div className="grid gap-4 md:grid-cols-2 my-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>For Organizations</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <li className="text-sm">Implement least privilege access</li>
-            <li className="text-sm">Regular security audits and penetration testing</li>
-            <li className="text-sm">Employee security training</li>
-            <li className="text-sm">Secure development lifecycle (SDL)</li>
-            <li className="text-sm">Regular backup and disaster recovery testing</li>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>For Individual Users</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <li className="text-sm">Use strong, unique passwords</li>
-            <li className="text-sm">Enable two-factor authentication</li>
-            <li className="text-sm">Regularly review access permissions</li>
-            <li className="text-sm">Keep software and systems updated</li>
-            <li className="text-sm">Use encrypted connections (HTTPS)</li>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Callout type="note" title="Security is Everyone&apos;s Responsibility" className="not-prose my-6">
-        While Dits provides robust security features, maintaining security requires
-        cooperation between the platform, organizations, and users. Security is not
-        a product, but a process.
-      </Callout>
-
-      <h2>Security Resources</h2>
-
-      <div className="grid gap-4 md:grid-cols-3 my-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Documentation</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="text-sm space-y-1">
-              <li><Link href="/docs/architecture/security">Security Architecture</Link></li>
-              <li><Link href="/docs/api/webhooks">Webhook Security</Link></li>
-              <li><Link href="/docs/troubleshooting">Security Troubleshooting</Link></li>
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Compliance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="text-sm space-y-1">
-              <li>GDPR Compliance Guide</li>
-              <li>SOC 2 Report</li>
-              <li>Security Whitepaper</li>
-              <li>Penetration Test Reports</li>
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Support</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="text-sm space-y-1">
-              <li>Security Advisories</li>
-              <li>Bug Bounty Program</li>
-              <li>Security Contact</li>
-              <li>Incident Response</li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="text-center my-8">
-        <p className="text-sm text-muted-foreground">
-          Security concerns or questions? Contact our security team at{" "}
-          <Link href="mailto:security@dits.io" className="text-brand hover:underline">
-            security@dits.io
-          </Link>
-        </p>
-      </div>
+      <h2>Reporting security issues</h2>
+      <p>
+        Use GitHub&apos;s{" "}
+        <Link href="https://github.com/byronwade/dits/security/advisories/new">
+          private vulnerability-reporting flow
+        </Link>{" "}
+        for a report that should not start publicly. The project does not promise a
+        bounty, response deadline, embargo window, or remediation SLA. General bugs
+        can be filed in the{" "}
+        <Link href="https://github.com/byronwade/dits/issues">public issue tracker</Link>.
+      </p>
     </div>
   );
 }
-

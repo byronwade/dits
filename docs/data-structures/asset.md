@@ -1,19 +1,9 @@
 # Asset (The File Recipe)
 
-Files are represented as recipes over stored chunks and metadata.
+**Maturity:** Historical
 
-```rust
-struct Asset {
-    path: String,           // e.g., "scenes/intro.mp4"
-    file_type: String,      // e.g., "mp4"
-    metadata_blob: Vec<u8>, // Header atoms such as 'moov'
-    chunks: Vec<String>,    // Ordered list of chunk hashes for payload ('mdat')
-}
-```
+The former Asset type is not the current repository schema. Current file recipes are manifest entries, with storage-specific fields for Dits chunks, embedded Git blobs, and selected MP4 metadata. Use the manifest contract rather than the illustrative struct that previously appeared here.
 
-Notes:
-- Only the metadata blob and ordered chunk references are persisted; the full file is reconstructed on checkout or read through the virtual FS.
-- Metadata edits (titles, captions, tags) avoid re-uploading payload data.
-- Path serves as the logical locator within the repository tree.
-
-
+See [manifest contract](manifest-spec.md) and [`../STATUS.md`](../STATUS.md). Any serialized form not
+explicitly governed by an accepted ADR and conformance corpus remains an implementation
+detail.

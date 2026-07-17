@@ -1,5 +1,10 @@
 # Architectural differentiation
 
+**Maturity:** Design
+
+Product hypothesis and proof plan, not a list of shipped advantages or measured
+superiority.
+
 > Product design, not a list of shipped advantages. Last reviewed: 2026-07-16.
 > See [`docs/STATUS.md`](../STATUS.md) and
 > [`active-architecture.md`](active-architecture.md) for current reality.

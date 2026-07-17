@@ -1,5 +1,10 @@
 # ADR 0002: Exact CAS Below a Semantic Media Graph
 
+**Maturity:** Current
+
+Accepted ADRs govern new work, but they do not by themselves prove that every consequence
+is implemented; implementation status remains authoritative.
+
 - **Status:** Proposed
 - **Date:** 2026-07-16
 

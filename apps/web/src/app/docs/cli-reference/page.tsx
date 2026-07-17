@@ -39,8 +39,8 @@ import { generateMetadata as genMeta, generateArticleSchema, generateItemListSch
 import Script from "next/script";
 
 export const metadata: Metadata = genMeta({
-  title: "Dits CLI Reference - Complete Command Reference for 60+ Commands",
-  description: "Complete command line reference for Dits version control system. Comprehensive guide to 60+ CLI commands including core operations, branching, remotes, video features, VFS, encryption, and more.",
+  title: "Dits CLI Reference - Alpha Commands and Status",
+  description: "Command reference for the Dits alpha, with supported local operations, experimental features, and disabled commands labeled explicitly.",
   canonical: "https://dits.dev/docs/cli-reference",
   keywords: [
     "dits cli",
@@ -59,7 +59,7 @@ export const metadata: Metadata = genMeta({
         url: "/dits.png",
         width: 1200,
         height: 630,
-        alt: "Dits CLI Reference - Complete Command Reference",
+        alt: "Dits CLI Reference - Alpha Commands and Status",
       },
     ],
   },
@@ -92,7 +92,7 @@ const commandCategories = [
     description: "Stage, restore, and diff files",
     icon: Files,
     href: "/docs/cli/files",
-    commands: ["add", "restore", "diff", "rm", "mv"],
+    commands: ["add", "restore", "diff"],
     color: "text-success",
     bgColor: "bg-success/10",
   },
@@ -116,7 +116,7 @@ const commandCategories = [
   },
   {
     title: "Remote Operations",
-    description: "Push, pull, and sync with remote repositories",
+    description: "Configure remotes; repository transfer is disabled",
     icon: Cloud,
     href: "/docs/cli/remotes",
     commands: ["push", "pull", "fetch", "sync"],
@@ -134,12 +134,21 @@ const commandCategories = [
   },
   {
     title: "Virtual Filesystem",
-    description: "Mount repositories as virtual drives",
+    description: "Feature-gated experimental local mounts",
     icon: HardDrive,
     href: "/docs/cli/vfs",
     commands: ["mount", "unmount", "cache-stats"],
     color: "text-brand",
     bgColor: "bg-brand/10",
+  },
+  {
+    title: "Peer-to-peer",
+    description: "Disabled design scaffolding; all operations fail closed",
+    icon: Cloud,
+    href: "/docs/cli/p2p",
+    commands: ["p2p"],
+    color: "text-warning",
+    bgColor: "bg-warning/10",
   },
   {
     title: "Video & Media",
@@ -188,7 +197,7 @@ const commandCategories = [
   },
   {
     title: "Encryption",
-    description: "Encrypt repositories and manage keys",
+    description: "Inspect or clear legacy encryption state",
     icon: Shield,
     href: "/docs/cli/encryption",
     commands: ["encrypt-init", "encrypt-status", "login", "logout", "change-password"],
@@ -206,7 +215,7 @@ const commandCategories = [
   },
   {
     title: "Maintenance",
-    description: "Garbage collection, integrity checks, and stats",
+    description: "Read-only GC reporting, integrity checks, and stats",
     icon: Settings,
     href: "/docs/cli/maintenance",
     commands: ["gc", "fsck", "repo-stats", "inspect-file", "config"],
@@ -215,9 +224,9 @@ const commandCategories = [
   },
   {
     title: "Telemetry",
-    description: "Manage telemetry and usage analytics",
+    description: "Manage opt-in CLI telemetry",
     icon: Activity,
-    href: "/docs/architecture/security#telemetry--usage-analytics",
+    href: "/docs/architecture/security#cli-telemetry",
     commands: ["telemetry enable", "telemetry disable", "telemetry status"],
     color: "text-muted-foreground",
     bgColor: "bg-muted",
@@ -227,8 +236,8 @@ const commandCategories = [
 const allCommands = [
   // Repository
   { name: "init", description: "Initialize a new repository", category: "Repository", status: "stable" },
-  { name: "clone", description: "Clone a repository (networked — roadmap, prints a placeholder)", category: "Repository", status: "roadmap" },
-  { name: "remote", description: "Manage remote repositories (networked — roadmap)", category: "Repository", status: "roadmap" },
+  { name: "clone", description: "Clone from a local filesystem path; network URLs fail nonzero", category: "Repository", status: "local only" },
+  { name: "remote", description: "Store and inspect remote names and URLs; no data transfer", category: "Repository", status: "config only" },
   { name: "status", description: "Show working tree status", category: "Repository", status: "stable" },
   // Files
   { name: "add", description: "Add files to staging area", category: "Files", status: "stable" },
@@ -263,18 +272,20 @@ const allCommands = [
   { name: "maintenance", description: "Run maintenance tasks", category: "Advanced Git", status: "stable" },
   { name: "completions", description: "Generate shell completions", category: "Advanced Git", status: "stable" },
   // Remotes
-  { name: "push", description: "Push changes to remote (networked — roadmap, prints a placeholder and transfers no data)", category: "Remotes", status: "roadmap" },
-  { name: "pull", description: "Fetch and integrate changes (networked — roadmap, prints a placeholder and transfers no data)", category: "Remotes", status: "roadmap" },
-  { name: "fetch", description: "Download objects and refs (networked — roadmap, prints a placeholder and transfers no data)", category: "Remotes", status: "roadmap" },
-  { name: "sync", description: "Bi-directional sync (networked — roadmap, prints a placeholder and transfers no data)", category: "Remotes", status: "roadmap" },
+  { name: "push", description: "Disabled; fails nonzero without transferring data or changing the repository", category: "Remotes", status: "disabled" },
+  { name: "pull", description: "Disabled; fails nonzero without fetching, merging, or changing the repository", category: "Remotes", status: "disabled" },
+  { name: "fetch", description: "Disabled; fails nonzero without downloading objects or updating refs", category: "Remotes", status: "disabled" },
+  { name: "sync", description: "Disabled; fails nonzero without bidirectional synchronization", category: "Remotes", status: "disabled" },
   // Locks
   { name: "lock", description: "Lock files for exclusive editing", category: "Locks", status: "stable" },
   { name: "unlock", description: "Release file locks", category: "Locks", status: "stable" },
   { name: "locks", description: "List active locks", category: "Locks", status: "stable" },
   // VFS
-  { name: "mount", description: "Mount repository as VFS", category: "VFS", status: "stable" },
-  { name: "unmount", description: "Unmount virtual filesystem", category: "VFS", status: "stable" },
+  { name: "mount", description: "Experimental local FUSE mount; absent from default builds", category: "VFS", status: "feature gated" },
+  { name: "unmount", description: "Experimental local FUSE unmount; absent from default builds", category: "VFS", status: "feature gated" },
   { name: "cache-stats", description: "Show VFS cache statistics", category: "VFS", status: "stable" },
+  // P2P
+  { name: "p2p", description: "Disabled; every operation fails before changing repository, directory, cache, socket, or mount state", category: "P2P", status: "disabled" },
   // Video
   { name: "inspect", description: "Inspect MP4/MOV structure", category: "Video", status: "stable" },
   { name: "inspect-file", description: "Inspect file dedup stats", category: "Video", status: "stable" },
@@ -305,17 +316,17 @@ const allCommands = [
   { name: "thaw", description: "Restore chunks from cold storage", category: "Storage", status: "stable" },
   { name: "freeze-policy", description: "Set or view lifecycle policy", category: "Storage", status: "stable" },
   // Encryption
-  { name: "encrypt-init", description: "Initialize repository encryption", category: "Encryption", status: "stable" },
-  { name: "encrypt-status", description: "Show encryption status", category: "Encryption", status: "stable" },
-  { name: "login", description: "Login to unlock encryption keys", category: "Encryption", status: "stable" },
-  { name: "logout", description: "Logout and clear cached keys", category: "Encryption", status: "stable" },
-  { name: "change-password", description: "Change encryption password", category: "Encryption", status: "stable" },
+  { name: "encrypt-init", description: "Disabled; fails nonzero without changing repository or keystore data", category: "Encryption", status: "disabled" },
+  { name: "encrypt-status", description: "Report whether a legacy experimental keystore is present", category: "Encryption", status: "diagnostic" },
+  { name: "login", description: "Disabled; fails nonzero without loading or caching a key", category: "Encryption", status: "disabled" },
+  { name: "logout", description: "Clear a legacy experimental on-disk key cache", category: "Encryption", status: "legacy only" },
+  { name: "change-password", description: "Disabled; fails nonzero without changing the keystore", category: "Encryption", status: "disabled" },
   // Audit
   { name: "audit", description: "Show audit log", category: "Audit", status: "stable" },
   { name: "audit-stats", description: "Show audit statistics", category: "Audit", status: "stable" },
   { name: "audit-export", description: "Export audit log to JSON", category: "Audit", status: "stable" },
   // Maintenance
-  { name: "gc", description: "Run garbage collection", category: "Maintenance", status: "stable" },
+  { name: "gc", description: "Read-only unreachable-object report; destructive deletion is disabled", category: "Maintenance", status: "diagnostic" },
   { name: "fsck", description: "Verify repository integrity", category: "Maintenance", status: "stable" },
   { name: "repo-stats", description: "Show repository statistics", category: "Maintenance", status: "stable" },
   { name: "config", description: "Get and set configuration", category: "Maintenance", status: "stable" },
@@ -329,7 +340,7 @@ export default function CLIReferencePage() {
   // Generate ItemList schema for all CLI commands
   const commandListSchema = generateItemListSchema({
     name: "Dits CLI Commands",
-    description: "Complete list of all 60+ Dits CLI commands for version control of large files and video assets",
+    description: "Dits alpha commands with current support status",
     items: allCommands.map((cmd, index) => ({
       name: cmd.name,
       description: cmd.description,
@@ -340,10 +351,8 @@ export default function CLIReferencePage() {
 
   // Generate Article schema for the documentation page
   const articleSchema = generateArticleSchema({
-    headline: "Dits CLI Reference - Complete Command Reference for 60+ Commands",
-    description: "Complete command line reference for Dits version control system. Comprehensive guide to 60+ CLI commands including core operations, branching, remotes, video features, VFS, encryption, and more.",
-    datePublished: "2024-01-01",
-    dateModified: new Date().toISOString().split("T")[0],
+    headline: "Dits CLI Reference - Alpha Commands and Status",
+    description: "Command reference for the Dits alpha, with supported local operations, experimental features, and disabled commands labeled explicitly.",
     author: "Byron Wade",
     section: "Documentation",
     tags: ["cli", "commands", "reference", "documentation", "terminal"],
@@ -406,28 +415,28 @@ export default function CLIReferencePage() {
       />
 
       <Callout type="important" className="not-prose my-6">
-        <strong>Local commands work today; networked commands are roadmap.</strong>{" "}
+        <strong>The alpha is local-first and remote transfer fails closed.</strong>{" "}
         The local Dits CLI includes init, add, commit, branch, diff, log, and other
-        Git-shaped paths; VFS and media-specific paths are experimental. The networked
-        commands &mdash; <code>push</code>, <code>pull</code>, <code>fetch</code>,{" "}
-        <code>sync</code>, <code>clone</code>, <code>remote</code>, and p2p &mdash; are
-        on the roadmap and not built: they print placeholders and transfer no data.
-        Rows marked <code>roadmap</code> in the table below are not yet available.
+        Git-shaped paths; VFS and media-specific paths are experimental. Local-path
+        <code> clone</code> works, and <code>remote</code> stores configuration. The
+        <code> push</code>, <code>pull</code>, <code>fetch</code>, and <code>sync</code>{" "}
+        commands return nonzero for local and network remotes without making changes.
+        Every P2P operation and repository encryption are also disabled; see each
+        row&apos;s status below.
       </Callout>
 
       <h2>Global Options</h2>
-      <p>These options can be used with any command:</p>
+      <p>The top-level <code>dits</code> parser accepts only help and version:</p>
       <CodeBlock
         language="text"
-        code={`-v, --verbose       Increase output verbosity (use -vv for debug)
--q, --quiet         Suppress non-essential output
---no-color          Disable colored output
---json              Output in JSON format (for scripting)
--C <path>           Run as if dits was started in <path>
---config <key=val>  Override config value for this command
--h, --help          Show help for command
---version           Show dits version`}
+        code={`-h, --help       Show help
+-V, --version    Show the Dits version`}
       />
+      <p>
+        Subcommands define their own flags. <code>--verbose</code>,{" "}
+        <code>--quiet</code>, <code>--no-color</code>, <code>--json</code>,{" "}
+        <code>-C</code>, and command-scoped config overrides are not global options.
+      </p>
 
       <h2>Command Categories</h2>
       <p>
@@ -508,76 +517,46 @@ export default function CLIReferencePage() {
 
       <h2>Environment Variables</h2>
       <p>
-        Dits behavior can be customized through environment variables. These are useful
-        for scripting, CI/CD pipelines, and advanced configuration.
+        Commit identity is the only Dits-specific input currently read from the
+        environment. General environment-based configuration overrides are not
+        implemented.
       </p>
 
       <Table className="not-prose my-6">
         <TableHeader>
           <TableRow>
-            <TableHead>Variable</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Example</TableHead>
+            <TableHead>Value</TableHead>
+            <TableHead>Lookup order</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           <TableRow>
-            <TableCell className="font-mono">DITS_DIR</TableCell>
-            <TableCell>Override .dits directory location</TableCell>
-            <TableCell className="font-mono text-sm">/custom/path/.dits</TableCell>
+            <TableCell>Commit author name</TableCell>
+            <TableCell className="font-mono text-sm">
+              DITS_AUTHOR_NAME → GIT_AUTHOR_NAME → USER → Unknown
+            </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell className="font-mono">DITS_WORK_TREE</TableCell>
-            <TableCell>Override working tree location</TableCell>
-            <TableCell className="font-mono text-sm">/path/to/worktree</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">DITS_CACHE_DIR</TableCell>
-            <TableCell>Override cache directory</TableCell>
-            <TableCell className="font-mono text-sm">~/.cache/dits</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">DITS_CONFIG_GLOBAL</TableCell>
-            <TableCell>Override global config path</TableCell>
-            <TableCell className="font-mono text-sm">~/.config/dits/config</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">DITS_EDITOR</TableCell>
-            <TableCell>Editor for commit messages</TableCell>
-            <TableCell className="font-mono text-sm">vim</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">DITS_PAGER</TableCell>
-            <TableCell>Pager for output</TableCell>
-            <TableCell className="font-mono text-sm">less -R</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">DITS_TOKEN</TableCell>
-            <TableCell>Authentication token for remotes</TableCell>
-            <TableCell className="font-mono text-sm">dits_xxxxx</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">DITS_SERVER</TableCell>
-            <TableCell>Default server URL</TableCell>
-            <TableCell className="font-mono text-sm">https://dits.example.com</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">DITS_DEBUG</TableCell>
-            <TableCell>Enable debug output</TableCell>
-            <TableCell className="font-mono text-sm">1</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">DITS_TRACE</TableCell>
-            <TableCell>Enable trace logging</TableCell>
-            <TableCell className="font-mono text-sm">1</TableCell>
+            <TableCell>Commit author email</TableCell>
+            <TableCell className="font-mono text-sm">
+              DITS_AUTHOR_EMAIL → GIT_AUTHOR_EMAIL → &lt;name&gt;@localhost
+            </TableCell>
           </TableRow>
         </TableBody>
       </Table>
+      <p>
+        Hook subprocesses receive <code>DITS_DIR</code> and <code>DITS_HOOK</code> as
+        context. Setting <code>DITS_DIR</code> before running the CLI does not redirect
+        repository discovery. See the{" "}
+        <Link href="/docs/configuration/env">environment reference</Link> for unsupported
+        names that appeared in older drafts.
+      </p>
 
       <h2>Exit Codes</h2>
       <p>
-        Dits uses standardized exit codes for scripting and automation. These codes
-        help identify what type of error occurred.
+        The current CLI distinguishes success, runtime failure, and parser usage
+        failure. It does not implement the detailed authentication, network,
+        repository, lock, or merge-conflict code taxonomy shown in older drafts.
       </p>
 
       <Table className="not-prose my-6">
@@ -585,54 +564,24 @@ export default function CLIReferencePage() {
           <TableRow>
             <TableHead className="w-[80px]">Code</TableHead>
             <TableHead>Meaning</TableHead>
-            <TableHead>Example Scenario</TableHead>
+            <TableHead>Current meaning</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           <TableRow>
             <TableCell className="font-mono">0</TableCell>
             <TableCell>Success</TableCell>
-            <TableCell>Command completed successfully</TableCell>
+            <TableCell>The requested local operation completed successfully</TableCell>
           </TableRow>
           <TableRow>
             <TableCell className="font-mono">1</TableCell>
-            <TableCell>General error</TableCell>
-            <TableCell>Unspecified failure</TableCell>
+            <TableCell>Command/runtime error</TableCell>
+            <TableCell>Includes fail-closed commands and integrity failures</TableCell>
           </TableRow>
           <TableRow>
             <TableCell className="font-mono">2</TableCell>
-            <TableCell>Command line usage error</TableCell>
-            <TableCell>Invalid arguments or options</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">3</TableCell>
-            <TableCell>Authentication error</TableCell>
-            <TableCell>Invalid credentials or expired token</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">4</TableCell>
-            <TableCell>Network error</TableCell>
-            <TableCell>Connection failed or timed out</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">5</TableCell>
-            <TableCell>Repository error</TableCell>
-            <TableCell>Not a dits repository or corrupt data</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">6</TableCell>
-            <TableCell>Lock conflict</TableCell>
-            <TableCell>File is locked by another user</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">7</TableCell>
-            <TableCell>Merge conflict</TableCell>
-            <TableCell>Conflicting changes need resolution</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">128+</TableCell>
-            <TableCell>Fatal error</TableCell>
-            <TableCell>Signal number + 128 (e.g., SIGKILL = 137)</TableCell>
+            <TableCell>Parser usage error</TableCell>
+            <TableCell>Invalid command, argument, or option</TableCell>
           </TableRow>
         </TableBody>
       </Table>
@@ -642,12 +591,12 @@ export default function CLIReferencePage() {
       <h3>Initial Setup</h3>
       <CodeBlock
         language="bash"
-        code={`# Configure your identity
-dits config --global user.name "Your Name"
-dits config --global user.email "you@example.com"
+        code={`# Set the identity currently consumed by commits
+export DITS_AUTHOR_NAME="Your Name"
+export DITS_AUTHOR_EMAIL="you@example.com"
 
-# Clone a repository
-dits clone https://dits.example.com/team/project
+# Clone an existing local repository
+dits clone /path/to/existing-repository project
 cd project
 
 # Or initialize a new one
@@ -658,14 +607,8 @@ cd my-new-project`}
       <h3>Daily Workflow</h3>
       <CodeBlock
         language="bash"
-        code={`# Start day: get latest changes
-dits pull
-
-# Check what's changed
+        code={`# Check what's changed
 dits status
-
-# Lock file before editing (for binary files)
-dits lock footage/scene01.mov
 
 # Work on your files...
 
@@ -673,27 +616,21 @@ dits lock footage/scene01.mov
 dits add footage/scene01.mov
 dits commit -m "Color grade scene 1"
 
-# Push changes to remote
-dits push
-
-# Unlock when done
-dits unlock footage/scene01.mov`}
+# Inspect local history
+dits log`}
       />
 
-      <h3>Using Virtual Filesystem</h3>
+      <h3>Experimental local FUSE build</h3>
+      <p>
+        Mount and unmount are absent from default binaries. Source builds can
+        enable the experimental local <code>fuser</code> feature on a machine with
+        the required OS FUSE support. This is not remote or on-demand hydration.
+      </p>
       <CodeBlock
         language="bash"
-        code={`# Mount repository as virtual drive
-dits mount /mnt/project
-
-# Files appear instantly, hydrate on-demand
-ls /mnt/project/footage/
-
-# Open files directly in NLE (streams on demand)
-# Edit as normal - no full download required
-
-# When done
-dits unmount /mnt/project`}
+        code={`cargo build --release -p dits --features fuser
+./target/release/dits mount /mnt/project
+./target/release/dits unmount /mnt/project`}
       />
 
       <h3>Working with Video</h3>

@@ -30,6 +30,12 @@ export default function GettingStartedPage() {
 
       <h2>1. Install the published package</h2>
 
+      <Callout type="note" title="Check your platform" className="not-prose my-6">
+        The v0.1.5 npm artifact contains binaries for Apple Silicon macOS and
+        Windows x64 only. For Linux, Intel macOS, or Windows arm64, follow the
+        <Link href="/docs/installation"> source-build instructions</Link>.
+      </Callout>
+
       <CodeBlock
         language="bash"
         code={`npm install -g @byronwade/dits
@@ -37,9 +43,8 @@ dits --version`}
       />
 
       <p>
-        Node.js 16 or later is required by the package launcher. Bun, pnpm, and
-        Yarn can install the same package. There is no published shell installer,
-        Homebrew tap, or crates.io package.
+        On a packaged target, Node.js 16 or later is required by the launcher.
+        There is no published shell installer, Homebrew tap, or crates.io package.
       </p>
 
       <h2>2. Create a disposable workspace</h2>
@@ -108,10 +113,11 @@ dits checkout --help`}
 
       <p>
         Network <code>push</code>, <code>pull</code>, <code>fetch</code>,
-        <code> sync</code>, network clone, and P2P are placeholders or design
-        surfaces. They do not provide collaboration or backup today. FACR,
-        photo-edit, proxy, and VFS paths are experimental and should be evaluated
-        separately from the exact local-history core.
+        <code> sync</code>, and network clone are not implemented. The four
+        remote commands return a nonzero error for both local-path and Internet
+        remotes without changing objects, refs, or the working tree. P2P transfers
+        no repository data. FACR, photo-edit, proxy, and VFS paths are experimental
+        and should be evaluated separately from the exact local-history core.
       </p>
 
       <p>

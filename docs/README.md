@@ -1,6 +1,6 @@
 # Dits Documentation Guide
 
-**Maturity:** Current documentation authority map.
+**Maturity:** Current
 
 This directory contains Current behavior, Experimental work, Design research,
 and Historical material. Read the maturity label before treating a document as

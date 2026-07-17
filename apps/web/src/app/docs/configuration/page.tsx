@@ -14,63 +14,49 @@ import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Configuration",
-  description: "Configure Dits for your workflow",
+  description: "Current-alpha Dits configuration files, keys, and runtime effects",
 };
 
-const configOptions = [
+const configKeys = [
   {
     key: "user.name",
-    description: "Your name for commits",
-    default: "(none)",
-    example: '"John Editor"',
+    defaultValue: "unset",
+    effect: "Stored preference; commits do not read it yet",
   },
   {
     key: "user.email",
-    description: "Your email for commits",
-    default: "(none)",
-    example: '"john@example.com"',
+    defaultValue: "unset",
+    effect: "Stored preference; commits do not read it yet",
   },
   {
-    key: "core.editor",
-    description: "Editor for commit messages",
-    default: "$EDITOR or vim",
-    example: '"code --wait"',
+    key: "core.default_branch",
+    defaultValue: "main",
+    effect: "Stored preference; repository init still uses main",
   },
   {
-    key: "core.pager",
-    description: "Pager for long output",
-    default: "less",
-    example: '"less -R"',
+    key: "core.verbose",
+    defaultValue: "false",
+    effect: "Stored preference; not a global verbosity flag",
   },
   {
-    key: "push.default",
-    description: "Default push behavior",
-    default: "simple",
-    example: '"current"',
+    key: "chunking.target_size",
+    defaultValue: "64KB",
+    effect: "Repository-local target chunk size",
   },
   {
-    key: "pull.rebase",
-    description: "Rebase on pull",
-    default: "false",
-    example: "true",
+    key: "chunking.min_size",
+    defaultValue: "16KB",
+    effect: "Repository-local minimum chunk size",
   },
   {
-    key: "cache.size",
-    description: "Local cache size limit",
-    default: "10GB",
-    example: '"50GB"',
+    key: "chunking.max_size",
+    defaultValue: "256KB",
+    effect: "Repository-local maximum chunk size",
   },
   {
-    key: "gc.gracePeriod",
-    description: "Time before orphaned objects are collected",
-    default: "2 weeks",
-    example: '"30 days"',
-  },
-  {
-    key: "mount.defaultPath",
-    description: "Default mount point for VFS",
-    default: "/Volumes/dits-<repo>",
-    example: '"/mnt/dits"',
+    key: "telemetry.enabled",
+    defaultValue: "false",
+    effect: "Global opt-in telemetry switch",
   },
 ];
 
@@ -80,218 +66,155 @@ export default function ConfigurationPage() {
       <DocPageHeader
         eyebrow="Configuration"
         title="Configuration"
-        description="Dits uses a layered configuration system similar to Git. Settings can be configured at the system, global, or repository level."
+        description="The current alpha selects one TOML file and exposes a small, explicit key set."
       />
 
-      <h2>Configuration Levels</h2>
-      <ul>
-        <li>
-          <strong>System</strong> (<code>/etc/ditsconfig</code>): Applies to all
-          users on the system
-        </li>
-        <li>
-          <strong>Global</strong> (<code>~/.ditsconfig</code>): Applies to all
-          your repositories
-        </li>
-        <li>
-          <strong>Repository</strong> (<code>.dits/config</code>): Applies only
-          to the current repository
-        </li>
-      </ul>
+      <Callout type="important" title="No layered stack yet" className="not-prose my-6">
+        Dits does not currently merge system, global, repository, environment, and
+        command-line layers. It selects either the repository file or the global file.
+        Older Git-like configuration examples are design material, not supported syntax.
+      </Callout>
+
+      <h2>Configuration files</h2>
+      <Table className="not-prose my-6">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Scope</TableHead>
+            <TableHead>Location</TableHead>
+            <TableHead>Selection</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell>Repository</TableCell>
+            <TableCell className="font-mono text-sm">.dits/config.toml</TableCell>
+            <TableCell>Default while inside a repository</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Global</TableCell>
+            <TableCell className="font-mono text-sm">
+              &lt;platform config directory&gt;/dits/config.toml
+            </TableCell>
+            <TableCell>Pass --global</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
       <p>
-        More specific configurations override less specific ones (repository
-        overrides global, global overrides system).
+        There is no system or worktree level. Inside a repository, an unqualified
+        operation reads only <code>.dits/config.toml</code>. Outside a repository,
+        keyed operations require <code>--global</code>; a bare list uses the global
+        file.
       </p>
 
-      <h2>Basic Usage</h2>
+      <h2>Command</h2>
+      <CodeBlock
+        language="text"
+        code={`dits config [OPTIONS] [KEY] [VALUE]
 
-      <h3>Get a Value</h3>
+Options:
+    --global   Use the global file
+-l, --list     List public values from the selected file
+    --unset    Remove an optional key
+-h, --help     Show command help`}
+      />
       <CodeBlock
         language="bash"
-        code={`$ dits config user.name
-John Editor`}
+        code={`# Repository configuration
+dits config chunking.target_size 128KB
+dits config chunking.target_size
+dits config --list
+
+# Global configuration
+dits config --global telemetry.enabled false
+dits config --global --list
+
+# Optional identity fields can be removed
+dits config --global --unset user.email`}
       />
+      <p>
+        Flags such as <code>--local</code>, <code>--system</code>,{" "}
+        <code>--edit</code>, <code>--show-origin</code>, and top-level{" "}
+        <code>-c</code> overrides do not exist.
+      </p>
 
-      <h3>Set a Value</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Set in current repository
-$ dits config user.name "John Editor"
-
-# Set globally (for all repositories)
-$ dits config --global user.name "John Editor"
-
-# Set at system level (requires admin)
-$ dits config --system user.name "John Editor"`}
-      />
-
-      <h3>List All Configuration</h3>
-      <CodeBlock
-        language="bash"
-        code={`$ dits config --list
-user.name=John Editor
-user.email=john@example.com
-cache.size=10GB
-...`}
-      />
-
-      <h3>Unset a Value</h3>
-      <CodeBlock
-        language="bash"
-        code={`$ dits config --unset user.name`}
-      />
-
-      <h3>Edit Configuration File</h3>
-      <CodeBlock
-        language="bash"
-        code={`$ dits config --global --edit`}
-      />
-
-      <h2>Configuration Options</h2>
+      <h2>Accepted keys</h2>
       <Table className="not-prose my-6">
         <TableHeader>
           <TableRow>
             <TableHead>Key</TableHead>
-            <TableHead>Description</TableHead>
             <TableHead>Default</TableHead>
-            <TableHead>Example</TableHead>
+            <TableHead>Current effect</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {configOptions.map((option) => (
-            <TableRow key={option.key}>
-              <TableCell className="font-mono text-sm">{option.key}</TableCell>
-              <TableCell>{option.description}</TableCell>
-              <TableCell className="text-muted-foreground">
-                {option.default}
-              </TableCell>
-              <TableCell className="font-mono text-sm">
-                {option.example}
-              </TableCell>
+          {configKeys.map((item) => (
+            <TableRow key={item.key}>
+              <TableCell className="font-mono text-sm">{item.key}</TableCell>
+              <TableCell className="font-mono text-sm">{item.defaultValue}</TableCell>
+              <TableCell>{item.effect}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-
-      <h2>Essential Configuration</h2>
       <p>
-        Before making commits, you should set your identity:
+        Boolean values are <code>true</code> or <code>false</code>. Chunk sizes accept
+        raw bytes or <code>B</code>, <code>KB</code>, <code>MB</code>, and{" "}
+        <code>GB</code> suffixes. Keep{" "}
+        <code>min_size &lt;= target_size &lt;= max_size</code>; the current parser does
+        not validate that relationship.
       </p>
-      <CodeBlock
-        language="bash"
-        code={`$ dits config --global user.name "Your Name"
-$ dits config --global user.email "you@example.com"`}
-      />
 
-      <Callout type="warning" title="Required for Commits" className="not-prose my-4">
-        Dits requires user.name and user.email to be set before you can create
-        commits. Set them globally to avoid setting them for each repository.
+      <Callout type="warning" title="Commit identity is environment-based" className="not-prose my-6">
+        Setting <code>user.name</code> or <code>user.email</code> does not currently
+        change commit authors. Use <code>DITS_AUTHOR_NAME</code> and{" "}
+        <code>DITS_AUTHOR_EMAIL</code> until configuration-backed identity is wired up.
       </Callout>
 
-      <h2>Configuration File Format</h2>
-      <p>
-        Configuration files use a simple INI-like format:
-      </p>
+      <h2>TOML format</h2>
       <CodeBlock
-        language="json"
+        language="toml"
         code={`[user]
-    name = John Editor
-    email = john@example.com
+name = "Jane Editor"
+email = "jane@example.com"
 
 [core]
-    editor = code --wait
-    pager = less -R
+default_branch = "main"
+verbose = false
 
-[cache]
-    size = 50GB
+[chunking]
+target_size = 65536
+min_size = 16384
+max_size = 262144
 
-[remote "origin"]
-    url = https://dits.example.com/team/project`}
+[telemetry]
+enabled = false
+last_sent = 0`}
       />
-
-      <h2>Remote Configuration</h2>
       <p>
-        Remotes are configured under <code>[remote &quot;name&quot;]</code> sections:
+        Unknown keys passed to <code>dits config</code> are rejected. Remotes are
+        separate repository metadata in <code>.dits/remotes</code> and are managed by{" "}
+        <code>dits remote</code>.
       </p>
-      <CodeBlock
-        language="bash"
-        code={`# Add a remote
-$ dits remote add origin https://dits.example.com/team/project
+      <Callout type="warning" title="Malformed files fail closed" className="not-prose my-6">
+        A malformed repository TOML file prevents that repository from opening and
+        is not rewritten. A malformed global file disables telemetry for unrelated
+        commands; telemetry status, enable, and disable fail until you repair the
+        TOML explicitly.
+      </Callout>
 
-# This adds to config:
-[remote "origin"]
-    url = https://dits.example.com/team/project
-    fetch = +refs/heads/*:refs/remotes/origin/*`}
-      />
-
-      <h2>Aliases</h2>
-      <p>
-        Create shortcuts for common commands:
-      </p>
-      <CodeBlock
-        language="bash"
-        code={`$ dits config --global alias.co checkout
-$ dits config --global alias.br branch
-$ dits config --global alias.ci commit
-$ dits config --global alias.st status
-
-# Now you can use:
-$ dits co main
-$ dits st`}
-      />
-
-      <h2>Environment Variables</h2>
-      <p>
-        Configuration can also be set via environment variables:
-      </p>
-      <Table className="not-prose my-6">
-        <TableHeader>
-          <TableRow>
-            <TableHead>Variable</TableHead>
-            <TableHead>Description</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow>
-            <TableCell className="font-mono">DITS_DIR</TableCell>
-            <TableCell>Override .dits directory location</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">DITS_WORK_TREE</TableCell>
-            <TableCell>Override working tree location</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">DITS_CACHE_DIR</TableCell>
-            <TableCell>Override cache directory</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">DITS_CONFIG_GLOBAL</TableCell>
-            <TableCell>Override global config path</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">DITS_EDITOR</TableCell>
-            <TableCell>Override editor</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">DITS_PAGER</TableCell>
-            <TableCell>Override pager</TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-
-      <h2>Next Steps</h2>
+      <h2>More detail</h2>
       <ul>
         <li>
-          Learn about{" "}
-          <Link href="/docs/cli-reference">CLI commands</Link>
+          <Link href="/docs/configuration/repository">Repository configuration</Link>
         </li>
         <li>
-          Set up{" "}
-          <Link href="/docs/cli/remotes">remote repositories</Link>
+          <Link href="/docs/configuration/global">Global configuration</Link>
         </li>
         <li>
-          Configure{" "}
-          <Link href="/docs/advanced/vfs">VFS settings</Link>
+          <Link href="/docs/configuration/env">Environment variables</Link>
+        </li>
+        <li>
+          <Link href="/docs/cli-reference">CLI reference</Link>
         </li>
       </ul>
     </div>

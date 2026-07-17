@@ -3,12 +3,14 @@ import Link from "next/link";
 
 import { DocPageHeader } from "@/components/doc-page-header";
 import { Callout } from "@/components/ui/callout";
+import { generateMetadata as genMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = genMeta({
   title: "Dits for AI Research Notes",
   description:
     "Open questions and design constraints for applying the Dits exact-history and derivation model to AI and scientific artifacts.",
-};
+  canonical: "https://dits.dev/ai/docs",
+});
 
 export default function AiDocsOverview() {
   return (

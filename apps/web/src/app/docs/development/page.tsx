@@ -3,11 +3,13 @@ import Link from "next/link";
 
 import { DocPageHeader } from "@/components/doc-page-header";
 import { Callout } from "@/components/ui/callout";
+import { generateMetadata as genMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = genMeta({
   title: "Dits Development Setup",
   description: "Build and test the current Dits Rust CLI and Next.js website workspace.",
-};
+  canonical: "https://dits.dev/docs/development",
+});
 
 export default function DevelopmentPage() {
   return (

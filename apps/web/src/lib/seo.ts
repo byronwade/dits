@@ -77,7 +77,6 @@ export function generateMetadata(config: SEOConfig): Metadata {
   } = config;
 
   const fullTitle = title.includes("|") ? title : `${title} | ${SITE_NAME}`;
-  const url = canonical || SITE_URL;
   const fullKeywords = [...DEFAULT_KEYWORDS, ...keywords];
 
   const ogImages = openGraph?.images || [
@@ -100,13 +99,15 @@ export function generateMetadata(config: SEOConfig): Metadata {
     creator: "Byron Wade",
     publisher: SITE_NAME,
     metadataBase: new URL(SITE_URL),
-    alternates: {
-      canonical: url,
-    },
+    ...(canonical && {
+      alternates: {
+        canonical,
+      },
+    }),
     openGraph: {
       title: fullTitle,
       description,
-      url,
+      ...(canonical && { url: canonical }),
       siteName: SITE_NAME,
       type: openGraph?.type || "website",
       images: ogImages,
@@ -166,7 +167,7 @@ export function generateSoftwareApplicationSchema({
   name = SITE_NAME,
   description = DEFAULT_DESCRIPTION,
   applicationCategory = "DeveloperApplication",
-  operatingSystem = ["Windows", "macOS", "Linux"],
+  operatingSystem = ["macOS on Apple silicon", "Windows x64"],
   offers = {
     price: "0",
     priceCurrency: "USD",
@@ -229,7 +230,7 @@ export function generateOrganizationSchema() {
     ],
     contactPoint: {
       "@type": "ContactPoint",
-      contactType: "Technical Support",
+      contactType: "Project issues and questions",
       url: "https://github.com/byronwade/dits/issues",
     },
   };
@@ -281,8 +282,8 @@ export function generateArticleSchema({
     headline,
     description,
     image: image ? (image.startsWith("http") ? image : `${SITE_URL}${image}`) : `${SITE_URL}/dits.png`,
-    datePublished: datePublished || new Date().toISOString(),
-    dateModified: dateModified || new Date().toISOString(),
+    ...(datePublished && { datePublished }),
+    ...(dateModified && { dateModified }),
     author: {
       "@type": "Person",
       name: author,

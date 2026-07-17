@@ -50,7 +50,7 @@ pub fn meta_scan(verbose: bool) -> Result<()> {
         }
 
         // Full path to file
-        let full_path = repo.work_dir().join(path);
+        let full_path = repo.resolve_worktree_path(path)?;
 
         if !full_path.exists() {
             if verbose {
@@ -132,7 +132,7 @@ pub fn meta_show(path: &str) -> Result<()> {
         },
         None => {
             println!("{} No metadata found for {}", style("!").yellow(), path);
-            println!("Run `dits meta scan` to extract metadata.");
+            println!("Run `dits meta-scan` to extract metadata.");
         },
     }
 

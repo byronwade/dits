@@ -139,7 +139,10 @@ impl Config {
 
     /// Save configuration to file.
     pub fn save(&self, path: &Path) -> Result<(), ConfigError> {
-        if let Some(parent) = path.parent().filter(|parent| !parent.as_os_str().is_empty()) {
+        if let Some(parent) = path
+            .parent()
+            .filter(|parent| !parent.as_os_str().is_empty())
+        {
             fs::create_dir_all(parent)?;
         }
         let content = toml::to_string_pretty(self)?;
@@ -351,7 +354,10 @@ mod tests {
         assert_eq!(config.get("telemetry.enabled").as_deref(), Some("true"));
         assert_eq!(config.get("telemetry.user_id").as_deref(), Some("random-test-id"));
         assert_eq!(config.get("telemetry.last_sent").as_deref(), Some("123"));
-        assert!(!config.list().iter().any(|(key, _)| key == "telemetry.user_id"));
+        assert!(!config
+            .list()
+            .iter()
+            .any(|(key, _)| key == "telemetry.user_id"));
     }
 
     #[test]

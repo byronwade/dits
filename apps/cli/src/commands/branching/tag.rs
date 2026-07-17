@@ -106,9 +106,7 @@ fn delete_tag(repo: &Repository, name: &str) -> Result<()> {
         return Ok(());
     }
 
-    // Delete the tag file
-    let tag_path = repo.dits_dir().join("refs").join("tags").join(name);
-    std::fs::remove_file(&tag_path)?;
+    repo.refs().delete_tag(name)?;
 
     println!("{} Deleted tag '{}'", style("✓").green().bold(), style(name).cyan());
 

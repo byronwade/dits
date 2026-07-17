@@ -1,18 +1,16 @@
-# Tech Stack (Rust Ecosystem)
+# Active Technology Stack
 
-> ⚠️ ROADMAP / not implemented. The network transport row (QUIC / `quinn`) describes a transport that does not exist yet — networked sync (push/pull/fetch/sync) and P2P are scaffolding only. See docs/STATUS.md.
+**Maturity:** Current
 
-| Component | Library/Tool | Rationale |
-| :--- | :--- | :--- |
-| Core Language | Rust | Memory safety, zero-GC, strong concurrency. |
-| CLI Framework | `clap` | Standard, type-safe CLI parsing. |
-| Chunking Engine | `fastcdc` | State-of-the-art rolling hash chunking. |
-| Hashing Algorithm | `blake3` | Fast, parallelizable hashing. |
-| Container Parsing | `mp4`, `isolang` | Safe manipulation of MP4 atoms. |
-| Video Inspection | `ffmpeg-next` | Detect keyframes (I-Frames) for smart cuts. |
-| Local Database | `sled` | Embedded, high-performance KV store. |
-| Virtual FS | `fuser` (Unix) / `dokany` (Win) | Mount repo as a virtual drive. |
-| Network Transport | `quinn` (QUIC) | UDP-based transfer to maximize bandwidth. |
-| GUI (Future) | Tauri | Lightweight React + Rust desktop UI. |
+The active workspace is Rust. The local engine uses Clap for the CLI, FastCDC for
+content-defined chunking, BLAKE3 for exact content IDs, Serde/JSON/TOML for current
+internal encodings, libgit2 for the embedded text engine, and selected MP4/FFmpeg paths
+for media experiments.
 
+Optional FUSE support uses `fuser`. QUIC, P2P, proxy, FACR, segmentation, and other media
+dependencies support bounded experiments; their presence in the dependency graph does
+not make a complete remote protocol or universal media workflow Current.
 
+There is no active hosted database, server control plane, Windows Dokany VFS, Tauri
+desktop client, or managed object-storage tier. See [`../STATUS.md`](../STATUS.md) and
+[`active-architecture.md`](active-architecture.md) for the governing boundary.

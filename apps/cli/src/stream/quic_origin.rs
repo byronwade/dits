@@ -65,6 +65,9 @@ pub struct PushStats {
 
 async fn write_msg(send: &mut SendStream, msg: &SegMessage) -> Result<()> {
     let payload = bincode::serialize(msg).context("serialize SegMessage")?;
+    if payload.len() > MAX_FRAME {
+        bail!("segment frame too large: {} bytes", payload.len());
+    }
     send.write_all(&(payload.len() as u32).to_le_bytes())
         .await
         .context("write frame length")?;
@@ -87,7 +90,8 @@ async fn read_msg(recv: &mut RecvStream) -> Result<SegMessage> {
     recv.read_exact(&mut buf)
         .await
         .context("read frame payload")?;
-    bincode::deserialize(&buf).context("deserialize SegMessage")
+    crate::util::deserialize_bincode_with_limit(&buf, MAX_FRAME as u64)
+        .context("deserialize SegMessage")
 }
 
 /// Start a QUIC origin server backed by `backing`. One request/response per

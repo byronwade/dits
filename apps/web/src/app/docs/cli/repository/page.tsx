@@ -1,5 +1,9 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+import { DocPageHeader } from "@/components/doc-page-header";
+import { CodeBlock } from "@/components/ui/code-block";
+import { Callout } from "@/components/ui/callout";
 import {
   Table,
   TableBody,
@@ -8,449 +12,172 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Callout } from "@/components/ui/callout";
-import { DocPageHeader } from "@/components/doc-page-header";
-import { Plus, Copy, Globe, BarChart } from "lucide-react";
-import { CodeBlock } from "@/components/ui/code-block";
-import { FileTree } from "@/components/docs/file-tree";
 
 export const metadata: Metadata = {
   title: "Repository Commands",
-  description: "Commands for creating, cloning, and managing Dits repositories",
+  description:
+    "Initialize, inspect, and locally clone Dits repositories, with the remote configuration boundary made explicit.",
 };
 
 const commands = [
-  { command: "init", description: "Initialize a new repository", usage: "dits init [OPTIONS] [PATH]" },
-  { command: "clone", description: "Clone a repository", usage: "dits clone [OPTIONS] <URL> [DIR]" },
-  { command: "remote", description: "Manage remote repositories", usage: "dits remote <SUBCOMMAND>" },
-  { command: "status", description: "Show working tree status", usage: "dits status [OPTIONS] [PATH]" },
+  {
+    command: "init",
+    description: "Initialize a repository on the local filesystem",
+    usage: "dits init [PATH]",
+  },
+  {
+    command: "clone",
+    description: "Copy a repository from another local path",
+    usage: "dits clone <SOURCE_PATH> [DEST] [-b <BRANCH>]",
+  },
+  {
+    command: "remote",
+    description: "Store and inspect remote URL configuration only",
+    usage: "dits remote [ACTION] [NAME] [URL]",
+  },
+  {
+    command: "status",
+    description: "Show the current local working-tree and index state",
+    usage: "dits status",
+  },
 ];
 
 export default function RepositoryCommandsPage() {
   return (
-    <div className="prose dark:prose-invert max-w-none">
+    <div className="prose max-w-none dark:prose-invert">
       <DocPageHeader
         eyebrow="CLI Reference"
         title="Repository Commands"
-        description="Create, clone, and manage Dits repositories. These foundational commands set up your version control environment for large binary files."
+        description="Create and inspect local repositories. Local-filesystem clone is current; network repository exchange is not."
       />
 
-      <Callout type="important" title="What works today vs. roadmap">
-        <code>init</code> and <code>status</code> work today, and{" "}
-        <code>clone</code> works against a <strong>local path</strong> on the
-        same machine. Cloning over a <em>network</em> (<code>https://</code> /{" "}
-        <code>dits://</code> URLs), partial/on-demand hydration from a remote,
-        and remote-tracking <code>push</code>/<code>pull</code> are{" "}
-        <strong>roadmap</strong> &mdash; the wire protocol is not wired up yet.
-        Networked examples below are illustrative of the planned design. See the{" "}
-        <Link href="/docs/roadmap">roadmap</Link> for status.
+      <Callout type="warning" title="Remotes fail closed" className="not-prose my-6">
+        <code>push</code>, <code>pull</code>, <code>fetch</code>, and
+        <code> sync</code> return a nonzero error for both local-path and Internet
+        remotes without changing objects, refs, or the working tree. Network
+        clone also fails. A saved remote URL is configuration, not a working
+        backup or collaboration channel.
       </Callout>
 
       <Table className="not-prose my-6">
         <TableHeader>
           <TableRow>
             <TableHead>Command</TableHead>
-            <TableHead>Description</TableHead>
+            <TableHead>Current behavior</TableHead>
             <TableHead>Usage</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {commands.map((cmd) => (
-            <TableRow key={cmd.command}>
-              <TableCell className="font-mono font-medium">{cmd.command}</TableCell>
-              <TableCell>{cmd.description}</TableCell>
-              <TableCell className="font-mono text-sm">{cmd.usage}</TableCell>
+          {commands.map((item) => (
+            <TableRow key={item.command}>
+              <TableCell className="font-mono font-medium">{item.command}</TableCell>
+              <TableCell>{item.description}</TableCell>
+              <TableCell className="font-mono text-sm">{item.usage}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
 
-      <h2 className="flex items-center gap-2">
-        <Plus className="h-5 w-5" />
-        dits init
-      </h2>
+      <h2><code>dits init</code></h2>
+
       <p>
-        Initialize a new Dits repository in the current or specified directory.
-        Creates the <code>.dits</code> directory structure and sets up initial
-        configuration.
+        Initializes <code>.dits</code> in the current directory or the local path
+        you provide.
       </p>
 
-      <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits init [OPTIONS] [PATH]`}
+        code={`# Current directory
+dits init
+
+# A new or existing local directory
+dits init ./evaluation-project`}
       />
 
-      <h3>Arguments</h3>
-      <ul>
-        <li><code>PATH</code> - Directory to initialize (default: current directory)</li>
-      </ul>
+      <h2><code>dits clone</code></h2>
 
-      <h3>Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`--bare                Create a bare repository (no working directory)
---template <PATH>     Use custom template directory
---initial-branch <NAME>  Set initial branch name (default: main)
---shared              Set up for shared/team use with relaxed permissions`}
-      />
-
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Initialize in current directory
-$ dits init
-Initialized empty Dits repository in /home/user/project/.dits/
-
-# Initialize in specific directory
-$ dits init my-project
-Initialized empty Dits repository in /home/user/my-project/.dits/
-
-# Initialize with custom initial branch
-$ dits init --initial-branch production
-Initialized empty Dits repository with branch 'production'
-
-# Create a bare repository for sharing
-$ dits init --bare project.dits
-Initialized empty bare Dits repository in /home/user/project.dits/`}
-      />
-
-      <h3>Repository Structure</h3>
-      <div className="not-prose my-4">
-        <FileTree
-          items={[
-            {
-              name: ".dits",
-              type: "folder",
-              children: [
-                { name: "HEAD", type: "file", comment: "Current branch reference" },
-                { name: "config", type: "file", comment: "Repository configuration" },
-                { name: "index", type: "file", comment: "Staging area" },
-                {
-                  name: "objects",
-                  type: "folder",
-                  children: [
-                    { name: "chunks", type: "folder", comment: "Content chunks" },
-                    { name: "assets", type: "folder", comment: "Asset manifests" },
-                    { name: "trees", type: "folder", comment: "Tree manifests" },
-                    { name: "commits", type: "folder", comment: "Commit objects" },
-                    { name: "packs", type: "folder", comment: "Packed objects" },
-                  ],
-                },
-                {
-                  name: "refs",
-                  type: "folder",
-                  children: [
-                    { name: "heads", type: "folder", comment: "Local branches" },
-                    { name: "remotes", type: "folder", comment: "Remote tracking" },
-                    { name: "tags", type: "folder", comment: "Tags" },
-                  ],
-                },
-                { name: "hooks", type: "folder", comment: "Repository hooks" },
-              ],
-            },
-          ]}
-        />
-      </div>
-
-      <h2 className="flex items-center gap-2">
-        <Copy className="h-5 w-5" />
-        dits clone
-      </h2>
       <p>
-        Clone a repository from a remote source. Supports partial clones for
-        large repositories - download metadata first, then hydrate files on demand.
+        Opens and validates another Dits repository on the same filesystem,
+        copies its Dits objects, refs, local configuration, and embedded Git
+        object database, records the canonical source path as <code>origin</code>,
+        then checks out the source HEAD or the branch selected with
+        <code> --branch</code>. The destination must not already exist or resolve
+        inside the source worktree.
       </p>
 
-      <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits clone [OPTIONS] &lt;URL&gt; [DIRECTORY]`}
+        code={`# Local-filesystem clone
+dits clone /srv/repos/project ./project-copy
+
+# Select a local source branch
+dits clone /srv/repos/project ./review-copy --branch review`}
       />
 
-      <h3>Arguments</h3>
-      <ul>
-        <li><code>URL</code> - Repository URL (https://, dits://, or local path)</li>
-        <li><code>DIRECTORY</code> - Local directory name (default: derived from URL)</li>
-      </ul>
-
-      <h3>Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`--shallow              Clone only latest commit (no history)
---depth <N>            Clone only last N commits
---branch <NAME>        Clone specific branch
---single-branch        Clone only one branch
---no-checkout          Clone without checking out files
---sparse               Enable sparse checkout (partial working dir)
---filter <SPEC>        Partial clone filter (e.g., blob:none)
---progress             Show progress during clone`}
-      />
-
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Clone from a local path (works today)
-$ dits clone /srv/repos/project.dits my-copy
-Cloning into 'my-copy'...
-
-# [PLANNED] Basic clone over the network
-$ dits clone https://dits.example.com/team/project
-Cloning into 'project'...
-remote: Counting objects: 1,234
-remote: Total 1,234 (delta 0)
-Receiving objects: 100% (1,234/1,234), 45.2 MB | 12.3 MB/s
-Resolving deltas: 100% (567/567)
-Hydrating files: 100% (89/89), done.
-
-# Clone to specific directory
-$ dits clone https://dits.example.com/team/project my-copy
-
-# Clone specific branch
-$ dits clone --branch feature/vfx https://dits.example.com/team/project
-
-# [PLANNED] Shallow clone (metadata only - fastest)
-$ dits clone --filter blob:none https://dits.example.com/team/project
-Cloning into 'project'...
-Metadata fetched: 15 MB
-Repository ready (large repositories available on demand)
-
-# Clone with limited history
-$ dits clone --depth 10 https://dits.example.com/team/project`}
-      />
-
-      <Callout type="note" title="Partial Clones for Large Repositories (planned)" className="not-prose my-6">
-        In the planned networked design, repositories with hundreds of gigabytes
-        or terabytes of data could be cloned with{" "}
-        <code>--filter blob:none</code> to download only metadata, then fetch
-        files on-demand when accessed. This partial-clone hydration is roadmap
-        &mdash; it is not implemented yet.
+      <Callout type="note" title="A local copy is not an independent backup by default" className="not-prose my-6">
+        If source and destination share a disk, account, or failure domain, they
+        can be lost together. Use a separately managed backup process for
+        important data and verify restored files independently. Clone copies
+        committed objects, refs, and local configuration—not working-tree
+        changes, the index, locks, audit records, generated proxy/metadata
+        caches, lifecycle records, or experimental project side stores.
       </Callout>
 
-      <h2 className="flex items-center gap-2">
-        <Globe className="h-5 w-5" />
-        dits remote
-      </h2>
+      <Callout type="warning" title="Clone failures remain visible" className="not-prose my-6">
+        Source metadata symlinks and special files are rejected before the
+        destination is created. If checkout fails after initialization, clone
+        returns nonzero and leaves the incomplete destination in place for
+        inspection; it must not be treated as a successful copy.
+      </Callout>
+
+      <h2><code>dits remote</code></h2>
+
       <p>
-        Manage connections to remote repositories. Configure where to push and
-        pull changes.
+        The remote command reads and writes named URLs in local repository
+        configuration. It does not contact the URL or discover branches.
       </p>
 
-      <h3>Subcommands</h3>
-
-      <h4>dits remote (list)</h4>
       <CodeBlock
         language="bash"
-        code={`dits remote [-v]
+        code={`# Store a URL (no connection is attempted)
+dits remote add origin https://example.invalid/team/project
 
-List configured remotes. Use -v to show URLs.`}
+# List configured names and URLs
+dits remote list --verbose
+
+# Read or update a configured URL
+dits remote get-url origin
+dits remote set-url origin https://example.invalid/team/new-project
+
+# Rename or remove configuration
+dits remote rename origin upstream
+dits remote remove upstream`}
       />
 
-      <h4>dits remote add</h4>
-      <CodeBlock
-        language="bash"
-        code={`dits remote add <NAME> <URL>
-
-Add a new remote.`}
-      />
-
-      <h4>dits remote remove</h4>
-      <CodeBlock
-        language="bash"
-        code={`dits remote remove <NAME>
-
-Remove a remote.`}
-      />
-
-      <h4>dits remote rename</h4>
-      <CodeBlock
-        language="bash"
-        code={`dits remote rename <OLD> <NEW>
-
-Rename a remote.`}
-      />
-
-      <h4>dits remote set-url</h4>
-      <CodeBlock
-        language="bash"
-        code={`dits remote set-url <NAME> <URL>
-
-Change a remote's URL.`}
-      />
-
-      <h4>dits remote show</h4>
-      <CodeBlock
-        language="bash"
-        code={`dits remote show <NAME>
-
-Show detailed information about a remote.`}
-      />
-
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`# List remotes
-$ dits remote
-origin
-
-# List with URLs
-$ dits remote -v
-origin  https://dits.example.com/team/project (fetch)
-origin  https://dits.example.com/team/project (push)
-
-# Add a remote
-$ dits remote add backup https://backup.example.com/project
-Remote 'backup' added.
-
-# Show remote details
-$ dits remote show origin
-* remote origin
-  Fetch URL: https://dits.example.com/team/project
-  Push URL: https://dits.example.com/team/project
-  HEAD branch: main
-  Remote branches:
-    main        tracked
-    feature/vfx tracked
-  Local branch configured for 'dits pull':
-    main merges with remote main
-
-# Change remote URL
-$ dits remote set-url origin https://new.example.com/project
-
-# Remove a remote
-$ dits remote remove backup`}
-      />
-
-      <h2 className="flex items-center gap-2">
-        <BarChart className="h-5 w-5" />
-        dits status
-      </h2>
       <p>
-        Show the current state of the repository and working directory. Displays
-        staged changes, modified files, and untracked files.
+        The accepted actions are <code>add</code>, <code>remove</code> (or
+        <code> rm</code>), <code>rename</code>, <code>get-url</code>,
+        <code> set-url</code>, and <code>list</code>. The optional
+        <code> --push</code> flag selects the separately stored push URL for
+        <code> get-url</code> or <code>set-url</code>; it still performs no
+        transfer.
       </p>
 
-      <h3>Synopsis</h3>
-      <CodeBlock
-        language="bash"
-        code={`dits status [OPTIONS] [PATHSPEC...]`}
-      />
+      <h2><code>dits status</code></h2>
 
-      <h3>Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`-s, --short          Give output in short format
--b, --branch         Show branch info even in short format
---porcelain          Machine-readable output (for scripts)
---ignored            Show ignored files
---untracked <MODE>   Show untracked files (no, normal, all)`}
-      />
+      <p>
+        Shows the current branch, staged paths, and local working-tree changes.
+        Run it before and after an alpha evaluation step to make state changes
+        visible.
+      </p>
 
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Full status
-$ dits status
-On branch main
-Your branch is up to date with 'origin/main'.
+      <CodeBlock language="bash" code={`dits status`} />
 
-Changes to be committed:
-  (use "dits restore --staged <file>..." to unstage)
-        new file:   footage/scene03.mov
-
-Changes not staged for commit:
-  (use "dits add <file>..." to update what will be committed)
-  (use "dits restore <file>..." to discard changes)
-        modified:   project.prproj
-
-Untracked files:
-  (use "dits add <file>..." to include in what will be committed)
-        footage/test-shots/
-
-# Short format
-$ dits status -s
-A  footage/scene03.mov
- M project.prproj
-?? footage/test-shots/
-
-# Machine-readable format
-$ dits status --porcelain
-A  footage/scene03.mov
- M project.prproj
-?? footage/test-shots/
-
-# Check specific path
-$ dits status footage/
-On branch main
-Changes not staged for commit:
-        modified:   footage/scene01.mov`}
-      />
-
-      <h3>Status Codes</h3>
-      <Table className="not-prose my-6">
-        <TableHeader>
-          <TableRow>
-            <TableHead>Code</TableHead>
-            <TableHead>Staged</TableHead>
-            <TableHead>Unstaged</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow>
-            <TableCell className="font-mono">A</TableCell>
-            <TableCell>Added</TableCell>
-            <TableCell>-</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">M</TableCell>
-            <TableCell>Modified</TableCell>
-            <TableCell>Modified</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">D</TableCell>
-            <TableCell>Deleted</TableCell>
-            <TableCell>Deleted</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">R</TableCell>
-            <TableCell>Renamed</TableCell>
-            <TableCell>-</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">??</TableCell>
-            <TableCell>-</TableCell>
-            <TableCell>Untracked</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-mono">!!</TableCell>
-            <TableCell>-</TableCell>
-            <TableCell>Ignored</TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-
-      <h2>Related Commands</h2>
-      <ul>
-        <li>
-          <Link href="/docs/cli/files">File Commands</Link> - Add, stage, and manage files
-        </li>
-        <li>
-          <Link href="/docs/cli/remotes">Remote Commands</Link> - Push, pull, and sync
-        </li>
-        <li>
-          <Link href="/docs/cli/branches">Branch Commands</Link> - Create and manage branches
-        </li>
-      </ul>
-
-      <h2>Related Topics</h2>
-      <ul>
-        <li>
-          <Link href="/docs/concepts/repositories">Repository Concepts</Link> - Understanding Dits repositories
-        </li>
-        <li>
-          <Link href="/docs/configuration">Configuration</Link> - Configure repository settings
-        </li>
-      </ul>
+      <p>
+        Continue with the <Link href="/docs/cli/remotes">remote command status</Link>,
+        the <Link href="/docs/cli/files">local file workflow</Link>, or the
+        <Link href="/docs/roadmap">status and roadmap</Link>.
+      </p>
     </div>
   );
 }

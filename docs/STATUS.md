@@ -1,6 +1,6 @@
 # Dits Implementation Status
 
-**Maturity:** Current implementation authority
+**Maturity:** Current
 
 **Product version:** 0.1.5
 
@@ -31,16 +31,29 @@ repository, protocol, or product behavior.
 - Initialize, stage, inspect, commit, log, and check out local repositories.
 - Branch, switch, tag, diff, merge, show, reflog, bisect, rebase, cherry-pick,
   reset, restore, stash, grep, blame, describe, shortlog, worktree, sparse
-  checkout, hooks, archive, maintenance, completions, clean, GC, and fsck.
+  checkout, hooks, archive, maintenance, completions, clean, read-only GC
+  reporting, and fsck.
 - Hybrid storage routes supported text workflows through libgit2 and large
   binary content through Dits manifests/chunks.
-- Local filesystem clone/object transfer and local-path push behavior.
+- Fail-closed local filesystem clone, including validated Dits objects, refs,
+  local configuration, and the embedded Git object database needed to
+  materialize the source HEAD or an explicitly selected branch. Metadata
+  symlinks/special files and destinations inside the source are rejected before
+  destination creation; checkout failure returns nonzero and leaves the
+  incomplete destination available for inspection.
 
 Named limitations:
 
+- Local clone copies committed object/ref/config state, not local indexes,
+  working-tree changes, locks, audit records, generated proxy caches, metadata
+  caches, lifecycle records, or experimental project side stores.
+- Reflog recording is incomplete. When a reflog file is absent, `dits reflog`
+  labels and displays a limited view reconstructed from commit history; it is
+  not a complete undo log for every ref-changing action.
 - `restore` does not provide complete merge-conflict resolution.
-- GC sweeps reachable/unreachable loose objects but does not yet provide the
-  planned pack/repack system.
+- Destructive GC is disabled. `dits gc --dry-run` reports candidate unreachable
+  objects; it does not delete objects or locks. Reachability and a quarantine
+  policy must be complete before deletion is enabled.
 - Public repository encoding and cross-version compatibility are not yet a
   stable third-party contract.
 
@@ -49,6 +62,9 @@ Named limitations:
 - FastCDC chunking and BLAKE3 content IDs.
 - Deduplication of byte-identical chunks.
 - Digest verification on object read and byte-exact reconstruction tests.
+- Read-only `fsck` verification of commit/manifest identity, ref targets,
+  manifest-referenced chunks, Git blobs and MP4 structural blobs, chunk layout,
+  and regular-entry aggregate size/content identity.
 - Repository, file, and cache inspection commands.
 - Local lifecycle (`freeze`/`thaw`), metadata, dependency, ignore, and audit
   facilities.
@@ -76,8 +92,14 @@ decoded-frame identity, or make external re-encodes byte-deduplicable.
 ### Local security and locks
 
 - Local binary locks.
-- Local encryption initialization/status and keystore-oriented login/logout.
 - Local audit log inspection/export.
+
+The early repository-encryption experiment is disabled. `encrypt-init`,
+`login`, and `change-password` fail without changing a keystore;
+`encrypt-status` reports legacy state, and `logout` can clear a legacy key
+cache. A repository containing the experimental keystore fails closed before
+normal repository operations because the experiment did not encrypt the
+embedded Git store or every metadata path.
 
 Convergent/message-locked encryption leaks content equality and is not
 equivalent to randomized repository-key encryption. Remote authentication,
@@ -97,10 +119,15 @@ and safe fallback.
 
 ## Design/scaffolding — not functional product
 
-- Internet `push`, `pull`, `fetch`, `sync`, and network clone.
+- Local-path and Internet `push`, `pull`, `fetch`, and `sync`; these commands
+  return a nonzero error without changing objects, refs, or the working tree.
+- Network clone. Local filesystem clone is the only current repository-copy
+  workflow.
 - A complete remote CAS/ref protocol and remote lock coordination.
 - Remote VFS hydration and partial clone.
-- P2P rendezvous, NAT traversal, and peer repository transfer.
+- P2P rendezvous, NAT traversal, and peer repository transfer. Every parsed
+  `dits p2p` operation fails nonzero before creating or changing repository,
+  target-directory, cache, socket, or mount state.
 - Hosted DitsHub, REST APIs, webhooks, managed storage, and public SDK packages.
 - Multi-tenant/cross-customer deduplication.
 - Packfiles, multi-pack indexing, public bundle format, and independent readers.
@@ -110,11 +137,18 @@ The embedded per-repository HTTP object server and tested QUIC demo are real
 utilities, but they do not implement complete repository exchange or safe remote
 ref transactions.
 
+Security warning: `dits serve` binds to all network interfaces and has no
+authentication or authorization. It exposes repository refs and stored object bytes.
+Use it only on a trusted or isolated network behind a firewall; do not expose it to
+the public Internet.
+
 ## Installation status
 
 Available:
 
-- `npm install -g @byronwade/dits` and equivalent bun/pnpm global install;
+- `npm install -g @byronwade/dits` and equivalent bun/pnpm global install for
+  the binaries actually present in the artifact; published v0.1.5 contains
+  `darwin-arm64` and `win32-x64` only;
 - build from source.
 
 Not available:

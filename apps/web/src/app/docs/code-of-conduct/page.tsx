@@ -2,11 +2,13 @@ import { Metadata } from "next";
 import { Callout } from "@/components/ui/callout";
 import { DocPageHeader } from "@/components/doc-page-header";
 import { Users, Shield, Scale, Check, X } from "lucide-react";
+import { generateMetadata as genMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = genMeta({
     title: "Code of Conduct",
     description: "Community guidelines and code of conduct for the Dits project",
-};
+    canonical: "https://dits.dev/docs/code-of-conduct",
+});
 
 export default function CodeOfConductPage() {
     return (
@@ -109,20 +111,24 @@ export default function CodeOfConductPage() {
                 <ol className="space-y-3">
                     <li>
                         <strong>1. Report:</strong> Instances of abusive, harassing, or otherwise
-                        unacceptable behavior may be reported by contacting the project team at{" "}
-                        <a href="mailto:conduct@dits.io" className="text-brand">conduct@dits.io</a>.
+                        unacceptable behavior may be reported through the{" "}
+                        <a href="https://github.com/byronwade/dits/issues/new" className="text-brand">
+                            Dits GitHub issue tracker
+                        </a>. GitHub issues are public, so omit sensitive details and ask a
+                        maintainer to arrange a private follow-up channel.
                     </li>
                     <li>
-                        <strong>2. Review:</strong> All complaints will be reviewed and investigated
-                        promptly and fairly.
+                        <strong>2. Review:</strong> Maintainers review reports on a best-effort
+                        basis and determine what project action is appropriate.
                     </li>
                     <li>
                         <strong>3. Response:</strong> The project team will determine the appropriate
                         response, which may include a warning, temporary ban, or permanent ban.
                     </li>
                     <li>
-                        <strong>4. Confidentiality:</strong> All reports will be handled with
-                        discretion. The identity of the reporter will be kept confidential.
+                        <strong>4. Privacy:</strong> Information shared through an agreed private
+                        channel will be handled as discreetly as practical. Anything posted in a
+                        public GitHub issue is visible to others.
                     </li>
                 </ol>
             </div>
@@ -191,8 +197,11 @@ export default function CodeOfConductPage() {
             </p>
 
             <Callout type="tip" title="Questions?" className="not-prose my-6">
-                If you have questions about this Code of Conduct, please reach out to{" "}
-                <a href="mailto:conduct@dits.io" className="underline">conduct@dits.io</a>.
+                Ask a general question in{" "}
+                <a href="https://github.com/byronwade/dits/discussions" className="underline">
+                    GitHub Discussions
+                </a>. For a conduct report, use the public issue tracker only to request a
+                private follow-up channel; do not post sensitive details.
             </Callout>
         </div>
     );

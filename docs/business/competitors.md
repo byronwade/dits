@@ -1,5 +1,10 @@
 # Competitive landscape
 
+**Maturity:** Design
+
+Competitive research snapshot. Verify external products from primary sources and do not
+infer parity or superiority.
+
 > Research snapshot, not a claim of product parity. Last reviewed: 2026-07-16.
 > Product capabilities change; verify linked primary sources before publishing a
 > comparison. Dits maturity is governed by [`docs/STATUS.md`](../STATUS.md).

@@ -40,7 +40,6 @@ export const metadata: Metadata = genMeta({
   title: "Dits - Local-First Version Control for Media & Assets",
   description:
     "Dits is open, local-first version control for large media and asset pipelines. Try the alpha locally and help shape its open format and protocol.",
-  canonical: "https://dits.dev",
   openGraph: {
     type: "website",
     images: [
@@ -67,6 +66,7 @@ export default function RootLayout({
     name: "Dits",
     description:
       "Open, local-first version control for large media and asset pipelines.",
+    operatingSystem: ["macOS on Apple silicon", "Windows x64"],
   });
 
   const websiteSchema = generateWebSiteSchema({});

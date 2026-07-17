@@ -15,12 +15,14 @@ import {
   CURRENT_LIMITATIONS,
   PRODUCT_MILESTONES,
 } from "@/lib/product-story";
+import { generateMetadata as genMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = genMeta({
   title: "Dits Status and Roadmap",
   description:
     "What the Dits local alpha can do, its current limitations, and the dependency-ordered gates to formats, semantic media, and collaboration.",
-};
+  canonical: "https://dits.dev/docs/roadmap",
+});
 
 export default function RoadmapPage() {
   return (

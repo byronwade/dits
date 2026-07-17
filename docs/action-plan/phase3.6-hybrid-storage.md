@@ -1,5 +1,11 @@
 # Phase 3.6: Hybrid Storage Engine (Git + Dits)
 
+**Maturity:** Historical
+
+This is a retained execution plan, not current capability status or the active roadmap.
+Completion boxes and phase language must be read against docs/STATUS.md and the root
+ROADMAP.md.
+
 > **Status: 🚧 Planned** - Integrating Git's text handling with Dits' binary capabilities.
 
 **Project:** Dits (Data-Intensive Version Control System)

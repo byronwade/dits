@@ -1,124 +1,80 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { Header } from "@/components/header";
+
 import { Footer } from "@/components/footer";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  MessageCircle,
-  Bug,
-  BookOpen,
-  Heart,
-  GitPullRequest,
-  Star,
-  Users,
-} from "lucide-react";
+import { Header } from "@/components/header";
 import { GithubIcon } from "@/components/icons/github-icon";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BookOpen, Bug, FlaskConical, GitPullRequest, MessageCircle } from "lucide-react";
 
 import { generateMetadata as genMeta } from "@/lib/seo";
 
 export const metadata: Metadata = genMeta({
-  title: "Join the Dits Community - Open Source Version Control",
-  description: "Join the Dits community on GitHub. Contribute code, report bugs, improve documentation, and help build the future of version control for large files and video production.",
+  title: "Help Shape Dits - Early Open-Source Project",
+  description:
+    "Evaluate the Dits alpha, report reproducible issues, improve documentation, and contribute tests or code on GitHub.",
   canonical: "https://dits.dev/community",
-  keywords: [
-    "dits community",
-    "open source community",
-    "contribute to dits",
-    "github dits",
-    "dits contributors",
-    "version control community",
-  ],
+  keywords: ["Dits open source", "Dits contributors", "Dits GitHub", "media version control alpha"],
   openGraph: {
     type: "website",
-    images: [
-      {
-        url: "/dits.png",
-        width: 1200,
-        height: 630,
-        alt: "Join the Dits Community",
-      },
-    ],
+    images: [{ url: "/dits.png", width: 1200, height: 630, alt: "Help shape Dits" }],
   },
-  twitter: {
-    card: "summary_large_image",
-  },
+  twitter: { card: "summary_large_image" },
 });
 
-const communityLinks = [
+const projectLinks = [
   {
     title: "GitHub Discussions",
-    description: "Ask questions, share ideas, and connect with other users",
+    description: "Ask a question or share evaluation notes. Replies are volunteer-led and not guaranteed.",
     icon: MessageCircle,
     href: "https://github.com/byronwade/dits/discussions",
-    action: "Join Discussion",
+    action: "Open discussions",
   },
   {
-    title: "Report Issues",
-    description: "Found a bug? Let us know so we can fix it",
+    title: "GitHub Issues",
+    description: "Report a reproducible bug or propose a focused improvement. The project has no response-time SLA.",
     icon: Bug,
     href: "https://github.com/byronwade/dits/issues",
-    action: "Report Issue",
+    action: "Open issues",
   },
   {
-    title: "Source Code",
-    description: "Browse the source, fork, and contribute",
+    title: "Source repository",
+    description: "Read the implementation, tests, roadmap, and contribution history before relying on a claim.",
     icon: GithubIcon,
     href: "https://github.com/byronwade/dits",
-    action: "View Code",
+    action: "View source",
   },
   {
-    title: "Documentation",
-    description: "Learn how to use Dits effectively",
+    title: "Current documentation",
+    description: "Start with the implementation status and maturity labels for the local alpha.",
     icon: BookOpen,
     href: "/docs",
-    action: "Read Docs",
+    action: "Read docs",
   },
 ];
 
 const contributionWays = [
   {
-    icon: GitPullRequest,
-    title: "Submit Pull Requests",
-    description:
-      "Help improve Dits by contributing code. Check out our contributing guide to get started.",
+    icon: FlaskConical,
+    title: "Evaluate the alpha",
+    description: "Use disposable or backed-up media and report exact commands, versions, and results.",
   },
   {
     icon: Bug,
-    title: "Report Bugs",
-    description:
-      "Found something broken? Open an issue with steps to reproduce and we'll investigate.",
+    title: "Report a reproducible bug",
+    description: "Include minimal steps and sanitized fixtures when licensing and privacy permit.",
   },
   {
     icon: BookOpen,
-    title: "Improve Documentation",
-    description:
-      "Help others by improving docs, writing tutorials, or creating examples.",
+    title: "Improve product truth",
+    description: "Correct stale docs, add examples backed by tests, and keep maturity boundaries explicit.",
   },
   {
-    icon: Star,
-    title: "Star the Project",
-    description:
-      "Show your support by starring the repository on GitHub. It helps others discover Dits.",
-  },
-  {
-    icon: MessageCircle,
-    title: "Share Feedback",
-    description:
-      "Tell us how you use Dits, what works well, and what could be better.",
-  },
-  {
-    icon: Heart,
-    title: "Spread the Word",
-    description:
-      "Tweet about Dits, write blog posts, or tell your colleagues about it.",
+    icon: GitPullRequest,
+    title: "Contribute tests or code",
+    description: "Focus on integrity, recovery, bounded resources, representative fixtures, and clear contracts.",
   },
 ];
 
@@ -127,7 +83,6 @@ export default function CommunityPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
       <main id="main-content" className="flex-1 pt-[104px]">
-        {/* Hero */}
         <section className="relative overflow-hidden py-20 md:py-28" aria-labelledby="community-heading">
           <div className="pointer-events-none absolute inset-0 -z-10">
             <div className="absolute inset-0 bg-grid opacity-60 [mask-image:radial-gradient(70%_60%_at_50%_0%,black,transparent)]" />
@@ -135,55 +90,46 @@ export default function CommunityPage() {
           </div>
           <div className="container">
             <div className="mx-auto max-w-4xl text-center">
-              <Badge variant="outline" className="mb-6">
-                <Users className="mr-1.5 size-3.5" aria-hidden="true" />
-                Open Source Community
-              </Badge>
+              <Badge variant="outline" className="mb-6">Early open-source alpha</Badge>
               <h1 id="community-heading" className="text-4xl font-bold tracking-tight md:text-6xl">
-                Join the <span className="text-gradient-brand">Community</span>
+                Help shape <span className="text-gradient-brand">Dits</span>
               </h1>
               <p className="mx-auto mt-6 max-w-3xl text-xl text-muted-foreground">
-                Dits is built by and for the media community. Whether you&apos;re a video editor, game developer, or content creator, you&apos;re welcome here.
+                Dits is an early local-first project looking for careful evaluators and
+                contributors. It is not yet an established media community, hosted
+                service, or staffed support organization.
               </p>
             </div>
           </div>
         </section>
 
-        {/* Community Links */}
         <section className="border-t bg-muted/30 py-20 md:py-24">
           <div className="container">
             <div className="mx-auto max-w-4xl">
-              <h2 className="mb-10 text-center text-3xl font-bold tracking-tight sm:text-4xl">
-                Get Connected
-              </h2>
+              <h2 className="mb-4 text-center text-3xl font-bold tracking-tight sm:text-4xl">Project channels</h2>
+              <p className="mx-auto mb-10 max-w-2xl text-center text-muted-foreground">
+                These public GitHub routes are the current places to ask, report, and contribute.
+              </p>
               <div className="grid gap-6 md:grid-cols-2">
-                {communityLinks.map((link) => {
-                  const external = link.href.startsWith("http");
+                {projectLinks.map((item) => {
+                  const external = item.href.startsWith("http");
                   return (
-                    <Card key={link.title} className="rounded-2xl border bg-card shadow-card">
+                    <Card key={item.title} className="rounded-2xl border bg-card shadow-card">
                       <CardHeader>
                         <div className="flex items-center gap-3">
                           <div className="flex size-10 items-center justify-center rounded-lg bg-brand/10">
-                            <link.icon className="h-5 w-5 text-brand" aria-hidden="true" />
+                            <item.icon className="size-5 text-brand" aria-hidden="true" />
                           </div>
-                          <CardTitle className="text-lg">{link.title}</CardTitle>
+                          <CardTitle className="text-lg">{item.title}</CardTitle>
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <CardDescription className="mb-4">
-                          {link.description}
-                        </CardDescription>
+                        <CardDescription className="mb-4">{item.description}</CardDescription>
                         <Button
                           variant="outline"
-                          render={
-                            <Link
-                              href={link.href}
-                              target={external ? "_blank" : undefined}
-                              rel={external ? "noopener noreferrer" : undefined}
-                            />
-                          }
+                          render={<Link href={item.href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} />}
                         >
-                          {link.action}
+                          {item.action}
                         </Button>
                       </CardContent>
                     </Card>
@@ -194,30 +140,22 @@ export default function CommunityPage() {
           </div>
         </section>
 
-        {/* Ways to Contribute */}
         <section className="border-t py-20 md:py-24">
           <div className="container">
             <div className="mx-auto max-w-4xl">
-              <h2 className="mb-4 text-center text-3xl font-bold tracking-tight sm:text-4xl">
-                Ways to Contribute
-              </h2>
+              <h2 className="mb-4 text-center text-3xl font-bold tracking-tight sm:text-4xl">Useful contributions now</h2>
               <p className="mx-auto mb-12 max-w-2xl text-center text-muted-foreground">
-                Dits is open source and we welcome contributions of all kinds.
-                Here are some ways you can help:
+                The highest-value work makes the alpha easier to verify, recover, and describe honestly.
               </p>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {contributionWays.map((way) => (
-                  <Card key={way.title} className="flex gap-4 rounded-2xl border bg-card p-5 shadow-card">
-                    <div className="flex-shrink-0">
-                      <div className="flex size-10 items-center justify-center rounded-lg bg-brand/10">
-                        <way.icon className="h-5 w-5 text-brand" aria-hidden="true" />
-                      </div>
+              <div className="grid gap-6 md:grid-cols-2">
+                {contributionWays.map((item) => (
+                  <Card key={item.title} className="flex gap-4 rounded-2xl border bg-card p-5 shadow-card">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-brand/10">
+                      <item.icon className="size-5 text-brand" aria-hidden="true" />
                     </div>
                     <div>
-                      <h3 className="mb-1 font-semibold">{way.title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {way.description}
-                      </p>
+                      <h3 className="mb-1 font-semibold">{item.title}</h3>
+                      <p className="text-sm text-muted-foreground">{item.description}</p>
                     </div>
                   </Card>
                 ))}
@@ -226,54 +164,31 @@ export default function CommunityPage() {
           </div>
         </section>
 
-        {/* Contributing Guide */}
         <section className="border-t bg-muted/30 py-20 md:py-24">
           <div className="container">
-            <div className="mx-auto max-w-3xl">
-              <Card className="rounded-2xl border bg-card shadow-card">
-                <CardHeader>
-                  <CardTitle className="text-xl">
-                    Ready to Contribute Code?
-                  </CardTitle>
-                  <CardDescription>
-                    We welcome contributions from developers of all skill levels
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <ol className="list-inside list-decimal space-y-2 text-muted-foreground">
-                    <li>Fork the repository on GitHub</li>
-                    <li>Clone your fork and create a new branch</li>
-                    <li>Make your changes and write tests if applicable</li>
-                    <li>Run <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">cargo test</code> to ensure tests pass</li>
-                    <li>Submit a pull request with a clear description</li>
-                  </ol>
-                  <div className="flex flex-wrap gap-4 pt-4">
-                    <Button render={<Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer" />}>
-                      <GithubIcon className="mr-2 h-4 w-4" />
-                      Fork on GitHub
-                    </Button>
-                    <Button variant="outline" render={<Link href="/docs" />}>
-                      <BookOpen className="mr-2 h-4 w-4" />
-                      Read the Docs
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <Card className="mx-auto max-w-3xl rounded-2xl border bg-card shadow-card">
+              <CardHeader>
+                <CardTitle>Before opening a pull request</CardTitle>
+                <CardDescription>Read the contribution guide, keep scope focused, and run the checks available for your change.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-4">
+                <Button render={<Link href="/docs/contributing" />}>
+                  <BookOpen className="mr-2 size-4" />
+                  Contribution guide
+                </Button>
+                <Button variant="outline" render={<Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer" />}>
+                  <GithubIcon className="mr-2 size-4" />
+                  Source on GitHub
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </section>
 
-        {/* License */}
-        <section className="border-t py-20 md:py-24">
-          <div className="container">
-            <div className="mx-auto max-w-3xl text-center">
-              <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">Open Source License</h2>
-              <p className="mb-6 text-muted-foreground">
-                Dits is dual-licensed under the Apache 2.0 and MIT licenses. You
-                can choose whichever license works best for your use case.
-              </p>
-              <Button variant="outline" render={<Link href="/license" />}>View License Details</Button>
-            </div>
+        <section className="border-t py-16">
+          <div className="container mx-auto max-w-3xl text-center text-muted-foreground">
+            Dits is dual-licensed under Apache-2.0 or MIT. Review the repository
+            license files before redistributing or contributing.
           </div>
         </section>
       </main>
