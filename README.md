@@ -4,7 +4,119 @@
 
 # Dits
 
-Open-source, Git-like version control for large media (video-first) with content-defined chunking, BLAKE3 hashing, QUIC delta sync, and format-aware parsing (MP4/ISOBMFF). This README is a long-form, contributor-focused master doc that inlines the essentials from the broader documentation set so you can ramp quickly without jumping across files.
+**Local-first, open-source, Git-like version control for massive binary assets.**
+
+Built for game teams, media/VFX teams, AI image/video datasets, and developers
+who have outgrown Git LFS for large binary files. Dits chunks huge files with
+content-defined chunking ([FastCDC](#fastcdc-chunking)), addresses every chunk by
+its [BLAKE3](#algorithms) hash, and stores each unique chunk once — so versioning
+a 50 GB asset folder doesn't mean copying 50 GB every commit.
+
+> **Status: alpha (v0.1.5).** The local-first engine and CLI work today. Networked
+> sync, P2P, and any hosted service are **roadmap, not shipped** — see
+> [What works today](#what-works-today) and [docs/STATUS.md](docs/STATUS.md), the
+> authoritative source of truth for what the code actually does.
+
+### Who it's for
+
+- **Unreal / Unity / game asset teams** versioning multi-GB builds and binary assets
+- **VFX, 3D, animation, and post-production teams** managing renders, plates, and project files
+- **AI image/video dataset teams** tracking large, evolving datasets
+- **Developers** with large binary repos that Git LFS handles poorly
+
+## Try it in 60 seconds
+
+```bash
+npm install -g @byronwade/dits   # also works with: bun add -g / pnpm add -g
+
+mkdir dits-demo && cd dits-demo
+dits init
+dits add ./path/to/large-file.bin
+dits commit -m "initial asset snapshot"
+dits status
+dits log
+```
+
+No prebuilt binary for your platform? Install via [Docker](#docker-any-platform-incl-windows)
+or [build from source](#build-from-source). There is **no `curl | sh` installer** and
+`cargo install dits` / Homebrew are **not published yet**.
+
+## What works today
+
+Dits today is a **local-first CLI** (`dits`). All of this runs on your own disk, offline:
+
+- **Content-addressed chunk store** — FastCDC chunking, automatic dedup, BLAKE3
+  verification on every read, byte-exact reconstruction.
+- **Git-like local workflow** — `init`, `add`, `status`, `commit`, `log`,
+  `checkout`, `branch`, `switch`, `diff`, `tag`, `merge`, `show`, `reflog`,
+  `rebase`, `cherry-pick`, `reset`, `restore`, `stash`, `bisect`, and more.
+- **Media / MP4 awareness** — structure-aware MP4/ISOBMFF parse → deconstruct →
+  reconstruct, `segment`/`assemble`, proxy generation, video clip tracking,
+  metadata scan/show.
+- **FACR frame engine (experimental, needs FFmpeg)** — frame-addressable,
+  content-addressed video with frame-level diff/dedup: `facr-add`,
+  `facr-checkout`, `facr-trim`, `facr-demo`, plus `photo-add`/`photo-edit`/`photo-render`.
+- **Local locks & security** — `lock`/`unlock`/`locks`, convergent encryption
+  (`encrypt-init`), `login`/`logout`, audit log.
+- **Introspection** — `repo-stats`, `inspect-file`, `cache-stats`, `fsck`.
+- **Local clone/push** against a filesystem path, and `serve` (embedded per-repo object server).
+
+See the full command list in [docs/user-guide/cli-reference.md](docs/user-guide/cli-reference.md).
+
+## What is not done yet (roadmap)
+
+Be clear-eyed about this before you try Dits:
+
+- **Networked sync** — `push`, `pull`, `fetch`, `sync` over a network print
+  placeholders and transfer **no data**. `clone` works only against a local
+  filesystem path. (A real, tested QUIC delta engine exists but is **not wired**
+  into push/pull yet — try `dits stream-demo`.)
+- **P2P** (`p2p …`) — scaffolding only: no NAT traversal, no data transfer.
+- **Hosted service / "DitsHub" / REST API / official SDKs / SaaS** — do not exist.
+  Hosted sync is a future roadmap idea, not a product.
+- **FUSE/VFS mount** (`dits mount`) — implemented but gated behind a Cargo feature
+  and local-only; remote on-demand hydration is roadmap.
+
+## Why Dits exists
+
+Text got Git. Big media never did. Today a "version" of a 40 GB project is still
+`final_v27.mp4` in a cloud drive, and every small edit means re-uploading the whole
+thing. Dits applies Git's proven mental model — content-addressed objects, commits,
+branches — to the heaviest, least-managed assets on earth, so you store and move
+**only what actually changed**. For the long-form vision, see
+[The Dits Manifesto](#the-dits-manifesto).
+
+## An honest note on video "dedup"
+
+Content-defined chunking is **not magic**, and Dits does **not** promise "edit a
+video, store only kilobytes" as a universal truth. Whether a new version dedups
+well depends on whether the **bytes** are reused:
+
+- **Dedups well:** appends, metadata-only changes, container remux / stream-copy
+  trims, byte-identical copies/moves, and Dits-native [FACR](docs/superpowers/specs/2026-06-02-facr-frame-addressable-video-design.md)
+  frame workflows — here only the changed/added chunks are stored.
+- **Often does *not* dedup:** a **full re-encode** (re-exporting/transcoding the
+  whole file) usually produces entirely different bytes end-to-end, so normal
+  chunk hashing finds little to reuse.
+  [FACR](docs/superpowers/specs/2026-06-02-facr-frame-addressable-video-design.md)
+  exists precisely to help with frame-level video versioning where raw chunking can't.
+
+If your workflow re-encodes the entire file on every export, expect storage closer
+to "one copy per version" unless you use FACR.
+
+## Learn more
+
+- 📊 **Benchmarks:** [`benchmarks/`](benchmarks/) + reproducible numbers in
+  [`benchmarks/latest.json`](benchmarks/latest.json) — and see
+  [docs/performance/benchmarks.md](docs/performance/benchmarks.md).
+- ✅ **What actually works:** [docs/STATUS.md](docs/STATUS.md) (authoritative).
+- 🗺️ **Roadmap:** [docs/roadmap/phases.md](docs/roadmap/phases.md) and
+  [Roadmap (9 Phases)](#roadmap-9-phases).
+- 📚 **Concepts & CLI:** [docs/concepts.md](docs/concepts.md),
+  [docs/user-guide/cli-reference.md](docs/user-guide/cli-reference.md).
+- 🤝 **Contributing:** [Contributing](#contributing) · [CONTRIBUTORS.md](CONTRIBUTORS.md) ·
+  [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+- 📜 **License:** Apache-2.0 OR MIT.
 
 ---
 
@@ -315,33 +427,31 @@ Let's build the Git of the heavy stuff.
 
 ## Installation
 
-### Quick Install (Recommended)
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/byronwade/dits/main/install.sh | sh
-```
-
-### Homebrew (macOS/Linux) — *not yet published*
-
-> The Homebrew tap is planned but **not published yet**. Use npm or GitHub Releases for now.
->
-> ```bash
-> # (planned) brew install byronwade/tap/dits
-> ```
-
-### npm / bun / pnpm
+### npm / bun / pnpm (recommended)
 
 ```bash
 npm install -g @byronwade/dits
 # or
-bun install -g @byronwade/dits
+bun add -g @byronwade/dits
 # or
-pnpm install -g @byronwade/dits
+pnpm add -g @byronwade/dits
 ```
+
+This downloads a prebuilt `dits` binary for your platform. If none exists yet for
+your OS/arch, the install prints `Binary not found for your platform` — use
+[Build from Source](#build-from-source) or [Docker](#docker-any-platform-incl-windows) instead.
 
 ### GitHub Releases
 
 Download pre-built binaries from the [releases page](https://github.com/byronwade/dits/releases).
+
+### Not available yet
+
+- **`curl … install.sh | sh`** — there is no install script.
+- **`cargo install dits`** — the crate is not published to crates.io.
+- **`brew install byronwade/tap/dits`** — the Homebrew tap is not published.
+
+Use npm, GitHub Releases, source, or Docker until these ship.
 
 ### Build from Source
 
@@ -410,36 +520,36 @@ Dits is an open-source, Git-like version control system specifically designed fo
 - **Content-Defined Chunking**: FastCDC algorithm splits files at content boundaries, not fixed sizes
 - **BLAKE3 Hashing**: Fast, parallelizable cryptographic hashing for content addressing
 - **Video-Aware Processing**: MP4 atom preservation, keyframe alignment, and format-specific optimizations
-- **Deduplication**: Automatic deduplication across versions and projects saves massive storage
-- **Virtual Filesystem**: FUSE-based mount allows on-demand access without full downloads
-- **QUIC Transport**: High-performance, resumable transfers over UDP
+- **Deduplication**: Automatic deduplication across versions and projects saves storage when bytes are reused
+- **Virtual Filesystem** *(feature-gated, local)*: FUSE/WinFSP mount for on-demand access; remote hydration is roadmap
+- **QUIC Transport** *(roadmap)*: tested delta engine exists (`stream-demo`) but is not wired into networked push/pull
 - **Git-Compatible Interface**: Familiar commands for easy adoption by developers and creatives
 
-## Open Core vs Ditshub
+## Open core, hosted sync (roadmap)
 
-Dits follows an open-core model inspired by Git/GitHub:
+Dits is **open core**: the engine, CLI, data formats, and protocol are open source
+and local-first. There is **no hosted service today** — the items below are a
+**future roadmap direction**, not a shipped product.
 
-### Dits (Open Source Core)
-- **CLI, libraries, and protocol**: Complete implementation you can run locally or self-host
-- **Data formats and wire protocol**: Fully documented and open for third-party implementations
-- **Local-first architecture**: Works offline with optional cloud storage
-- **Self-hostable remotes**: Run your own Dits server with full data sovereignty
-- **Extensible via SDKs**: Go, Python, JavaScript, and Rust SDKs available
+### Dits (open-source core — this repo)
+- **CLI and engine**: run entirely locally or self-host; works fully offline.
+- **Open data formats**: manifests and index are documented for third-party implementations.
+- **Self-hostable object server**: `dits serve` exposes a repo's objects over TCP today.
 
-### Ditshub (Hosted Platform)
-- **Managed cloud service**: Built on the open Dits protocol
-- **Real-time collaboration**: Advanced team features, permissions, and audit logs
-- **GPU/CPU compute**: Cloud-based rendering, transcoding, and processing
-- **Marketplace**: Asset marketplace where creators keep 100% of earnings
-- **Enterprise features**: SSO, compliance tools, advanced analytics
+### Hosted sync ("DitsHub" — roadmap, not built)
+A possible future hosted layer would add **convenience on top of the same open
+protocol** — primarily **networked sync** of chunks/manifests so teams can share
+repos without managing their own servers. Anything it might offer is, by design,
+achievable with self-hosted Dits.
 
-**Key Principle**: Everything Ditshub does is possible with self-hosted Dits. Ditshub adds convenience, scale, and managed services while keeping the core technology open and interoperable.
+> This README does not describe a hosted product, SDK packages, marketplace, or SaaS
+> pricing — none of those exist. See [docs/STATUS.md](docs/STATUS.md).
 
 ## Project Status
-- Active development with comprehensive testing infrastructure in place.
-- 120+ automated tests covering all major file formats and use cases.
+- **Alpha (v0.1.5)**, active development by a small team. The local-first engine works; networked sync and any hosted service are roadmap. Not recommended for production yet.
+- 469 automated tests across the workspace (`cargo test --workspace`).
 - APIs and formats stabilizing; breaking changes require migration planning.
-- Roadmap-driven: see [Roadmap (9 Phases)](#roadmap-9-phases).
+- Roadmap-driven: see [Roadmap (9 Phases)](#roadmap-9-phases) and [docs/STATUS.md](docs/STATUS.md).
 
 ### Implementation status (what is wired today vs. roadmap)
 
@@ -463,16 +573,23 @@ To set expectations honestly:
 - Hashing: BLAKE3 (32-byte content addresses, parallel SIMD).
 - Transport (planned): QUIC (quinn) with delta sync, resumable uploads, and adaptive chunking. *Currently scaffolding — see Implementation status above.*
 - Storage: Hybrid Git+Dits storage for optimal text/binary handling.
-- VFS: FUSE/WinFSP mounts for on-demand hydration with Redis caching.
-- Locking: Distributed Redlock for multi-user binary conflict prevention.
-- Testing: 120+ comprehensive tests covering 80+ file formats.
+- VFS (local, feature-gated): FUSE/WinFSP mount via the `fuser` feature. *On-demand remote hydration is roadmap.*
+- Locking: Local binary locks today. *Distributed multi-user locking is roadmap (no Redis dependency in `dits`).*
+- Testing: 469 tests across the workspace (`cargo test --workspace`), covering many file formats.
 - File Support: 3D (OBJ/FBX/glTF/USD), Game Assets (Unity/Unreal), Video (MP4/MOV), Images (RAW/PSD), Audio, Custom formats.
-- Git Recovery: Full Git operations (diff/merge/blame/reset) on creative assets.
-- Specs: Manifests, index, wire protocol fully documented in `docs/`.
+- Git Recovery: Full local Git-style operations (diff/merge/blame/reset) on creative assets.
+- Specs: Manifests, index, and the (roadmap) wire protocol are documented in `docs/`.
 
 ---
 
 ## Frequently Asked Questions (FAQ)
+
+> ⚠️ **Read this first.** Some answers below describe the *intended design* of features
+> that are **not shipped yet** — especially anything about `push`/`pull`/`fetch`, QUIC
+> networking, P2P, S3/cloud backends, distributed (Redlock) locking, server-side
+> reference counting, and hosted services. These are **roadmap**. For exactly what runs
+> today, [docs/STATUS.md](docs/STATUS.md) is authoritative; see also
+> [What works today](#what-works-today) and [What is not done yet](#what-is-not-done-yet-roadmap).
 
 ### General Questions
 
@@ -617,7 +734,7 @@ A: Dits stores symlinks in manifests (entry type `Symlink` with target path). On
 
 ## Open Problems & Research Questions
 
-Dits is an ambitious project, and there are many hard problems we haven't fully solved yet. **We need your help!** If you're interested in tackling any of these, please [open an issue](https://github.com/dits-io/dits/issues) describing your approach or asking questions.
+Dits is an ambitious project, and there are many hard problems we haven't fully solved yet. **We need your help!** If you're interested in tackling any of these, please [open an issue](https://github.com/byronwade/dits/issues) describing your approach or asking questions.
 
 ### Storage & Data Integrity
 
@@ -955,16 +1072,25 @@ pub struct KeyframeAlignConfig {
 | Transport | `quinn` (QUIC) | High-performance UDP |
 | GUI (future) | Tauri | Lightweight desktop |
 
+> **Note:** `quinn`/QUIC powers a tested delta engine (`dits stream-demo`) but is **not wired into
+> networked `push`/`pull`** yet. `fuser`/`dokany` VFS is implemented but gated behind the `fuser`
+> Cargo feature and local-only. `dits` itself does not depend on Redis or PostgreSQL — those appear
+> only in the roadmap hosted-service design. See [docs/STATUS.md](docs/STATUS.md).
+
 ---
 
 ## Roadmap (9 Phases)
+
+> ✅ = working today · 🚧 = in progress / partial · ⏳ = roadmap, not started.
+> The single source of truth is [docs/STATUS.md](docs/STATUS.md).
+
 - **Phase 1: Engine** ✅ — Local chunking/dedup; bit-for-bit checkout.
 - **Phase 2: Structure Awareness** ✅ — Atom exploder for MP4; metadata-only changes avoid re-upload.
-- **Phase 3: Virtual File System** ✅ — Mounted drive; JIT hydration.
-- **Phase 3.5: Git Parity** ✅ — Branching, merging, tags, stash.
+- **Phase 3: Virtual File System** 🚧 — FUSE/WinFSP mount implemented but gated behind the `fuser` Cargo feature; local-only (remote hydration is roadmap).
+- **Phase 3.5: Git Parity** ✅ — Local branching, merging, tags, stash.
 - **Phase 3.6: Hybrid Storage** ✅ — Git+Dits storage for optimal text/binary handling.
-- **Phase 4: Intelligent Collaboration & Sync** ✅ — Real-time sync, adaptive transport, smart caching, offline mode.
-- **Phase 5: Conflict & Locking** ✅ — Binary locks; visual diff assistance; performance optimizations.
+- **Phase 4: Intelligent Collaboration & Sync** ⏳ — **Roadmap, not implemented.** `push`/`pull`/`fetch`/`sync` print placeholders today; a tested QUIC delta engine exists but is not yet wired into the porcelain.
+- **Phase 5: Conflict & Locking** 🚧 — Local binary locks work; visual diff assistance and networked conflict handling are roadmap.
 - **Phase 6: The Hologram** 🚧 — Proxy-based editing (`checkout --proxy`).
 - **Phase 7: Creative Ecosystem** 🚧 — Plugin system, creative tool integration, pipeline automation.
 - **Phase 8: Deep Freeze** — Tiered storage lifecycle (hot/cold).
@@ -1057,10 +1183,10 @@ pub struct KeyframeAlignConfig {
 
 ## Testing & Quality
 
-### Comprehensive Testing Infrastructure
-DITS includes the most extensive testing framework for any version control system, covering 80+ file formats and all major use cases:
+### Testing Infrastructure
+Dits has a broad test suite covering many file formats and use cases:
 
-- **120+ Automated Tests**: Git-inspired shell script tests + Rust unit tests
+- **469 Automated Tests** (`cargo test --workspace`): Rust unit/integration tests + Git-inspired shell script tests
 - **File Format Coverage**: 3D (OBJ/FBX/glTF/USD), Game Assets (Unity/Unreal), Video, Images, Audio, Custom formats
 - **Git Recovery Testing**: Full Git operations (diff/merge/blame/reset) on binary creative assets
 - **Stress Testing**: 1TB workload simulation through extreme concurrency
@@ -1204,8 +1330,8 @@ just check                    # All quality checks
 
 | Operation | Throughput | Latency | Notes |
 |-----------|------------|---------|-------|
-| BLAKE3 hashing | 3+ GB/s | - | Single core, parallelizes to 32+ GB/s |
-| FastCDC chunking | 2+ GB/s | - | With SIMD acceleration |
+| BLAKE3 hashing | ~1.8 GB/s | - | Measured, single core (Apple M2 Pro); parallelizes higher |
+| FastCDC chunking | ~1 GB/s | - | Measured (Apple M2 Pro); see `benchmarks/latest.json` |
 | Chunk upload (LAN) *(roadmap)* | 500+ MB/s | <1ms | Target — networked sync not implemented |
 | Chunk upload (WAN) *(roadmap)* | Link speed | <50ms | Target — networked sync not implemented |
 | Incremental sync *(roadmap)* | 250 MB/s | <5s for 1MB change | Target — networked sync not implemented |
@@ -1921,17 +2047,17 @@ See `docs/architecture/edge-cases-failure-modes.md` for 40+ failure scenarios wi
 Dits maintains comprehensive documentation covering all aspects of the system:
 
 ### 📖 Core Documentation
-- **[Main Documentation Site](https://docs.dits.io)** - Complete user and developer documentation
+- **[Implementation Status](docs/STATUS.md)** — authoritative: what actually works vs. roadmap
 - **[Concepts Guide](docs/concepts.md)** - Understanding Dits core principles
 - **[Architecture Overview](docs/architecture/)** - System design and algorithms
-- **[Testing Framework](docs/testing/)** - Comprehensive testing strategy and validation
+- **[Testing Framework](docs/testing/)** - Testing strategy and validation
 
 ### 🧪 Testing Documentation
-DITS implements the most comprehensive testing framework ever built for a version control system:
+Dits ships a broad test suite:
 
-- **120+ Automated Tests** covering every aspect of functionality
-- **80+ File Formats** supported with full fidelity validation
-- **50+ Failure Scenarios** systematically tested and handled
+- **469 Automated Tests** (`cargo test --workspace`) covering core functionality
+- **Many file formats** validated for full-fidelity round-trips
+- **Failure-mode coverage** for corruption/recovery scenarios
 - **Real-world Workflows** from NLE editing to CI/CD pipelines
 
 **Test Categories:**
@@ -1945,10 +2071,9 @@ DITS implements the most comprehensive testing framework ever built for a versio
 See [`docs/testing/`](docs/testing/) for complete testing framework documentation.
 
 ### 🔧 Developer Resources
-- **[Contributing Guide](docs/contributing.md)** - How to contribute to Dits
-- **[Development Setup](docs/development.md)** - Getting started with development
-- **[API Documentation](docs/api/)** - REST API and SDK references *(roadmap — the hosted API and SDK packages are not yet built/published)*
+- **[Contributing](#contributing)** - How to contribute to Dits (see also [CONTRIBUTORS.md](CONTRIBUTORS.md))
 - **[CLI Reference](docs/user-guide/cli-reference.md)** - Complete command reference
+- **[API Documentation](docs/api/)** - REST API and SDK references *(roadmap — the hosted API and SDK packages are not yet built/published)*
 
 ### 📋 Project Status
 - **Phase 3.6/9** - Hybrid storage and advanced features
@@ -1961,7 +2086,8 @@ See [`docs/testing/`](docs/testing/) for complete testing framework documentatio
 
 ## 🤝 Contributing
 
-We welcome contributions! See our [Contributing Guide](docs/contributing.md) for details.
+We welcome contributions! See the [Contributing](#contributing) section above, plus
+[CONTRIBUTORS.md](CONTRIBUTORS.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 **Quick Start:**
 ```bash
