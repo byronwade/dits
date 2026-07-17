@@ -30,6 +30,47 @@ PUBLIC_PATHS=(
 
 status=0
 
+# Keep this gate runnable on a clean GitHub-hosted runner and on contributor
+# machines that do not have ripgrep installed. The checked tree is source-only,
+# so recursive grep is a safe portable fallback for the public-path scan.
+if command -v rg >/dev/null 2>&1; then
+  HAS_RIPGREP=1
+else
+  HAS_RIPGREP=0
+fi
+
+search_public_lines() {
+  local pattern="$1"
+  if [[ "$HAS_RIPGREP" -eq 1 ]]; then
+    rg -n \
+      --glob '*.md' --glob '*.tsx' --glob '*.ts' --glob '*.js' \
+      --glob '*.json' --glob '*.yml' \
+      "$pattern" "${PUBLIC_PATHS[@]}"
+  else
+    grep -RnsE -- "$pattern" "${PUBLIC_PATHS[@]}"
+  fi
+}
+
+search_file_lines() {
+  local pattern="$1"
+  local file="$2"
+  if [[ "$HAS_RIPGREP" -eq 1 ]]; then
+    rg -n "$pattern" "$file"
+  else
+    grep -nsE -- "$pattern" "$file"
+  fi
+}
+
+file_contains() {
+  local pattern="$1"
+  local file="$2"
+  if [[ "$HAS_RIPGREP" -eq 1 ]]; then
+    rg -q "$pattern" "$file"
+  else
+    grep -qE -- "$pattern" "$file"
+  fi
+}
+
 while IFS= read -r doc; do
   if ! sed -n '1,12p' "$doc" \
     | grep -qE '^\*\*Maturity:\*\* (Current|Experimental|Design|Historical)$'; then
@@ -45,10 +86,7 @@ deny() {
   local label="$1"
   local pattern="$2"
   local matches
-  matches="$(rg -n \
-    --glob '*.md' --glob '*.tsx' --glob '*.ts' --glob '*.js' \
-    --glob '*.json' --glob '*.yml' \
-    "$pattern" "${PUBLIC_PATHS[@]}" || true)"
+  matches="$(search_public_lines "$pattern" || true)"
   if [[ -n "$matches" ]]; then
     echo "✗ $label"
     printf '%s\n' "$matches"
@@ -61,7 +99,7 @@ forbid() {
   local label="$2"
   local pattern="$3"
   local matches
-  matches="$(rg -n "$pattern" "$file" || true)"
+  matches="$(search_file_lines "$pattern" "$file" || true)"
   if [[ -n "$matches" ]]; then
     echo "✗ $label"
     printf '%s\n' "$matches"
@@ -72,7 +110,7 @@ forbid() {
 require() {
   local file="$1"
   local pattern="$2"
-  if ! rg -q "$pattern" "$file"; then
+  if ! file_contains "$pattern" "$file"; then
     echo "✗ Missing canonical product language in $file: $pattern"
     status=1
   fi
