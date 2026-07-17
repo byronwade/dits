@@ -47,7 +47,7 @@ npm --workspace apps/web run dev`}</code></pre>
 
       <h2>Verify</h2>
       <pre><code>{`cargo +nightly fmt --all -- --check
-cargo +stable clippy --all-targets --all-features -- -D warnings
+cargo +stable clippy --locked --all-targets --all-features -- -D warnings
 cargo test --locked --workspace
 npm --workspace apps/web run lint
 npm --workspace apps/web run test:ci
