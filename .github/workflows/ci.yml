@@ -99,6 +99,9 @@ jobs:
       - name: Check CLI docs match the binary
         run: bash scripts/check-cli-docs.sh
 
+      - name: Check public product claims
+        run: bash scripts/check-product-truth.sh
+
   # Rust unit tests
   test-rust:
     name: Test Rust
@@ -494,6 +497,5 @@ jobs:
             exit 1
           fi
           echo "All CI checks passed!"
-
 
 

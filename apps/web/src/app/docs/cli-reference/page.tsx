@@ -402,13 +402,13 @@ export default function CLIReferencePage() {
       <DocPageHeader
         eyebrow="CLI Reference"
         title="CLI Reference"
-        description="Complete reference for all 60+ Dits commands covering core Git operations, creative workflows, enterprise features, and advanced version control for large binary assets."
+        description="Reference for the current Dits CLI, with local, experimental, and roadmap commands distinguished explicitly."
       />
 
       <Callout type="important" className="not-prose my-6">
         <strong>Local commands work today; networked commands are roadmap.</strong>{" "}
-        The local Dits CLI (init, add, commit, branch, diff, log, VFS, video, and the
-        rest) is implemented and covered by 469 automated tests. The networked
+        The local Dits CLI includes init, add, commit, branch, diff, log, and other
+        Git-shaped paths; VFS and media-specific paths are experimental. The networked
         commands &mdash; <code>push</code>, <code>pull</code>, <code>fetch</code>,{" "}
         <code>sync</code>, <code>clone</code>, <code>remote</code>, and p2p &mdash; are
         on the roadmap and not built: they print placeholders and transfer no data.

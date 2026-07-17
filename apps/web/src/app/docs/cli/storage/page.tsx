@@ -32,14 +32,13 @@ export default function StorageCommandsPage() {
       <DocPageHeader
         eyebrow="CLI Reference"
         title="Storage Tier Commands"
-        description="Manage data across hot, warm, and cold storage tiers. Automatically move infrequently accessed files to cheaper storage while keeping active files instantly available."
+        description="Inspect the local lifecycle experiment for marking content frozen or thawed. Cloud tier movement remains a future design."
       />
 
-      <Callout type="note" title="Tiered Storage Architecture" className="not-prose my-6">
-        <strong>Hot:</strong> Local SSD for active files (instant access).
-        <strong> Warm:</strong> Cloud object storage like S3 Standard (seconds).
-        <strong> Cold:</strong> Archive storage like Glacier (hours). Dits moves
-        data between tiers based on access patterns.
+      <Callout type="warning" title="Local experiment only" className="not-prose my-6">
+        Freeze/thaw state can be evaluated locally. Dits does not currently move
+        repository data among S3, Glacier, or other managed storage classes, and
+        no hosted lifecycle service exists.
       </Callout>
 
       <Table className="not-prose my-6">

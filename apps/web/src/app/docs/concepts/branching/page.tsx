@@ -1,411 +1,49 @@
-import { Metadata } from "next";
-import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { GitBranch, GitMerge, Lock } from "lucide-react";
-import { CodeBlock } from "@/components/ui/code-block";
-import { Callout } from "@/components/ui/callout";
+import type { Metadata } from "next";
+
 import { DocPageHeader } from "@/components/doc-page-header";
-import { FileTree } from "@/components/docs/file-tree";
+import { Callout } from "@/components/ui/callout";
 
 export const metadata: Metadata = {
-  title: "Branching & Merging",
-  description: "Work on multiple versions with branches in Dits",
+  title: "Branches and Merges in Dits",
+  description: "Local branch, switch, merge, rebase, and binary-conflict concepts in the Dits alpha.",
 };
 
 export default function BranchingPage() {
   return (
-    <div className="prose dark:prose-invert max-w-none">
+    <div className="prose max-w-none dark:prose-invert">
       <DocPageHeader
-        eyebrow="Core Concepts"
-        title="Branching & Merging"
-        description="Branches let you work on different versions of your project simultaneously. Create branches for experiments, features, or different edit versions."
+        eyebrow="Core concepts"
+        title="Branches and merges"
+        description="Branches are local refs to commits. They let an evaluation explore alternative project states without duplicating every referenced object."
       />
 
-      <h2>Why Use Branches?</h2>
+      <h2>Branches are references</h2>
       <p>
-        In video production, branches are invaluable for:
+        Creating a branch records another name for a commit. Shared immutable
+        chunks remain shared. Switching updates the working tree to the selected
+        state; actual cost depends on changed files, object availability, and the
+        filesystem—not an “instant” guarantee.
       </p>
-      <ul>
-        <li><strong>Client versions:</strong> Maintain different cuts for different stakeholders</li>
-        <li><strong>Experiments:</strong> Try color grades or edits without affecting the main project</li>
-        <li><strong>Collaboration:</strong> Work on different scenes simultaneously</li>
-        <li><strong>Releases:</strong> Maintain stable releases while continuing development</li>
-      </ul>
 
-      <h2>Branch Basics</h2>
+      <h2>Text and binary changes</h2>
+      <p>
+        Text-oriented paths can use familiar line merge behavior. Opaque binary
+        assets do not have a universally safe automatic merge. Local locks and
+        explicit ours/theirs decisions can help, while future semantic records may
+        enable narrower domain-aware conflicts.
+      </p>
 
-      <div className="not-prose grid gap-4 md:grid-cols-3 my-8">
-        <Card>
-          <CardHeader>
-            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
-              <GitBranch className="size-5 text-brand" />
-            </div>
-            <CardTitle className="text-base">Create</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CardDescription>
-              <code>dits branch name</code> creates a new branch pointing to the
-              current commit.
-            </CardDescription>
-          </CardContent>
-        </Card>
+      <h2>Merge safety</h2>
+      <p>
+        Inspect status and diffs, commit or stash intentional local work, and keep
+        independent backups during alpha evaluation. The current <code>restore</code>
+        path does not provide complete merge-conflict resolution.
+      </p>
 
-        <Card>
-          <CardHeader>
-            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
-              <GitBranch className="size-5 text-brand" />
-            </div>
-            <CardTitle className="text-base">Switch</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CardDescription>
-              <code>dits switch name</code> moves to a different branch, updating
-              your working directory.
-            </CardDescription>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
-              <GitMerge className="size-5 text-brand" />
-            </div>
-            <CardTitle className="text-base">Merge</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CardDescription>
-              <code>dits merge name</code> combines changes from another branch
-              into your current branch.
-            </CardDescription>
-          </CardContent>
-        </Card>
-      </div>
-
-      <h2>Creating Branches</h2>
-      <CodeBlock
-        language="bash"
-        code={`# Create a new branch
-$ dits branch client-version
-
-# Create and switch in one command
-$ dits switch -c client-version
-
-# Create from a specific commit
-$ dits branch hotfix a1b2c3d
-
-# List all branches
-$ dits branch --list
-* main
-  client-version
-  color-grade-experiment`}
-      />
-
-      <h2>Switching Branches</h2>
-      <CodeBlock
-        language="bash"
-        code={`$ dits switch client-version
-
-Switched to branch 'client-version'
-Hydrating 3 changed files... done
-
-$ dits status
-On branch client-version`}
-      />
-
-      <Callout type="note" title="Efficient Branch Switching" className="not-prose my-6">
-        Unlike Git with large files, switching branches in Dits only hydrates
-        files that differ between branches. Switching between branches with
-        mostly the same content is nearly instant.
+      <Callout type="warning" title="No shared remote branch workflow yet" className="not-prose my-8">
+        Local branches and merges work independently of a service. Network push,
+        pull, fetch, remote refs, and remote branch protection are roadmap.
       </Callout>
-
-      <h2>Branch Visualization</h2>
-      <CodeBlock
-        language="bash"
-        code={`$ dits log --graph --oneline --all
-
-* f5e4d3c (HEAD -> main) Final delivery
-| * c4d5e6f (client-version) Client revisions
-| * b3c4d5e Add client logo
-|/
-* a1b2c3d Color grading complete
-| * 9a8b7c6 (experiment/new-grade) Try film look
-|/
-* 8f7e6d5 Initial edit`}
-      />
-
-      <h2>Merging Branches</h2>
-
-      <h3>Fast-Forward Merge</h3>
-      <p>
-        When there are no divergent changes, Dits simply moves the branch pointer:
-      </p>
-      <CodeBlock
-        language="bash"
-        code={`$ dits switch main
-$ dits merge feature/audio
-
-Updating a1b2c3d..f5e4d3c
-Fast-forward
- audio/sound-effects.wav | new file
- audio/music.wav         | new file
- 2 files changed, 500 MB added`}
-      />
-
-      <h3>Three-Way Merge</h3>
-      <p>
-        When both branches have changes, Dits creates a merge commit:
-      </p>
-      <CodeBlock
-        language="bash"
-        code={`$ dits merge client-version
-
-Auto-merging project files...
-Merge made by the 'ort' strategy.
- project.prproj | modified
- 1 file changed`}
-      />
-
-      <h2>Handling Conflicts</h2>
-      <p>
-        For binary files like videos, Dits uses file-level conflict resolution
-        rather than trying to merge content:
-      </p>
-
-      <CodeBlock
-        language="bash"
-        code={`$ dits merge client-version
-
-CONFLICT (content): Merge conflict in footage/scene1.mov
-Automatic merge failed; fix conflicts and then commit.
-
-$ dits status
-On branch main
-You have unmerged paths.
-  (fix conflicts and run "dits commit")
-
-Unmerged paths:
-  both modified: footage/scene1.mov`}
-      />
-
-      <h3>Resolving Conflicts</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Keep the version from main (ours)
-$ dits checkout --ours footage/scene1.mov
-
-# Keep the version from client-version (theirs)
-$ dits checkout --theirs footage/scene1.mov
-
-# Or manually place the file you want, then:
-$ dits add footage/scene1.mov
-$ dits commit -m "Merge client-version, keep our scene1"`}
-      />
-
-      <h2>File Locking</h2>
-      <p>
-        For large binary files, prevention is better than resolution. Dits supports
-        file locking to prevent conflicts:
-      </p>
-
-      <div className="not-prose grid gap-4 md:grid-cols-2 my-8">
-        <Card>
-          <CardHeader>
-            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
-              <Lock className="size-5 text-brand" />
-            </div>
-            <CardTitle className="text-base">Advisory Locks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CardDescription>
-              Signal to teammates that you&apos;re working on a file. Others can still
-              edit but will see a warning.
-            </CardDescription>
-            <CodeBlock
-              language="bash"
-              code={`dits lock footage/scene1.mov`}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-brand/10">
-              <Lock className="size-5 text-brand" />
-            </div>
-            <CardTitle className="text-base">Strict Locks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CardDescription>
-              Prevent others from editing the file entirely until you release the
-              lock.
-            </CardDescription>
-            <CodeBlock
-              language="bash"
-              code={`dits lock --strict footage/scene1.mov`}
-            />
-          </CardContent>
-        </Card>
-      </div>
-
-      <CodeBlock
-        language="bash"
-        code={`# Lock a file
-$ dits lock footage/scene1.mov
-Locked 'footage/scene1.mov'
-
-# See who has locks
-$ dits lock --list
-footage/scene1.mov    locked by jane@example.com    2 hours ago
-
-# Unlock when done
-$ dits unlock footage/scene1.mov
-Unlocked 'footage/scene1.mov'`}
-      />
-
-      <h2>Branch Strategies</h2>
-
-      <h3>Feature Branches</h3>
-      <p>
-        Create a branch for each distinct piece of work:
-      </p>
-      <div className="not-prose my-4">
-        <FileTree
-          items={[
-            {
-              name: "main",
-              type: "folder",
-              children: [
-                { name: "feature/scene1-color", type: "folder" },
-                { name: "feature/scene2-audio", type: "folder" },
-                { name: "feature/titles", type: "folder" },
-                { name: "feature/credits", type: "folder" },
-              ],
-            },
-          ]}
-        />
-      </div>
-
-      <h3>Client/Version Branches</h3>
-      <p>
-        Maintain different versions for different audiences:
-      </p>
-      <div className="not-prose my-4">
-        <FileTree
-          items={[
-            {
-              name: "main",
-              type: "folder",
-              comment: "master edit",
-              children: [
-                { name: "version/theatrical", type: "folder" },
-                { name: "version/streaming", type: "folder" },
-                { name: "version/tv-broadcast", type: "folder" },
-                { name: "version/airline", type: "folder" },
-              ],
-            },
-          ]}
-        />
-      </div>
-
-      <h3>Release Branches</h3>
-      <p>
-        Stabilize releases while continuing development:
-      </p>
-      <div className="not-prose my-4">
-        <FileTree
-          items={[
-            {
-              name: "main",
-              type: "folder",
-              comment: "development",
-              children: [
-                { name: "release/v1.0", type: "folder" },
-                { name: "release/v1.1", type: "folder" },
-                { name: "release/v2.0", type: "folder" },
-              ],
-            },
-          ]}
-        />
-      </div>
-
-      <h2>Deleting Branches</h2>
-      <CodeBlock
-        language="bash"
-        code={`# Delete a merged branch
-$ dits branch -d feature/completed
-Deleted branch feature/completed.
-
-# Force delete an unmerged branch
-$ dits branch -D experiment/abandoned
-Deleted branch experiment/abandoned.
-
-# Delete a remote branch
-$ dits push origin --delete feature/completed`}
-      />
-
-      <h2>Rebasing</h2>
-      <p>
-        Rebase replays your changes on top of another branch, creating a linear
-        history:
-      </p>
-
-      <CodeBlock
-        language="bash"
-        code={`$ dits switch feature/audio
-$ dits rebase main
-
-Rebasing (1/3): Add sound effects
-Rebasing (2/3): Add music track
-Rebasing (3/3): Adjust audio levels
-
-Successfully rebased and updated refs/heads/feature/audio.`}
-      />
-
-      <Callout type="note" title="When to Rebase vs Merge" className="not-prose my-6">
-        <ul className="mt-2 list-disc list-inside">
-          <li><strong>Rebase:</strong> For local branches to keep history clean</li>
-          <li><strong>Merge:</strong> For shared branches or preserving history</li>
-          <li>Never rebase branches that others are using</li>
-        </ul>
-      </Callout>
-
-      <h2>Cherry-Picking</h2>
-      <p>
-        Apply specific commits from other branches:
-      </p>
-      <CodeBlock
-        language="bash"
-        code={`# Apply a single commit to current branch
-$ dits cherry-pick a1b2c3d
-
-[main f6g7h8i] Add sound effects
- 1 file changed, 150 MB added
-
-# Cherry-pick multiple commits
-$ dits cherry-pick a1b2c3d b2c3d4e c3d4e5f`}
-      />
-
-      <h2>Next Steps</h2>
-      <ul>
-        <li>
-          Learn about{" "}
-          <Link href="/docs/cli/branches">Branch Commands</Link>
-        </li>
-        <li>
-          Set up{" "}
-          <Link href="/docs/cli/remotes">Remote Repositories</Link>
-        </li>
-        <li>
-          Explore{" "}
-          <Link href="/docs/advanced/video">Video Features</Link>
-        </li>
-      </ul>
     </div>
   );
 }

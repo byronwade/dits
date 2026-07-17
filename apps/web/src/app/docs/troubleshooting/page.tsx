@@ -141,13 +141,13 @@ sudo cp $(which dits) /usr/local/bin/`}
 
           <h3>Permission denied during installation</h3>
           <Callout type="note" title="Solution" className="not-prose my-4">
-              <p>Use a local installation directory:</p>
+              <p>Use a user-owned npm prefix:</p>
               <CodeBlock
         language="bash"
-        code={`# Install to user directory
-curl -fsSL https://raw.githubusercontent.com/byronwade/dits/main/install.sh | bash -s -- --prefix ~/.local
+        code={`npm config set prefix "$HOME/.local"
+npm install -g @byronwade/dits
 
-# Add to PATH
+# Add npm's user bin directory to PATH
 export PATH="$HOME/.local/bin:$PATH"`}
       />
           </Callout>
@@ -317,8 +317,8 @@ dits fsck
 # Find corrupted chunks
 dits fsck --verbose
 
-# Recover from backup or remote
-dits pull origin main --force`}
+# Recover from an independently verified backup.
+# Network pull is not implemented in the current alpha.`}
       />
               <p className="mt-2 text-sm">
                 <strong>Never ignore checksum failures.</strong> They indicate data corruption that needs immediate attention.
@@ -457,4 +457,3 @@ uname -a`}
     </>
   );
 }
-

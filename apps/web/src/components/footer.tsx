@@ -70,8 +70,8 @@ export function Footer() {
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">
               {product.id === "ai"
-                ? "Open, content-addressed version control for the heaviest data in AI and science — model weights, checkpoints, datasets, and research data."
-                : "Free and open source version control for video and large files. Like Git, but for media."}
+                ? "A research track exploring how Dits could version models, datasets, and derived research artifacts. Not a separate shipped product."
+                : "Open, local-first version control for large media and asset pipelines. Local alpha available; collaboration is on the roadmap."}
             </p>
           </div>
           <div>
@@ -139,8 +139,8 @@ export function Footer() {
           </nav>
           <p className="text-sm text-muted-foreground">
             {/* AGENTS.md: Use the ellipsis character, non-breaking space for year */}
-            &copy;&nbsp;{new Date().getFullYear()} Dits. Built for the media
-            community.
+            &copy;&nbsp;{new Date().getFullYear()} Dits. Open source, local-first,
+            and built in public.
           </p>
         </div>
       </div>

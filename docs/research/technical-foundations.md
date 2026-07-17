@@ -132,7 +132,27 @@ Dits should go further by making chunking, media structure, exact
 reconstruction, semantic relationships, and verification part of its own open
 model rather than treating the large asset as one external opaque blob.
 
-### 2.3 Backup CAS systems such as restic
+### 2.3 Hugging Face Xet
+
+Xet is the most important direct technical comparison for Dits. Its published
+system combines Git compatibility with content-defined chunking, a
+content-addressed store, cross-file deduplication, and range reconstruction. Its
+core implementation is open source in Rust.
+
+Adopt:
+
+- protocol and format documentation as part of the product;
+- Git interoperability where it reduces migration cost;
+- chunk-level reconstruction that does not require whole-file hydration;
+- clean separation between repository metadata and scalable object storage; and
+- realistic acknowledgment that CDC and a CAS are established primitives.
+
+Dits cannot differentiate as “Git plus CDC.” It must prove value in explicit
+media structure, edit and dependency graphs, rendition provenance, and
+deterministic regeneration. Interoperability should be evaluated before inventing
+an incompatible mechanism for any layer Xet already standardizes well.
+
+### 2.4 Backup CAS systems such as restic
 
 Restic’s format is instructive because it treats immutable writes as atomic,
 groups many blobs into packs, authenticates/indexes stored content, and keeps
@@ -150,7 +170,7 @@ Adopt:
 Dits differs because it also needs version-control refs, working trees, random
 range hydration, semantic media objects, and collaborative conflict rules.
 
-### 2.4 Bazel Remote Execution CAS
+### 2.5 Bazel Remote Execution CAS
 
 The Remote Execution API separates content-addressed storage from execution.
 Its `FindMissingBlobs`, streaming upload/download, and newer
@@ -171,7 +191,7 @@ Adopt:
 Dits should extend this model with commit/ref transactions, local repository
 policy, media object kinds, packs, and provenance.
 
-### 2.5 Perforce/Plastic-style binary workflows
+### 2.6 Perforce/Plastic-style binary workflows
 
 Centralized creative VCS products demonstrate that exclusive checkout,
 workspace views, partial materialization, and predictable large-binary
@@ -189,7 +209,7 @@ Adopt:
 Dits should retain local-first history and open verification instead of making a
 central server the source of truth.
 
-### 2.6 DVC, data versioning, and object-store versioning
+### 2.7 DVC, data versioning, and object-store versioning
 
 Dataset tools show the usefulness of content-addressed caches, pipeline
 lineage, remote object stores, and reproducible outputs. Object-store versioning
@@ -207,7 +227,7 @@ Adopt:
 Dits must keep media-specific fidelity and interactivity requirements that
 dataset systems usually do not model.
 
-### 2.7 OpenTimelineIO, OpenAssetIO, OpenUSD, OpenColorIO, and C2PA
+### 2.8 OpenTimelineIO, OpenAssetIO, OpenUSD, OpenColorIO, and C2PA
 
 These standards cover different layers and should not be collapsed into one
 “media format.”
@@ -958,6 +978,8 @@ Primary specifications and project documents used in this review:
 - Git multi-pack index: <https://git-scm.com/docs/multi-pack-index>
 - Git partial clone design: <https://git-scm.com/docs/partial-clone>
 - Git LFS specification: <https://github.com/git-lfs/git-lfs/blob/main/docs/spec.md>
+- Hugging Face Xet documentation: <https://huggingface.co/docs/xet/>
+- Xet core implementation: <https://github.com/huggingface/xet-core>
 - Bazel Remote Execution API:
   <https://github.com/bazelbuild/remote-apis/blob/main/build/bazel/remote/execution/v2/remote_execution.proto>
 - restic repository format:

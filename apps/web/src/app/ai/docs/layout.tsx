@@ -1,4 +1,5 @@
 import { DocsShell } from "@/components/docs-shell";
+import { Callout } from "@/components/ui/callout";
 
 /**
  * AI docs layout. Uses the same shared chrome as the media docs; the indigo
@@ -10,5 +11,14 @@ export default function AiDocsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <DocsShell label="Dits for AI docs">{children}</DocsShell>;
+  return (
+    <DocsShell label="Dits for AI research notes">
+      <Callout type="warning" title="Research, not a shipped AI product" className="mb-6">
+        These pages explore possible model and dataset applications of the generic
+        Dits engine. AI-specific formats, workflows, remote sync, similarity
+        layers, and recompute orchestration are not implemented.
+      </Callout>
+      {children}
+    </DocsShell>
+  );
 }

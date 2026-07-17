@@ -46,7 +46,7 @@ export function AlphaBanner() {
           <p>
             <strong>Alpha Software:</strong>{" "}
             <span className="hidden sm:inline">
-              Dits is in early development by a single developer. Not recommended for production use&nbsp;&mdash; may cause data corruption.
+              Dits is in early development. Evaluate it only on disposable or independently backed-up projects; verify restored files.
             </span>
             <span className="sm:hidden">
               Early development. Not for production use.

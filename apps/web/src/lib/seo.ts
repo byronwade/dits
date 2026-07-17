@@ -3,13 +3,13 @@ import { Metadata } from "next";
 const SITE_URL = "https://dits.dev";
 const SITE_NAME = "Dits";
 const DEFAULT_DESCRIPTION =
-  "Dits is a free and open source version control system designed for video production and large binary files. Like Git, but optimized for media workflows.";
+  "Dits is open, local-first version control for large media and asset pipelines.";
 const DEFAULT_KEYWORDS = [
   "version control",
   "video",
   "large files",
   "binary files",
-  "git alternative",
+  "local-first version control",
   "media",
   "deduplication",
   "vcs",
@@ -22,7 +22,9 @@ const DEFAULT_KEYWORDS = [
   "media asset management",
   "video workflow",
   "content-addressed storage",
-  "distributed version control",
+  "asset pipeline",
+  "media provenance",
+  "reproducible media",
 ];
 
 export interface SEOConfig {

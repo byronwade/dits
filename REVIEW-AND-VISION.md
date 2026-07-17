@@ -1,124 +1,172 @@
-# Dits — Active Review & Video-Diff Vision
+# Dits Product Direction
 
-*Generated audit of the repository as it stands, plus a concrete technical thesis for "real git diffing for video/photo." Every claim below is grounded in the code, not the README.*
+**Maturity:** Strategic direction. Not a shipped-capability document.
 
----
+## Conclusion
 
-## TL;DR
+Dits has strong potential, but not because content-defined chunking is novel.
+The durable opportunity is to create an open, local-first and independently
+verifiable history of large media and asset pipelines.
 
-- **The local engine is real and good.** Content-addressed store, convergent AES-256-GCM encryption, FastCDC chunking, **real ISOBMFF/MP4 atom parsing + reconstruction**, git2 hybrid storage for text, proxy checkout, ffmpeg GOP segmentation, NLE project parsing. ~123 tests in the canonical engine (`apps/cli`), plus another ~100 in the now-quarantined backend crates. The README's "120+ tests" and "format-aware MP4" claims are **true**.
-- **The product has two heads fighting each other.** The repo ships **two complete, separately-built `dits` binaries** with no shared code. This is the single biggest problem.
-- **The networking story is a stub.** P2P (QUIC/wormhole), remote push/pull/fetch, and bi-directional sync are placeholders ("Phase 4b"). The README presents them as core capabilities. This is the credibility gap to close — *not* the local engine.
-- **The core thesis has a physics problem.** Chunk-based dedup **cannot** diff re-encoded video. It works for appends, remux, metadata-only edits, and stream-copy trims — and collapses to ~0 dedup the moment an NLE re-exports. Solving this for real requires owning a **frame-addressable intermediate representation**, not chunking whatever bytes the NLE produced. That's the revolutionary move, and it's technically coherent (Part 3).
+The product should become:
 
----
+> **Exact source history plus a reproducible graph of edits, dependencies, and
+> renditions—shared through an open protocol.**
 
-## Part 1 — Structural problems (highest leverage)
+That is closer to Git plus a media build graph than Git LFS with a different
+uploader.
 
-### 1.1 Two competing `dits` binaries (P0)
-The workspace builds **two** things both named `dits`:
+## The problem
 
-| | `apps/cli` | `apps/cli/crates/*` |
-|---|---|---|
-| Package / bin | `dits` (`src/main.rs`) | `dits-cli` (`src/main.rs`), also bin `dits` |
-| Size | **34,567 LOC** | **12,302 LOC** |
-| Identity | Local-first, git-like CLI (real) | SaaS backend: `dits-api` (axum), `dits-db` (sqlx/pg), `dits-worker`, `dits-storage` (s3), `dits-protocol`, `dits-sdk`, `dits-chunker` |
-| State | Feature-rich, tested | Largely stubbed — `dits-worker/src/main.rs`: `// TODO: Implement job processing`; `dits-cli/src/commands.rs` is a 170-line stub |
-| Chunking | upstream `fastcdc` crate | 9 hand-rolled chunkers, all dead |
+Asset-heavy teams still combine several incomplete systems:
 
-These share **no code**. They encode two different products (a local CLI vs. a cloud backend). Both packages emit a binary artifact named `dits` into the shared `target/` dir (last-built wins; `cargo run` needs `-p` to disambiguate), and the maintenance surface is doubled. On the evidence (LOC, completeness, recent commits touching `apps/cli`), `apps/cli` **appears** to be the canonical, maintained one and the `crates/*` workspace appears unmaintained — but **confirm which is intended to be the future before removing anything.** If `apps/cli` is canonical, the recommendation is: the local-first engine is the real asset; the backend crates should be deleted or later rebooted as thin services *that depend on `apps/cli`'s engine as a library*, not as a parallel fork of it.
+- source code in Git;
+- large binaries in Git LFS, Perforce, shared storage, or copied folders;
+- project intent inside proprietary editor files;
+- review history in a collaboration service;
+- render and build provenance in naming conventions, chat, or memory;
+- remote access through full sync, edge infrastructure, or cloud streaming.
 
-### 1.2 Nine dead chunking algorithms
-`apps/cli/crates/dits-chunker` implements `fastcdc, parallel_fastcdc, keyed_fastcdc, rabin, ae, gear_table, fixed, adaptive, chonkers, video` — **none are wired into any ingest path** (no factory maps the `ChunkerType` enum to an implementation; the worker that would run them is a TODO). The live binary uses the upstream `fastcdc` crate in `apps/cli/src/core/chunk.rs`. This is ~2,200 LOC of research code masquerading as product. Move it to a `research/` or `benches/` location or delete it; the comparison is interesting but it is not the system.
+Each product solves part of the workflow, but the portable history of how exact
+sources became a specific result remains weak.
 
-### 1.3 The README over-promises the network layer
-Real and wired: local commit/add/status/diff/log/branch/merge/checkout, MP4 deconstruct/reconstruct, proxy checkout, encryption, segmentation, local-filesystem clone.
-Stubbed (prints "not yet implemented" / "Phase 4b" and returns `Ok`):
-- `p2p/host.rs:69-84`, `p2p/client.rs:50-66`, `p2p/transfer.rs:224` — no QUIC data actually moves.
-- `commands/repo/{push,pull,fetch,sync}.rs` — no network object transfer.
-- `commands/repo/sync.rs` — "simplified merge" can overwrite local state (**data-loss risk on divergence**, §2.1).
+## The market reality
 
-The fix is not to build all of it now — it's to **stop advertising it as done.** A tool that nails local-first media versioning is compelling on its own.
+The storage primitive is validated and competitive:
 
----
+- Git LFS separates pointer history from large payload storage.
+- Hugging Face Xet publishes a content-defined chunking and CAS protocol with a
+  Rust implementation and Git LFS compatibility.
+- Perforce provides mature binary locking, delta transfer, global infrastructure,
+  administration, and creative-tool integrations.
+- Unity Version Control combines distributed/centralized workflows and smart
+  locks.
+- LucidLink provides on-demand cloud file streaming.
+- Frame.io provides media review, approval, version stacks, and sharing.
+- DVC and related data tools provide lineage, caches, and reproducible pipelines.
 
-## Part 2 — Concrete code findings
+Dits should interoperate with these categories where possible. Reimplementing
+every surrounding product would destroy focus.
 
-### 2.1 Bi-directional sync can lose data (P1)
-`commands/repo/sync.rs` does a "simplified merge" with no conflict detection on divergent branches; combined with the stubbed fetch, a sync can overwrite local refs. Either gate it behind `--force` with a loud warning or finish real 3-way ref reconciliation before exposing it.
+## The differentiated product model
 
-### 2.2 `force_keyframes: true` defeats segment dedup (design bug)
-`segment/segmenter.rs` defaults `force_keyframes: true`. Forcing keyframes at segment boundaries requires **re-encoding**, which changes the bytes of every segment → convergent dedup drops to ~0 across versions. For dedup you want `-c copy` segmentation that cuts only on *existing* keyframes. The current default optimizes for clean boundaries at the cost of the project's entire reason to exist. (This is a symptom of the deeper issue in Part 3.)
+### 1. Exact trust core
 
-### 2.3 MP4 round-trip is only proven for the happy path
-`mp4/{parser,deconstructor,reconstructor,offset_patcher}.rs` is genuinely good (parses `moov`/`mdat`, locates and patches `stco`/`co64`). But: no test proves a **byte-identical** round-trip on real-world files (fragmented MP4 / `moof`, multiple `mdat`, `edts`/edit lists, `co64`-only files, MOV with `wide` atoms). `sparse_checkout.rs:257` still has "TODO: proper MP4 reconstruction." Add golden-file round-trip tests with real camera/NLE output before trusting it with someone's footage.
+- Preserve imported bytes exactly.
+- Address immutable objects cryptographically.
+- Verify length and digest across every trust boundary.
+- Publish manifests and refs only after object durability.
+- Make repository meaning independent of a hosted database.
 
-### 2.4 No real sample media in the repo
-There is **not a single `.mp4/.mov/.h264/.raw`** anywhere outside web assets, and no test feeds real video through the MP4 or segmenter paths. The most important, most format-fragile code is exercised only on synthetic bytes. This is the highest-ROI testing gap.
+### 2. Structure-aware media
 
-### What is solid (don't touch)
-*Based on a targeted pass, not an exhaustive line-by-line audit:* `store/objects.rs` verifies BLAKE3 on read (201-207, 255-260); `security/encryption.rs` is real convergent AES-256-GCM with tamper tests; chunk reconstruction is byte-exact and tested. No `todo!()`/`unimplemented!()` panics surfaced in the live tree. The foundation looks trustworthy, but "no critical bugs surfaced in a skim" is not "none exist" — a full audit of the commit/checkout/merge paths is still warranted.
+- Parse only explicitly supported formats and layouts.
+- Preserve unknown or unsupported input opaquely.
+- Separate container structure, decoded identity, and encoded rendition.
+- State exact, structural, and fidelity contracts precisely.
 
----
+### 3. Semantic creative graph
 
-## Part 3 — Real git diffing for video/photo (the actual thesis)
+- Record timelines, edits, dependencies, render recipes, and provenance.
+- Reuse established identifiers and interchange standards.
+- Treat similarity as a search index, never as exact identity.
+- Keep originals and exports addressable even when a relationship is inferred.
 
-### The physics problem
-FastCDC dedup assumes an edit only **shifts** bytes (insert/delete), leaving most bytes identical so the rolling hash re-syncs. Compressed video breaks both assumptions:
-1. **Inter-frame coding** — every P/B frame depends on neighbors; a change near the start perturbs the entire GOP.
-2. **Re-encoding** — any NLE export, color grade, or transcode produces a *completely different bitstream* for visually-similar content. Zero bytes match. Dedup → 0.
+### 4. Verified collaboration
 
-So today's engine genuinely dedups exactly four cases: **append** (kept recording), **remux** (container change, same mdat), **metadata-only** edits (tags/`moov`), and **stream-copy trims** landing on real keyframes. Every "I graded it and re-exported" — the 90% case for editors — dedups nothing. **You cannot diff a re-encoded video by hashing its bytes. Full stop.**
+- Negotiate and move only missing objects.
+- Resume from verified boundaries.
+- Update refs with compare-and-swap.
+- Model lock leases and content availability explicitly.
+- Run the same semantics over local paths, HTTP, bundles, QUIC, or P2P.
 
-The user's instinct ("invent our own encoding") is correct. Here is the coherent version.
+## Initial adoption wedge
 
-### Separate the two problems the word "diff" hides
-1. **Storage dedup** — don't re-store/re-upload unchanged content.
-2. **Semantic diff** — show *what visually/structurally changed* (which frames, which regions).
-Chunking attempts (1) and fails on re-encode; it never even attempts (2).
+Start with small and mid-sized game and virtual-production teams that already
+use Git-oriented workflows but struggle with Unreal/Unity assets, DCC files,
+video, builds, locks, and remote contractors.
 
-### The proposal: Dits owns a Frame-Addressable Canonical Representation (FACR)
-Stop versioning "the file the NLE produced." Make Dits own a canonical, all-intra, content-addressed representation, and treat MP4/MOV/ProRes as **import/export formats** — exactly how git owns blobs/trees and treats your editor's autosave as irrelevant.
+Why this wedge:
 
-**On ingest** (orchestrated compute — the README's "compute is a feature" principle finally earns its keep):
-- Decode to frames. Re-encode each frame as an **independently-decodable unit** (visually-lossless or lossless mezzanine: AV1/HEVC **intra-only**, ProRes/DNxHR-style, or JPEG-XL/per-frame). No cross-frame prediction → every frame is addressable.
-- **Content-address each frame** (`blake3(frame_pixels)` or perceptual hash + exact hash). A video version = an ordered **frame manifest**: `[frame_hash, presentation_ts, ...]` + an edit/transform log. This is literally a git tree for pixels.
+- developers already understand commits and branches;
+- large binary assets and exclusive-edit workflows are unavoidable;
+- Git LFS pain is visible and measurable;
+- build and asset dependency graphs create a path to semantic value;
+- teams can evaluate an open tool before enterprise procurement;
+- the same foundation later extends into post-production and VFX.
 
-**Two cases — and the headline only fully holds for one of them (this is the crux):**
+The first design-partner workflow should be narrow: migrate an existing project,
+lock a binary asset, create local history, transfer a verified delta, hydrate a
+sparse workspace, and recover from interruption.
 
-- **Case A — Dits owns the edit (non-destructive log over canonical frames).** A trim/reorder/insert/grade is recorded as a *transform over frame hashes*, not a re-encode. A grade touching frames 1200–1350 stores only those 150 frames (or their residuals); the rest stay as unchanged hashes. `dits diff` says *"150 frames changed, regions X,"* and renders a visual before/after — semantic diff (2) and dedup (1) at once, with **~0 new bytes** for everything untouched. **This is the real revolution, and it is the argument for why Dits must own a non-destructive editing model — not merely chunk what an NLE emitted.**
+## Product promise by maturity
 
-- **Case B — external NLE re-export → re-ingest (Premiere/Resolve exports the whole timeline, you re-add it).** Every codec in play (H.264/HEVC/ProRes/DNxHR — all DCT-based, lossy) **re-quantizes every frame**. A frame whose *source* was untouched still decodes to slightly different pixels after the round-trip, so `blake3(frame_pixels)` matches **nothing**. Exact-hash dedup → 0. Here you fall back to **perceptual-hash matching + residual coding** (find the nearest prior frame, store the delta). It works, but it's the fuzzy, lossy, compute-heavy path — *not* the "0 new bytes" path. The only way to get Case-A economics for external workflows is to capture the edit decisions (EDL/XML/OTIO) and reconstruct the non-destructive log, rather than diffing the flattened export.
+### Current alpha
 
-So the strategic conclusion is sharp: **the byte-exact magic requires Dits to own editing.** Selling "drop your re-exports in and they dedup perfectly" overpromises; selling "edit non-destructively in Dits (or import your EDL) and get true frame-level version control" is honest and still unprecedented.
-- **Photos fall out for free.** RAW is already tile/frame-addressable; a non-destructive edit becomes an **edit-log manifest over the original** (content-addressed Lightroom sidecars, versioned). Burst photos dedup per-frame.
-- **Within-frame dedup.** Graded/denoised frames are mostly unchanged spatially → store a **residual** against the nearest-matching frame hash (tile + motion search across the frame store), then zstd. Even "every frame changed slightly" stays cheap.
+“Create verified local history for large binary projects and inspect what the
+engine stores.”
 
-**Honest costs (state them up front):**
-- **Storage:** all-intra is bigger than long-GOP. Mitigations: per-frame residual coding + zstd; keep FACR as the *canonical store* and **export** a compressed deliverable on checkout (you already have the proxy machinery for this). For most editorial work the dedup win across versions dwarfs the per-version size penalty.
-- **Compute:** ingest transcode is real CPU/GPU. This is orchestratable and cache-friendly (only new frames transcode). It's also a *moat* — it's the hard part competitors won't copy.
-- **Fidelity:** must be visually-lossless mezzanine (or true-lossless for archival/masters). Be explicit about the tier per repo.
+### Next product milestone
 
-**Migration path (don't boil the ocean):** today's MP4 atom-split is the v0. v1 = FACR behind a flag for a single codec (start with **ProRes/DNxHR or intra-AV1**, the formats editors already mezzanine to). Prove byte-or-perceptually-exact round-trip on real footage. Ship `dits diff --visual`. That single feature — *"see exactly which frames changed between two cuts, and only store the deltas"* — is something **no VCS on earth does**, and it's the headline.
+“Move a repository between two stores without resending known objects or
+trusting hidden server state.”
 
----
+### Differentiating proof
 
-## Part 4 — Positioning
+“Explain and reproduce a supported media change from exact source through edit
+graph to rendition.”
 
-**Wedge: local-first, format-aware media VCS for editors — the part that actually works and is differentiated.** Don't lead with P2P/cloud (stubbed) or with "Git but bigger" (everyone says that). Lead with the three real, hard-to-copy capabilities:
-1. **Proxy-native checkout** — clone a 2 TB project, get working proxies instantly, pull full-res frames on demand. (Mostly built.)
-2. **Structure-aware MP4** — version metadata and media separately; metadata edits cost nothing. (Built.)
-3. **NLE-project hybrid diff** — git-grade line diff/merge/blame on FCPXML/Premiere XML *and* chunk dedup on the payload. (Built.)
+### Long-term platform
 
-Then the roadmap headline is Part 3: **frame-level visual diff.** That's the "revolutionize the industry" line, and it's grounded in a real plan rather than a slogan.
+“Carry an open creative history across tools, storage providers, teams, and
+compute environments.”
 
-**For developers specifically:** an embeddable Rust engine (`dits` as a library) + a clean CLI + content-addressed store is genuinely useful for game assets, ML datasets, and design files. Ship the library cleanly (it's currently entangled with the binary) and that's a second audience.
+## What Dits should not become
 
----
+- A general cloud drive with version labels.
+- A proprietary editor or codec.
+- A hosted service with a second incompatible object model.
+- A collection of impressive demos that bypass repository invariants.
+- A benchmark site built from modeled or fabricated numbers.
+- A universal claim to understand every media format.
+- A P2P product whose discovery mechanism substitutes for authorization and
+  repository consistency.
 
-## Recommended sequence
+## Business model
 
-1. **Resolve the two-binary identity** — delete/quarantine `apps/cli/crates/*`; make `apps/cli` canonical and library-first.
-2. **Tell the truth in the README** — mark P2P/remote as roadmap, not features.
-3. **Golden-file MP4 round-trip tests on real footage** — earn trust in the one feature that touches user data.
-4. **Prototype FACR v1** behind a flag for one mezzanine codec + ship `dits diff --visual`. This is the revolution; everything above clears the runway for it.
+Keep the trust core, formats, conformance suite, local CLI, and reference remote
+protocol open. Charge for convenience and coordination:
+
+- managed verified storage and transfer;
+- team identity, policy, lock coordination, audit, and review;
+- hosted render/build workers and reproducible caches;
+- enterprise deployment, support, compliance, and migration;
+- optional integrations that do not make the repository proprietary.
+
+Storage alone is a commodity. The defensible product is trustworthy workflow,
+interoperability, recovery, and integrations.
+
+## Measures of progress
+
+Do not use command count or roadmap breadth as the primary score.
+
+Track:
+
+- byte-exact reconstruction and corruption detection;
+- peak ingest memory and write amplification;
+- repository-format conformance and independent-reader compatibility;
+- object lookup, pack repair, GC, and checkout at declared scales;
+- real mutation reuse by corpus class;
+- transferred bytes and recovery under network faults;
+- successful migration and weekly use by design partners;
+- time to understand, reproduce, and approve a creative change.
+
+## One-sentence positioning
+
+> **Dits is open version control for large media and asset pipelines: exact
+> source history today, a verifiable graph of how every result was made
+> tomorrow.**
+
+Implementation truth remains in [docs/STATUS.md](docs/STATUS.md); execution is
+ordered in [ROADMAP.md](ROADMAP.md); the technical basis is
+[docs/research/technical-foundations.md](docs/research/technical-foundations.md).

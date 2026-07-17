@@ -1,296 +1,93 @@
-# Unique Positioning: Dits Marketing Strategy
+# Audience and go-to-market strategy
 
-> ⚠️ **Internal strategy document — NOT product status.** Aspirational positioning, not a
-> description of shipped features. Claims here (real-time multi-tool collaboration,
-> petabyte-scale instant search, "opens in 2 seconds", pricing tiers, time-saved figures)
-> are **not built/validated**. For what actually ships, see [`docs/STATUS.md`](../STATUS.md).
-> Live marketing must follow [`docs/marketing/positioning.md`](positioning.md) guardrails.
+> Planning document. Last reviewed: 2026-07-16. All public copy must follow
+> [`positioning.md`](positioning.md), and all feature claims must follow
+> [`docs/STATUS.md`](../STATUS.md).
 
-## The Core Message: "Dits is Creative Intelligence"
+## Category
 
-### Traditional Positioning (What We Were)
-"Git for large binary files" - sounds like a compromise, not an innovation.
+**Open, local-first version control for large media and asset pipelines.**
 
-### Revolutionary Positioning (What We Are)
-"Dits is the AI-powered creative production platform that understands your work like a seasoned director."
+Dits competes for workflows, not only storage. The goal is to make exact asset
+history and reproducible derivation a normal part of creative production.
 
----
+## Initial wedge
 
-## 🎯 Three Pillar Marketing Strategy
+Start with small and mid-sized **game and virtual-production teams** that:
 
-### Pillar 1: "Dits Understands Creative Work" (AI + Semantics)
+- already understand commits, branches, and build graphs;
+- keep code beside large, frequently changing binary assets;
+- feel the cost of whole-file history and manual asset handoffs;
+- can evaluate a local CLI without waiting for a hosted service;
+- are technically able to contribute representative fixtures and failure cases.
 
-**Target Audience:** Creative professionals who hate generic file management tools.
+This wedge gives Dits a credible adoption path while the remote protocol and
+hosted product remain unbuilt.
 
-**Key Messages:**
-- "Dits knows when you're adjusting color vs. replacing footage"
-- "Version your artistic intent, not just bytes"
-- "AI that remembers your creative decisions"
+## Expansion sequence
 
-**Campaign:** "The Creative Intelligence Revolution"
-- Video: Director working, Dits AI suggesting "Try this similar shot from take 3"
-- Demo: Visual diff showing "Color grade change" vs "Footage replacement"
+| Audience | Entry problem | Capability that must be credible first |
+|---|---|---|
+| Game and virtual production | Mixed code/assets, binary churn, reproducible builds | Reliable local history, format stability, dependency graph |
+| Post-production and VFX | Version sprawl, proxy/rendition provenance, project interchange | Semantic media model, real fixtures, dependable proxy and timeline flows |
+| ML and scientific media | Large data artifacts and derivation lineage | Stable object model, reproducible pipelines, policy and remote CAS |
+| Enterprise studios | Governance, global transfer, support | Verified remote protocol, identity, recovery, observability, administration |
 
-### Pillar 2: "Dits Makes Collaboration Effortless" (Real-Time + Universal)
+## Jobs to be done
 
-**Target Audience:** Creative teams struggling with file sharing chaos.
+- Replace `final_v27` with inspectable history.
+- Keep exact source assets without storing every revision as an unrelated blob.
+- See how project files, media, and derived outputs depend on one another.
+- Reproduce a proxy or rendition from committed inputs.
+- Move only verified missing objects when collaboration ships.
 
-**Key Messages:**
-- "See your team's creative changes in real-time"
-- "One project works in any creative tool"
-- "No more 'final_final_v2.mp4' madness"
+## Adoption motion
 
-**Campaign:** "Creative Collaboration Reimagined"
-- Video: Team working seamlessly across Premiere, Resolve, and After Effects
-- Demo: Live cursors showing "Sarah is adjusting timing" not "file modified"
+### Now: technical design partners
 
-### Pillar 3: "Dits Handles Scale Effortlessly" (Performance + Intelligence)
+- Publish transparent alpha status and reproducible component benchmarks.
+- Ask contributors for representative media fixtures and destructive edge cases.
+- Demonstrate local commit, history, diff, checkout, and integrity recovery.
+- Build trust through design docs, ADRs, and compatibility tests.
 
-**Target Audience:** Studios dealing with massive projects and technical limitations.
+### Next: workflow pilots
 
-**Key Messages:**
-- "100GB projects open instantly"
-- "Find any asset in seconds across petabytes"
-- "AI manages your storage so you don't have to"
+- Select one game/virtual-production pipeline and one post-production pipeline.
+- Define success before each pilot: correctness, storage behavior, recovery, and
+  time-to-understand a change.
+- Turn pilot evidence into fixtures and regression tests, not unsupported case
+  studies.
 
-**Campaign:** "Scale Without Sacrifice"
-- Video: Massive project opening in 2 seconds
-- Demo: Instant visual search across 10TB of footage
+### Later: team product
 
----
+- Offer a hosted or self-managed remote only after protocol conformance,
+  authorization, atomic refs, resumability, and recovery pass failure tests.
+- Monetize operations, policy, integrations, support, and managed storage while
+  keeping the core format and local engine open.
 
-## 🚀 Marketing Campaigns
+## Content strategy
 
-### Campaign 1: "The Creative Intelligence Demo"
+Prioritize artifacts that let technical buyers verify the thesis:
 
-**Concept:** Live demonstration showing Dits AI understanding creative work.
+1. real-media correctness reports;
+2. repeatable storage and end-to-end workflow benchmarks;
+3. architectural explanations of objects, manifests, and derivation graphs;
+4. migration guides with explicit limitations;
+5. design-partner stories with disclosed methods and sample characteristics.
 
-**Key Scenes:**
-1. Director asks "Show me shots where the lighting matches this"
-2. Dits instantly finds and displays relevant footage
-3. AI suggests "Based on your project, you might need these similar angles"
-4. Visual diff shows "Color timing adjustment" vs "Complete footage change"
+Avoid speculative AI demos, invented savings calculators, generic category
+matrices, or comparisons whose facts cannot be sourced.
 
-**Call to Action:** "Experience creative intelligence in action"
+## Success measures
 
-### Campaign 2: "The Collaboration Symphony"
+Near-term measures are learning and reliability measures, not vanity growth:
 
-**Concept:** Multi-person live editing session showing seamless collaboration.
+- repeat users on real, backed-up projects;
+- representative fixtures added to the conformance corpus;
+- byte-exact round trips across the supported matrix;
+- successful recovery from injected interruption and corruption;
+- time required for a new user to install, commit, inspect, and restore;
+- design partners willing to evaluate the next release.
 
-**Key Scenes:**
-1. Editor in Premiere, colorist in Resolve, sound designer in Pro Tools
-2. Real-time awareness: "Mike just adjusted the keyframe timing"
-3. Instant sync without interrupting work
-4. Conflict resolution: "Sarah changed color, Mike adjusted timing - no conflict"
-
-**Call to Action:** "End creative collaboration chaos"
-
-### Campaign 3: "The Performance Miracle"
-
-**Concept:** Showcase impossible-seeming performance feats.
-
-**Key Scenes:**
-1. 1TB project opens in 2 seconds
-2. Instant search across 50TB of footage
-3. Real-time visual diffs of video edits
-4. Collaborative editing with zero latency
-
-**Call to Action:** "Handle massive projects with desktop speed"
-
----
-
-## 🎭 Brand Personality
-
-### Voice & Tone
-- **Confident but Approachable**: "We're the experts, but we're here to help"
-- **Creative but Technical**: Speaks both artist and engineer languages
-- **Bold but Practical**: Ambitious claims backed by real technology
-
-### Visual Identity
-- **Clean, Modern**: Professional but not corporate
-- **Dynamic, Fluid**: Reflects creative workflows
-- **Intelligent**: Subtle AI/tech elements without being cold
-
-### Taglines
-- "Creative Intelligence for Modern Production"
-- "Version Control That Understands Art"
-- "The AI Creative Assistant"
-- "Where Technology Meets Creativity"
-
----
-
-## 📊 Market Positioning Matrix
-
-```
-Creativity Understanding     High │ Dits (Unique)
-                              │
-                              │   Perforce, Git LFS
-                              │   (Technical solutions)
-                              │
-                              │   Dropbox, Frame.io
-                              │   (Simple sharing)
-                    Low ──────┼─────────────────────►
-                              │   Generic file tools
-                              │   (No understanding)
-
-                              Technology Sophistication
-```
-
-**Key Insight:** Dits occupies the "high creativity understanding, high technology sophistication" quadrant - completely unique positioning.
-
----
-
-## 🎯 Target Audiences & Messaging
-
-### 1. **Independent Filmmakers** (Early Adopters)
-**Pain:** Version control chaos, lost creative decisions, collaboration friction
-**Message:** "Dits remembers your artistic vision and makes collaboration effortless"
-**Value Prop:** Free tier, easy setup, immediate productivity boost
-
-### 2. **Creative Studios** (Growth Market)
-**Pain:** Massive projects, team coordination, tool incompatibilities
-**Message:** "Scale your creativity without technical limitations"
-**Value Prop:** Performance, collaboration features, enterprise support
-
-### 3. **Game Development Teams** (Technical Creatives)
-**Pain:** Binary asset conflicts, build management, large file handling
-**Message:** "Version control designed for creative technology"
-**Value Prop:** Technical performance, AI assistance, developer-friendly
-
-### 4. **Post-Production Houses** (Enterprise)
-**Pain:** Client collaboration, massive archives, compliance requirements
-**Message:** "Enterprise-grade creative collaboration"
-**Value Prop:** Security, scale, audit trails, professional support
-
----
-
-## 🏆 Competitive Advantages to Highlight
-
-### 0. **Frame-Addressable Versioning (real, shipping)**
-- No other VCS versions video at frame granularity — re-grade 150 of 1,000 frames and store only 150
-- Photos get a non-destructive, content-addressed edit log over the original RAW
-- "See which frames changed. Store only those." (`facr-*`/`photo-*` commands; `dits facr-demo`)
-
-### 1. **AI Understanding**
-- No one else has AI that understands creative content
-- "Dits knows this is a color correction, not a file replacement"
-
-### 2. **Universal Tool Support**
-- No other VCS bridges creative applications
-- "Your project works in any tool, instantly"
-
-### 3. **Real-Time Collaboration**
-- Most VCS is batch-oriented, not live
-- "See creative changes as they happen"
-
-### 4. **Performance at Scale**
-- Nothing else handles petabyte-scale creative projects
-- "100GB projects feel like 1MB projects"
-
----
-
-## 📈 Go-to-Market Strategy
-
-### Phase 1: Awareness (Months 1-6)
-- **Content Marketing:** Technical blog posts, case studies, AI demos
-- **Social Proof:** Beta user testimonials, early adopter stories
-- **Community Building:** Open-source engagement, creative community partnerships
-
-### Phase 2: Consideration (Months 7-12)
-- **Product Demos:** Live AI demonstrations, performance showcases
-- **Comparison Content:** "Dits vs. Perforce", "Dits vs. Dropbox for Creatives"
-- **Trial Program:** Extended free trials with personalized onboarding
-
-### Phase 3: Conversion (Month 12+)
-- **Case Studies:** Detailed success stories from production companies
-- **Industry Partnerships:** Integration with creative tool vendors
-- **Enterprise Sales:** Direct sales for large studios and post houses
-
----
-
-## 💰 Pricing & Business Model
-
-### Freemium Model
-- **Free Tier:** Basic VCS for individuals, limited storage
-- **Pro Tier:** $29/month - Full AI features, larger storage, priority support
-- **Studio Tier:** $99/month per user - Team collaboration, advanced AI, custom integrations
-- **Enterprise:** Custom pricing - Advanced security, dedicated support, on-premise options
-
-### Value-Based Pricing
-- Price reflects the massive productivity gains
-- "Save 10 hours/week per creative professional"
-- ROI calculation: Time saved × creative hourly rate
-
----
-
-## 📊 Success Metrics
-
-### User Engagement
-- **Daily Active Users:** Track consistent usage
-- **Feature Adoption:** AI search, real-time collaboration usage
-- **Project Scale:** Average project sizes, asset counts
-
-### Business Impact
-- **Time Saved:** User-reported productivity improvements
-- **Project Success:** Fewer lost assets, cleaner workflows
-- **Team Satisfaction:** Collaboration friction reduction
-
-### Market Position
-- **Mindshare:** "Dits" mentioned in creative technology discussions
-- **Competitive Displacement:** Users switching from other solutions
-- **Industry Recognition:** Awards, mentions in creative technology publications
-
----
-
-## 🎬 Launch Campaign: "The Intelligence Revolution"
-
-### Campaign Arc
-1. **Teaser:** "What if your version control understood your creative work?"
-2. **Reveal:** AI-powered features, live collaboration
-3. **Proof:** Performance demos, user testimonials
-4. **Call to Action:** "Join the creative intelligence revolution"
-
-### Key Visuals
-- **Hero Image:** Creative professional with AI assistant overlay
-- **Demo Video:** Before/after workflow comparison
-- **Infographics:** Performance metrics, feature comparisons
-
-### Launch Event
-- Virtual summit with live demos
-- Panel of creative professionals
-- Technical deep-dive sessions
-- Community Q&A
-
----
-
-## 🔮 Long-term Vision
-
-**Year 1:** Establish Dits as the intelligent alternative to traditional VCS
-**Year 2:** Become the standard for creative collaboration
-**Year 3:** Transform creative production workflows industry-wide
-
-**Ultimate Goal:** Dits becomes so essential to creative work that professionals ask "Does it work with Dits?" when evaluating new tools.
-
----
-
-## 📋 Action Items
-
-### Immediate (Next 30 Days)
-- [ ] Finalize positioning statement
-- [ ] Create demo scripts for AI features
-- [ ] Develop marketing website with key differentiators
-- [ ] Prepare launch campaign materials
-
-### Short-term (Next 90 Days)
-- [ ] Launch awareness campaign
-- [ ] Build beta user testimonial program
-- [ ] Create competitive comparison content
-- [ ] Develop sales enablement materials
-
-### Medium-term (Next 6 Months)
-- [ ] Execute full marketing campaign
-- [ ] Launch paid acquisition channels
-- [ ] Build partner ecosystem
-- [ ] Establish enterprise sales motion
-
-This positioning transforms Dits from "another VCS" into "the creative intelligence platform" - a fundamental shift that creates a completely new category and makes competition irrelevant.
+Revenue targets, market-share targets, pricing tiers, and launch dates remain
+open until the product has usage evidence and a reliable collaboration path.

@@ -1,56 +1,126 @@
-# Dits Positioning — editors first, developers close behind
+# Product positioning
 
-*A pitch grounded in what the engine actually does today, with the frame-level future as the headline roadmap. Lead with the real, hard-to-copy capabilities — not the network layer (still scaffolding).*
+> Public messaging authority. Last reviewed: 2026-07-16. Product maturity and
+> feature availability are governed by [`docs/STATUS.md`](../STATUS.md).
 
----
+## Positioning statement
 
-## The one-liner
+**Dits is open, local-first version control for large media and asset pipelines.**
 
-**Git for footage.** Version control built for video and large media — where a tiny edit doesn't cost a full re-upload, where you can see *which frames changed* between two cuts, and where your 2 TB project clones in seconds as working proxies.
+It gives teams exact source history today and is building toward a reproducible
+graph of edits, dependencies, and renditions that can move through an open,
+verified protocol.
 
-## Who it's for
+Short form:
 
-**Primary: video editors, post houses, and solo creators.** People drowning in `final_v27.mp4`, passing 100 GB project folders through cloud drives, with no real history of what changed or what shipped.
+> Version the source. Explain every result.
 
-**Secondary: developers of asset-heavy projects** — game studios, ML dataset teams, 3D/design shops — who want a content-addressed, embeddable Rust engine and a Git-shaped CLI for binaries.
+## The problem
 
-## Why now / why us — the three things that already work and are hard to copy
+Creative and asset-heavy teams usually choose between two incomplete models:
 
-1. **Proxy-native checkout.** Clone a massive project and get lightweight working proxies immediately; pull full-resolution media on demand. You edit at proxy speed and never wait on a full sync. *(Built.)*
+- source-control systems that understand history but treat large binary assets
+  poorly;
+- storage and review products that move files well but do not provide a
+  reproducible account of how an output was made.
 
-2. **Structure-aware media.** Dits parses MP4/MOV at the box level and versions metadata separately from media payload — a metadata or container change costs almost nothing instead of re-storing the whole file. *(Built: deconstruct/reconstruct with offset-table patching.)*
+Dits is designed to connect exact bytes, project structure, edit intent,
+dependencies, and derived media without hiding the underlying history.
 
-3. **NLE projects diff like code.** FCPXML / Premiere XML get true line-level diff, merge, and blame via the Git engine, while the heavy payload dedups via chunking. Your timeline history reads like a commit log. *(Built: hybrid Git+Dits storage.)*
+## Initial audience
 
-On top of that: content-addressed integrity (BLAKE3 verified on read), convergent encryption, and byte-exact reconstruction. The foundation is trustworthy and tested.
+The first wedge is **small and mid-sized game and virtual-production teams**.
+They combine Git-shaped engineering practices with large, frequently changing
+binary assets and can adopt a local CLI before a hosted collaboration service
+exists.
 
-## The headline roadmap — frame-level version control (FACR)
+The next audience is post-production and VFX teams that need frame-aware
+history, project interchange, and reproducible proxies or renders.
 
-This is the "revolutionize the industry" line, and it's grounded in a working prototype, not a slogan:
+## Product promise by horizon
 
-> **Re-grade 150 frames of a 1,000-frame clip and Dits stores 150 frames — not 1,000.**
+| Horizon | Promise |
+|---|---|
+| Today: alpha | Exact local history for mixed text and large binary projects, with chunked content-addressed storage and byte-exact checkout. |
+| Next: semantic media | Represent edits, dependencies, frames, and renditions explicitly; prove the model on real fixtures and workflows. |
+| Later: collaboration | Share the same model through a verified remote CAS protocol with atomic refs, resumable transfer, authorization, and recovery. |
 
-Dits is building a **frame-addressable canonical representation**: every frame is independently decodable and content-addressed, a clip is an ordered manifest of frame references, and edits are recorded as a non-destructive log over those frames. The payoff:
-- **True visual diff:** `dits diff --visual` shows exactly which frames (and regions) changed between two versions.
-- **Frame-granular dedup:** trims, reorders, inserts, and grades only store what actually changed.
-- **Photos too:** RAW edits become a versioned, content-addressed edit log over the original.
+## Four product layers
 
-Try the dedup core today: `dits facr-demo --frames 1000 --regrade 150`.
+1. **Exact source history** — commits, branches, tags, merges, manifests, and
+   deterministic reconstruction.
+2. **Media-aware storage** — content-defined chunking, MP4 structure awareness,
+   deduplication, integrity verification, and local proxy experiments.
+3. **Reproducible asset graph** — explicit edits, dependencies, timelines, and
+   renditions instead of opaque exported blobs.
+4. **Open collaboration protocol** — a future transport-independent protocol
+   for exchanging objects and updating refs safely.
 
-The honest caveat we lead with internally (and won't hide from technical users): the byte-exact economics hold when Dits owns the edit (or imports your EDL/OTIO timeline). Opaque external re-exports fall back to perceptual matching + residual coding. That's *why* Dits is building a non-destructive editing/import model, not just chunking whatever an NLE emits.
+Only the first two layers are substantially present in the current alpha. The
+third is experimental and the fourth is a roadmap commitment.
 
-## What we deliberately do **not** lead with (yet)
+## Defensible differentiation
 
-- **P2P / cloud sync / QUIC transport.** It's scaffolding today. We will not pitch it as shipped. Local-first media versioning is compelling on its own, and honesty here is a feature, not a weakness.
+Dits should not claim that content-defined chunking, a CAS, large-file support,
+locking, or streaming are unique. Mature products already provide parts of that
+stack.
+
+The differentiated bet is their composition:
+
+> exact version history plus a reproducible graph of media edits, dependencies,
+> and renditions, expressed through an open data model.
+
+That is closer to applying Git plus Bazel or Nix ideas to media pipelines than
+to building another Git LFS-compatible file store.
+
+## Evidence rules
+
+Public claims must be one of:
+
+- **Current** — exercised by a real command and covered by a relevant test;
+- **Experimental** — runnable but the format, fidelity, or UX may change;
+- **Roadmap** — design intent with no implication that it works today;
+- **Measured** — tied to a committed artifact, environment, date, and method.
+
+Use “designed to” for unimplemented architecture. Do not convert a component
+microbenchmark into a repository-level performance claim.
 
 ## Messaging guardrails
 
-- Never imply network sync, P2P, or QUIC delta transfer work today.
-- "Frame-level diff" is described as experimental/roadmap with a runnable demo, not GA.
-- Claims about MP4 round-trip fidelity are scoped to tested formats until golden-file tests on real footage land.
+- Say **local-first**, not “fully distributed.”
+- Say **alpha**, not “production-ready,” “enterprise-ready,” or “battle-tested.”
+- Network `push`, `pull`, `fetch`, `sync`, P2P, hosted service, SDKs, and NLE
+  plug-ins are not shipped.
+- FACR, edit logs, proxy workflows, and VFS behavior are experimental unless the
+  status page promotes a particular path.
+- Do not promise “instant” clones, petabyte scale, percentage savings, or cost
+  reductions without a reproducible benchmark.
+- Do not market a roadmap concept as a CLI command merely because a placeholder
+  command exists.
 
-## The tagline bank
+## Approved message bank
 
-- *Git for everything too big, too binary, and too expensive to keep re-uploading.*
-- *Version your footage, not your filenames.*
-- *See which frames changed. Store only those.*
+- **Category:** open, local-first version control for large media and assets.
+- **Tagline:** Version the source. Explain every result.
+- **Technical:** Exact local history with content-addressed, chunked storage.
+- **Vision:** A reproducible graph of source, edits, dependencies, and renditions.
+- **CTA:** Try the local alpha. Help shape the format and protocol.
+
+## Messages to retire
+
+- “Distributed Intelligent Transfer System” as the product definition.
+- “The AI-powered creative production platform.”
+- “100 GB projects feel like 1 MB projects.”
+- “Only Dits has chunk-level deduplication.”
+- “Frame-level versioning is production-ready.”
+- Any launch date, market-share target, ARR target, or invented customer result.
+
+## Calls to action
+
+The appropriate alpha calls to action are:
+
+1. install the npm-packaged CLI;
+2. try it on a disposable or backed-up project;
+3. run the verification suite or reproduce a benchmark;
+4. contribute a real-world fixture, failure case, or design review;
+5. follow the dependency-ordered [`ROADMAP.md`](../../ROADMAP.md).

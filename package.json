@@ -12,6 +12,7 @@
     "clean": "turbo clean",
     "build:cli": "cargo build --release",
     "test:cli": "cargo test",
+    "docs:check": "bash scripts/check-product-truth.sh && bash scripts/check-cli-docs.sh",
     "bench": "node scripts/bench/run.mjs",
     "bench:comparative": "node benchmarks/comparative/run.mjs --profile ci",
     "bench:comparative:showcase": "node benchmarks/comparative/run.mjs --profile showcase",
