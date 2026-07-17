@@ -1696,7 +1696,10 @@ async fn main() {
     match result {
         Ok(_) => (),
         Err(e) => {
-            eprintln!("Error: {}", e);
+            // Include the complete anyhow context chain. A generic command
+            // context must not hide integrity or fail-closed safety errors
+            // such as malformed configuration or an unsupported keystore.
+            eprintln!("Error: {:#}", e);
             std::process::exit(1);
         },
     }

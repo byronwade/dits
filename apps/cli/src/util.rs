@@ -8,13 +8,21 @@ use std::{
 use bincode::Options;
 
 /// Deserialize legacy bincode bytes with the same fixed-integer/trailing-byte
-/// behavior as `bincode::deserialize`, but with an allocation-aware byte
-/// limit. The limit protects callers from tiny hostile inputs that declare
-/// enormous collection lengths without changing the existing wire encoding.
+/// behavior as `bincode::deserialize`, but with an enclosing input limit and
+/// bincode's allocation-aware read limit. The two checks protect both against
+/// oversized frames and tiny hostile inputs that declare enormous collection
+/// lengths without changing the existing wire encoding.
 pub fn deserialize_bincode_with_limit<'a, T>(data: &'a [u8], limit: u64) -> bincode::Result<T>
 where
     T: serde::Deserialize<'a>,
 {
+    // Some optimized collection deserializers can consume a borrowed input in
+    // one operation, bypassing bincode's per-read accounting. Enforce the
+    // frame/file boundary before deserializing as the authoritative outer cap.
+    if u64::try_from(data.len()).map_or(true, |length| length > limit) {
+        return Err(Box::new(bincode::ErrorKind::SizeLimit));
+    }
+
     bincode::DefaultOptions::new()
         .with_fixint_encoding()
         .allow_trailing_bytes()
