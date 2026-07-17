@@ -1,5 +1,10 @@
 # NLE Parser Specifications
 
+**Maturity:** Design
+
+Selected EDL/OTIO demonstrations are Experimental, while the broader NLE parser catalog and
+semantic round trips are not implemented.
+
 Parsers for Non-Linear Editing (NLE) project files to extract asset dependencies.
 
 ---

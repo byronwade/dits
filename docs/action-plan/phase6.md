@@ -1,5 +1,11 @@
 # Engineering Execution Manual — Phase 6 (The Hologram Layer)
 
+**Maturity:** Historical
+
+This is a retained execution plan, not current capability status or the active roadmap.
+Completion boxes and phase language must be read against docs/STATUS.md and the root
+ROADMAP.md.
+
 > ⚠️ **Historical plan.** References to `dits-*` crates describe the original (now quarantined) backend layout in `legacy/backend-crates`. The current architecture is the modules under `apps/cli/src/`. See [docs/STATUS.md](../STATUS.md).
 
 **Project:** Dits (Data-Intensive Version Control System)  
@@ -108,5 +114,4 @@ cargo add tokio
 # Ensure system FFmpeg installed (brew/apt)
 ```
 Next: implement a `proxy_generator` using `ffmpeg-next` that preserves timecode, applies LUT when available, and emits a proxy ready for chunking.
-
 

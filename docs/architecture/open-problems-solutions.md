@@ -1,5 +1,10 @@
 # Open Problems & Proposed Solutions
 
+**Maturity:** Design
+
+Open-problem research. Proposed algorithms, schemas, services, and commands are not
+implementation claims.
+
 This document provides concrete solutions and implementation strategies for the 40 open problems listed in the main README. Each solution includes approach, complexity, dependencies, and implementation priority.
 
 ---

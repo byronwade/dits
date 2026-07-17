@@ -1,5 +1,11 @@
 # Phase 1: The Engine (Foundation)
 
+**Maturity:** Historical
+
+This is a retained execution plan, not current capability status or the active roadmap.
+Completion boxes and phase language must be read against docs/STATUS.md and the root
+ROADMAP.md.
+
 > ⚠️ **Historical plan.** References to `dits-*` crates describe the original (now quarantined) backend layout in `legacy/backend-crates`. The current architecture is the modules under `apps/cli/src/`. See [docs/STATUS.md](../STATUS.md).
 
 > **Status: ✅ COMPLETE** - All Phase 1 deliverables have been implemented.

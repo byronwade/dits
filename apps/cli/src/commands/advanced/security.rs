@@ -1,62 +1,19 @@
 //! Security CLI commands (Phase 9).
 
-use anyhow::{bail, Context, Result};
-use dits::security::{AuditEventType, AuditLog, AuditOutcome, KeyStore, KeyStoreError};
+use anyhow::{bail, Result};
+use dits::security::{AuditEventType, AuditLog, AuditOutcome, KeyStore};
 
 /// Initialize encryption for a repository.
 ///
-/// Creates a new keystore with the given password.
-pub fn encrypt_init(password: Option<&str>) -> Result<()> {
-    let dits_dir = find_dits_dir()?;
-    let keystore = KeyStore::new(&dits_dir);
-    let audit = AuditLog::open(&dits_dir);
-
-    if keystore.exists() {
-        audit.log_failure(AuditEventType::KeystoreCreated, "Keystore already exists", None)?;
-        bail!("Encryption already initialized. Use 'dits encrypt-status' to check status.");
-    }
-
-    // Get password (prompt if not provided)
-    let password = match password {
-        Some(p) => p.to_string(),
-        None => {
-            let pass = rpassword::prompt_password("Enter encryption password: ")
-                .context("Failed to read password")?;
-            let confirm = rpassword::prompt_password("Confirm password: ")
-                .context("Failed to read confirmation")?;
-            if pass != confirm {
-                audit.log_failure(AuditEventType::KeystoreCreated, "Password mismatch", None)?;
-                bail!("Passwords do not match");
-            }
-            pass
-        },
-    };
-
-    if password.len() < 8 {
-        audit.log_failure(AuditEventType::KeystoreCreated, "Password too short", None)?;
-        bail!("Password must be at least 8 characters");
-    }
-
-    println!("Deriving encryption keys (this may take a moment)...");
-
-    // Use default params (secure but slow)
-    let _bundle = keystore
-        .create(&password, None)
-        .context("Failed to create keystore")?;
-
-    audit.log_success(AuditEventType::KeystoreCreated, None)?;
-    audit.log_success(AuditEventType::EncryptionEnabled, None)?;
-
-    println!("Encryption initialized successfully.");
-    println!();
-    println!("Your encryption keystore has been created at:");
-    println!("  {}", keystore.path().display());
-    println!();
-    println!("IMPORTANT: Remember your password! Without it, encrypted data cannot be recovered.");
-    println!();
-    println!("Hint: You can use 'dits encrypt-status' to check encryption status.");
-
-    Ok(())
+/// The early encryption experiment is disabled until it covers the complete
+/// repository and has a reviewed key-lifecycle design.
+pub fn encrypt_init(_password: Option<&str>) -> Result<()> {
+    let _ = find_dits_dir()?;
+    bail!(
+        "Repository encryption is disabled in this alpha. The experimental implementation did not \
+         encrypt every storage engine or metadata path, so enabling it could create a false \
+         security boundary. No keystore or repository data was changed."
+    )
 }
 
 /// Show encryption status.
@@ -65,62 +22,29 @@ pub fn encrypt_status() -> Result<()> {
     let keystore = KeyStore::new(&dits_dir);
 
     if !keystore.exists() {
-        println!("Encryption: NOT INITIALIZED");
-        println!();
-        println!("Run 'dits encrypt-init' to enable encryption.");
+        println!("Encryption: UNAVAILABLE IN THIS ALPHA");
+        println!("No experimental keystore is present.");
         return Ok(());
     }
 
-    println!("Encryption: ENABLED");
-    println!();
+    println!("Encryption: EXPERIMENTAL KEYSTORE PRESENT; REPOSITORY LOCKED");
     println!("Keystore: {}", keystore.path().display());
-    println!();
-    println!("To unlock for operations, use 'dits login'");
-    println!("To change password, use 'dits change-password'");
+    println!(
+        "This alpha refuses repository operations because the old experiment did not protect \
+         every storage engine or metadata path."
+    );
+    println!("`dits logout` can clear any legacy on-disk key cache.");
 
     Ok(())
 }
 
 /// Login to unlock the keystore.
-pub fn login(password: Option<&str>) -> Result<()> {
-    let dits_dir = find_dits_dir()?;
-    let keystore = KeyStore::new(&dits_dir);
-    let audit = AuditLog::open(&dits_dir);
-
-    if !keystore.exists() {
-        audit.log_failure(AuditEventType::Login, "No keystore found", None)?;
-        bail!("Encryption not initialized. Run 'dits encrypt-init' first.");
-    }
-
-    let password = match password {
-        Some(p) => p.to_string(),
-        None => {
-            rpassword::prompt_password("Enter password: ").context("Failed to read password")?
-        },
-    };
-
-    println!("Verifying password...");
-
-    match keystore.load(&password) {
-        Ok(bundle) => {
-            audit.log_success(AuditEventType::Login, None)?;
-            // Cache the keys for the session
-            keystore.cache_keys(&bundle)?;
-            println!("Login successful.");
-            println!();
-            println!("Encryption keys cached for this session.");
-            println!("Run 'dits logout' to clear cached keys.");
-            Ok(())
-        },
-        Err(KeyStoreError::WrongPassword) => {
-            audit.log_failure(AuditEventType::LoginFailed, "Wrong password", None)?;
-            bail!("Incorrect password");
-        },
-        Err(e) => {
-            audit.log_failure(AuditEventType::LoginFailed, &e.to_string(), None)?;
-            bail!("Login failed: {}", e);
-        },
-    }
+pub fn login(_password: Option<&str>) -> Result<()> {
+    let _ = find_dits_dir()?;
+    bail!(
+        "Encryption unlock is disabled in this alpha. No key was loaded or cached. Use `dits \
+         encrypt-status` for repository-specific recovery guidance."
+    )
 }
 
 /// Logout (clear cached keys).
@@ -140,50 +64,12 @@ pub fn logout() -> Result<()> {
 }
 
 /// Change the keystore password.
-pub fn change_password(old: Option<&str>, new: Option<&str>) -> Result<()> {
-    let dits_dir = find_dits_dir()?;
-    let keystore = KeyStore::new(&dits_dir);
-    let audit = AuditLog::open(&dits_dir);
-
-    if !keystore.exists() {
-        bail!("Encryption not initialized. Run 'dits encrypt-init' first.");
-    }
-
-    let old_password = match old {
-        Some(p) => p.to_string(),
-        None => rpassword::prompt_password("Enter current password: ")
-            .context("Failed to read password")?,
-    };
-
-    let new_password = match new {
-        Some(p) => p.to_string(),
-        None => {
-            let pass = rpassword::prompt_password("Enter new password: ")
-                .context("Failed to read password")?;
-            let confirm = rpassword::prompt_password("Confirm new password: ")
-                .context("Failed to read confirmation")?;
-            if pass != confirm {
-                bail!("Passwords do not match");
-            }
-            pass
-        },
-    };
-
-    if new_password.len() < 8 {
-        bail!("New password must be at least 8 characters");
-    }
-
-    println!("Changing password (this may take a moment)...");
-
-    keystore
-        .change_password(&old_password, &new_password, None)
-        .context("Failed to change password")?;
-
-    audit.log_success(AuditEventType::PasswordChanged, None)?;
-
-    println!("Password changed successfully.");
-
-    Ok(())
+pub fn change_password(_old: Option<&str>, _new: Option<&str>) -> Result<()> {
+    let _ = find_dits_dir()?;
+    bail!(
+        "Encryption password changes are disabled in this alpha while the repository encryption \
+         format and recovery policy are under redesign. No keystore was changed."
+    )
 }
 
 /// Show audit log.

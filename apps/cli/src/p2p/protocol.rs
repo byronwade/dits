@@ -225,6 +225,9 @@ pub struct ListSharesResponse {
 pub fn serialize_message(msg: &NetMessage) -> Result<Vec<u8>, ProtocolError> {
     let payload =
         bincode::serialize(msg).map_err(|e| ProtocolError::Serialization(e.to_string()))?;
+    if payload.len() > MAX_MESSAGE_SIZE {
+        return Err(ProtocolError::MessageTooLarge { size: payload.len(), max: MAX_MESSAGE_SIZE });
+    }
     let len = payload.len() as u32;
 
     let mut result = Vec::with_capacity(4 + payload.len());
@@ -239,7 +242,8 @@ pub fn deserialize_message(data: &[u8]) -> Result<NetMessage, ProtocolError> {
     if data.len() > MAX_MESSAGE_SIZE {
         return Err(ProtocolError::MessageTooLarge { size: data.len(), max: MAX_MESSAGE_SIZE });
     }
-    bincode::deserialize(data).map_err(|e| ProtocolError::Deserialization(e.to_string()))
+    crate::util::deserialize_bincode_with_limit(data, MAX_MESSAGE_SIZE as u64)
+        .map_err(|e| ProtocolError::Deserialization(e.to_string()))
 }
 
 #[cfg(test)]
@@ -268,5 +272,18 @@ mod tests {
             },
             _ => panic!("wrong message type"),
         }
+    }
+
+    #[test]
+    fn test_rejects_declared_allocation_beyond_message_limit() {
+        let mut payload = bincode::serialize(&NetMessage::Error(ErrorMessage {
+            code:    0,
+            message: String::new(),
+        }))
+        .unwrap();
+        let length_offset = payload.len() - std::mem::size_of::<u64>();
+        payload[length_offset..].copy_from_slice(&u64::MAX.to_le_bytes());
+
+        assert!(deserialize_message(&payload).is_err());
     }
 }

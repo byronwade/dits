@@ -1,367 +1,218 @@
-# Dits Development Commands
-# Install just: cargo install just
-# Usage: just <recipe>
+# Dits CLI development commands
+#
+# Run these recipes from `apps/cli` (or pass `--justfile apps/cli/justfile`).
+# Install just with: cargo install --locked just
 
-# Default recipe - show available commands
 default:
     @just --list
 
 # ============================================================================
-# Testing
+# Rust build and verification
 # ============================================================================
 
-# Run all tests (Rust + integration)
-test-all: test test-integration
-
-# Run integration tests only
-test-integration:
-    cd t && ./run-tests.sh
-
-# Run integration tests with verbose output
-test-integration-verbose:
-    cd t && ./run-tests.sh -v
-
-# Run integration tests in parallel
-test-integration-parallel:
-    cd t && ./run-tests.sh --prove
-
-# Run performance tests
-test-performance:
-    cd t/perf && ../run-tests.sh
-
-# Validate test script quality with chainlint
-test-chainlint:
-    cd t && find . -name "t[0-9][0-9][0-9][0-9]*.sh" -exec sh -c 'CHAINLINT_FILE="$1" perl chainlint.pl' _ {} \;
-
-# ============================================================================
-# Development
-# ============================================================================
-
-# Build all crates
+# Build the current CLI and library targets
 build:
-    cargo build --all-targets
+    cargo build --locked --all-targets
 
-# Build in release mode
+# Build the current CLI in release mode
 build-release:
-    cargo build --release --all-targets
+    cargo build --locked --release -p dits --bin dits
 
-# Run all tests
+# Run Rust tests, preferring nextest when it is installed
 test:
-    cargo nextest run 2>/dev/null || cargo test
+    if command -v cargo-nextest >/dev/null 2>&1; then cargo nextest run --locked; else cargo test --locked; fi
 
-# Run shell script integration tests
+# Run tests for one current workspace package
+test-crate crate:
+    cargo test --locked -p {{crate}}
+
+# Generate an HTML coverage report (requires cargo-tarpaulin)
+coverage:
+    cargo tarpaulin --locked --out Html --output-dir target/coverage
+
+# Run all-target, all-feature Clippy checks
+lint:
+    cargo clippy --locked --all-targets --all-features -- -D warnings
+
+# Format Rust code with the repository's nightly-only formatting options
+fmt:
+    cargo +nightly fmt --all
+
+# Verify Rust formatting
+fmt-check:
+    cargo +nightly fmt --all -- --check
+
+# Watch for changes and run locked tests (requires cargo-watch)
+watch:
+    cargo watch -x 'test --locked'
+
+# Watch for changes and run locked Clippy checks (requires cargo-watch)
+watch-lint:
+    cargo watch -x 'clippy --locked --all-targets --all-features -- -D warnings'
+
+# ============================================================================
+# Shell integration tests
+# ============================================================================
+
+# Run the canonical shell integration suite
 test-integration:
     cd t && ./run-tests.sh
 
-# Run shell script tests with verbose output
+# Run the shell integration suite with verbose output
 test-integration-verbose:
-    cd t && ./run-tests.sh -v
+    cd t && ./run-tests.sh --verbose
 
-# Run shell script tests in parallel (if prove is available)
+# Run the shell integration suite in parallel when prove is available
 test-integration-parallel:
     cd t && ./run-tests.sh --prove
 
-# Run performance tests
-test-performance:
-    cd t/perf && ../run-tests.sh
-
-# Run streaming chunking performance test
-test-streaming-chunking:
-    cd t && ./run-tests.sh -r "perf/p0003"
-
-# Run database indexing performance test
-test-db-indexing:
-    cd t && ./run-tests.sh -r "perf/p0004"
-
-# Run chainlint validation
-test-chainlint:
-    cd t && find . -name "t[0-9][0-9][0-9][0-9]*.sh" -exec perl chainlint.pl {} \;
-
-# Run specific test suite
+# Run a top-level integration wrapper selected by filename fragment, e.g. `0100`
 test-suite suite:
     cd t && ./run-tests.sh -r "{{suite}}"
 
-# Run FastCDC comprehensive tests
+# Focused integration shortcuts
 test-fastcdc:
-    cd t && ./run-tests.sh -r "core/t0100"
+    cd t && ./run-tests.sh -r "t0100"
 
-# Run video comprehensive tests
 test-video:
-    cd t && ./run-tests.sh -r "core/t0200"
+    cd t && ./run-tests.sh -r "t0200"
 
-# Run file types comprehensive tests
 test-filetypes:
-    cd t && ./run-tests.sh -r "core/t0300"
+    cd t && ./run-tests.sh -r "t0300"
 
-# Run edge cases and error tests
 test-edge-cases:
-    cd t && ./run-tests.sh -r "qa/t0400"
+    cd t && ./run-tests.sh -r "t0400"
 
-# Run concurrent access tests
 test-concurrent:
-    cd t && ./run-tests.sh -r "qa/t0500"
+    cd t && ./run-tests.sh -r "t0500"
 
-# Run data integrity tests
 test-integrity:
-    cd t && ./run-tests.sh -r "qa/t0600"
+    cd t && ./run-tests.sh -r "t0600"
 
-# Run extreme stress tests
 test-stress:
-    cd t && ./run-tests.sh -r "qa/t0700"
+    cd t && ./run-tests.sh -r "t0700"
 
-# Run security tests
 test-security:
-    cd t && ./run-tests.sh -r "qa/t0800"
+    cd t && ./run-tests.sh -r "t0800"
 
-# Run workflow simulations
 test-workflows:
-    cd t && ./run-tests.sh -r "advanced/t0900"
+    cd t && ./run-tests.sh -r "t0900"
 
-# Run P2P networking tests
+# This suite verifies that the nonfunctional P2P surface fails closed
 test-p2p:
-    cd t && ./run-tests.sh -r "advanced/t1000"
+    cd t && ./run-tests.sh -r "t1000"
 
-# Run storage lifecycle tests
 test-lifecycle:
-    cd t && ./run-tests.sh -r "advanced/t1100"
+    cd t && ./run-tests.sh -r "t1100"
 
-# Run audit and compliance tests
 test-audit:
-    cd t && ./run-tests.sh -r "advanced/t1200"
+    cd t && ./run-tests.sh -r "t1200"
 
-# ============================================================================
-# NEW COMPREHENSIVE TESTS
-# ============================================================================
-
-# Run cross-platform compatibility tests
 test-cross-platform:
-    cd t && ./run-tests.sh -r "qa/t1300"
+    cd t && ./qa/t1300-cross-platform.sh
 
-# Run network failure and interruption tests
 test-network-failures:
-    cd t && ./run-tests.sh -r "qa/t1400"
+    cd t && ./qa/t1400-network-failures.sh
 
-# Run long-term repository aging tests
 test-aging:
-    cd t && ./run-tests.sh -r "qa/t1500"
+    cd t && ./qa/t1500-long-term-aging.sh
 
-# Run massive concurrency tests (1TB workload simulation)
 test-massive-concurrency:
-    cd t && ./run-tests.sh -r "qa/t1600"
+    cd t && ./qa/t1600-massive-concurrency.sh
+
+test-git-recovery:
+    cd t && ./qa/t1700-git-recovery-creative-assets.sh
 
 # ============================================================================
-# CREATIVE ASSETS TESTING
+# Documentation and product-truth gates
 # ============================================================================
 
-# Run comprehensive creative assets tests
-test-creative-assets:
-    cd t && ./run-tests.sh -r "core/t0301"
+# Build Rust documentation without opening a browser
+docs-check:
+    cargo doc --locked --no-deps --document-private-items
 
-# Run Git recovery tests for creative assets
-test-git-recovery-creative:
-    cd t && ./run-tests.sh -r "qa/t1700"
-
-# Run all creative industry tests
-test-creative-all: test-creative-assets test-git-recovery-creative
-
-# Run all new comprehensive QA tests
-test-qa-extended: test-cross-platform test-network-failures test-aging test-massive-concurrency test-creative-all
-
-# Run tests for a specific crate
-test-crate crate:
-    cargo test -p {{crate}}
-
-# Run tests with coverage
-coverage:
-    cargo tarpaulin --out Html --output-dir target/coverage
-
-# Run clippy lints
-lint:
-    cargo clippy --all-targets --all-features -- -D warnings
-
-# Format code
-fmt:
-    cargo fmt --all
-
-# Check formatting
-fmt-check:
-    cargo fmt --all -- --check
-
-# Full check (build + test + lint + fmt)
-check: fmt-check lint test
-    @echo "All checks passed!"
-
-# Watch for changes and run tests
-watch:
-    cargo watch -x test
-
-# Watch for changes and run clippy
-watch-lint:
-    cargo watch -x clippy
-
-# ============================================================================
-# Documentation
-# ============================================================================
-
-# Generate and open documentation
+# Build and open Rust documentation
 docs:
-    cargo doc --no-deps --open
+    cargo doc --locked --no-deps --open
 
-# Build all documentation
-docs-all:
-    cargo doc --all-features --document-private-items
-
-# Serve documentation locally
+# Serve previously generated Rust documentation
 docs-serve:
     cd target/doc && python3 -m http.server 8080
 
-# ============================================================================
-# Database
-# ============================================================================
+# Verify CLI documentation against the compiled command surface
+cli-docs:
+    cd ../.. && bash scripts/check-cli-docs.sh
 
-# Start local database
-db-start:
-    docker-compose up -d postgres redis
+# Verify public claims against the current alpha boundary
+product-truth:
+    cd ../.. && bash scripts/check-product-truth.sh
 
-# Stop local database
-db-stop:
-    docker-compose down
-
-# Run database migrations
-db-migrate:
-    cargo run --bin dits-migrate
-
-# Reset database (WARNING: destructive)
-db-reset:
-    docker-compose down -v
-    docker-compose up -d postgres redis
-    sleep 3
-    cargo run --bin dits-migrate
-
-# Connect to local database
-db-connect:
-    psql postgresql://dits:dits@localhost:5432/dits
+# Verify links in maintained Markdown documentation
+markdown-links:
+    cd ../.. && node scripts/check-markdown-links.mjs
 
 # ============================================================================
-# Server
+# CLI, web, packaging, and evaluative image
 # ============================================================================
 
-# Run API server
-server:
-    cargo run --bin dits-server
-
-# Run API server in watch mode
-server-watch:
-    cargo watch -x 'run --bin dits-server'
-
-# Run API server in release mode
-server-release:
-    cargo run --release --bin dits-server
-
-# ============================================================================
-# CLI
-# ============================================================================
-
-# Run CLI command
+# Run a CLI command, e.g. `just cli status`
 cli *args:
-    cargo run --bin dits -- {{args}}
+    cargo run --locked --bin dits -- {{args}}
 
-# Install CLI locally
+# Install the current CLI from this workspace
 cli-install:
-    cargo install --path crates/dits-client
+    cargo install --locked --path .
 
-# ============================================================================
-# Benchmarks
-# ============================================================================
+# Run the real engine benchmark used by CI
+benchmark:
+    cargo test --locked -p dits --release --test benchmarks -- --ignored --nocapture --test-threads=1
 
-# Run all benchmarks
-bench:
-    cargo bench
-
-# Run specific benchmark
-bench-name name:
-    cargo bench -- {{name}}
-
-# Run benchmarks and compare to baseline
-bench-compare:
-    cargo bench -- --save-baseline new
-    critcmp baseline new
-
-# ============================================================================
-# Release
-# ============================================================================
-
-# Check if ready for release
-release-check:
-    cargo publish --dry-run -p dits-core
-    cargo publish --dry-run -p dits-parsers
-    cargo publish --dry-run -p dits-storage
-    cargo publish --dry-run -p dits-protocol
-    cargo publish --dry-run -p dits-sdk
-
-# Build release binaries
-release-build:
-    cargo build --release
-    @echo "Binaries in target/release/"
-
-# ============================================================================
-# Docker
-# ============================================================================
-
-# Build Docker image
+# Build the evaluative Linux x64 source image from the repository root
 docker-build:
-    docker build -t dits:latest .
+    docker build -t dits:local ../..
 
-# Run in Docker
-docker-run:
-    docker-compose up
+# Smoke-test the evaluative image
+docker-smoke: docker-build
+    docker run --rm dits:local --version
 
-# Build and push Docker image
-docker-push tag:
-    docker build -t dits:{{tag}} .
-    docker push dits:{{tag}}
+# Validate the web workspace
+web-check:
+    cd ../.. && npm --workspace apps/web run lint
+    cd ../.. && npm --workspace apps/web run test:ci
+    cd ../.. && npm --workspace apps/web run build
+
+# Validate the npm launcher and published binary matrix
+npm-check:
+    cd ../.. && npm test --workspace packages/npm
+
+# Build the binary used by GitHub releases; this does not publish anything
+release-build:
+    cargo build --locked --release -p dits --bin dits
 
 # ============================================================================
-# Utilities
+# Aggregate checks and explicit maintenance operations
 # ============================================================================
 
-# Clean build artifacts
+# Fast local correctness gate
+check: fmt-check lint test docs-check cli-docs product-truth markdown-links
+    @echo "Core checks passed."
+
+# Full local CI-equivalent gate
+ci: check test-integration web-check npm-check
+    @echo "All local CI-equivalent checks passed."
+
+# Remove Cargo build artifacts
 clean:
     cargo clean
 
-# Update dependencies
+# Intentionally refresh locked dependency resolution
 update:
     cargo update
 
-# Check for outdated dependencies
-outdated:
-    cargo outdated
-
-# Security audit
-audit:
-    cargo audit
-
-# Count lines of code
-loc:
-    tokei --exclude target --exclude node_modules
-
-# Generate dependency graph
-deps-graph:
-    cargo depgraph | dot -Tpng > deps.png
-    @echo "Generated deps.png"
-
-# ============================================================================
-# CI Helpers
-# ============================================================================
-
-# Run full CI check locally
-ci: fmt-check lint test audit
-    @echo "CI checks passed!"
-
-# Generate lockfile
+# Intentionally regenerate the workspace lockfile
 lockfile:
     cargo generate-lockfile
 
-# Verify minimum Rust version
-msrv:
-    cargo msrv --min 1.75.0
+# Audit dependencies represented by Cargo.lock (requires cargo-audit)
+audit:
+    cargo audit

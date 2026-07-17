@@ -1,7 +1,7 @@
 {
   "name": "@byronwade/dits",
   "version": "0.1.5",
-  "description": "Version control for video and large binary files - like Git, but optimized for large binary files",
+  "description": "Open, local-first version control for large media and asset pipelines",
   "license": "Apache-2.0 OR MIT",
   "author": "Byron Wade",
   "repository": {
@@ -40,7 +40,8 @@
   "scripts": {
     "build": "echo 'Binaries built via cargo'",
     "clean": "rm -rf bin/darwin-* bin/linux-* bin/win32-*",
-    "prepublishOnly": "node -e \"require('fs').accessSync('bin/darwin-arm64/dits')\" || (echo 'Error: Binary not found. Run: cargo build --release && cp target/release/dits packages/npm/bin/darwin-arm64/' && exit 1)"
+    "test": "node --test test/*.test.cjs",
+    "prepublishOnly": "node scripts/verify-binaries.js"
   },
   "engines": {
     "node": ">=16.0.0"

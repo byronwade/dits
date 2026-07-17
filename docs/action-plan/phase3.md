@@ -1,5 +1,11 @@
 # Phase 3: Virtual File System (FUSE Mount)
 
+**Maturity:** Historical
+
+This is a retained execution plan, not current capability status or the active roadmap.
+Completion boxes and phase language must be read against docs/STATUS.md and the root
+ROADMAP.md.
+
 > **Status: ✅ COMPLETE** - VFS mounting with on-demand hydration has been implemented.
 
 Execution manual for building FUSE-based virtual filesystem mounting and the foundation for remote protocol.
@@ -842,4 +848,3 @@ Once Phase 3 is complete, you have a fully functional local-first VCS. (Networke
 - **Phase 5**: Virtual File System (FUSE/WinFSP) for on-demand file access.
 - **Phase 6**: Advanced features (branches, merges, conflict resolution).
 - **Phase 7+**: ditshub (multi-tenant cloud service with auth, UI, etc.).
-

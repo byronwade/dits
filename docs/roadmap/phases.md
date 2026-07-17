@@ -1,237 +1,100 @@
-# Engineering Roadmap
+# Engineering Milestones
 
-This document outlines the phased development plan for Dits. For the **importance-ordered audit of
-everything that is not finished yet**, see the canonical [`ROADMAP.md`](../../ROADMAP.md); for the
-authoritative record of what the code does today, see [`docs/STATUS.md`](../STATUS.md).
+**Maturity:** Design
 
----
+The former nine-phase roadmap mixed completed local commands with unfinished
+network, cloud, and semantic systems. Dits now uses dependency-ordered
+milestones with measurable exit gates.
 
-## Implementation Status
+| Milestone | Outcome | Status |
+|---:|---|---|
+| 0 | Credible, bounded, crash-safe local engine | Active |
+| 1 | Versioned repository format and conformance | Active design |
+| 2 | Pack/index/tree scale | Planned |
+| 3 | Exact-CAS semantic media proof | Experimental/design |
+| 4 | Verified remote CAS and ref transactions | Design |
+| 5 | Adoptable team workflow and integrations | Planned |
+| 6 | Ecosystem and standardization | Planned |
 
-Legend: ✅ works today (local) · 🟡 local parts ship, networked/advanced parts are roadmap ·
-🧪 implemented but feature-gated/experimental · ⏳ roadmap, not implemented.
+## Dependency graph
 
-| Phase | Name | Status | Description |
-|-------|------|--------|-------------|
-| 1 | The Engine | ✅ Complete | Local chunking and deduplication |
-| 2 | Structure Awareness | ✅ Complete | MP4/ISOBMFF atom parsing |
-| 3 | Virtual File System | 🧪 Feature-gated | FUSE mount (behind `fuser` feature), local-only |
-| 3.5 | Git Parity | ✅ Complete | Branching, merging, tags, stash |
-| 3.6 | Hybrid Storage | ✅ Complete | Git for text, Dits for binary |
-| 4 | Collaboration & Sync | ⏳ Roadmap | QUIC-based push/pull — **not implemented** |
-| 5 | Conflict & Locking | 🟡 Partial | Local locks/`gc`/`fsck` ship; networked conflict handling is roadmap |
-| 6 | The Hologram | 🟡 Partial | Local proxy generation ships; remote proxy workflow is roadmap |
-| 7 | The Spiderweb | 🟡 Partial | Local dependency graph (`dep-*`) ships; ecosystem/plugins are roadmap |
-| 8 | Deep Freeze | 🟡 Partial | Local `freeze`/`thaw` ship; cloud cold tiers are roadmap |
-| 9 | The Black Box | 🟡 Partial | Local convergent encryption ships; RBAC/key management is roadmap |
-
-> Note: Networked sync (Phase 4b — `push`/`pull`/`fetch`/`sync`, network `clone`), P2P, and the
-> QUIC delta transport's connection to the porcelain are **not implemented**; they remain roadmap.
-> (Several *local* features in later phases — proxy, dependency graph, freeze/thaw, encryption —
-> already ship in the CLI; see [`docs/STATUS.md`](../STATUS.md).)
-
----
-
-## Completed Phases
-
-### Phase 1: The Engine (Foundation) ✅
-
-**Goal:** CLI chunks binary files and dedupes locally.
-
-**Deliverables:**
-- `dits add large_file.bin` stores chunks in `.dits/objects`
-- `dits checkout` restores bit-for-bit
-- FastCDC content-defined chunking
-- BLAKE3 content addressing
-
-**Key Test:** Modify 1MB of a 10GB file; storage grows by ~1MB.
-
----
-
-### Phase 2: Structure Awareness (Corruption Shield) ✅
-
-**Goal:** Protect container integrity via Atom Exploder.
-
-**Deliverables:**
-- Detect `.mp4`/`.mov` containers
-- Parse and store `moov` atom separately
-- Chunk `mdat` payload independently
-- Metadata-only changes cause zero payload re-upload
-
-**Commands:** `dits inspect`, `dits roundtrip`
-
----
-
-### Phase 3: Virtual File System (UX) ✅
-
-**Goal:** Eliminate download time via mounted drive.
-
-**Deliverables:**
-- FUSE mount shows files from any commit
-- Real disk holds only accessed chunks
-- JIT (just-in-time) chunk fetching on access
-- Caching with configurable cache size
-
-**Commands:** `dits mount`, `dits unmount`
-
----
-
-### Phase 3.5: Git Parity ✅
-
-**Goal:** Implement essential Git-like features for daily VCS use.
-
-**Deliverables:**
-- Branching system (`branch`, `switch`)
-- Merge with conflict detection
-- Tags (lightweight and annotated)
-- Diff command (text and binary aware)
-- Reset and restore commands
-- Stash for WIP changes
-- Configuration system
-
-**Commands:** `branch`, `switch`, `merge`, `tag`, `diff`, `reset`, `restore`, `stash`, `config`
-
----
-
-## Next Priority Phase
-
-### Phase 3.6: Hybrid Storage Engine 🔜
-
-**Goal:** Use the right tool for each job - Git's proven text engine for text files, Dits' chunking for binary/media files.
-
-> **Full specification:** See [Phase 3.6 Action Plan](../action-plan/phase3.6-hybrid-storage.md)
-
-**Why This Phase:**
-- Git's 3-way merge with conflict markers is superior to "choose ours/theirs" for text
-- Line-based diff and blame are essential for code/config files
-- Chunking is overkill for small text files
-- No need to reinvent 20+ years of Git refinement
-
-**Deliverables:**
-
-| Component | Description |
-|-----------|-------------|
-| File Classifier | Route files to appropriate storage engine |
-| libgit2 Integration | Git object store for text files |
-| Unified Index | Track storage strategy per file |
-| Hybrid Diff | Line diff for text, chunk diff for binary |
-| Hybrid Merge | 3-way with markers for text, choose for binary |
-| `dits blame` | Line-by-line attribution for text files |
-| Migration Tool | Upgrade existing repos to hybrid format |
-
-**Key Commands:**
-```bash
-dits diff README.md          # Line-based unified diff
-dits diff video.mp4          # Chunk-based stats
-dits blame src/config.rs     # Line attribution
-dits merge feature           # Auto-selects strategy per file
+```text
+data safety
+    ↓
+repository contract
+    ├── scale: trees, packs, indexes
+    ├── semantic media graph
+    └── remote CAS and ref transactions
+              ↓
+       team workflow
+              ↓
+ ecosystem and standardization
 ```
 
-**Implementation Order:**
-1. File classification system
-2. Git object store initialization
-3. Unified index format
-4. Diff engine selection
-5. Merge engine selection
-6. Blame support
-7. Repository migration
+## Milestone 0 — credibility and safety
 
-**Dependencies:**
-```toml
-git2 = { version = "0.18", features = ["vendored-libgit2"] }
-```
+Deliver bounded-memory ingest, atomic publication, mutation detection, golden
+media fixtures, and destructive failure tests.
 
----
+Exit only when a file larger than the configured memory budget can be ingested
+and reconstructed exactly without publishing partial state after interruption.
 
-## Planned Phases
+## Milestone 1 — repository contract
 
-### Phase 4: Intelligent Collaboration & Sync (Network) 🚧
+Version all durable object kinds, canonical encodings, hash domains, chunking
+profiles, indexes, refs, encryption envelopes, and migration behavior. Publish
+conformance vectors and an independent verifier.
 
-**Goal:** Real-time, adaptive sync with smart caching and offline capabilities.
+Exit only when independent code can reproduce and verify normative vectors and
+unsupported versions fail safely.
 
-**Enhanced Deliverables:**
-- **Adaptive Transport System**: Bandwidth-aware QUIC with automatic compression and chunk sizing
-- **Incremental Change Detection**: Real-time filesystem monitoring with selective sync
-- **Smart VFS Caching**: Predictive prefetching and offline mode with conflict resolution
-- **UX Improvements**: Real-time progress, better error handling, and web UI enhancements
-- **Core Sync Infrastructure**: Rust server (Axum + Quinn), Have/Want sync with Bloom filters, resumable transfers
+## Milestone 2 — scale
 
-**Planned Commands:** `push`, `pull`, `fetch`, `sync`, `clone`, `remote`, `watch`, `offline`
+Add tree objects, immutable packs, rebuildable indexes, multi-pack lookup,
+indexed reachability, and safe repack/GC coordination.
 
-**Key Innovations:**
-- Network condition detection (LAN bulk mode vs WAN compression)
-- Intelligent prefetching based on access patterns
-- Offline editing with automatic conflict resolution
-- Real-time collaboration for large media workflows
+Exit only after a million-object fixture, corruption repair, cold/warm random
+reads, and repack identity preservation are measured.
 
----
+## Milestone 3 — semantic media proof
 
-### Phase 5: Conflict & Locking (Safety) 🚧
+Preserve exact masters, define decoded identity profiles, import/export a
+supported OTIO subset, store non-destructive edit intent, and produce separately
+addressed renditions with complete recipes and fidelity contracts.
 
-**Goal:** Prevent concurrent edits to the same binary.
+Exit only when two supported implementations agree on the declared identity
+profile or the incompatibility is documented and the profile corrected.
 
-**Planned Deliverables:**
-- File-level exclusive locks
-- Lock coordination via server
-- Visual diff tool for conflicts
-- Garbage collection
-- Filesystem consistency checking
+## Milestone 4 — verified remote CAS
 
-**Planned Commands:** `lock`, `unlock`, `locks`, `gc`, `fsck`
+Specify and implement find-missing, object streaming, packs, resume,
+availability, bundles, lock leases, and compare-and-swap ref transactions over
+an HTTP reference transport. Optional QUIC and P2P must pass the same protocol
+suite.
 
----
+Exit only when two stores exchange a repository, reproduce exact checkout
+hashes, survive hostile-network tests, and never publish stale refs.
 
-### Phase 6: The Hologram (Bandwidth) 🚧
+## Milestone 5 — team workflow
 
-**Goal:** Proxy-based editing for slow links.
+Ship migration, sparse workspaces, remote locking, status/transfer UX, and one
+deep game/virtual-production toolchain integration. Validate with design
+partners.
 
-**Planned Deliverables:**
-- `checkout --proxy` fetches low-res versions
-- Original media stays server-side
-- Automatic upgrade to full-res when needed
+Exit only when a real team can migrate in, work weekly, recover, and export
+without proprietary repository state.
 
----
+## Milestone 6 — ecosystem
 
-### Phase 7: Creative Ecosystem & Integration 🚧
+Publish stable schemas, generated SDKs, independent readers, adapters,
+conformance reports, course labs, and any optional hosted control plane.
 
-**Goal:** Seamless integration with creative pipelines and collaborative workflows.
+Exit only when interoperability is demonstrated, not merely documented.
 
-**Enhanced Deliverables:**
-- **Plugin Ecosystem**: WebAssembly runtime for custom integrations and automation
-- **Creative Tool Integration**: SDKs and APIs for Unreal Engine, Premiere Pro, DaVinci Resolve, etc.
-- **Pipeline Automation**: Webhook system and live watch APIs for build consumption
-- **Dependency Management**: Advanced parsing for project files with automatic asset inclusion
-- **Real-time Collaboration**: Operational transforms for concurrent project editing
+## Current local features from the old phase model
 
-**Key Features:**
-- Plugin hooks for mount/unmount events and CI/CD integration
-- Live streaming APIs for render farm and build pipeline consumption
-- Cross-tool workflow orchestration and dependency tracking
-
----
-
-### Phase 8: Deep Freeze (Economics) 🚧
-
-**Goal:** Tiered storage at scale.
-
-**Planned Deliverables:**
-- Automated lifecycle policies
-- Hot tier: NVMe/SSD
-- Cold tier: S3/Glacier
-- Transparent thaw UX
-
----
-
-### Phase 9: The Black Box (Security) 🚧
-
-**Goal:** Enterprise-grade security.
-
-**Planned Deliverables:**
-- Client-side convergent encryption
-- RBAC-managed keys
-- Chunks encrypted before leaving host
-- Authentication system
-
-**Planned Commands:** `auth login`, `auth logout`, `auth status`
-
-
+Local chunking, Git-like history, hybrid text/binary storage, selected MP4
+structure handling, local locks, lifecycle commands, proxy generation, and
+feature-gated FUSE remain real where listed in
+[`../STATUS.md`](../STATUS.md). Their existence does not imply that the old
+remote, P2P, hosted, or universal-media phase claims are complete.

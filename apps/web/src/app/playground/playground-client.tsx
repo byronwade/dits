@@ -15,13 +15,12 @@ import {
 } from "lucide-react";
 
 const MAX_BYTES = 50 * 1024 * 1024; // 50 MB cap to keep the main thread responsive
-const EGRESS_USD_PER_GB = 0.09; // S3-class egress — same figure the benchmarks use
 
 type ChunkRow = {
   offset: number;
   length: number;
   hash: string;
-  /** Not yet in the store (a previous saved version) → Dits must send it. */
+  /** Not yet in the local in-memory store created by this demo session. */
   isNew: boolean;
 };
 
@@ -32,16 +31,9 @@ const PROFILES: { key: keyof typeof Profile; label: string; sizes: string }[] = 
   { key: "Media", label: "Media", sizes: "64 / 256 KB / 1 MB" },
 ];
 
-const SCALES: { key: string; label: string; bytes: number | null }[] = [
-  { key: "actual", label: "Actual", bytes: null },
-  { key: "500mb", label: "500 MB", bytes: 500 * 1024 * 1024 },
-  { key: "2gb", label: "2 GB", bytes: 2 * 1024 * 1024 * 1024 },
-  { key: "10gb", label: "10 GB", bytes: 10 * 1024 * 1024 * 1024 },
-];
-
-// A sample big & varied enough to produce many chunks under the Demo profile, so
-// editing one line visibly changes only the chunk around it while the rest stay
-// byte-identical. Variation matters: FastCDC places boundaries from content, so
+// A sample big and varied enough to produce many chunks under the Demo profile,
+// making identity changes visible after a controlled edit. Variation matters:
+// FastCDC places boundaries from content, so
 // repetitive text would collapse into a few max-size chunks and hide the effect.
 const WORDS = [
   "chunk", "hash", "boundary", "dedup", "frame", "commit", "manifest", "stream",
@@ -74,14 +66,12 @@ function formatBytes(n: number): string {
   return `${(n / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
-function formatUsd(n: number): string {
-  if (n === 0) return "$0";
-  if (n < 0.01) return `$${n.toFixed(4)}`;
-  if (n < 1) return `$${n.toFixed(3)}`;
-  return `$${n.toFixed(2)}`;
-}
-
-type Ledger = { saves: number; normal: number; dits: number; history: number[] };
+type Ledger = {
+  saves: number;
+  newBytes: number;
+  reusedBytes: number;
+  history: number[];
+};
 
 export function PlaygroundClient() {
   const [ready, setReady] = useState(false);
@@ -91,14 +81,18 @@ export function PlaygroundClient() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [bytes, setBytes] = useState<Uint8Array>(() => new TextEncoder().encode(SAMPLE));
   const [profileKey, setProfileKey] = useState<keyof typeof Profile>("Demo");
-  const [scaleKey, setScaleKey] = useState("2gb");
   const [chunks, setChunks] = useState<ChunkRow[]>([]);
   const [dragging, setDragging] = useState(false);
-  const [ledger, setLedger] = useState<Ledger>({ saves: 0, normal: 0, dits: 0, history: [] });
+  const [ledger, setLedger] = useState<Ledger>({
+    saves: 0,
+    newBytes: 0,
+    reusedBytes: 0,
+    history: [],
+  });
   const [justSaved, setJustSaved] = useState(false);
 
-  // The "store" — chunk hashes already committed by a prior saved version.
-  // Anything not in here is new work Dits would have to send on the next save.
+  // The "store" — chunk hashes recorded by a prior version in this browser session.
+  // Anything not in here is new to this local in-memory store.
   const store = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -145,7 +139,7 @@ export function PlaygroundClient() {
 
   const resetSession = useCallback(() => {
     store.current = new Set();
-    setLedger({ saves: 0, normal: 0, dits: 0, history: [] });
+    setLedger({ saves: 0, newBytes: 0, reusedBytes: 0, history: [] });
   }, []);
 
   const loadFile = useCallback(
@@ -165,12 +159,12 @@ export function PlaygroundClient() {
     [profileKey, recompute, resetSession],
   );
 
-  // What the CURRENT (unsaved) version would cost to ship.
+  // Exact local object-store accounting for the current unsaved version.
   const pending = useMemo(() => {
     const original = bytes.length;
     const seen = new Set<string>();
     let storedUnique = 0; // unique chunk bytes in this version (intra-file dedup)
-    let newUnique = 0; // unique chunk bytes NOT already in the store (Dits must send)
+    let newUnique = 0; // unique chunk bytes not already in this demo session's store
     let changedChunks = 0;
     for (const c of chunks) {
       if (seen.has(c.hash)) continue;
@@ -183,12 +177,17 @@ export function PlaygroundClient() {
     }
     const total = chunks.length;
     const reusedChunks = total - chunks.filter((c) => c.isNew).length;
-    // Dits ships only chunks it doesn't already have; a normal tool ships the whole file.
-    const ditsSend = newUnique;
-    const normalSend = original;
-    const multiple = ditsSend > 0 ? normalSend / ditsSend : normalSend > 0 ? Infinity : 1;
-    const savedPct = normalSend > 0 ? (1 - ditsSend / normalSend) * 100 : 0;
-    return { original, total, unique: seen.size, storedUnique, ditsSend, normalSend, multiple, savedPct, changedChunks, reusedChunks };
+    const reusedUnique = Math.max(storedUnique - newUnique, 0);
+    return {
+      original,
+      total,
+      unique: seen.size,
+      storedUnique,
+      newUnique,
+      reusedUnique,
+      changedChunks,
+      reusedChunks,
+    };
   }, [chunks, bytes]);
 
   const isFirstSave = ledger.saves === 0;
@@ -200,24 +199,15 @@ export function PlaygroundClient() {
     store.current = next;
     setLedger((l) => ({
       saves: l.saves + 1,
-      normal: l.normal + pending.normalSend,
-      dits: l.dits + pending.ditsSend,
-      history: [...l.history, pending.ditsSend].slice(-24),
+      newBytes: l.newBytes + pending.newUnique,
+      reusedBytes: l.reusedBytes + pending.reusedUnique,
+      history: [...l.history, pending.newUnique].slice(-24),
     }));
     // Mark everything as known now (no longer "new").
     setChunks((cs) => cs.map((c) => ({ ...c, isNew: false })));
     setJustSaved(true);
     window.setTimeout(() => setJustSaved(false), 1400);
-  }, [chunks, pending.normalSend, pending.ditsSend]);
-
-  // Scale the measured ratio to a real-world project size for tangible dollars.
-  const scale = SCALES.find((s) => s.key === scaleKey) ?? SCALES[0];
-  const factor = scale.bytes && pending.original > 0 ? scale.bytes / pending.original : 1;
-  const costNormal = (pending.normalSend * factor) / 1e9 * EGRESS_USD_PER_GB;
-  const costDits = (pending.ditsSend * factor) / 1e9 * EGRESS_USD_PER_GB;
-  const ledgerMultiple = ledger.dits > 0 ? ledger.normal / ledger.dits : ledger.normal > 0 ? Infinity : 1;
-  const ledgerCostNormal = (ledger.normal * factor) / 1e9 * EGRESS_USD_PER_GB;
-  const ledgerCostDits = (ledger.dits * factor) / 1e9 * EGRESS_USD_PER_GB;
+  }, [chunks, pending.newUnique, pending.reusedUnique]);
 
   if (initError && !ready) {
     return (
@@ -411,45 +401,42 @@ export function PlaygroundClient() {
             </div>
           ) : (
             <>
-              {/* Vs a normal tool */}
+              {/* Exact local object reuse */}
               <div className="rounded-xl border border-border p-4">
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold">{isFirstSave ? "Your first upload" : "If you save now"}</h3>
-                  <Badge className="bg-brand text-brand-foreground">
-                    {pending.multiple === Infinity ? "∞" : `${pending.multiple.toFixed(pending.multiple >= 10 ? 0 : 1)}×`} less
+                  <h3 className="text-sm font-semibold">
+                    {isFirstSave ? "First local version" : "Current local reuse"}
+                  </h3>
+                  <Badge variant="secondary">
+                    {pending.reusedChunks} of {pending.total} chunks reused
                   </Badge>
                 </div>
 
-                <Meter label="A normal tool re-sends the whole file" tone="muted" valueLabel={formatBytes(pending.normalSend)} pct={100} />
+                <Meter
+                  label="New unique bytes"
+                  tone="brand"
+                  valueLabel={formatBytes(pending.newUnique)}
+                  pct={
+                    pending.storedUnique > 0
+                      ? (pending.newUnique / pending.storedUnique) * 100
+                      : 0
+                  }
+                />
                 <div className="h-2" />
                 <Meter
-                  label="Dits sends only what changed"
-                  tone="brand"
-                  valueLabel={formatBytes(pending.ditsSend)}
-                  pct={pending.normalSend > 0 ? Math.max((pending.ditsSend / pending.normalSend) * 100, 1.5) : 0}
+                  label="Exact bytes already present locally"
+                  tone="muted"
+                  valueLabel={formatBytes(pending.reusedUnique)}
+                  pct={
+                    pending.storedUnique > 0
+                      ? (pending.reusedUnique / pending.storedUnique) * 100
+                      : 0
+                  }
                 />
-
-                {/* Cost at scale */}
-                <div className="mt-4 flex items-center justify-between gap-2">
-                  <span className="text-xs text-muted-foreground">Cost to ship, at project scale</span>
-                  <Segmented
-                    small
-                    ariaLabel="Project scale"
-                    value={scaleKey}
-                    onChange={setScaleKey}
-                    options={SCALES.map((s) => ({ value: s.key, label: s.label }))}
-                  />
-                </div>
-                <div className="mt-2 grid grid-cols-2 gap-2">
-                  <CostCell label="Normal" value={formatUsd(costNormal)} tone="muted" />
-                  <CostCell label="Dits" value={formatUsd(costDits)} tone="brand" />
-                </div>
-                <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-                  {scale.bytes
-                    ? `Same edit ratio applied to a ${scale.label} project, at $${EGRESS_USD_PER_GB}/GB egress. `
-                    : `Real bytes from your input, at $${EGRESS_USD_PER_GB}/GB egress. `}
-                  Big media wins even bigger — see the{" "}
-                  <a href="/benchmarks" className="text-brand underline-offset-2 hover:underline">benchmarks</a>.
+                <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                  These values describe exact chunk identities inside this browser
+                  session. They are not repository, media-workflow, storage-cost,
+                  or network-transfer benchmarks.
                 </p>
               </div>
 
@@ -462,7 +449,11 @@ export function PlaygroundClient() {
                 }`}
               >
                 <Save className="size-4" aria-hidden="true" />
-                {justSaved ? "Version saved" : isFirstSave ? "Save first version" : "Save this version"}
+                {justSaved
+                  ? "Local version recorded"
+                  : isFirstSave
+                    ? "Record first local version"
+                    : "Record this local version"}
               </button>
 
               {/* Cumulative session */}
@@ -475,27 +466,28 @@ export function PlaygroundClient() {
                 </div>
                 {ledger.saves === 0 ? (
                   <p className="text-sm text-muted-foreground">
-                    Save a version, edit a line, save again — and watch a normal tool&apos;s upload bill run away from Dits&apos;s.
+                    Record a version, make a controlled edit, and record it again
+                    to see which exact chunks retain their identities.
                   </p>
                 ) : (
                   <>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <div className="text-xs uppercase tracking-wide text-muted-foreground">Normal sent</div>
-                        <div className="mt-0.5 text-lg font-bold tabular-nums">{formatBytes(ledger.normal)}</div>
-                        <div className="text-xs text-muted-foreground">{formatUsd(ledgerCostNormal)}</div>
+                        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                          New unique bytes
+                        </div>
+                        <div className="mt-0.5 text-lg font-bold tabular-nums">
+                          {formatBytes(ledger.newBytes)}
+                        </div>
                       </div>
                       <div>
-                        <div className="text-xs uppercase tracking-wide text-muted-foreground">Dits sent</div>
-                        <div className="mt-0.5 text-lg font-bold tabular-nums text-brand">{formatBytes(ledger.dits)}</div>
-                        <div className="text-xs text-brand">{formatUsd(ledgerCostDits)}</div>
+                        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                          Reused exact bytes
+                        </div>
+                        <div className="mt-0.5 text-lg font-bold tabular-nums text-brand">
+                          {formatBytes(ledger.reusedBytes)}
+                        </div>
                       </div>
-                    </div>
-                    <div className="mt-3 rounded-lg bg-brand/10 px-3 py-2 text-sm">
-                      <strong className="text-brand">
-                        {ledgerMultiple === Infinity ? "∞" : `${ledgerMultiple.toFixed(ledgerMultiple >= 10 ? 0 : 1)}×`} less data
-                      </strong>{" "}
-                      over {ledger.saves} {ledger.saves === 1 ? "save" : "saves"} — {formatUsd(Math.max(ledgerCostNormal - ledgerCostDits, 0))} saved.
                     </div>
                     {ledger.history.length > 1 && <SaveBars history={ledger.history} />}
                   </>
@@ -519,7 +511,12 @@ function Narration({
   isFirstSave,
   ready,
 }: {
-  pending: { total: number; changedChunks: number; reusedChunks: number; ditsSend: number; normalSend: number; multiple: number };
+  pending: {
+    total: number;
+    changedChunks: number;
+    reusedChunks: number;
+    newUnique: number;
+  };
   isFirstSave: boolean;
   ready: boolean;
 }) {
@@ -537,16 +534,21 @@ function Narration({
       {isFirstSave ? (
         <>
           The engine split your input into <strong>{pending.total} chunks</strong>, each named by its BLAKE3 hash. Identical
-          chunks are stored once. Save this as version&nbsp;1, then edit a line — only the chunk you touch will change.
+          chunks are stored once. Record version&nbsp;1, then edit a line and
+          observe which chunk identities change.
         </>
       ) : pending.changedChunks === 0 ? (
-        <>No change yet — all <strong>{pending.total} chunks</strong> match the saved version, so Dits would send <strong className="text-brand">nothing</strong>.</>
+        <>
+          No change yet — all <strong>{pending.total} chunks</strong> match
+          the recorded local version, so this session would add{" "}
+          <strong className="text-brand">no new chunk bytes</strong>.
+        </>
       ) : (
         <>
           You changed <strong>{pending.changedChunks}</strong> of <strong>{pending.total}</strong> chunks — FastCDC re-found the
-          boundaries by content, so <strong className="text-brand">{survived}% survived</strong>. Dits ships just the{" "}
-          {pending.changedChunks} changed {pending.changedChunks === 1 ? "chunk" : "chunks"} (
-          <strong>{formatBytes(pending.ditsSend)}</strong>); a normal tool re-sends the whole {formatBytes(pending.normalSend)}.
+          boundaries by content, so <strong className="text-brand">{survived}% retained the same identity</strong>. The local
+          session would add {pending.changedChunks} new {pending.changedChunks === 1 ? "chunk" : "chunks"} (
+          <strong>{formatBytes(pending.newUnique)}</strong> of unique bytes).
         </>
       )}
     </p>
@@ -570,20 +572,13 @@ function Meter({ label, valueLabel, pct, tone }: { label: string; valueLabel: st
   );
 }
 
-function CostCell({ label, value, tone }: { label: string; value: string; tone: "brand" | "muted" }) {
-  return (
-    <div className={`rounded-lg border px-3 py-2 ${tone === "brand" ? "border-brand/30 bg-brand/5" : "border-border bg-muted/30"}`}>
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className={`text-base font-bold tabular-nums ${tone === "brand" ? "text-brand" : ""}`}>{value}</div>
-    </div>
-  );
-}
-
 function SaveBars({ history }: { history: number[] }) {
   const max = Math.max(...history, 1);
   return (
     <div className="mt-3">
-      <div className="mb-1 text-[11px] uppercase tracking-wide text-muted-foreground">Dits upload per save</div>
+      <div className="mb-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+        New unique bytes per recorded version
+      </div>
       <div className="flex h-12 items-end gap-1">
         {history.map((v, i) => (
           <div
@@ -637,11 +632,11 @@ function Segmented({
 }
 
 function HowItWorks() {
-  const [tab, setTab] = useState<"how" | "why" | "honest">("how");
+  const [tab, setTab] = useState<"how" | "observe" | "limits">("how");
   return (
     <div className="border-t border-border bg-muted/30 p-4">
       <div className="mb-3 flex items-center gap-1">
-        {(["how", "why", "honest"] as const).map((t) => (
+        {(["how", "observe", "limits"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -650,7 +645,7 @@ function HowItWorks() {
               tab === t ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            {t === "honest" ? "The honest part" : t === "how" ? "How it works" : "Why it works"}
+            {t === "how" ? "How it works" : t === "observe" ? "What to observe" : "Limits"}
           </button>
         ))}
       </div>
@@ -660,24 +655,27 @@ function HowItWorks() {
             Dits runs your bytes through <strong className="text-foreground">FastCDC</strong>, which scans a rolling fingerprint
             and cuts a boundary whenever the <em>content</em> hits a marker — not at fixed offsets. Each piece is hashed with{" "}
             <strong className="text-foreground">BLAKE3</strong> and named by that hash. Two pieces with the same bytes get the same
-            name, so they&apos;re stored exactly once. Edit a line and the boundaries around it re-settle locally — every other
-            chunk keeps its name, so the store already has it. That&apos;s the same engine the CLI uses, compiled to WebAssembly.
+            name, so they&apos;re stored exactly once. After an edit, any chunk that
+            retains the same bytes also retains its identity and can be recognized
+            by this session&apos;s local store. That&apos;s the same chunking and hashing
+            engine the CLI uses, compiled to WebAssembly.
           </p>
         )}
-        {tab === "why" && (
+        {tab === "observe" && (
           <p>
-            Fixed-size blocks break the moment you insert or delete a byte: everything after the edit shifts and re-hashes, so a
-            &ldquo;normal&rdquo; tool re-sends the whole file. Content-defined boundaries move <em>with</em> the content, so an
-            insertion only disturbs the chunk it lands in. On a 4 GB render, changing one frame touches a few hundred KB — Dits
-            ships those; a normal tool ships all 4 GB. Multiply that by every save, every teammate, every day.
+            Record the sample, change a small region, and compare the chunk map.
+            Exact matches keep the same BLAKE3 identity; changed regions produce
+            new identities. Try different files and profiles to see where
+            content-defined boundaries do and do not preserve reuse.
           </p>
         )}
-        {tab === "honest" && (
+        {tab === "limits" && (
           <p>
-            This won&apos;t help when the bytes genuinely change everywhere — a full re-encode or re-export rewrites the whole
-            file, so there&apos;s little to reuse (the benchmarks show that case at ~0% too). The wins are in the common loop:
-            trims, metadata, color tweaks, re-saves, and frame-level edits. And on tiny text the ratios are modest; the dramatic
-            numbers come from large media, which the <a href="/benchmarks" className="text-brand underline-offset-2 hover:underline">benchmarks</a> measure directly.
+            This browser demonstration records no repository, commit, media-edit
+            intent, cost, or network behavior. Compression, encryption, and
+            re-encoding can change bytes throughout a file and leave little exact
+            reuse. See the <a href="/benchmarks" className="text-brand underline-offset-2 hover:underline">benchmark boundaries</a>{" "}
+            before drawing performance conclusions.
           </p>
         )}
       </div>

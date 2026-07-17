@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::core::hash::{Hash, Hasher};
 
 /// Author/committer information.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Author {
     /// Name of the author.
     pub name:  String,
@@ -142,12 +142,49 @@ impl Commit {
     fn compute_hash(&self) -> Hash {
         let mut hasher = Hasher::new();
 
+        // Version and frame the encoding so field boundaries cannot be moved
+        // while producing the same byte stream (for example, `ab` + `c`
+        // versus `a` + `bc`). Fixed-size hashes remain unframed after an
+        // explicit option/count marker; all variable fields carry a u64 length.
+        hasher.update(b"dits-commit-v2\0");
+        match &self.parent {
+            Some(parent) => {
+                hasher.update(&[1]);
+                hasher.update(parent.as_bytes());
+            },
+            None => {
+                hasher.update(&[0]);
+            },
+        }
+        hasher.update(&(self.parents.len() as u64).to_be_bytes());
+        for parent in &self.parents {
+            hasher.update(parent.as_bytes());
+        }
+        hasher.update(self.manifest.as_bytes());
+        update_framed(&mut hasher, self.message.as_bytes());
+        update_framed(&mut hasher, self.author.name.as_bytes());
+        update_framed(&mut hasher, self.author.email.as_bytes());
+        update_framed(&mut hasher, self.committer.name.as_bytes());
+        update_framed(&mut hasher, self.committer.email.as_bytes());
+        update_framed(&mut hasher, self.timestamp.to_rfc3339().as_bytes());
+
+        hasher.finalize()
+    }
+
+    /// Compute the identity emitted by canonical writers before v0.1.5.
+    ///
+    /// Those writers always copied author to committer but accidentally omitted
+    /// the duplicate committer fields from the digest. Keeping this verifier
+    /// avoids stranding those repositories while new commits bind every stored
+    /// semantic field into their identity.
+    fn compute_legacy_hash(&self) -> Hash {
+        let mut hasher = Hasher::new();
+
         if let Some(parent) = &self.parent {
             hasher.update(parent.as_bytes());
         }
-        // Include all parents in hash computation
-        for p in &self.parents {
-            hasher.update(p.as_bytes());
+        for parent in &self.parents {
+            hasher.update(parent.as_bytes());
         }
         hasher.update(self.manifest.as_bytes());
         hasher.update(self.message.as_bytes());
@@ -156,6 +193,17 @@ impl Commit {
         hasher.update(self.timestamp.to_rfc3339().as_bytes());
 
         hasher.finalize()
+    }
+
+    /// Recompute and verify the content-derived commit identity.
+    pub fn verify_hash(&self) -> bool {
+        self.compute_hash() == self.hash
+            || (self.committer == self.author && self.compute_legacy_hash() == self.hash)
+    }
+
+    /// Recompute the content-derived commit identity for integrity reporting.
+    pub fn computed_hash(&self) -> Hash {
+        self.compute_hash()
     }
 
     /// Get short hash (first 8 chars).
@@ -177,6 +225,12 @@ impl Commit {
     pub fn from_json(json: &str) -> Result<Self, serde_json::Error> {
         serde_json::from_str(json)
     }
+}
+
+/// Add one unambiguous variable-length field to a content identity.
+fn update_framed(hasher: &mut Hasher, value: &[u8]) {
+    hasher.update(&(value.len() as u64).to_be_bytes());
+    hasher.update(value);
 }
 
 #[cfg(test)]
@@ -226,5 +280,44 @@ mod tests {
 
         assert!(!child.is_initial());
         assert_eq!(child.parent, Some(parent.hash));
+    }
+
+    #[test]
+    fn test_commit_hash_binds_committer() {
+        let author = Author::new("Author", "author@example.com");
+        let mut commit = Commit::new(None, Hash::ZERO, "Test commit", author);
+
+        commit.committer = Author::new("Mallory", "mallory@example.com");
+
+        assert!(!commit.verify_hash());
+    }
+
+    #[test]
+    fn test_legacy_commit_hash_is_accepted_only_for_matching_author_and_committer() {
+        let author = Author::new("Legacy", "legacy@example.com");
+        let mut commit = Commit::new(None, Hash::ZERO, "Legacy commit", author);
+        commit.hash = commit.compute_legacy_hash();
+
+        assert!(commit.verify_hash());
+
+        commit.committer = Author::new("Different", "different@example.com");
+        assert!(!commit.verify_hash());
+    }
+
+    #[test]
+    fn test_v2_hash_frames_variable_fields() {
+        let mut first = Commit::new(None, Hash::ZERO, "Boundary test", Author::new("ab", "c"));
+        let mut second = first.clone();
+        second.author = Author::new("a", "bc");
+        second.committer = second.author.clone();
+
+        // The legacy concatenation was ambiguous at the name/email boundary.
+        assert_eq!(first.compute_legacy_hash(), second.compute_legacy_hash());
+        assert_ne!(first.compute_hash(), second.compute_hash());
+
+        first.hash = first.compute_hash();
+        second.hash = second.compute_hash();
+        assert!(first.verify_hash());
+        assert!(second.verify_hash());
     }
 }

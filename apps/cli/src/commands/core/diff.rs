@@ -39,6 +39,16 @@ fn diff_working(repo: &Repository, file_filter: Option<&str>) -> Result<()> {
         has_changes = true;
     }
 
+    for path in &status.deleted {
+        if let Some(filter) = file_filter {
+            if path != filter {
+                continue;
+            }
+        }
+        show_file_diff(repo, path, DiffSource::WorkingVsHead)?;
+        has_changes = true;
+    }
+
     if !has_changes {
         println!("{}", style("No unstaged changes").dim());
     }
@@ -126,7 +136,7 @@ enum DiffSource {
 
 /// Show diff for a specific file.
 fn show_file_diff(repo: &Repository, path: &str, _source: DiffSource) -> Result<()> {
-    let full_path = repo.root().join(path);
+    let full_path = repo.resolve_worktree_path(path)?;
 
     if !full_path.exists() {
         println!("{} {} (deleted)", style("---").red(), style(path).bold());

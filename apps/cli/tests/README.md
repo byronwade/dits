@@ -71,7 +71,7 @@ Dits uses **two complementary test suites** that work together to ensure quality
 ### Run All Rust Tests
 ```bash
 cd apps/cli
-cargo test
+cargo test --locked
 ```
 
 ### Run All CLI Tests
@@ -178,9 +178,8 @@ Shared test utilities:
 - Run with `--nocapture` for debug output
 
 ### CLI Tests Failing
-- Ensure binary is built (`cargo build`)
+- Ensure binary is built (`cargo build --locked`)
 - Check file permissions
 - Verify test environment setup
-
 
 

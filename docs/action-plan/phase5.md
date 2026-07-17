@@ -1,5 +1,11 @@
 # Phase 5: UX, Integrity, Metadata Hooks, and Timelines
 
+**Maturity:** Historical
+
+This is a retained execution plan, not current capability status or the active roadmap.
+Completion boxes and phase language must be read against docs/STATUS.md and the root
+ROADMAP.md.
+
 Make dits pleasant, trustworthy, and extensible: better CLI ergonomics, integrity checking, optional media-aware metadata, and a first project graph for video timelines. Still local-only; no ditshub yet.
 
 **Objective:** Deliver a daily-usable CLI with config/branches polish, `fsck` for trust, pluggable metadata hooks, and minimal timeline objects committed alongside trees.

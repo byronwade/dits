@@ -1,5 +1,10 @@
 # ISOBMFF Parser Specification
 
+**Maturity:** Experimental
+
+Selected MP4/ISOBMFF fixtures are supported; this is not a universal container or codec
+compatibility specification.
+
 ISO Base Media File Format parser for MP4, MOV, M4V, and related container formats.
 
 ---

@@ -18,7 +18,7 @@ BIN="target/debug/dits"
 
 if [[ ! -x "$BIN" ]]; then
   echo "Building dits (debug) ..."
-  cargo build -q --bin dits
+  cargo build --locked -q --bin dits
 fi
 
 # Authoritative command list, straight from the binary (portable: no
@@ -53,6 +53,7 @@ done
 # Experimental, Design, or Research. STATUS.md is itself the maturity source.
 CANONICAL_DOCS=(
   "docs/concepts.md"
+  "docs/data-structures/manifest-spec.md"
   "docs/architecture/active-architecture.md"
   "docs/performance/engineering-plan.md"
   "docs/research/technical-foundations.md"

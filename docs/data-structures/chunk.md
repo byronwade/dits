@@ -1,19 +1,9 @@
 # Chunk (The Atom)
 
-The smallest unit of storage produced by the chunking pipeline.
+**Maturity:** Current
 
-```rust
-struct Chunk {
-    hash: String,      // BLAKE3 hash (unique ID)
-    offset: u64,       // Byte offset within the original file
-    length: u32,       // Chunk size (avg ~64KB)
-    is_keyframe: bool, // True when chunk starts on a GOP keyframe
-}
-```
+A chunk is a byte slice identified by the BLAKE3 digest of those exact bytes. A manifest ChunkRef records its hash, original offset, and size. Keyframe flags and perceptual identity are not part of the generic chunk identity.
 
-Key behaviors:
-- Chunk boundaries are derived via FastCDC and nudged to keyframes when possible.
-- Deduplication is performed by hash; identical content reuses stored chunks.
-- Metadata and payload are chunked separately for container integrity.
-
-
+See [core concepts](../concepts.md) and [`../STATUS.md`](../STATUS.md). Any serialized form not
+explicitly governed by an accepted ADR and conformance corpus remains an implementation
+detail.

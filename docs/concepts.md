@@ -1,7 +1,8 @@
 # Core Concepts and Contracts
 
-**Maturity:** Current concepts with clearly marked Experimental and Design
-sections.
+**Maturity:** Current
+
+Current concepts are separated from explicitly labelled Experimental and Design sections.
 
 This document describes the model implemented by the canonical Rust workspace.
 It deliberately separates byte identity, storage deduplication, media structure,
@@ -74,9 +75,11 @@ Important fields in the current code include:
 A manifest is the repository tree for a commit: a deterministic mapping from
 paths to manifest entries.
 
-Current writers serialize manifests as JSON. Older binary bincode manifests
-remain a compatibility concern, but bincode is not a suitable public,
-cross-language protocol contract.
+Current writers and readers use deterministic JSON. The exact bytes are hashed,
+verified before parsing, and stored under that content address. Earlier code
+comments described a binary bincode manifest phase, but the canonical writer
+has always emitted JSON; Dits therefore does not claim a binary-manifest
+compatibility contract.
 
 ### Commit
 

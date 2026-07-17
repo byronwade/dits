@@ -36,7 +36,9 @@ yarn-error.log*
 coverage/
 
 # Rust specific
-Cargo.lock
+# The root workspace ships an application, so its resolved dependency graph is
+# committed. Nested historical/research workspaces may keep their own policy.
+!/Cargo.lock
 *.rlib
 *.rmeta
 *.so

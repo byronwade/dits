@@ -1,410 +1,69 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
 import { Callout } from "@/components/ui/callout";
-import { DocPageHeader } from "@/components/doc-page-header";
-import { Share2, Globe, Zap, Server, Radio } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
+import { DocPageHeader } from "@/components/doc-page-header";
 
 export const metadata: Metadata = {
-  title: "P2P Commands",
-  description: "Peer-to-peer file sharing commands for direct transfers without uploading to a server",
+  title: "P2P Commands — Disabled Alpha Scaffolding",
+  description:
+    "Current behavior of the disabled Dits P2P command surface and the safety gates required before peer transfer can ship.",
+  robots: { index: false, follow: true },
 };
-
-const commands = [
-  { command: "share", description: "Share a directory via P2P (host)", usage: "dits p2p share [OPTIONS] <PATH>" },
-  { command: "connect", description: "Connect to a P2P share (client)", usage: "dits p2p connect [OPTIONS] <TARGET>" },
-  { command: "send", description: "Send a file to a peer", usage: "dits p2p send <FILE> <TARGET>" },
-  { command: "receive", description: "Receive a file from a peer", usage: "dits p2p receive [OPTIONS]" },
-  { command: "status", description: "Show P2P status and discovery methods", usage: "dits p2p status" },
-  { command: "ping", description: "Test connectivity to a peer", usage: "dits p2p ping <TARGET>" },
-];
-
-const discoveryMethods = [
-  { method: "Direct IP", flag: "--direct", priority: "0", description: "Connect via known IP:port", useCase: "Known addresses, no discovery" },
-  { method: "mDNS", flag: "--local", priority: "10", description: "Zero-config LAN discovery", useCase: "Same WiFi/LAN, no internet" },
-  { method: "STUN", flag: "--stun", priority: "20", description: "External IP discovery", useCase: "NAT traversal, hole-punching" },
-  { method: "Signal Server", flag: "--signal <URL>", priority: "30", description: "WebSocket rendezvous", useCase: "Internet sharing, NAT traversal" },
-  { method: "Relay", flag: "--relay", priority: "40", description: "Forward through relay server", useCase: "Planned fallback when hole-punching fails" },
-];
 
 export default function P2PCommandsPage() {
   return (
     <div className="prose dark:prose-invert max-w-none">
       <DocPageHeader
-        eyebrow="CLI Reference"
-        title="P2P Commands"
-        description="A roadmap design for sharing files directly between peers without uploading to a central server."
+        eyebrow="CLI Reference · Design"
+        title="P2P commands"
+        description="The parser exists for discovery, but every P2P operation fails before creating or changing local or network state."
       />
 
-      <Callout type="important" title="Roadmap — not yet functional">
-        The <code>dits p2p</code> commands are <strong>scaffolding</strong>. They
-        print placeholder output but <strong>transfer no data</strong>: there is
-        no working discovery, no NAT traversal, and no relay infrastructure. The
-        command surface and example output below describe the <em>planned</em>
-        design so the shape of the feature is clear — do not depend on any of it
-        today. What works now is the local VCS and local-filesystem{" "}
-        <code>clone</code>/<code>push</code>. See the{" "}
-        <Link href="/docs/roadmap">roadmap</Link> for status.
+      <Callout type="important" title="Disabled in the alpha" className="not-prose my-6">
+        <code>dits p2p</code> does not share, connect, mount, ping, cache, or transfer
+        repository data. Every parsed operation exits nonzero before opening a
+        repository, creating a target directory, changing a cache, or binding a
+        socket.
       </Callout>
 
-      <Table className="not-prose my-6">
-        <TableHeader>
-          <TableRow>
-            <TableHead>Command</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Usage</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {commands.map((cmd) => (
-            <TableRow key={cmd.command}>
-              <TableCell className="font-mono font-medium">{cmd.command}</TableCell>
-              <TableCell>{cmd.description}</TableCell>
-              <TableCell className="font-mono text-sm">{cmd.usage}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
-      <h2 className="flex items-center gap-2">
-        <Radio className="h-5 w-5" />
-        Discovery Methods
-      </h2>
+      <h2>What is parsed</h2>
       <p>
-        DITS supports multiple peer discovery methods, tried in priority order.
-        By default, all available methods are used with automatic fallback.
+        The provisional command family contains <code>share</code>, <code>connect</code>,{" "}
+        <code>status</code>, <code>list</code>, <code>cache</code>, <code>ping</code>, and{" "}
+        <code>unmount</code>. These names and flags are design scaffolding, not a
+        compatibility promise.
       </p>
-
-      <Table className="not-prose my-6">
-        <TableHeader>
-          <TableRow>
-            <TableHead>Method</TableHead>
-            <TableHead>Flag</TableHead>
-            <TableHead>Priority</TableHead>
-            <TableHead>Use Case</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {discoveryMethods.map((dm) => (
-            <TableRow key={dm.method}>
-              <TableCell className="font-medium">{dm.method}</TableCell>
-              <TableCell className="font-mono text-sm">{dm.flag}</TableCell>
-              <TableCell>{dm.priority}</TableCell>
-              <TableCell>{dm.useCase}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
-      <h2 className="flex items-center gap-2">
-        <Share2 className="h-5 w-5" />
-        dits p2p share
-      </h2>
-      <p>
-        Share a directory via P2P. Creates a QUIC server and registers with
-        discovery services so other peers can find and connect to you.
-      </p>
-
-      <h3>Synopsis</h3>
       <CodeBlock
-        language="bash"
-        code={`dits p2p share [OPTIONS] <PATH>`}
-      />
-
-      <h3>Arguments</h3>
-      <ul>
-        <li><code>PATH</code> - Directory to share</li>
-      </ul>
-
-      <h3>Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`-p, --port <PORT>      Port to listen on (default: 4433)
--n, --name <NAME>      Name for this share
-    --signal <URL>     Signal server URL
-    --code <CODE>      Use specific join code
-    --local            Use only mDNS (local network, no internet)
-    --direct           Use only direct IP mode (no discovery)
-    --stun             Use STUN for external IP discovery
-    --relay            Force relay mode (guaranteed NAT traversal)`}
-      />
-
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Share on local network (easiest, no internet)
-$ dits p2p share ./my-project --local
-DITS P2P - Sharing Active
-============================================================
-  Mode:      local network (mDNS)
-  Or use code:     ABC-123
-  Connect with:    dits p2p connect ABC-123 --local
-============================================================
-
-# Share over internet (default)
-$ dits p2p share ./my-project
-DITS P2P - Sharing Active
-============================================================
-  Mode:      auto (mDNS + signal + relay)
-  Or use code:     XYZ-789
-  Connect with:    dits p2p connect XYZ-789
-============================================================
-
-# Share via relay (no port forwarding needed!)
-$ dits p2p share ./my-project --relay
-DITS P2P - Sharing Active
-============================================================
-  Mode:      relay (no port forwarding needed)
-  Or use code:     XYZ-789
-  Connect with:    dits p2p connect XYZ-789 --relay
-============================================================
-
-# Share with direct IP only
-$ dits p2p share ./my-project --direct
-DITS P2P - Sharing Active
-============================================================
-  Mode:      direct IP only
-  Connect with:    dits p2p connect 0.0.0.0:4433
-============================================================
-
-# Share with custom signal server
-$ dits p2p share ./my-project --signal ws://localhost:8080`}
-      />
-
-      <h2 className="flex items-center gap-2">
-        <Globe className="h-5 w-5" />
-        dits p2p connect
-      </h2>
-      <p>
-        Connect to a P2P share. Uses the discovery chain to find the peer
-        by join code, URL, or direct IP address.
-      </p>
-
-      <h3>Synopsis</h3>
-      <CodeBlock
-        language="bash"
-        code={`dits p2p connect [OPTIONS] <TARGET>`}
-      />
-
-      <h3>Arguments</h3>
-      <ul>
-        <li><code>TARGET</code> - Join code (ABC-123), share URL, or direct IP:port</li>
-      </ul>
-
-      <h3>Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`-o, --output <PATH>    Output directory
-    --signal <URL>     Signal server URL
-    --local            Use only mDNS (local network)
-    --direct           Use only direct IP mode
-    --relay            Force relay mode (guaranteed NAT traversal)`}
-      />
-
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Connect on local network
-$ dits p2p connect ABC-123 --local
-DITS P2P - Connecting
-============================================================
-  Target:    ABC-123
-  Mode:      local network (mDNS)
-  Discovering peer...
-  Found:     192.168.1.50:4433 [mDNS] (local)
-  Connected: 192.168.1.50:4433
-============================================================
-
-# Connect via relay (no port forwarding needed!)
-$ dits p2p connect XYZ-789 --relay
-DITS P2P - Connecting
-============================================================
-  Target:    XYZ-789
-  Mode:      relay (no port forwarding needed)
-  Using relay server for NAT traversal
-  Found:     &lt;relay-host&gt; [relay] (remote)
-  Connected: via relay
-============================================================
-
-# Connect using auto-discovery
-$ dits p2p connect XYZ-789
-  Found:     203.0.113.50:4433 [signal] (remote)
-
-# Connect via direct IP
-$ dits p2p connect 192.168.1.100:4433
-  Found:     192.168.1.100:4433 [direct] (local)
-
-# Connect using share link
-$ dits p2p connect https://&lt;share-host&gt;/j/ABC-123`}
-      />
-
-      <h2 className="flex items-center gap-2">
-        <Zap className="h-5 w-5" />
-        dits p2p send / receive
-      </h2>
-      <p>
-        Send and receive individual files between peers.
-      </p>
-
-      <h3>Send a File</h3>
-      <CodeBlock
-        language="bash"
-        code={`dits p2p send <FILE> <TARGET>
-
-# Example
-$ dits p2p send video.mp4 ABC-123
-DITS P2P - Sending File
-============================================================
-  File:   video.mp4
-  Size:   1,234,567 bytes
-  Chunks: 10
-============================================================`}
-      />
-
-      <h3>Receive a File</h3>
-      <CodeBlock
-        language="bash"
-        code={`dits p2p receive [OPTIONS]
-
-Options:
-  -o, --output <PATH>    Output path
-  -p, --port <PORT>      Port to listen on
-      --code <CODE>      Use specific join code
-
-# Example
-$ dits p2p receive --output ./downloads
-DITS P2P - Ready to Receive
-============================================================
-  Share code: DEF-456
-  Sender should run:  dits p2p send <file> DEF-456
-============================================================`}
-      />
-
-      <h2 className="flex items-center gap-2">
-        <Server className="h-5 w-5" />
-        dits p2p status
-      </h2>
-      <p>
-        Show P2P status including available discovery methods.
-      </p>
-
-      <CodeBlock
-        language="bash"
+        language="text"
         code={`$ dits p2p status
-DITS P2P Status
-============================================================
-  Protocol Version: 1
-  Default Port:     4433
-  Signal Server:    &lt;not configured&gt;
+Error: P2P sharing is design scaffolding in this alpha and is disabled.
 
-  Discovery Methods:
-    - direct
-    - mDNS
-    - STUN
-    - signal server
-
-  Active Shares:    0
-  Active Connects:  0
-============================================================`}
+$ dits p2p connect ABC-123 ./peer-copy
+Error: P2P sharing is design scaffolding in this alpha and is disabled.`}
       />
 
-      <h2>Choosing the Right Method</h2>
-      <Table className="not-prose my-6">
-        <TableHeader>
-          <TableRow>
-            <TableHead>Scenario</TableHead>
-            <TableHead>Recommended</TableHead>
-            <TableHead>Command</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow>
-            <TableCell>Same WiFi/LAN</TableCell>
-            <TableCell><code>--local</code></TableCell>
-            <TableCell className="font-mono text-sm">dits p2p share --local</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Remote collaborator</TableCell>
-            <TableCell>Default (auto)</TableCell>
-            <TableCell className="font-mono text-sm">dits p2p share</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Known IP address</TableCell>
-            <TableCell>Direct connection</TableCell>
-            <TableCell className="font-mono text-sm">dits p2p connect IP:port</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Self-hosted setup</TableCell>
-            <TableCell><code>--signal</code></TableCell>
-            <TableCell className="font-mono text-sm">dits p2p share --signal ws://...</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Maximum privacy</TableCell>
-            <TableCell><code>--local</code></TableCell>
-            <TableCell className="font-mono text-sm">No external servers used</TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
+      <h2>What does not exist</h2>
+      <ul>
+        <li>No rendezvous, signaling, relay, or NAT-traversal service.</li>
+        <li>No authenticated peer protocol or shipped P2P encryption scheme.</li>
+        <li>No remote mount, cache, repository transfer, or ref transaction.</li>
+        <li>No active share, peer-status, or connectivity result.</li>
+      </ul>
 
-      <Callout type="note" title="Run Your Own Signal Server" className="not-prose my-6">
-        DITS includes a simple signal server. Run <code>cargo run -p dits-signal</code>
-        to start it locally, then use <code>--signal ws://localhost:8080</code>.
+      <h2>What must happen before this can ship</h2>
+      <p>
+        P2P needs a threat model, authenticated protocol, version negotiation,
+        atomic repository and ref semantics, interruption recovery, and independent
+        compatibility tests. Track those gates in the <Link href="/docs/roadmap">roadmap</Link>.
+      </p>
+
+      <Callout type="note" title="Need to copy a repository today" className="not-prose my-6">
+        Use <Link href="/docs/cli/repository">local-filesystem clone</Link> or an
+        independently verified backup. Remote <code>push</code>, <code>pull</code>,{" "}
+        <code>fetch</code>, and <code>sync</code> also fail closed in this alpha.
       </Callout>
-
-      <h2>Troubleshooting</h2>
-
-      <h3>Peer not found with --local</h3>
-      <ul>
-        <li>Ensure both peers are on the same network</li>
-        <li>Check if mDNS is blocked (corporate networks)</li>
-        <li>Verify firewall allows UDP multicast (port 5353)</li>
-        <li>Try the signal server method instead</li>
-      </ul>
-
-      <h3>Connection timeout</h3>
-      <ul>
-        <li>Check firewall allows UDP port 4433</li>
-        <li>Try direct IP if you know it</li>
-        <li>Verify signal server is reachable</li>
-      </ul>
-
-      <h3>Debug Mode</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Show discovery process
-$ dits -v p2p connect ABC-123
-
-# Show detailed debug info
-$ dits -vv p2p connect ABC-123`}
-      />
-
-      <h2>Related Commands</h2>
-      <ul>
-        <li>
-          <Link href="/docs/cli/remotes">Remote Commands</Link> - Push, pull, and sync with servers
-        </li>
-        <li>
-          <Link href="/docs/cli/repository">Repository Commands</Link> - Initialize and clone repositories
-        </li>
-      </ul>
-
-      <h2>Related Topics</h2>
-      <ul>
-        <li>
-          <Link href="/docs/concepts/peer-to-peer">Peer-to-Peer Concepts</Link> - Understanding P2P architecture
-        </li>
-        <li>
-          <Link href="/docs/configuration">Configuration</Link> - Configure P2P settings
-        </li>
-      </ul>
     </div>
   );
 }

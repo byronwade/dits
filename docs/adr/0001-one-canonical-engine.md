@@ -1,5 +1,10 @@
 # ADR 0001: One Canonical Local-First Engine
 
+**Maturity:** Current
+
+Accepted ADRs govern new work, but they do not by themselves prove that every consequence
+is implemented; implementation status remains authoritative.
+
 - **Status:** Accepted
 - **Date:** 2026-07-16
 

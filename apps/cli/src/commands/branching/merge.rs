@@ -363,7 +363,7 @@ fn write_conflict_markers(
         if let Ok(result) =
             engine.merge_blobs(base_oid, our_oid, their_oid, ours_label, theirs_label)
         {
-            let full_path = repo.work_dir().join(&conflict.path);
+            let full_path = repo.resolve_worktree_path(&conflict.path)?;
             if let Some(parent) = full_path.parent() {
                 let _ = std::fs::create_dir_all(parent);
             }

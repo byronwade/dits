@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { DocsSidebar } from "@/components/docs-sidebar";
@@ -8,6 +9,7 @@ import { DocsToc } from "@/components/docs-toc";
 import { DocsPager } from "@/components/docs-pager";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Callout } from "@/components/ui/callout";
 import { Menu } from "lucide-react";
 
 /**
@@ -24,6 +26,13 @@ export function DocsShell({
   label?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const isDesignArchive =
+    pathname?.startsWith("/docs/api/") ||
+    pathname?.startsWith("/docs/deployment") ||
+    pathname === "/docs/architecture/protocol" ||
+    pathname === "/docs/concepts/peer-to-peer" ||
+    pathname === "/docs/cli/p2p";
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -63,11 +72,23 @@ export function DocsShell({
           </aside>
 
           {/* Main Content */}
-          <main className="flex-1 min-w-0 w-full">
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className="flex-1 min-w-0 w-full focus:outline-none"
+          >
             <div
               id="doc-content"
               className="mx-auto flex w-full max-w-5xl min-w-0 flex-1 flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8 md:px-10 lg:py-10"
             >
+              {isDesignArchive && (
+                <Callout type="warning" title="Design archive — not shipped">
+                  This page describes a future or historical network, API, P2P,
+                  or deployment surface. The current product is a local alpha;
+                  there is no working network transfer, hosted server, public
+                  API/SDK, or deployable service.
+                </Callout>
+              )}
               {children}
               <DocsPager />
             </div>

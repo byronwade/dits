@@ -27,7 +27,6 @@ fn file_mode(_metadata: &std::fs::Metadata) -> u32 {
     0o644
 }
 
-use bincode;
 use thiserror::Error;
 use walkdir::WalkDir;
 
@@ -47,6 +46,11 @@ use crate::{
 /// Below this threshold, sequential chunking is faster due to lower overhead.
 const PARALLEL_CHUNK_THRESHOLD: usize = 1024 * 1024;
 
+/// Index metadata should remain tiny compared with tracked content. This cap
+/// bounds both the enclosing JSON/legacy-bincode file and bincode's declared
+/// collection allocations while still allowing very large working sets.
+const MAX_INDEX_FILE_SIZE: u64 = 256 * 1024 * 1024;
+
 /// Repository errors.
 #[derive(Debug, Error)]
 pub enum RepoError {
@@ -65,6 +69,9 @@ pub enum RepoError {
     #[error("File is ignored: {0}")]
     FileIgnored(String),
 
+    #[error("Invalid repository path '{path}': {reason}")]
+    InvalidPath { path: String, reason: String },
+
     #[error("IO error: {0}")]
     Io(#[from] io::Error),
 
@@ -74,6 +81,9 @@ pub enum RepoError {
     #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
 
+    #[error("Configuration error: {0}")]
+    Config(#[from] crate::config::ConfigError),
+
     #[error("Index error: {0}")]
     IndexError(String),
 
@@ -82,6 +92,12 @@ pub enum RepoError {
 
     #[error("Git engine error: {0}")]
     GitEngine(#[from] super::git_engine::GitEngineError),
+
+    #[error(
+        "Repository encryption is disabled in this alpha because it does not yet cover every \
+         storage engine and metadata path. No repository data was read or written."
+    )]
+    EncryptionUnsupported,
 }
 
 /// Cached index with metadata for performance optimization.
@@ -146,7 +162,7 @@ impl Repository {
         let ignore = IgnoreMatcher::new(&work_dir);
 
         // Load config (or default)
-        let config = Self::load_config(&dits_dir);
+        let config = Self::load_config(&dits_dir)?;
         // Create chunker config from config values (avoid type mismatch between
         // binary/lib crates)
         let chunker_config = ChunkerConfig {
@@ -177,6 +193,19 @@ impl Repository {
 
     /// Open an existing repository.
     pub fn open(path: &Path) -> Result<Self, RepoError> {
+        Self::open_internal(path, true)
+    }
+
+    /// Open a repository without creating a missing embedded Git store.
+    ///
+    /// Integrity reports and fail-closed commands use this path so a diagnostic
+    /// or rejected operation cannot mutate an older repository merely by
+    /// opening it.
+    pub fn open_read_only(path: &Path) -> Result<Self, RepoError> {
+        Self::open_internal(path, false)
+    }
+
+    fn open_internal(path: &Path, initialize_missing_git: bool) -> Result<Self, RepoError> {
         let work_dir = Self::find_repo_root(path)?;
         let dits_dir = work_dir.join(".dits");
 
@@ -184,11 +213,24 @@ impl Repository {
             return Err(RepoError::NotARepository(path.to_path_buf()));
         }
 
+        // Fail before loading configuration or initializing storage for
+        // repositories created with the early encryption experiment. That
+        // implementation did not cover embedded Git blobs or all metadata,
+        // and silently opening without a key could write plaintext into a
+        // repository the user believed was protected.
+        let keystore = KeyStore::new(&dits_dir);
+        if keystore.exists() {
+            return Err(RepoError::EncryptionUnsupported);
+        }
+
         // Initialize ignore matcher
         let ignore = IgnoreMatcher::new(&work_dir);
 
-        // Load config (local first, then global, then defaults)
-        let config = Self::load_config(&dits_dir);
+        // Repository behavior is driven only by the repository-local file.
+        // Global CLI preferences are selected explicitly by their consumers;
+        // inheriting chunking parameters would make object boundaries depend on
+        // the machine that opened the repository.
+        let config = Self::load_config(&dits_dir)?;
         // Create chunker config from config values (avoid type mismatch between
         // binary/lib crates)
         let chunker_config = ChunkerConfig {
@@ -200,27 +242,17 @@ impl Repository {
         // Phase 3.6: Open or initialize Git text engine
         let git_engine = if GitTextEngine::exists(&dits_dir) {
             GitTextEngine::open(&dits_dir).ok()
-        } else {
+        } else if initialize_missing_git {
             // Initialize for existing repos that don't have it yet
             GitTextEngine::init(&dits_dir).ok()
+        } else {
+            None
         };
 
         // Phase 3.6: Initialize file classifier
         let file_classifier = FileClassifier::new();
 
-        // Check for encryption and create object store accordingly
-        let mut objects = ObjectStore::new(&dits_dir);
-
-        // Check if encryption keystore exists and keys are cached
-        let keystore = KeyStore::new(&dits_dir);
-        if keystore.exists() {
-            // Try to load cached keys
-            if let Ok(bundle) = keystore.load_cached() {
-                objects.enable_encryption(bundle.user_secret.clone());
-            }
-            // If keystore exists but no cached keys, encryption is disabled
-            // until login
-        }
+        let objects = ObjectStore::new(&dits_dir);
 
         Ok(Self {
             work_dir: work_dir.clone(),
@@ -236,22 +268,11 @@ impl Repository {
         })
     }
 
-    /// Load configuration with proper precedence: local > global > defaults.
-    fn load_config(dits_dir: &Path) -> Config {
-        // Try local config first
-        let local_path = dits_dir.join("config.toml");
-        if let Ok(config) = Config::load(&local_path) {
-            return config;
-        }
-
-        // Try global config
-        let global_path = crate::config::global_config_path();
-        if let Ok(config) = Config::load(&global_path) {
-            return config;
-        }
-
-        // Fall back to defaults
-        Config::default()
+    /// Load the repository-local configuration, or defaults when no file
+    /// exists. Malformed configuration is an error rather than a reason to
+    /// silently change chunking behavior.
+    fn load_config(dits_dir: &Path) -> Result<Config, RepoError> {
+        Ok(Config::load(&dits_dir.join("config.toml"))?)
     }
 
     /// Find the repository root by searching up from the given path.
@@ -497,16 +518,19 @@ impl Repository {
             return Ok(index);
         }
 
-        let data = fs::read(&index_path)?;
+        let data = Self::read_index_bytes(&index_path)?;
         let mtime = index_path.metadata()?.modified()?;
 
         // Try binary format first (Phase 6+), fall back to JSON for backwards
         // compatibility
-        let index = match bincode::deserialize::<Index>(&data) {
+        let index = match crate::util::deserialize_bincode_with_limit::<Index>(
+            &data,
+            MAX_INDEX_FILE_SIZE,
+        ) {
             Ok(index) => index,
             Err(bincode_err) => {
                 // Fall back to JSON deserialization for legacy indexes
-                match String::from_utf8(data.clone()) {
+                match String::from_utf8(data) {
                     Ok(json) => match Index::from_json(&json) {
                         Ok(index) => index,
                         Err(json_err) => {
@@ -550,6 +574,8 @@ impl Repository {
             },
         };
 
+        Self::validate_index_paths(&index)?;
+
         // Cache the loaded index
         if let Ok(mut cache_guard) = self.index_cache.lock() {
             *cache_guard = Some(CachedIndex { index: index.clone(), mtime });
@@ -558,10 +584,56 @@ impl Repository {
         Ok(index)
     }
 
-    fn save_index(&self, index: &Index) -> Result<(), RepoError> {
+    /// Load the index without repairing, renaming, or caching it.
+    ///
+    /// Read-only diagnostics use this path because `load_index` intentionally
+    /// recovers from malformed data by moving the index aside. A command that
+    /// promises not to change repository metadata must instead surface the
+    /// corruption as an error and leave the original bytes in place.
+    pub fn load_index_read_only(&self) -> Result<Index, RepoError> {
         let index_path = self.dits_dir.join("index");
-        fs::write(&index_path, index.to_json())
-            .map_err(|e| RepoError::IndexError(e.to_string()))?;
+        if !index_path.exists() {
+            return Ok(Index::new());
+        }
+
+        let data = Self::read_index_bytes(&index_path)?;
+        let index = match crate::util::deserialize_bincode_with_limit::<Index>(
+            &data,
+            MAX_INDEX_FILE_SIZE,
+        ) {
+            Ok(index) => index,
+            Err(bincode_err) => {
+                let json = String::from_utf8(data).map_err(|utf8_err| {
+                    RepoError::IndexError(format!(
+                        "index is neither valid bincode ({bincode_err}) nor UTF-8 JSON \
+                         ({utf8_err})"
+                    ))
+                })?;
+                Index::from_json(&json).map_err(|json_err| {
+                    RepoError::IndexError(format!(
+                        "index is neither valid bincode ({bincode_err}) nor valid JSON \
+                         ({json_err})"
+                    ))
+                })?
+            },
+        };
+
+        Self::validate_index_paths(&index)?;
+        Ok(index)
+    }
+
+    fn save_index(&self, index: &Index) -> Result<(), RepoError> {
+        Self::validate_index_paths(index)?;
+        let index_path = self.dits_dir.join("index");
+        let json = index.to_json();
+        if json.len() as u64 > MAX_INDEX_FILE_SIZE {
+            return Err(RepoError::IndexError(format!(
+                "index is {} bytes; maximum supported size is {} bytes",
+                json.len(),
+                MAX_INDEX_FILE_SIZE
+            )));
+        }
+        fs::write(&index_path, json).map_err(|e| RepoError::IndexError(e.to_string()))?;
 
         // Update cache with new mtime
         let mtime = index_path.metadata()?.modified()?;
@@ -572,6 +644,38 @@ impl Repository {
         Ok(())
     }
 
+    fn read_index_bytes(index_path: &Path) -> Result<Vec<u8>, RepoError> {
+        let file_size = index_path.metadata()?.len();
+        if file_size > MAX_INDEX_FILE_SIZE {
+            return Err(RepoError::IndexError(format!(
+                "index is {file_size} bytes; maximum supported size is {MAX_INDEX_FILE_SIZE} bytes"
+            )));
+        }
+
+        let data = fs::read(index_path)?;
+        if data.len() as u64 > MAX_INDEX_FILE_SIZE {
+            return Err(RepoError::IndexError(format!(
+                "index grew beyond the maximum supported size of {MAX_INDEX_FILE_SIZE} bytes \
+                 while being read"
+            )));
+        }
+        Ok(data)
+    }
+
+    fn validate_index_paths(index: &Index) -> Result<(), RepoError> {
+        for (path, entry) in &index.entries {
+            crate::util::validate_repo_relative_path(path)
+                .map_err(|reason| RepoError::InvalidPath { path: path.clone(), reason })?;
+            if path != &entry.path {
+                return Err(RepoError::IndexError(format!(
+                    "index key '{}' does not match embedded path '{}'",
+                    path, entry.path
+                )));
+            }
+        }
+        Ok(())
+    }
+
     // ========== Add/Stage Operations ==========
 
     /// Add a file to the staging area.
@@ -579,15 +683,30 @@ impl Repository {
         // Store repository-relative paths with `/` on every platform so manifests
         // and commit hashes match across Windows and Unix. `Path::join` accepts
         // `/` on Windows, so normalizing up front is safe.
-        let path = &crate::util::normalize_separators(path);
-        let full_path = self.work_dir.join(path);
+        let path = crate::util::normalize_repo_input_path(path)
+            .map_err(|reason| RepoError::InvalidPath { path: path.to_string(), reason })?;
+        let full_path = if path == "." {
+            self.work_dir.clone()
+        } else {
+            self.resolve_worktree_path(&path)?
+        };
 
         if !full_path.exists() {
-            return Err(RepoError::FileNotFound(path.to_string()));
+            let mut index = self.load_index()?;
+            let mut result = AddResult::default();
+            let (matched, changed) =
+                self.stage_missing_under_scope(&mut index, &path, &mut result)?;
+            if matched {
+                if changed {
+                    self.save_index(&index)?;
+                }
+                return Ok(result);
+            }
+            return Err(RepoError::FileNotFound(path));
         }
 
         // Check if path is ignored
-        if self.ignore.is_ignored_str(path) {
+        if self.ignore.is_ignored_str(&path) {
             return Err(RepoError::FileIgnored(path.to_string()));
         }
 
@@ -595,7 +714,7 @@ impl Repository {
         let mut result = AddResult::default();
 
         if full_path.is_file() {
-            self.add_file(&mut index, path, &full_path, &mut result)?;
+            self.add_file(&mut index, &path, &full_path, &mut result)?;
         } else if full_path.is_dir() {
             // Add all files in directory
             for entry in WalkDir::new(&full_path)
@@ -617,6 +736,9 @@ impl Repository {
                     continue;
                 }
 
+                crate::util::validate_repo_relative_path(&rel_path)
+                    .map_err(|reason| RepoError::InvalidPath { path: rel_path.clone(), reason })?;
+
                 // Symlink versioning is not supported yet. Skip them, but count them so
                 // the user is warned rather than silently losing links.
                 if entry.file_type().is_symlink() {
@@ -626,10 +748,120 @@ impl Repository {
 
                 self.add_file(&mut index, &rel_path, entry.path(), &mut result)?;
             }
+
+            // Treat a directory add as a complete reconciliation of tracked
+            // paths in that scope. Missing tracked files become staged
+            // deletions; a newly staged file that disappeared is unstaged.
+            self.stage_missing_under_scope(&mut index, &path, &mut result)?;
         }
 
         self.save_index(&index)?;
         Ok(result)
+    }
+
+    fn stage_missing_under_scope(
+        &self,
+        index: &mut Index,
+        scope: &str,
+        result: &mut AddResult,
+    ) -> Result<(bool, bool), RepoError> {
+        let prefix = if scope == "." {
+            None
+        } else {
+            Some(format!("{scope}/"))
+        };
+        let candidates: Vec<String> = index
+            .entries
+            .keys()
+            .filter(|tracked| {
+                scope == "."
+                    || tracked.as_str() == scope
+                    || prefix
+                        .as_ref()
+                        .is_some_and(|prefix| tracked.starts_with(prefix))
+            })
+            .cloned()
+            .collect();
+
+        let mut matched = false;
+        let mut changed = false;
+        for tracked in candidates {
+            if self.resolve_worktree_path(&tracked)?.exists() {
+                continue;
+            }
+
+            matched = true;
+            match index.get(&tracked).map(|entry| entry.status) {
+                Some(FileStatus::Added) => {
+                    index.unstage(&tracked);
+                    result.files_unstaged += 1;
+                    changed = true;
+                },
+                Some(FileStatus::Deleted) | None => {},
+                Some(_) => {
+                    if let Some(entry) = index.entries.get_mut(&tracked) {
+                        entry.status = FileStatus::Deleted;
+                    }
+                    result.files_deleted += 1;
+                    result.files_staged += 1;
+                    changed = true;
+                },
+            }
+        }
+        Ok((matched, changed))
+    }
+
+    fn status_for_updated_content(
+        &self,
+        index: &Index,
+        path: &str,
+        content_hash: Hash,
+    ) -> Result<FileStatus, RepoError> {
+        match index.get(path).map(|entry| entry.status) {
+            None | Some(FileStatus::Added) => Ok(FileStatus::Added),
+            Some(FileStatus::Deleted) => {
+                let Some(base_commit_hash) = index.base_commit else {
+                    return Ok(FileStatus::Added);
+                };
+                let base_commit = self.objects.load_commit(&base_commit_hash)?;
+                let base_manifest = self.objects.load_manifest(&base_commit.manifest)?;
+                Ok(match base_manifest.get(path) {
+                    Some(entry) if entry.content_hash == content_hash => FileStatus::Unchanged,
+                    Some(_) => FileStatus::Modified,
+                    None => FileStatus::Added,
+                })
+            },
+            Some(_) => Ok(FileStatus::Modified),
+        }
+    }
+
+    /// Reconcile an add whose bytes still equal the retained index entry.
+    /// Deleted entries need special handling because their retained bytes may
+    /// represent either HEAD or an earlier staged modification.
+    fn reconcile_equal_index_content(
+        &self,
+        index: &mut Index,
+        path: &str,
+        content_hash: Hash,
+        result: &mut AddResult,
+    ) -> Result<bool, RepoError> {
+        let Some(existing) = index.get(path) else {
+            return Ok(false);
+        };
+        if existing.content_hash != content_hash {
+            return Ok(false);
+        }
+
+        if existing.status == FileStatus::Deleted {
+            let status = self.status_for_updated_content(index, path, content_hash)?;
+            if let Some(entry) = index.entries.get_mut(path) {
+                entry.status = status;
+            }
+            if status != FileStatus::Unchanged {
+                result.files_staged += 1;
+            }
+        }
+        Ok(true)
     }
 
     /// Add a single file to the index.
@@ -654,11 +886,8 @@ impl Repository {
         let content_hash = Hasher::hash(&data);
 
         // Check if file has changed
-        if let Some(existing) = index.get(rel_path) {
-            if existing.content_hash == content_hash {
-                // File hasn't changed
-                return Ok(());
-            }
+        if self.reconcile_equal_index_content(index, rel_path, content_hash, result)? {
+            return Ok(());
         }
 
         // Phase 3.6: Classify file to determine storage strategy
@@ -759,11 +988,7 @@ impl Repository {
                 symlink_target.clone(),
                 chunk_refs,
             );
-            entry.status = if index.is_staged(rel_path) {
-                FileStatus::Modified
-            } else {
-                FileStatus::Added
-            };
+            entry.status = self.status_for_updated_content(index, rel_path, content_hash)?;
             index.stage(entry);
             result.files_staged += 1;
             return Ok(());
@@ -780,11 +1005,7 @@ impl Repository {
             symlink_target,
             git_oid.unwrap_or_default(),
         );
-        entry.status = if index.is_staged(rel_path) {
-            FileStatus::Modified
-        } else {
-            FileStatus::Added
-        };
+        entry.status = self.status_for_updated_content(index, rel_path, content_hash)?;
 
         index.stage(entry);
         result.files_staged += 1;
@@ -858,11 +1079,7 @@ impl Repository {
             symlink_target,
             chunk_refs,
         );
-        entry.status = if index.is_staged(rel_path) {
-            FileStatus::Modified
-        } else {
-            FileStatus::Added
-        };
+        entry.status = self.status_for_updated_content(index, rel_path, content_hash)?;
 
         index.stage(entry);
         result.files_staged += 1;
@@ -927,10 +1144,8 @@ impl Repository {
         let actual_file_size = data.len() as u64;
 
         // Check if file has changed
-        if let Some(existing) = index.get(rel_path) {
-            if existing.content_hash == content_hash {
-                return Ok(());
-            }
+        if self.reconcile_equal_index_content(index, rel_path, content_hash, result)? {
+            return Ok(());
         }
 
         // Store ftyp atom
@@ -1082,11 +1297,7 @@ impl Repository {
             chunk_refs,
             mp4_metadata,
         );
-        entry.status = if index.is_staged(rel_path) {
-            FileStatus::Modified
-        } else {
-            FileStatus::Added
-        };
+        entry.status = self.status_for_updated_content(index, rel_path, content_hash)?;
 
         index.stage(entry);
         result.files_staged += 1;
@@ -1106,10 +1317,8 @@ impl Repository {
         let content_hash = Hasher::hash(&data);
 
         // Check if file has changed
-        if let Some(existing) = index.get(rel_path) {
-            if existing.content_hash == content_hash {
-                return Ok(());
-            }
+        if self.reconcile_equal_index_content(index, rel_path, content_hash, result)? {
+            return Ok(());
         }
 
         // Chunk the file - use parallel chunking for large files
@@ -1168,11 +1377,7 @@ impl Repository {
             symlink_target,
             chunk_refs,
         );
-        entry.status = if index.is_staged(rel_path) {
-            FileStatus::Modified
-        } else {
-            FileStatus::Added
-        };
+        entry.status = self.status_for_updated_content(index, rel_path, content_hash)?;
 
         index.stage(entry);
         result.files_staged += 1;
@@ -1354,10 +1559,16 @@ impl Repository {
                 missing_from_working.push((head_path.clone(), head_entry.content_hash));
             }
 
-            // Second pass: detect renames by matching content hashes
+            // Second pass: detect renames by matching content hashes. Each
+            // untracked path can satisfy at most one missing source path.
+            let mut matched_new_paths = std::collections::HashSet::new();
             for (old_path, old_hash) in &missing_from_working {
+                let mut renamed = false;
                 // Look for an untracked file with the same content hash
                 for (new_path, new_full_path) in &potential_renames {
+                    if matched_new_paths.contains(new_path) {
+                        continue;
+                    }
                     if let Ok(data) = fs::read(new_full_path) {
                         let new_hash = Hasher::hash(&data);
                         if new_hash == *old_hash {
@@ -1367,9 +1578,14 @@ impl Repository {
                                 .push((old_path.clone(), new_path.clone()));
                             // Remove from untracked since it's a rename
                             status.untracked.retain(|p| p != new_path);
+                            matched_new_paths.insert(new_path.clone());
+                            renamed = true;
                             break;
                         }
                     }
+                }
+                if !renamed {
+                    status.deleted.push(old_path.clone());
                 }
             }
         } else {
@@ -1401,13 +1617,21 @@ impl Repository {
     pub fn commit(&self, message: &str) -> Result<Commit, RepoError> {
         let index = self.load_index()?;
 
-        if index.is_empty() {
+        if index.is_empty()
+            || index
+                .entries
+                .values()
+                .all(|entry| entry.status == FileStatus::Unchanged)
+        {
             return Err(RepoError::NothingToCommit);
         }
 
         // Build manifest from index
         let mut manifest = Manifest::new();
         for (path, entry) in &index.entries {
+            if entry.status == FileStatus::Deleted {
+                continue;
+            }
             let manifest_entry = if let Some(ref mp4_meta) = entry.mp4_metadata {
                 let index_mode = entry.mode;
                 let mut manifest_entry = ManifestEntry::new_mp4(
@@ -1474,6 +1698,22 @@ impl Repository {
 
         // Get parent commit
         let parent = self.refs.resolve_head()?;
+        if let Some(parent_hash) = parent {
+            let parent_commit = self.objects.load_commit(&parent_hash)?;
+            if parent_commit.manifest == manifest_hash {
+                let mut normalized_index = Index::from_commit(parent_hash);
+                for entry in index.entries.values() {
+                    if entry.status == FileStatus::Deleted {
+                        continue;
+                    }
+                    let mut normalized_entry = entry.clone();
+                    normalized_entry.status = FileStatus::Unchanged;
+                    normalized_index.stage(normalized_entry);
+                }
+                self.save_index(&normalized_index)?;
+                return Err(RepoError::NothingToCommit);
+            }
+        }
 
         // Create commit
         let author = Author::from_env();
@@ -1492,6 +1732,9 @@ impl Repository {
         // Update index base commit
         let mut new_index = Index::from_commit(commit.hash);
         for (_path, entry) in index.entries {
+            if entry.status == FileStatus::Deleted {
+                continue;
+            }
             let mut new_entry = entry;
             new_entry.status = FileStatus::Unchanged;
             new_index.stage(new_entry);
@@ -1519,6 +1762,18 @@ impl Repository {
         let commit = self.objects.load_commit(hash)?;
         let manifest = self.objects.load_manifest(&commit.manifest)?;
 
+        // Resolve every path before mutating the working tree. This prevents a
+        // malformed manifest or an existing symlink ancestor from turning a
+        // partial checkout into an out-of-repository write.
+        if let Some(ref previous) = previous_manifest {
+            for (path, _) in previous.iter() {
+                self.resolve_worktree_path(path)?;
+            }
+        }
+        for (path, _) in manifest.iter() {
+            self.resolve_worktree_path(path)?;
+        }
+
         let mut result = CheckoutResult::default();
 
         // Remove files that were tracked in the previous commit but do not exist in the
@@ -1529,7 +1784,7 @@ impl Repository {
                     continue;
                 }
 
-                let full_old_path = self.work_dir.join(old_path);
+                let full_old_path = self.resolve_worktree_path(old_path)?;
                 if !full_old_path.exists() {
                     continue;
                 }
@@ -1557,7 +1812,7 @@ impl Repository {
         }
 
         for (path, entry) in manifest.iter() {
-            let full_path = self.work_dir.join(path);
+            let full_path = self.resolve_worktree_path(path)?;
 
             // Create parent directories
             if let Some(parent) = full_path.parent() {
@@ -1578,7 +1833,7 @@ impl Repository {
         // Update index
         let mut index = Index::from_commit(*hash);
         for (path, entry) in manifest.iter() {
-            let full_path = self.work_dir.join(path);
+            let full_path = self.resolve_worktree_path(path)?;
 
             // Get file metadata if possible
             let (mode, file_type, symlink_target) = if full_path.exists() {
@@ -1886,6 +2141,15 @@ impl Repository {
         self.git_engine.as_ref()
     }
 
+    /// Resolve a canonical manifest/index path beneath the working tree.
+    /// Existing symlink ancestors are rejected to keep reads and writes inside
+    /// the repository.
+    pub fn resolve_worktree_path(&self, path: &str) -> Result<PathBuf, RepoError> {
+        crate::util::safe_join_repo_path(&self.work_dir, path).map_err(|error| {
+            RepoError::InvalidPath { path: path.to_string(), reason: error.to_string() }
+        })
+    }
+
     /// List all branches.
     pub fn list_branches(&self) -> Result<Vec<String>, RepoError> {
         Ok(self.refs.list_branches()?)
@@ -2112,6 +2376,11 @@ impl Repository {
 #[derive(Debug, Default)]
 pub struct AddResult {
     pub files_staged:     usize,
+    /// Tracked files whose deletion was staged.
+    pub files_deleted:    usize,
+    /// Newly staged files removed from the index after disappearing before a
+    /// commit.
+    pub files_unstaged:   usize,
     pub files_ignored:    usize,
     /// Symbolic links encountered during a directory add. Symlink versioning is
     /// not supported yet, so these are skipped — but reported so it is
@@ -2146,6 +2415,7 @@ pub struct Status {
     pub staged_type_changed: Vec<String>,
     pub staged_mode_changed: Vec<String>,
     pub modified:            Vec<String>,
+    pub deleted:             Vec<String>,
     pub untracked:           Vec<String>,
     pub unstaged_renamed:    Vec<(String, String)>, // (old_path, new_path)
 }
@@ -2160,6 +2430,7 @@ impl Status {
             && self.staged_type_changed.is_empty()
             && self.staged_mode_changed.is_empty()
             && self.modified.is_empty()
+            && self.deleted.is_empty()
             && self.unstaged_renamed.is_empty()
     }
 
@@ -2295,6 +2566,19 @@ mod tests {
     }
 
     #[test]
+    fn test_open_rejects_malformed_local_config_without_rewriting_it() {
+        let temp = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+        let config_path = repo.dits_dir().join("config.toml");
+        let malformed = b"[chunking\ntarget_size = nope\n";
+        fs::write(&config_path, malformed).unwrap();
+        drop(repo);
+
+        assert!(matches!(Repository::open(temp.path()), Err(RepoError::Config(_))));
+        assert_eq!(fs::read(config_path).unwrap(), malformed);
+    }
+
+    #[test]
     fn test_add_and_commit() {
         let temp = tempdir().unwrap();
         let repo = Repository::init(temp.path()).unwrap();
@@ -2318,6 +2602,179 @@ mod tests {
     }
 
     #[test]
+    fn test_commit_rejects_unchanged_and_reverted_snapshots() {
+        let temp = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+        let file = temp.path().join("note.txt");
+
+        fs::write(&file, b"original").unwrap();
+        repo.add("note.txt").unwrap();
+        let base = repo.commit("base").unwrap();
+
+        assert!(matches!(repo.commit("duplicate"), Err(RepoError::NothingToCommit)));
+
+        fs::write(&file, b"changed").unwrap();
+        repo.add("note.txt").unwrap();
+        fs::write(&file, b"original").unwrap();
+        repo.add("note.txt").unwrap();
+
+        assert!(matches!(repo.commit("reverted"), Err(RepoError::NothingToCommit)));
+        assert_eq!(repo.log(10).unwrap().len(), 1);
+
+        let index = repo.load_index().unwrap();
+        assert_eq!(index.base_commit, Some(base.hash));
+        assert_eq!(index.get("note.txt").unwrap().status, FileStatus::Unchanged);
+        assert!(repo.status().unwrap().is_clean());
+    }
+
+    #[test]
+    fn test_readding_changed_new_file_preserves_added_status() {
+        let temp = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+        let file = temp.path().join("new.bin");
+
+        fs::write(&file, b"first version").unwrap();
+        repo.add("new.bin").unwrap();
+        fs::write(&file, b"second version").unwrap();
+        repo.add("new.bin").unwrap();
+
+        let index = repo.load_index().unwrap();
+        assert_eq!(index.get("new.bin").unwrap().status, FileStatus::Added);
+        let status = repo.status().unwrap();
+        assert!(status.staged_new.contains(&"new.bin".to_string()));
+        assert!(!status.staged_modified.contains(&"new.bin".to_string()));
+    }
+
+    #[test]
+    fn test_stage_and_commit_tracked_deletion() {
+        let temp = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+        let file = temp.path().join("remove-me.txt");
+
+        fs::write(&file, b"tracked").unwrap();
+        repo.add("remove-me.txt").unwrap();
+        repo.commit("base").unwrap();
+        fs::remove_file(&file).unwrap();
+
+        let status = repo.status().unwrap();
+        assert!(status.deleted.contains(&"remove-me.txt".to_string()));
+
+        let add = repo.add("remove-me.txt").unwrap();
+        assert_eq!(add.files_deleted, 1);
+        assert!(repo
+            .status()
+            .unwrap()
+            .staged_deleted
+            .contains(&"remove-me.txt".to_string()));
+
+        let staged_once = repo.load_index().unwrap().to_json();
+        let repeated = repo.add("remove-me.txt").unwrap();
+        assert_eq!(repeated.files_staged, 0);
+        assert_eq!(repeated.files_deleted, 0);
+        assert_eq!(repo.load_index().unwrap().to_json(), staged_once);
+
+        let deletion = repo.commit("remove tracked file").unwrap();
+        let manifest = repo.load_manifest(&deletion.manifest).unwrap();
+        assert!(!manifest.contains("remove-me.txt"));
+        assert!(!repo
+            .load_index()
+            .unwrap()
+            .entries
+            .contains_key("remove-me.txt"));
+    }
+
+    #[test]
+    fn test_restoring_deleted_staged_content_compares_against_base_commit() {
+        let temp = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+        let file = temp.path().join("tracked.bin");
+
+        fs::write(&file, b"base bytes").unwrap();
+        repo.add("tracked.bin").unwrap();
+        repo.commit("base").unwrap();
+
+        fs::write(&file, b"staged modification").unwrap();
+        repo.add("tracked.bin").unwrap();
+        fs::remove_file(&file).unwrap();
+        repo.add("tracked.bin").unwrap();
+
+        // The Deleted entry retains the staged-modification bytes. Restoring
+        // those bytes must recover Modified, not claim they equal HEAD.
+        fs::write(&file, b"staged modification").unwrap();
+        repo.add("tracked.bin").unwrap();
+        assert_eq!(
+            repo.load_index()
+                .unwrap()
+                .get("tracked.bin")
+                .unwrap()
+                .status,
+            FileStatus::Modified
+        );
+
+        // Restoring the actual base bytes cancels the staged change.
+        fs::remove_file(&file).unwrap();
+        repo.add("tracked.bin").unwrap();
+        fs::write(&file, b"base bytes").unwrap();
+        repo.add("tracked.bin").unwrap();
+        assert_eq!(
+            repo.load_index()
+                .unwrap()
+                .get("tracked.bin")
+                .unwrap()
+                .status,
+            FileStatus::Unchanged
+        );
+        assert!(repo.status().unwrap().is_clean());
+    }
+
+    #[test]
+    fn test_vanished_new_file_is_removed_from_index() {
+        let temp = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+        let file = temp.path().join("temporary.txt");
+
+        fs::write(&file, b"temporary").unwrap();
+        repo.add("temporary.txt").unwrap();
+        fs::remove_file(&file).unwrap();
+
+        let add = repo.add("temporary.txt").unwrap();
+        assert_eq!(add.files_unstaged, 1);
+        assert!(repo.load_index().unwrap().is_empty());
+        assert!(matches!(repo.commit("nothing"), Err(RepoError::NothingToCommit)));
+    }
+
+    #[test]
+    fn test_unstaged_rename_candidates_are_consumed_once() {
+        let temp = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+        let content = b"identical content";
+
+        fs::write(temp.path().join("first.bin"), content).unwrap();
+        fs::write(temp.path().join("second.bin"), content).unwrap();
+        repo.add("first.bin").unwrap();
+        repo.add("second.bin").unwrap();
+        repo.commit("two identical files").unwrap();
+
+        fs::remove_file(temp.path().join("first.bin")).unwrap();
+        fs::remove_file(temp.path().join("second.bin")).unwrap();
+        fs::write(temp.path().join("replacement.bin"), content).unwrap();
+
+        let status = repo.status().unwrap();
+        assert_eq!(status.unstaged_renamed.len(), 1);
+        assert_eq!(status.unstaged_renamed[0].1, "replacement.bin");
+        assert_eq!(status.deleted.len(), 1);
+        assert!(!status.untracked.contains(&"replacement.bin".to_string()));
+
+        let accounted_sources: std::collections::HashSet<_> = status
+            .unstaged_renamed
+            .iter()
+            .map(|(old_path, _)| old_path.as_str())
+            .chain(status.deleted.iter().map(String::as_str))
+            .collect();
+        assert_eq!(accounted_sources, std::collections::HashSet::from(["first.bin", "second.bin"]));
+    }
+
+    #[test]
     fn test_add_and_checkout() {
         let temp = tempdir().unwrap();
         let repo = Repository::init(temp.path()).unwrap();
@@ -2338,6 +2795,53 @@ mod tests {
         // Verify file content
         let content = fs::read_to_string(&test_file).unwrap();
         assert_eq!(content, "original content");
+    }
+
+    #[test]
+    fn test_add_rejects_paths_outside_the_repository() {
+        let temp = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+
+        for invalid in ["../outside.txt", "/tmp/outside.txt", "C:/outside.txt", ".dits/HEAD"] {
+            assert!(matches!(repo.add(invalid), Err(RepoError::InvalidPath { .. })));
+        }
+    }
+
+    #[test]
+    fn test_read_only_open_does_not_initialize_missing_git_store() {
+        let temp = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+        let git_dir = repo.dits_dir().join("objects/git");
+        fs::remove_dir_all(&git_dir).unwrap();
+
+        let read_only = Repository::open_read_only(temp.path()).unwrap();
+        assert!(read_only.git_engine().is_none());
+        assert!(!git_dir.exists());
+
+        let normal = Repository::open(temp.path()).unwrap();
+        assert!(normal.git_engine().is_some());
+        assert!(git_dir.exists());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_checkout_rejects_symlink_parent_escape() {
+        use std::os::unix::fs::symlink;
+
+        let temp = tempdir().unwrap();
+        let outside = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+        fs::create_dir(temp.path().join("media")).unwrap();
+        fs::write(temp.path().join("media/shot.bin"), b"inside").unwrap();
+        repo.add("media/shot.bin").unwrap();
+        let commit = repo.commit("safe snapshot").unwrap();
+
+        fs::remove_file(temp.path().join("media/shot.bin")).unwrap();
+        fs::remove_dir(temp.path().join("media")).unwrap();
+        symlink(outside.path(), temp.path().join("media")).unwrap();
+
+        assert!(matches!(repo.checkout(&commit.hash), Err(RepoError::InvalidPath { .. })));
+        assert!(!outside.path().join("shot.bin").exists());
     }
 
     #[test]

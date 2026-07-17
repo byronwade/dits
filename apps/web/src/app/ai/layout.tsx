@@ -2,22 +2,21 @@ import type { Metadata } from "next";
 import { generateMetadata as genMeta } from "@/lib/seo";
 
 export const metadata: Metadata = genMeta({
-  title: "Dits for AI — Version Control for Models, Datasets & Research Data",
+  title: "Dits for AI Research — Models, Datasets & Derivation",
   description:
-    "Dits for AI brings content-addressed, deduplicating version control to the heaviest data in AI and science: model checkpoints, weights, training datasets, and research data. Store only what changed, sync deltas not whole files, and reproduce artifacts from recipes.",
-  canonical: "https://dits.dev/ai",
+    "A Dits research track exploring exact history and reproducible derivation for model, dataset, and scientific artifacts. Not a separate shipped product.",
   keywords: [
     "model weight versioning",
     "checkpoint deduplication",
     "dataset version control",
     "research data versioning",
     "content-addressed storage",
-    "AI infrastructure",
+    "AI infrastructure research",
     "dits for ai",
   ],
   openGraph: {
     type: "website",
-    images: [{ url: "/dits.png", width: 1200, height: 630, alt: "Dits for AI" }],
+    images: [{ url: "/dits.png", width: 1200, height: 630, alt: "Dits for AI research" }],
   },
   twitter: { card: "summary_large_image" },
 });

@@ -10,6 +10,9 @@
     "test:ci": "tsc --noEmit",
     "build:wasm": "wasm-pack build ../../packages/dits-wasm --release --target web --out-dir ../../apps/web/src/wasm/dits"
   },
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
     "@hookform/resolvers": "^5.2.2",

@@ -7,7 +7,7 @@ use crate::store::remote::{Remote, RemoteStore, RemoteType};
 /// List all remotes.
 pub fn remote_list(verbose: bool) -> Result<()> {
     let dits_dir = find_dits_dir()?;
-    let store = RemoteStore::new(&dits_dir);
+    let store = RemoteStore::open(&dits_dir)?;
 
     if store.is_empty() {
         if verbose {
@@ -31,7 +31,7 @@ pub fn remote_list(verbose: bool) -> Result<()> {
 /// Add a new remote.
 pub fn remote_add(name: &str, url: &str) -> Result<()> {
     let dits_dir = find_dits_dir()?;
-    let mut store = RemoteStore::new(&dits_dir);
+    let mut store = RemoteStore::open(&dits_dir)?;
 
     // Validate URL
     let remote_type = RemoteType::parse(url);
@@ -54,7 +54,7 @@ pub fn remote_add(name: &str, url: &str) -> Result<()> {
 /// Remove a remote.
 pub fn remote_remove(name: &str) -> Result<()> {
     let dits_dir = find_dits_dir()?;
-    let mut store = RemoteStore::new(&dits_dir);
+    let mut store = RemoteStore::open(&dits_dir)?;
 
     store
         .remove(name)
@@ -67,7 +67,7 @@ pub fn remote_remove(name: &str) -> Result<()> {
 /// Rename a remote.
 pub fn remote_rename(old_name: &str, new_name: &str) -> Result<()> {
     let dits_dir = find_dits_dir()?;
-    let mut store = RemoteStore::new(&dits_dir);
+    let mut store = RemoteStore::open(&dits_dir)?;
 
     store
         .rename(old_name, new_name)
@@ -80,7 +80,7 @@ pub fn remote_rename(old_name: &str, new_name: &str) -> Result<()> {
 /// Get URL for a remote.
 pub fn remote_get_url(name: &str, push: bool) -> Result<()> {
     let dits_dir = find_dits_dir()?;
-    let store = RemoteStore::new(&dits_dir);
+    let store = RemoteStore::open(&dits_dir)?;
 
     let remote = store
         .get(name)
@@ -98,7 +98,7 @@ pub fn remote_get_url(name: &str, push: bool) -> Result<()> {
 /// Set URL for a remote.
 pub fn remote_set_url(name: &str, url: &str, push: bool) -> Result<()> {
     let dits_dir = find_dits_dir()?;
-    let mut store = RemoteStore::new(&dits_dir);
+    let mut store = RemoteStore::open(&dits_dir)?;
 
     if push {
         let remote = store

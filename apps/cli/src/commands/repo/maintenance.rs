@@ -132,8 +132,9 @@ pub fn run(task: Option<&str>) -> Result<()> {
 fn run_task(repo: &Repository, task: MaintenanceTask) -> Result<()> {
     match task {
         MaintenanceTask::Gc => {
-            // Run garbage collection
-            crate::commands::gc(false, false, false)?;
+            // Destructive GC is disabled; maintenance performs the same
+            // read-only reachability report exposed by `dits gc --dry-run`.
+            crate::commands::gc(true, false, false)?;
         },
         MaintenanceTask::CommitGraph => {
             // Update commit graph (for faster log operations)

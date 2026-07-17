@@ -37,10 +37,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = genMeta({
-  title: "Dits - Version Control for Video & Large Files",
+  title: "Dits - Local-First Version Control for Media & Assets",
   description:
-    "Dits is a free and open source version control system designed for video production and large binary files. Like Git, but optimized for media workflows.",
-  canonical: "https://dits.dev",
+    "Dits is open, local-first version control for large media and asset pipelines. Try the alpha locally and help shape its open format and protocol.",
   openGraph: {
     type: "website",
     images: [
@@ -48,7 +47,7 @@ export const metadata: Metadata = genMeta({
         url: "/dits.png",
         width: 1200,
         height: 630,
-        alt: "Dits - Version Control for Video & Large Files",
+        alt: "Dits - Local-First Version Control for Media and Assets",
       },
     ],
   },
@@ -66,16 +65,11 @@ export default function RootLayout({
   const softwareApplicationSchema = generateSoftwareApplicationSchema({
     name: "Dits",
     description:
-      "Dits is a free and open source version control system designed for video production and large binary files.",
+      "Open, local-first version control for large media and asset pipelines.",
+    operatingSystem: ["macOS on Apple silicon", "Windows x64"],
   });
-  
-  // Add WebSite schema with SearchAction for homepage
-  const websiteSchema = generateWebSiteSchema({
-    potentialAction: {
-      target: "https://dits.dev/search?q={search_term_string}",
-      queryInput: "required name=search_term_string",
-    },
-  });
+
+  const websiteSchema = generateWebSiteSchema({});
 
   return (
     <html lang="en" suppressHydrationWarning>

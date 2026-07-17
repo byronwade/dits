@@ -1,407 +1,98 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Callout } from "@/components/ui/callout";
+
 import { DocPageHeader } from "@/components/doc-page-header";
-import { Database, Unplug, BarChart3 } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
+import { Callout } from "@/components/ui/callout";
 
 export const metadata: Metadata = {
-  title: "VFS Commands",
-  description: "Commands for mounting Dits repositories as virtual filesystems",
+  title: "Experimental Local FUSE Commands",
+  description:
+    "Current feature-gated, read-only local FUSE mount boundary; no remote hydration or access-performance guarantee.",
 };
 
-const commands = [
-  { command: "mount", description: "Mount repository as virtual filesystem", usage: "dits mount [OPTIONS] [MOUNTPOINT]" },
-  { command: "unmount", description: "Unmount virtual filesystem", usage: "dits unmount [OPTIONS] [MOUNTPOINT]" },
-  { command: "cache-stats", description: "Show VFS cache statistics", usage: "dits cache-stats [OPTIONS]" },
-];
-
-export default function VFSCommandsPage() {
+export default function VfsCommandsPage() {
   return (
-    <div className="prose dark:prose-invert max-w-none">
+    <div className="prose max-w-none dark:prose-invert">
       <DocPageHeader
-        eyebrow="CLI Reference"
-        title="Virtual Filesystem Commands"
-        description="Mount Dits repositories as virtual drives. Files appear instantly and stream on-demand - no need to download entire files before opening them."
+        eyebrow="Experimental CLI"
+        title="Local FUSE Mount"
+        description="Expose one local commit through a read-only FUSE mount in a source build that enables the optional fuser feature."
       />
 
-      <Callout type="important" title="Local-only — requires a fuser build">
-        <code>dits mount</code> requires a build with the FUSE feature enabled
-        (<code>cargo build --features fuser</code>) and works against the{" "}
-        <strong>local</strong> content store only. Files appear immediately as
-        placeholders and are hydrated on access from the local{" "}
-        <code>.dits</code> store. Streaming chunks on demand from a{" "}
-        <em>remote</em> (the multi-terabyte just-in-time workflow shown below) is{" "}
-        <strong>roadmap</strong> &mdash; it depends on networked fetch, which is
-        not implemented yet. See the <Link href="/docs/roadmap">roadmap</Link>.
+      <Callout type="warning" title="Experimental, local, and feature-gated" className="not-prose my-6">
+        Published npm binaries do not promise this command surface. The mount
+        reads objects already present in the local repository; it does not
+        contact a remote, partially clone a repository, or hydrate missing data
+        over a network. Startup and read latency depend on the repository,
+        machine, FUSE implementation, and access pattern.
       </Callout>
 
-      <Table className="not-prose my-6">
-        <TableHeader>
-          <TableRow>
-            <TableHead>Command</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Usage</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {commands.map((cmd) => (
-            <TableRow key={cmd.command}>
-              <TableCell className="font-mono font-medium">{cmd.command}</TableCell>
-              <TableCell>{cmd.description}</TableCell>
-              <TableCell className="font-mono text-sm">{cmd.usage}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <h2>Build requirements</h2>
 
-      <h2 className="flex items-center gap-2">
-        <Database className="h-5 w-5" />
-        dits mount
-      </h2>
       <p>
-        Mount a repository as a virtual filesystem using FUSE. Files and directories
-        appear at the mount point, with data streamed on-demand.
+        Build from source with the <code>fuser</code> feature and install the
+        FUSE implementation required by your operating system. Exact OS setup is
+        outside the Dits compatibility promise.
       </p>
 
-      <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits mount [OPTIONS] [MOUNTPOINT]`}
+        code={`cargo build --locked --release -p dits --features fuser
+./target/release/dits mount --help`}
       />
 
-      <h3>Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`--read-only           Mount as read-only (no modifications)
---allow-other         Allow other users to access mount
---commit <REF>        Mount a specific commit or tag
---branch <NAME>       Mount a specific branch
---background, -b      Run mount in background
---cache-size <SIZE>   Set local cache size (default: 10GB)
---cache-dir <PATH>    Override cache directory
---prefetch            Enable aggressive prefetching
---prefetch-size <N>   Prefetch next N chunks
---no-sparse           Disable sparse file support
--v, --verbose         Show detailed mount information`}
-      />
+      <h2><code>dits mount</code></h2>
 
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Mount to default location
-$ dits mount
-
-Mounting repository at /Volumes/dits-project...
-Virtual filesystem ready.
-
-  Repository: my-project
-  Branch: main (abc1234)
-  Files: 1,234 available
-  Mode: read-write
-  Cache: 10 GB (0 bytes used)
-
-Press Ctrl+C to unmount (or use 'dits unmount')
-
-# Mount to specific location
-$ dits mount /mnt/project
-
-# Mount in background
-$ dits mount -b /mnt/project
-Mounted at /mnt/project (pid: 12345)
-
-# Mount as read-only
-$ dits mount --read-only /mnt/project
-
-# Mount specific commit (great for reviewing old versions)
-$ dits mount --commit v1.0 /mnt/v1-release
-
-# Mount specific branch
-$ dits mount --branch feature/color-grade /mnt/color-grade
-
-# Mount with large cache for heavy editing
-$ dits mount --cache-size 100GB /mnt/project
-
-# Mount with prefetching for smoother playback
-$ dits mount --prefetch --prefetch-size 10 /mnt/project`}
-      />
-
-      <h3>How It Works</h3>
-      <CodeBlock
-        language="bash"
-        code={`Mount Architecture:
-
-┌─────────────────────────────────────────────────────┐
-│                   Your Application                   │
-│              (NLE, Media Player, etc.)               │
-└────────────────────────┬────────────────────────────┘
-                         │ Standard file I/O
-                         ▼
-┌─────────────────────────────────────────────────────┐
-│                 FUSE Mount Point                     │
-│                 /Volumes/dits-project                │
-└────────────────────────┬────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────┐
-│                   Dits VFS Layer                     │
-│  • File → Chunk mapping                              │
-│  • Prefetching logic                                 │
-│  • Cache management                                  │
-└────────────────────────┬────────────────────────────┘
-                         │
-           ┌─────────────┴─────────────┐
-           ▼                           ▼
-   ┌──────────────┐           ┌──────────────┐
-   │ Local Cache  │           │    Remote    │
-   │ .dits/cache/ │           │   Storage    │
-   └──────────────┘           └──────────────┘`}
-      />
-
-      <h2 className="flex items-center gap-2">
-        <Unplug className="h-5 w-5" />
-        dits unmount
-      </h2>
       <p>
-        Unmount a virtual filesystem. Ensures all pending operations complete
-        before unmounting.
+        Resolves HEAD or the local ref selected by <code>--commit</code>, loads
+        its manifest, and blocks while serving a read-only mount. The
+        <code> --cache-mb</code> value configures the in-process RAM cache; the
+        disk cache lives below <code>.dits/cache</code>.
       </p>
 
-      <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits unmount [OPTIONS] [MOUNTPOINT]`}
+        code={`dits mount <MOUNT_POINT>
+dits mount <MOUNT_POINT> --commit main --cache-mb 256`}
       />
 
-      <h3>Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`-f, --force         Force unmount (may lose unsaved data)
---all               Unmount all Dits mounts
---wait              Wait for operations to complete`}
-      />
-
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Unmount default location
-$ dits unmount
-Unmounting /Volumes/dits-project...
-Syncing pending changes... done
-Unmounted successfully.
-
-# Unmount specific path
-$ dits unmount /mnt/project
-
-# Force unmount (when mount is stuck)
-$ dits unmount -f /mnt/project
-Warning: Force unmounting. Unsaved changes may be lost.
-Unmounted.
-
-# Unmount all mounts
-$ dits unmount --all
-Unmounting 3 mounts...
-  /Volumes/dits-project... done
-  /mnt/v1-release... done
-  /mnt/color-grade... done`}
-      />
-
-      <Callout type="note" title="Close Applications First" className="not-prose my-6">
-        Before unmounting, close any applications that have files open from the
-        mount. Use <code>--force</code> only as a last resort, as it may interrupt
-        file operations.
+      <Callout type="important" title="Read-only is not an access-control boundary" className="not-prose my-6">
+        The FUSE mount is configured read-only, but visibility to other local
+        users depends on operating-system permissions and FUSE configuration.
+        Protect the repository and mount point with normal OS controls. Verify
+        important reads against the original fixture before relying on this
+        experimental path.
       </Callout>
 
-      <h2 className="flex items-center gap-2">
-        <BarChart3 className="h-5 w-5" />
-        dits cache-stats
-      </h2>
+      <h2>Unmount and inspect the disk cache</h2>
+
+      <CodeBlock
+        language="bash"
+        code={`dits unmount <MOUNT_POINT>
+dits cache-stats`}
+      />
+
       <p>
-        Show statistics about the VFS cache. Useful for understanding cache
-        performance and managing disk usage.
+        <code>cache-stats</code> counts local files and bytes in
+        <code> .dits/cache</code>. It does not report a remote cache, bandwidth,
+        hit-rate guarantee, or live RAM statistics after the mount exits.
       </p>
 
-      <h3>Synopsis</h3>
-      <CodeBlock
-        language="bash"
-        code={`dits cache-stats [OPTIONS]`}
-      />
+      <h2>Not implemented</h2>
 
-      <h3>Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`--json              Output in JSON format
---clear             Clear the cache
---top <N>           Show top N cached files
--v, --verbose       Show detailed statistics`}
-      />
+      <ul>
+        <li>Network partial clone or remote chunk hydration.</li>
+        <li>Windows native virtual-drive support in the published package.</li>
+        <li>Guaranteed instant mount, open, seek, or playback behavior.</li>
+        <li>A supported editor-integration or production VFS contract.</li>
+      </ul>
 
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`$ dits cache-stats
-
-VFS Cache Statistics:
-
-  Cache Location: ~/.cache/dits/vfs
-  Cache Limit: 10 GB
-  Current Size: 4.2 GB (42%)
-
-  Cached Chunks: 4,567
-  Hit Rate: 94.2% (last hour)
-  Miss Rate: 5.8%
-
-  Bytes Read: 12.5 GB
-  Bytes from Cache: 11.8 GB (94.4%)
-  Bytes from Remote: 700 MB (5.6%)
-
-Recent Activity:
-  Chunks fetched: 234 (last hour)
-  Chunks evicted: 45 (LRU)
-  Prefetch hits: 189 (80.8%)
-
-# Show top cached files
-$ dits cache-stats --top 10
-
-Top Cached Files:
-  File                              Chunks    Size
-  ─────────────────────────────────────────────────
-  footage/scene01.mov               456       456 MB
-  footage/scene02.mov               389       389 MB
-  project.prproj                    12        48 MB
-  ...
-
-# Clear the cache
-$ dits cache-stats --clear
-Clear VFS cache (4.2 GB)? [y/N] y
-Cache cleared.
-
-# Verbose stats
-$ dits cache-stats -v
-
-Cache Configuration:
-  Path: ~/.cache/dits/vfs
-  Max Size: 10 GB
-  Eviction Policy: LRU
-  Prefetch: enabled (5 chunks ahead)
-  ...`}
-      />
-
-      <h2>VFS Use Cases</h2>
-
-      <h3>Instant Access to Large Repositories (planned)</h3>
       <p>
-        This workflow depends on networked partial clone and remote chunk
-        streaming, which are <strong>roadmap</strong>. The output below is
-        illustrative of the planned design, not current behavior.
+        See the <Link href="/docs/advanced/vfs">VFS experiment boundary</Link>,
+        <Link href="/docs/installation"> installation status</Link>, and
+        <Link href="/docs/roadmap"> status and roadmap</Link>.
       </p>
-      <CodeBlock
-        language="bash"
-        code={`# [PLANNED] Clone metadata only (fast!)
-$ dits clone --filter blob:none https://dits.example.com/huge-project
-Cloning into 'huge-project'...
-Metadata fetched: 15 MB
-Repository ready (large repositories available on demand)
-
-# Mount and start working immediately
-$ cd huge-project && dits mount /mnt/huge
-Files available at /mnt/huge
-
-# Open files - they stream on demand from the remote
-$ vlc /mnt/huge/footage/scene01.mov
-# Video plays immediately, chunks stream as needed`}
-      />
-
-      <h3>Multi-Version Access</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Mount multiple versions simultaneously
-$ dits mount --commit v1.0 /mnt/v1 &
-$ dits mount --commit v2.0 /mnt/v2 &
-$ dits mount --branch main /mnt/current &
-
-# Compare files across versions
-$ diff /mnt/v1/config.json /mnt/v2/config.json
-
-# Reference old footage while working on new cut
-$ ls /mnt/v1/footage/
-$ ls /mnt/current/footage/`}
-      />
-
-      <h3>Remote Editing Workflow</h3>
-      <CodeBlock
-        language="bash"
-        code={`# On a remote machine with limited storage
-$ dits mount --cache-size 5GB /mnt/project
-
-# Edit uses local cache intelligently
-# - Recently accessed chunks stay in cache
-# - Rarely used chunks evicted automatically
-# - Prefetching loads chunks before you need them
-
-# Check cache efficiency
-$ dits cache-stats
-Hit Rate: 96.5%  # Most reads from local cache`}
-      />
-
-      <h2>Platform Support</h2>
-      <Table className="not-prose my-6">
-        <TableHeader>
-          <TableRow>
-            <TableHead>Platform</TableHead>
-            <TableHead>Support</TableHead>
-            <TableHead>Notes</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow>
-            <TableCell>macOS</TableCell>
-            <TableCell>Full (macFUSE)</TableCell>
-            <TableCell>Requires macFUSE installation</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Linux</TableCell>
-            <TableCell>Full (FUSE)</TableCell>
-            <TableCell>Built-in kernel support</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Windows</TableCell>
-            <TableCell>Full (WinFsp)</TableCell>
-            <TableCell>Requires WinFsp installation</TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-
-      <h2>Related Commands</h2>
-      <ul>
-        <li>
-          <Link href="/docs/cli/repository">Repository Commands</Link> - Clone and manage repos
-        </li>
-        <li>
-          <Link href="/docs/cli/proxies">Proxy Commands</Link> - Generate lightweight proxies
-        </li>
-        <li>
-          <Link href="/docs/cli/maintenance">Maintenance Commands</Link> - Cache management
-        </li>
-      </ul>
-
-      <h2>Related Topics</h2>
-      <ul>
-        <li>
-          <Link href="/docs/advanced/vfs">Virtual Filesystem Guide</Link> - Deep dive into VFS
-        </li>
-        <li>
-          <Link href="/docs/concepts/chunking">Chunking & Deduplication</Link> - How streaming works
-        </li>
-      </ul>
     </div>
   );
 }

@@ -7,9 +7,12 @@
 # vulnerabilities continue to fail the build. Revisit on dependency bumps.
 [advisories]
 ignore = [
-    # bincode 1.x is unmaintained. Used for compact P2P wire framing. The 2.x
-    # line is a full API rewrite; migrating is tracked separately. No security
-    # impact for our trusted-frame usage.
+    # bincode 1.x is unmaintained. It remains in the legacy-index/encrypted-
+    # chunk readers and experimental in-process/QUIC demo framing. P2P product
+    # commands and repository remotes fail closed. Every remaining decoder now
+    # has an enclosing byte/allocation limit and matching writers enforce the
+    # same cap. Migration to a maintained format remains tracked separately
+    # because bincode 2.x rewrites the API and encoding.
     "RUSTSEC-2025-0141",
 
     # number_prefix is unmaintained. Pulled in transitively by `indicatif`
@@ -17,13 +20,4 @@ ignore = [
     # indicatif drops the dependency.
     "RUSTSEC-2025-0119",
 
-    # git2 0.19 "Buf" deref soundness advisory. The fix lands in a newer
-    # major (0.20+) that pulls a different libgit2-sys; bumping is tracked
-    # separately to avoid destabilizing the Git hybrid-storage path. Not
-    # reachable from untrusted input in our usage.
-    "RUSTSEC-2026-0008",
-
-    # lru 0.12 IterMut Stacked-Borrows soundness advisory. The patched line
-    # (0.14+) changes API; bump tracked separately. We do not use IterMut.
-    "RUSTSEC-2026-0002",
 ]

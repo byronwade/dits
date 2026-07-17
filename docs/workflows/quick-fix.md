@@ -1,19 +1,13 @@
 # Workflow Verification: "Quick Fix"
 
-> 🚧 **Roadmap scenario — not implemented yet.** This describes the **intended** end-to-end
-> behavior once networked sync ships. It relies on `dits push` / `dits pull` (which print
-> placeholders and transfer no data today) and on-demand virtual-file streaming (the VFS is
-> internal; there is no `dits mount`). It does not work end-to-end yet.
+**Maturity:** Design
 
-Scenario validating end-to-end system behavior.
+The former scenario assumed remote push/pull, on-demand remote VFS hydration, changed-
+frame transfer, and unsourced size and latency figures. Those capabilities are not
+implemented. It remains a future acceptance scenario only after a complete authenticated
+repository protocol, bounded hydration, atomic refs, and reproducible performance
+evidence exist.
 
-1. Editor A imports 1TB footage and runs `dits push` (bulk upload).
-2. Editor B needs a minor credits fix on a rendered master.
-3. Editor B runs `dits checkout master.mov`.
-4. Dits mounts a virtual file and downloads only header atoms (~5MB).
-5. Editor B scrubs; required chunks are fetched just-in-time.
-6. Editor B saves and runs `dits push`.
-7. System compares and uploads only changed frames + new header (~15MB).
-8. Editor A pulls; elapsed time ~30 seconds.
-
-
+See [`../STATUS.md`](../STATUS.md), the
+[current CLI reference](../user-guide/cli-reference.md), and
+[Getting Started](../user-guide/getting-started.md).

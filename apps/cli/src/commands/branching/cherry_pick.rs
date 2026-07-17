@@ -92,7 +92,7 @@ fn cherry_pick_single(repo: &Repository, commit_ref: &str, no_commit: bool) -> R
             }
 
             // Apply the change
-            let full_path = repo.root().join(path);
+            let full_path = repo.resolve_worktree_path(path)?;
 
             // Create parent directories
             if let Some(parent) = full_path.parent() {
@@ -134,7 +134,7 @@ fn cherry_pick_single(repo: &Repository, commit_ref: &str, no_commit: bool) -> R
         for (path, _) in parent.iter() {
             if !commit_manifest.contains(path) {
                 // File was deleted in the cherry-picked commit
-                let full_path = repo.root().join(path);
+                let full_path = repo.resolve_worktree_path(path)?;
                 if full_path.exists() {
                     fs::remove_file(&full_path)?;
                     index.entries.remove(path);

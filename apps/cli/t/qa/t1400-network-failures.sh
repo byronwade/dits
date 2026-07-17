@@ -31,9 +31,7 @@ test_expect_success 'Handles connection refused during clone' '
 	test_expect_success "local clone works as baseline" true
 '
 
-test_expect_success 'Handles network timeout during push' '
-	# Test pushing to unreachable remote
-	# For now, test local push works
+test_expect_success 'Local-path push fails closed without changing either repository' '
 	test_create_repo push-timeout &&
 	cd push-timeout &&
 	echo "content" > file.txt &&
@@ -43,9 +41,15 @@ test_expect_success 'Handles network timeout during push' '
 
 	"$DITS_BINARY" clone push-timeout push-target >/dev/null 2>&1 &&
 	cd push-target &&
-	"$DITS_BINARY" remote add origin ../push-timeout >/dev/null 2>&1 &&
-	"$DITS_BINARY" push origin >/dev/null 2>&1 &&
-	test_expect_success "local push works" true &&
+	echo "target-only content" > target.txt &&
+	"$DITS_BINARY" add target.txt >/dev/null 2>&1 &&
+	"$DITS_BINARY" commit -m "Target-only commit" >/dev/null 2>&1 &&
+	# Local clone already configures origin to point at its source.
+	remote_before=$(cat ../push-timeout/.dits/refs/heads/main) &&
+	local_before=$(cat .dits/refs/heads/main) &&
+	! "$DITS_BINARY" push origin >/dev/null 2>&1 &&
+	test "$remote_before" = "$(cat ../push-timeout/.dits/refs/heads/main)" &&
+	test "$local_before" = "$(cat .dits/refs/heads/main)" &&
 	cd ..
 '
 
@@ -125,7 +129,4 @@ test_expect_success 'Handles network congestion (multiple concurrent ops)' '
 '
 
 test_done
-
-
-
 

@@ -50,7 +50,19 @@ pub enum ObjectError {
 
     #[error("Serialization error: {0}")]
     SerializationError(String),
+
+    #[error("Invalid manifest: {0}")]
+    InvalidManifest(String),
+
+    #[error("{kind} object is too large: {size} bytes (maximum {max})")]
+    ObjectTooLarge { kind: &'static str, size: u64, max: u64 },
 }
+
+/// Stored chunks are normally at most 256 KiB (4 MiB for the documented video
+/// profile). A 64 MiB ceiling leaves ample compatibility headroom while
+/// bounding local-object reads and legacy encrypted-chunk allocations.
+const MAX_CHUNK_DATA_SIZE: u64 = 64 * 1024 * 1024;
+const MAX_STORED_CHUNK_SIZE: u64 = MAX_CHUNK_DATA_SIZE + 1024;
 
 /// Type of object in the store.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -131,11 +143,19 @@ fn write_atomic_if_missing(path: &Path, data: &[u8]) -> io::Result<bool> {
     }
 }
 
-fn looks_like_json(data: &[u8]) -> bool {
-    matches!(
-        data.iter().copied().find(|byte| !byte.is_ascii_whitespace()),
-        Some(b'{') | Some(b'[')
-    )
+fn validate_manifest_paths(manifest: &Manifest) -> Result<(), ObjectError> {
+    for (path, entry) in manifest.iter() {
+        crate::util::validate_repo_relative_path(path).map_err(|reason| {
+            ObjectError::InvalidManifest(format!("invalid path '{path}': {reason}"))
+        })?;
+        if path != &entry.path {
+            return Err(ObjectError::InvalidManifest(format!(
+                "entry key '{path}' does not match embedded path '{}'",
+                entry.path
+            )));
+        }
+    }
+    Ok(())
 }
 
 /// Object store for the local `.dits` directory.
@@ -201,6 +221,13 @@ impl ObjectStore {
     /// existed. If encryption is enabled, the chunk data is encrypted before
     /// storage.
     pub fn store_chunk(&self, chunk: &Chunk) -> Result<bool, ObjectError> {
+        if chunk.data.len() as u64 > MAX_CHUNK_DATA_SIZE {
+            return Err(ObjectError::ObjectTooLarge {
+                kind: "chunk",
+                size: chunk.data.len() as u64,
+                max:  MAX_CHUNK_DATA_SIZE,
+            });
+        }
         let path = self.object_path(ObjectType::Chunk, &chunk.hash);
 
         if let Some(config) = &self.encryption {
@@ -229,15 +256,32 @@ impl ObjectStore {
             return Err(ObjectError::NotFound(hash.to_hex()));
         }
 
+        let stored_size = path.metadata()?.len();
+        if stored_size > MAX_STORED_CHUNK_SIZE {
+            return Err(ObjectError::ObjectTooLarge {
+                kind: "stored chunk",
+                size: stored_size,
+                max:  MAX_STORED_CHUNK_SIZE,
+            });
+        }
         let stored_data = fs::read(&path)?;
+        if stored_data.len() as u64 > MAX_STORED_CHUNK_SIZE {
+            return Err(ObjectError::ObjectTooLarge {
+                kind: "stored chunk",
+                size: stored_data.len() as u64,
+                max:  MAX_STORED_CHUNK_SIZE,
+            });
+        }
 
         let plaintext_data = if let Some(config) = &self.encryption {
-            match bincode::deserialize::<EncryptedChunk>(&stored_data) {
-                Ok(encrypted_chunk) => {
-                    decrypt_chunk(&encrypted_chunk, &config.user_secret).map_err(|error| {
+            match crate::util::deserialize_bincode_with_limit::<EncryptedChunk>(
+                &stored_data,
+                MAX_STORED_CHUNK_SIZE,
+            ) {
+                Ok(encrypted_chunk) => decrypt_chunk(&encrypted_chunk, &config.user_secret)
+                    .map_err(|error| {
                         ObjectError::SerializationError(format!("Decryption failed: {error}"))
-                    })?
-                },
+                    })?,
                 Err(_) => {
                     // Backwards compatibility for repositories that contain
                     // plaintext chunks but now have encryption enabled.
@@ -247,6 +291,14 @@ impl ObjectStore {
         } else {
             stored_data
         };
+
+        if plaintext_data.len() as u64 > MAX_CHUNK_DATA_SIZE {
+            return Err(ObjectError::ObjectTooLarge {
+                kind: "chunk",
+                size: plaintext_data.len() as u64,
+                max:  MAX_CHUNK_DATA_SIZE,
+            });
+        }
 
         let computed = Hasher::hash(&plaintext_data);
         if computed != *hash {
@@ -331,6 +383,7 @@ impl ObjectStore {
 
     /// Store a manifest as JSON and return its content hash.
     pub fn store_manifest(&self, manifest: &Manifest) -> Result<Hash, ObjectError> {
+        validate_manifest_paths(manifest)?;
         let data = manifest.to_json();
         let hash = Hasher::hash(data.as_bytes());
         let path = self.object_path(ObjectType::Manifest, &hash);
@@ -340,8 +393,8 @@ impl ObjectStore {
 
     /// Load a manifest by hash.
     ///
-    /// Current writers emit JSON. Binary bincode payloads from older
-    /// experiments remain readable for backwards compatibility.
+    /// Manifests use one deterministic, human-inspectable JSON representation.
+    /// The on-disk bytes are hashed and verified before parsing.
     pub fn load_manifest(&self, hash: &Hash) -> Result<Manifest, ObjectError> {
         let path = self.object_path(ObjectType::Manifest, hash);
 
@@ -358,33 +411,24 @@ impl ObjectStore {
             });
         }
 
-        let json_error = if looks_like_json(&data) {
-            match std::str::from_utf8(&data)
-                .map_err(|error| error.to_string())
-                .and_then(|json| Manifest::from_json(json).map_err(|error| error.to_string()))
-            {
-                Ok(manifest) => return Ok(manifest),
-                Err(error) => Some(error),
-            }
-        } else {
-            None
-        };
-
-        bincode::deserialize::<Manifest>(&data).map_err(|binary_error| {
-            let json_context = json_error
-                .map(|error| format!("; JSON parse error: {error}"))
-                .unwrap_or_default();
-            ObjectError::SerializationError(format!(
-                "Manifest is neither current JSON nor a supported legacy binary payload: \
-                 {binary_error}{json_context}"
-            ))
-        })
+        let json = std::str::from_utf8(&data).map_err(|error| {
+            ObjectError::SerializationError(format!("Manifest is not valid UTF-8 JSON: {error}"))
+        })?;
+        let manifest = Manifest::from_json(json).map_err(ObjectError::Json)?;
+        validate_manifest_paths(&manifest)?;
+        Ok(manifest)
     }
 
     // ========== Commit Operations ==========
 
     /// Store a commit.
     pub fn store_commit(&self, commit: &Commit) -> Result<(), ObjectError> {
+        if !commit.verify_hash() {
+            return Err(ObjectError::ChecksumMismatch {
+                expected: commit.hash.to_hex(),
+                actual:   commit.computed_hash().to_hex(),
+            });
+        }
         let path = self.object_path(ObjectType::Commit, &commit.hash);
         let json = commit.to_json();
         let _ = write_atomic_if_missing(&path, json.as_bytes())?;
@@ -406,6 +450,12 @@ impl ObjectStore {
             return Err(ObjectError::ChecksumMismatch {
                 expected: hash.to_hex(),
                 actual:   commit.hash.to_hex(),
+            });
+        }
+        if !commit.verify_hash() {
+            return Err(ObjectError::ChecksumMismatch {
+                expected: commit.hash.to_hex(),
+                actual:   commit.computed_hash().to_hex(),
             });
         }
 
@@ -509,26 +559,46 @@ mod tests {
     }
 
     #[test]
-    fn test_load_legacy_binary_manifest() {
+    fn test_rejects_non_json_manifest() {
         let temp = tempdir().unwrap();
         let store = ObjectStore::new(temp.path());
         store.init().unwrap();
 
-        let mut manifest = Manifest::new();
-        manifest.add(crate::core::ManifestEntry::new(
-            "legacy.bin".to_string(),
-            42,
+        let data = b"\x80\x81\x82not-json";
+        let hash = Hasher::hash(data);
+        let path = store.object_path(ObjectType::Manifest, &hash);
+        assert!(write_atomic_if_missing(&path, data).unwrap());
+
+        assert!(matches!(store.load_manifest(&hash), Err(ObjectError::SerializationError(_))));
+    }
+
+    #[test]
+    fn test_rejects_noncanonical_manifest_paths() {
+        let temp = tempdir().unwrap();
+        let store = ObjectStore::new(temp.path());
+        store.init().unwrap();
+
+        let mut traversal = Manifest::new();
+        traversal.add(crate::core::ManifestEntry::new(
+            "../outside.bin".to_string(),
+            0,
             Hash::ZERO,
             vec![],
         ));
+        assert!(matches!(store.store_manifest(&traversal), Err(ObjectError::InvalidManifest(_))));
 
-        let data = bincode::serialize(&manifest).unwrap();
-        let hash = Hasher::hash(&data);
+        // Loading an externally supplied object applies the same validation.
+        let data = traversal.to_json();
+        let hash = Hasher::hash(data.as_bytes());
         let path = store.object_path(ObjectType::Manifest, &hash);
-        assert!(write_atomic_if_missing(&path, &data).unwrap());
+        assert!(write_atomic_if_missing(&path, data.as_bytes()).unwrap());
+        assert!(matches!(store.load_manifest(&hash), Err(ObjectError::InvalidManifest(_))));
 
-        let loaded = store.load_manifest(&hash).unwrap();
-        assert_eq!(loaded.len(), 1);
+        let mut mismatch = Manifest::new();
+        let entry =
+            crate::core::ManifestEntry::new("actual.bin".to_string(), 0, Hash::ZERO, vec![]);
+        mismatch.entries.insert("different.bin".to_string(), entry);
+        assert!(matches!(store.store_manifest(&mismatch), Err(ObjectError::InvalidManifest(_))));
     }
 
     #[test]
@@ -546,6 +616,32 @@ mod tests {
 
         assert_eq!(commit.hash, loaded.hash);
         assert_eq!(commit.message, loaded.message);
+    }
+
+    #[test]
+    fn test_load_commit_recomputes_content_hash() {
+        let temp = tempdir().unwrap();
+        let store = ObjectStore::new(temp.path());
+        store.init().unwrap();
+
+        let commit = Commit::new(
+            None,
+            Hash::ZERO,
+            "original",
+            crate::core::Author::new("Test", "test@example.com"),
+        );
+        store.store_commit(&commit).unwrap();
+
+        let path = store.object_path(ObjectType::Commit, &commit.hash);
+        let mut tampered: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+        tampered["message"] = serde_json::Value::String("tampered".to_string());
+        fs::write(&path, serde_json::to_string_pretty(&tampered).unwrap()).unwrap();
+
+        assert!(matches!(
+            store.load_commit(&commit.hash),
+            Err(ObjectError::ChecksumMismatch { .. })
+        ));
     }
 
     #[test]

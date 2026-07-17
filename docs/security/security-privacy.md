@@ -1,837 +1,92 @@
-# Security & Privacy Guide
+# Security and Privacy
 
-How Dits protects your data, ensures privacy, and maintains the integrity of your repositories.
+**Maturity:** Current
 
----
+This is the security status of the current alpha, not a certification.
 
-## Table of Contents
+**Last reviewed:** 2026-07-16
 
-1. [Security Overview](#security-overview)
-2. [Data Integrity](#data-integrity)
-3. [Encryption](#encryption)
-4. [Authentication](#authentication)
-5. [Authorization & Access Control](#authorization--access-control)
-6. [Network Security](#network-security)
-7. [Local Security](#local-security)
-8. [DitsHub Security](#ditshub-security)
-9. [Self-Hosted Security](#self-hosted-security)
-10. [Privacy](#privacy)
-11. [Security Best Practices](#security-best-practices)
-12. [Compliance](#compliance)
-13. [Security FAQ](#security-faq)
-14. [Reporting Vulnerabilities](#reporting-vulnerabilities)
+Dits v0.1.5 is local-first alpha software for evaluation on disposable or
+independently backed-up data. This page describes controls that exist in the
+current repository; it is not a security certification or deployment guarantee.
+See [`../STATUS.md`](../STATUS.md) for the authoritative product boundary.
 
----
+## Trust boundary
 
-## Security Overview
+The current product is a local CLI and library. Repository files, the `.dits`
+directory, the embedded Git store, configuration, locks, and audit records are
+protected by the permissions and security of the machine and account running
+Dits. Anyone who can modify those files can affect the repository.
 
-### Security Principles
+Dits does not currently provide a hosted control plane, remote identity service,
+multi-user authorization, remote lock leases, or managed backup service.
 
-Dits is built on four core security principles:
+## Integrity
 
-1. **Defense in Depth**: Multiple layers of security
-2. **Least Privilege**: Minimal access by default
-3. **Data Integrity**: Cryptographic verification of all content
-4. **Transparency**: Open source, auditable code
+Dits uses BLAKE3 content identifiers for its local object and chunk paths. Object
+reads verify that stored bytes match the requested digest, and `dits fsck` checks
+repository structures and references. Byte-identical chunks can be stored once.
 
-### Security Architecture
+These mechanisms make accidental corruption detectable; they do not authenticate
+an author, prove when data was created, encrypt content, or prevent an attacker
+with filesystem access from replacing repository state. Keep independent backups
+and verify important restores with a separate, standard hash tool.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        SECURITY LAYERS                           │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
-│  │   CLIENT    │  │  TRANSPORT  │  │   SERVER    │              │
-│  │  SECURITY   │  │  SECURITY   │  │  SECURITY   │              │
-│  ├─────────────┤  ├─────────────┤  ├─────────────┤              │
-│  │ Local auth  │  │ TLS 1.3     │  │ Auth/AuthZ  │              │
-│  │ Encryption  │  │ QUIC        │  │ Rate limits │              │
-│  │ Key storage │  │ P2P crypto  │  │ Audit logs  │              │
-│  └─────────────┘  └─────────────┘  └─────────────┘              │
-│                                                                  │
-│  ┌───────────────────────────────────────────────────────────┐  │
-│  │                    DATA INTEGRITY                          │  │
-│  │         BLAKE3 hashes on ALL content                      │  │
-│  └───────────────────────────────────────────────────────────┘  │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-```
+## Confidentiality and repository encryption
 
----
+Dits does **not** currently provide supported repository-at-rest encryption. The
+early encryption experiment is disabled because it did not cover the embedded Git
+store or every metadata path, and its convergent design leaked content equality.
 
-## Data Integrity
+Current command behavior is deliberately fail-closed:
 
-### Content Addressing with BLAKE3
+- `dits encrypt-init`, `dits login`, and `dits change-password` return a nonzero
+  error without changing a keystore.
+- `dits encrypt-status` is diagnostic and can report legacy state.
+- `dits logout` can clear a legacy key cache.
+- A repository containing the experimental keystore fails before normal
+  repository operations.
 
-Every piece of content in Dits is identified by its BLAKE3 cryptographic hash:
+Do not treat the legacy keystore as protection. Use operating-system access
+controls and, where appropriate, independently managed full-disk, volume, or
+backup encryption.
 
-```
-File content → BLAKE3 hash → Storage identifier
+## Network exposure
 
-Example:
-  video.mp4 (10 GB) → BLAKE3 → "abc123def456..."
-```
+Repository `push`, `pull`, `fetch`, and `sync` are not functional transports.
+They return a nonzero error for both local-path and Internet remotes without
+changing objects, refs, or the working tree. Network clone is also unavailable;
+only local-filesystem clone is current. No TLS, QUIC, P2P, or remote-authentication
+claim applies to repository exchange today.
 
-**Properties:**
-- **Deterministic**: Same content always produces same hash
-- **Collision-resistant**: Computationally infeasible to find two inputs with same hash
-- **Tamper-evident**: Any change produces completely different hash
+`dits serve` is a narrow embedded object server, not a secure remote. It binds to
+all network interfaces, has no authentication or authorization, and exposes refs
+and stored object bytes. Run it only on a trusted or isolated network behind a
+firewall. Never expose it directly to the public Internet.
 
-### Chunk Verification
+## Locks, audit records, and privacy
 
-Every chunk is verified when read:
+Binary locks and audit inspection/export are local facilities. They are not
+multi-user access control, tamper-proof audit evidence, or a hosted compliance
+control. Local metadata and logs can reveal repository paths and activity; protect
+and retain them according to your own policy.
 
-```bash
-# Automatic verification on every read
-dits restore video.mp4
+Dits does not currently operate a hosted service or process repository content on
+customers' behalf. Network features are not shipped, but commands you run and
+third-party tools you install remain subject to your machine's own logging,
+telemetry, and network configuration.
 
-# Behind the scenes:
-# 1. Read chunk from storage
-# 2. Compute BLAKE3 hash
-# 3. Compare with stored hash
-# 4. If mismatch → Error, chunk corrupted
-# 5. If match → Return chunk
-```
+## Compliance, availability, and support
 
-### Repository Integrity Check
+The project has no SOC 2 or ISO 27001 attestation, regulatory certification, BAA,
+DPA, hosted data-region commitment, uptime guarantee, durability guarantee,
+support response target, or incident-response SLA. See the current
+[`compliance status`](../business/compliance.md) and
+[`service-level status`](../business/sla.md).
 
-```bash
-# Full integrity verification
-dits fsck
+## Report a vulnerability
 
-# Output:
-# Checking objects...
-# Verifying 45,678 chunks...
-#   [████████████████████████████] 100%
-# All chunks verified ✓
-# Checking references...
-# Checking manifests...
-# Repository is healthy.
-
-# Strict checking (more thorough)
-dits fsck --strict
-```
-
-### Integrity Guarantees
-
-| Scenario | Protection |
-|----------|------------|
-| Bit rot on disk | Detected on read |
-| Corrupted transfer | Detected, retried |
-| Malicious modification | Immediately detected |
-| Storage system error | Caught before use |
-
----
-
-## Encryption
-
-### Encryption in Transit
-
-> ⚠️ Roadmap — networked sync (push/pull/fetch/sync), the QUIC transport, and P2P transfers are **not implemented** today (the commands print placeholders and transfer no data). The transit-encryption designs below describe the intended behavior for that future network layer. At-rest encryption (next section) is real and shipping.
-
-When the network layer ships, all transfers are designed to be encrypted:
-
-**HTTPS/TLS:**
-```
-dits push origin main
-
-Connection:
-- TLS 1.3
-- ECDHE key exchange
-- AES-256-GCM encryption
-- Certificate validation
-```
-
-**QUIC Protocol:**
-```
-For high-bandwidth transfers:
-- Built-in TLS 1.3
-- 0-RTT resumption
-- UDP-based (faster for large files)
-```
-
-**P2P Transfers:**
-```
-dits p2p share
-
-Security:
-- AES-256-GCM encryption
-- SPAKE2 key exchange (from join code)
-- End-to-end (no server involved)
-```
-
-### Encryption at Rest (Optional)
-
-Enable repository encryption for sensitive content:
-
-```bash
-# Initialize encryption
-dits encrypt-init
-
-# You'll be prompted for a passphrase
-Enter passphrase: ********
-Confirm passphrase: ********
-
-# All content now encrypted before storage
-```
-
-**How it works:**
-```
-┌─────────────┐                ┌─────────────┐
-│   Content   │ ───encrypt──▶  │  Encrypted  │
-│             │                │   Chunk     │
-└─────────────┘                └─────────────┘
-        │                             │
-        │                             │
-    BLAKE3 hash                  Stored in
-    (plaintext)                  .dits/objects/
-
-Decryption happens automatically when you access files.
-```
-
-**Key Derivation:**
-- Argon2id for passphrase → key derivation
-- Memory-hard (resists GPU attacks)
-- Configurable parameters
-
-### Encryption Options
-
-```bash
-# Initialize at-rest encryption
-dits encrypt-init
-
-# Check encryption status
-dits encrypt-status
-
-# Unlock / lock the encrypted repository for this session
-dits login
-dits logout
-
-# Change passphrase
-dits change-password
-```
-
----
-
-## Authentication
-
-> ⚠️ Roadmap — the **Remote Authentication** subsection below (DitsHub browser login, SSH keys, personal access tokens, MFA, and any `dits push`/`dits clone <network>` flows) describes the **unimplemented** network layer. Networked sync and network clone do not work today; `clone` only targets a local filesystem path. Note `dits login`/`dits logout` are real commands today — but for the **local** at-rest keystore (unlock/lock for encryption), not DitsHub auth. **Local Authentication** (credential storage) and local at-rest encryption are real.
-
-### Local Authentication
-
-Dits stores credentials securely:
-
-**macOS:**
-- Credentials stored in Keychain
-- Protected by system authentication
-
-**Linux:**
-- Uses libsecret (GNOME Keyring, KDE Wallet)
-- Falls back to encrypted file if unavailable
-
-**Windows:**
-- Windows Credential Manager
-- Protected by Windows authentication
-
-### Remote Authentication
-
-**Token-based (Recommended):**
-```bash
-# Login to DitsHub
-dits login
-
-# Opens browser for authentication
-# Token stored securely in keychain
-```
-
-**SSH Keys:**
-```bash
-# Add SSH key to DitsHub
-dits ssh-add ~/.ssh/id_ed25519.pub
-
-# Use SSH URL
-dits clone git@ditshub.com:org/project.git
-```
-
-**Personal Access Tokens:**
-```bash
-# Create token in DitsHub settings
-# Use for CI/CD and scripts
-
-dits config credential.helper store
-dits push  # Enter token when prompted
-```
-
-### Multi-Factor Authentication (MFA)
-
-For DitsHub accounts:
-
-```bash
-# Enable in DitsHub settings
-# Supported methods:
-# - TOTP (authenticator apps)
-# - WebAuthn (hardware keys)
-# - SMS (backup only)
-```
-
----
-
-## Authorization & Access Control
-
-### Repository Permissions
-
-| Permission Level | Capabilities |
-|-----------------|--------------|
-| **Read** | Clone, pull, view history |
-| **Write** | Push, create branches/tags |
-| **Admin** | Manage settings, permissions, delete |
-
-### Team-Based Access
-
-```
-Organization: Acme Corp
-├── Team: Editors
-│   └── Permissions: Write to all projects
-├── Team: Reviewers
-│   └── Permissions: Read to all projects
-└── Team: Admins
-    └── Permissions: Admin to all projects
-
-Project: Hero Commercial
-├── Editors: Write
-├── Reviewers: Read
-└── External Contractor (specific user): Write
-```
-
-### Branch Protection
-
-```bash
-# Protect main branch (DitsHub)
-# Settings → Branches → Add rule
-
-Protected branches:
-- main
-  ✓ Require pull request
-  ✓ Require approval
-  ✓ Require status checks
-  ✓ No force push
-  ✓ No deletion
-```
-
-### File-Level Permissions
-
-```bash
-# Lock patterns (prevent edits without lock)
-dits config lock.required "*.psd,*.blend"
-
-# Only users with lock can modify these files
-```
-
----
-
-## Network Security
-
-> ⚠️ Roadmap — this entire section describes the security model for the **unimplemented** network layer (push/pull/fetch/sync, QUIC transport, DitsHub server). None of it ships today; the CLI is local-first. It is documented here as the intended design.
-
-### TLS Configuration
-
-Dits enforces modern TLS:
-
-```
-Supported:
-- TLS 1.3 (preferred)
-- TLS 1.2 (minimum)
-
-NOT supported:
-- TLS 1.1 (disabled)
-- TLS 1.0 (disabled)
-- SSLv3 (disabled)
-```
-
-### Certificate Validation
-
-```bash
-# Strict certificate validation (default)
-# Self-signed certs rejected
-
-# For self-hosted with custom CA:
-dits config http.sslCAInfo /path/to/ca-bundle.crt
-
-# For testing only (NOT RECOMMENDED):
-dits config http.sslVerify false  # Dangerous!
-```
-
-### Firewall Considerations
-
-**Outbound ports (client):**
-| Port | Protocol | Purpose |
-|------|----------|---------|
-| 443 | HTTPS | API, web interface |
-| 443 | QUIC/UDP | High-speed transfers |
-| Dynamic | UDP | P2P NAT traversal |
-
-**Inbound ports (self-hosted server):**
-| Port | Protocol | Purpose |
-|------|----------|---------|
-| 443 | HTTPS | API, web |
-| 443 | QUIC/UDP | Transfers |
-
-### Rate Limiting
-
-DitsHub implements rate limiting:
-
-```
-API requests: 1000/hour per user
-Clone/Push: Bandwidth limits based on plan
-Authentication: 10 failed attempts → temporary lockout
-```
-
----
-
-## Local Security
-
-### File Permissions
-
-Dits sets restrictive permissions:
-
-```bash
-# .dits/ directory
-drwx------  .dits/          # 700: owner only
-
-# Config files
--rw-------  .dits/config    # 600: owner read/write
-
-# Chunks
--r--------  .dits/objects/  # 400: owner read only
-```
-
-### Credential Storage
-
-```bash
-# Check credential helper
-dits config credential.helper
-
-# Options:
-# - osxkeychain (macOS)
-# - libsecret (Linux with GNOME/KDE)
-# - wincred (Windows)
-# - store (plain file - NOT recommended)
-# - cache (temporary memory)
-```
-
-### Sensitive Data
-
-Dits warns about potentially sensitive files:
-
-```bash
-# .ditsignore prevents accidental commits
-.env
-*.key
-*.pem
-credentials.json
-secrets/
-
-# If you try to add sensitive files:
-dits add .env
-Warning: .env may contain sensitive data.
-Are you sure you want to add it? [y/N]
-```
-
----
-
-## DitsHub Security
-
-### Infrastructure Security
-
-**Physical Security:**
-- Data centers: AWS (SOC 2 certified)
-- Physical access controls
-- 24/7 monitoring
-
-**Network Security:**
-- DDoS protection
-- WAF (Web Application Firewall)
-- VPN for administrative access
-
-**Data Security:**
-- Encrypted at rest (AES-256)
-- Encrypted in transit (TLS 1.3)
-- Regular backups
-- Geographic redundancy
-
-### Data Location
-
-```
-DitsHub regions:
-- US East (Virginia)
-- US West (Oregon)
-- EU (Frankfurt)
-- Asia Pacific (Singapore)
-
-Data residency: Choose region for compliance
-```
-
-### Audit Logging
-
-DitsHub logs security-relevant events:
-
-```
-Logged events:
-- Authentication (success/failure)
-- Authorization changes
-- Repository access
-- Administrative actions
-- API calls
-```
-
-### Incident Response
-
-```
-Security incident process:
-1. Detection (automated monitoring)
-2. Containment (isolate affected systems)
-3. Investigation (determine scope)
-4. Notification (affected users)
-5. Remediation (fix and prevent)
-6. Post-mortem (lessons learned)
-```
-
----
-
-## Self-Hosted Security
-
-### Server Hardening
-
-For self-hosted Dits servers:
-
-```bash
-# Recommended setup
-# 1. Dedicated server/container
-# 2. Minimal OS installation
-# 3. Firewall (only required ports)
-# 4. Regular updates
-# 5. Intrusion detection
-
-# Example firewall (ufw)
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow 443/tcp   # HTTPS
-sudo ufw allow 443/udp   # QUIC
-sudo ufw enable
-```
-
-### Database Security
-
-```bash
-# PostgreSQL hardening
-# 1. Strong passwords
-# 2. SSL connections required
-# 3. Network isolation
-# 4. Regular backups
-# 5. Encryption at rest
-
-# pg_hba.conf
-hostssl all all 0.0.0.0/0 scram-sha-256
-```
-
-### Secrets Management
-
-```bash
-# Environment variables (minimum)
-DITS_DB_PASSWORD=xxx
-DITS_JWT_SECRET=xxx
-DITS_ENCRYPTION_KEY=xxx
-
-# Better: Use secrets manager
-# - HashiCorp Vault
-# - AWS Secrets Manager
-# - Azure Key Vault
-```
-
-### Monitoring
-
-```bash
-# Recommended monitoring
-# - Server metrics (CPU, memory, disk)
-# - Application logs
-# - Security events
-# - Failed authentication attempts
-# - Unusual access patterns
-
-# Prometheus metrics endpoint
-curl http://localhost:9090/metrics
-```
-
----
-
-## Privacy
-
-### Data We Collect (DitsHub)
-
-**Account Information:**
-- Email address
-- Name (optional)
-- Organization (if applicable)
-
-**Usage Data:**
-- Repository metadata (not content)
-- API usage statistics
-- Error reports (opt-in)
-
-**We DO NOT:**
-- Read your repository content
-- Sell your data
-- Share with third parties (except as required by law)
-
-### Your Data Rights
-
-**GDPR (EU users):**
-- Access your data
-- Export your data
-- Delete your data
-- Restrict processing
-
-**CCPA (California users):**
-- Know what data we collect
-- Delete your data
-- Opt-out of data sale (we don't sell)
-
-### Data Retention
-
-```
-Active account: Data retained
-Deleted account: Data deleted within 30 days
-Backups: Purged within 90 days
-Logs: Retained 1 year (anonymized after)
-```
-
-### Privacy Configuration
-
-```bash
-# Disable telemetry (CLI)
-dits config telemetry.enabled false
-
-# Anonymous usage (no personal data)
-dits config telemetry.anonymous true
-```
-
----
-
-## Security Best Practices
-
-### For Individual Users
-
-```bash
-# 1. Use strong, unique passwords
-# 2. Enable MFA on your account
-# 3. Use SSH keys instead of passwords
-# 4. Don't commit sensitive files
-# 5. Review before pushing
-
-# Pre-push check
-dits diff --stat origin/main
-
-# Check for sensitive patterns
-dits grep -E "(password|secret|key)" --staged
-```
-
-### For Teams
-
-```bash
-# 1. Use team accounts, not shared credentials
-# 2. Implement branch protection
-# 3. Require code review
-# 4. Use file locking for binaries
-# 5. Regular access audits
-
-# Audit access
-dits access-log --user all --since "30 days ago"
-```
-
-### For Organizations
-
-```bash
-# 1. Single Sign-On (SSO) integration
-# 2. Enforce MFA for all users
-# 3. IP allowlisting
-# 4. Regular security training
-# 5. Incident response plan
-
-# SSO configuration (DitsHub Enterprise)
-# Settings → Security → SAML/OIDC
-```
-
-### Sensitive File Checklist
-
-Never commit:
-- [ ] `.env` files
-- [ ] API keys
-- [ ] Private keys (`.pem`, `.key`)
-- [ ] Credentials files
-- [ ] Database dumps
-- [ ] Personal data
-
-```bash
-# Good .ditsignore
-.env
-.env.*
-*.key
-*.pem
-*.p12
-credentials.json
-secrets/
-```
-
----
-
-## Compliance
-
-### Standards & Certifications
-
-**DitsHub:**
-- SOC 2 Type II (in progress)
-- GDPR compliant
-- CCPA compliant
-
-**Self-Hosted:**
-- You control compliance
-- Dits provides tools for compliance
-
-### HIPAA Considerations
-
-For healthcare data:
-```bash
-# Use encryption at rest
-dits encrypt-init
-
-# Enable audit logging
-dits config audit.enabled true
-
-# Self-hosted recommended for PHI
-# BAA available for Enterprise customers
-```
-
-### Financial Services
-
-For regulated financial data:
-```bash
-# Encryption required
-dits encrypt-init
-
-# Access logging
-dits config audit.detailed true
-
-# Geographic restrictions
-# Choose appropriate DitsHub region
-```
-
----
-
-## Security FAQ
-
-### Is my data safe?
-
-Yes. All data is:
-- Optionally encrypted at rest (real today via `dits encrypt-init`)
-- Verified with BLAKE3 hashes (real today, on every read)
-- Designed to be encrypted in transit (TLS 1.3) once the network layer ships (roadmap)
-- Backed up regularly (DitsHub — roadmap)
-
-### Can Dits employees read my code?
-
-No. Repository content is:
-- Stored encrypted
-- Not accessed by employees
-- Only you have keys (with encryption enabled)
-
-### What if I lose my encryption passphrase?
-
-Without the passphrase:
-- Encrypted data cannot be recovered
-- This is by design (no backdoors)
-- **Keep your passphrase safe!**
-
-### Is P2P sharing secure?
-
-> ⚠️ Roadmap — P2P is scaffolding today (`dits p2p` commands print placeholders and transfer no data). The design calls for:
-- End-to-end encryption (AES-256-GCM)
-- Authenticated key exchange (SPAKE2)
-- No data passing through servers
-
-### How do I rotate credentials?
-
-> ⚠️ Roadmap — DitsHub tokens and `dits push` over a network remote are not implemented today.
-
-```bash
-# Regenerate personal access token
-# 1. Go to DitsHub settings
-# 2. Revoke old token
-# 3. Generate new token
-# 4. Update local config
-
-dits config --unset credential.helper
-dits push  # Enter new token
-```
-
----
-
-## Reporting Vulnerabilities
-
-### Responsible Disclosure
-
-If you discover a security vulnerability:
-
-1. **DO NOT** create a public issue
-2. Open a private security advisory at
-   [github.com/byronwade/dits](https://github.com/byronwade/dits/security/advisories)
-3. Include:
-   - Description of vulnerability
-   - Steps to reproduce
-   - Potential impact
-   - Your contact information
-
-### What to Expect
-
-```
-Response timeline:
-- Acknowledgment: 24 hours
-- Initial assessment: 72 hours
-- Status update: Weekly
-- Fix timeline: Depends on severity
-
-Critical: 24-48 hours
-High: 1 week
-Medium: 2 weeks
-Low: Next release
-```
-
-### Bug Bounty
-
-> 🚧 **Roadmap.** A hosted service and any associated bug-bounty program do not exist yet.
-> The tiers below describe the intended future program, not a live offering.
-
-- Critical: $1,000 - $5,000
-- High: $500 - $1,000
-- Medium: $100 - $500
-- Low: Recognition
-
----
-
-## Additional Resources
-
-- [Source & Documentation](https://github.com/byronwade/dits)
-- [Self-Hosting Security Guide](../operations/self-hosting.md)
-
-> 🚧 A hosted security/compliance portal (whitepaper, hosted security page) is roadmap and
-> does not exist yet.
-
----
-
-## Contact
-
-- **Security Issues**: Open a private advisory at
-  [github.com/byronwade/dits](https://github.com/byronwade/dits/security/advisories)
-
-> 🚧 Hosted support and enterprise-security contact channels are roadmap; today the project
-> is community-supported via GitHub.
+Do not publish exploit details or sensitive data in a public issue. Follow the
+repository [`security policy`](../../SECURITY.md), which directs reporters to
+GitHub private vulnerability reporting when available. Reports and fixes are
+handled on a best-effort basis; no response or release deadline is promised.

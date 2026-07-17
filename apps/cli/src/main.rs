@@ -734,7 +734,7 @@ enum Commands {
         list: bool,
     },
 
-    /// Initialize encryption for this repository (Phase 9)
+    /// Report that the incomplete repository-encryption experiment is disabled
     #[command(name = "encrypt-init")]
     EncryptInit {
         /// Password (will prompt if not provided)
@@ -742,21 +742,21 @@ enum Commands {
         password: Option<String>,
     },
 
-    /// Show encryption status (Phase 9)
+    /// Show experimental encryption/keystore status
     #[command(name = "encrypt-status")]
     EncryptStatus,
 
-    /// Login to unlock encryption keys (Phase 9)
+    /// Disabled: the experimental key cache is not a supported trust boundary
     Login {
         /// Password (will prompt if not provided)
         #[arg(short, long)]
         password: Option<String>,
     },
 
-    /// Logout and clear cached keys (Phase 9)
+    /// Clear any legacy experimental cached keys
     Logout,
 
-    /// Change encryption password (Phase 9)
+    /// Disabled while the encryption format and recovery policy are redesigned
     #[command(name = "change-password")]
     ChangePassword {
         /// Current password (will prompt if not provided)
@@ -902,15 +902,15 @@ enum Commands {
         verbose: bool,
     },
 
-    /// Run garbage collection
+    /// Audit unreachable-object candidates (destructive GC is disabled)
     Gc {
-        /// Dry run (show what would be done)
+        /// Required: run a read-only reachability report
         #[arg(long)]
         dry_run:    bool,
-        /// Prune expired locks
+        /// Reserved; ignored in read-only mode
         #[arg(short, long)]
         prune:      bool,
-        /// Aggressive mode (repack objects)
+        /// Reserved; ignored in read-only mode
         #[arg(long)]
         aggressive: bool,
     },
@@ -1123,8 +1123,23 @@ async fn main() {
 
     // Initialize telemetry (async operation)
     let config_path = crate::config::global_config_path();
-    let config =
-        Arc::new(Mutex::new(crate::config::Config::load(&config_path).unwrap_or_default()));
+    let telemetry_config = match crate::config::Config::load(&config_path) {
+        Ok(config) => config,
+        Err(error) => {
+            eprintln!(
+                "Warning: could not read global configuration at {}: {}. Telemetry is disabled \
+                 for this invocation.",
+                config_path.display(),
+                error
+            );
+            if matches!(&cli.command, Commands::Telemetry { .. }) {
+                eprintln!("Refusing the telemetry command until the file is repaired.");
+                std::process::exit(1);
+            }
+            crate::config::Config::default()
+        },
+    };
+    let config = Arc::new(Mutex::new(telemetry_config));
     let telemetry = Arc::new(telemetry::TelemetryManager::new(config.clone()));
 
     // Record command usage
@@ -1681,7 +1696,10 @@ async fn main() {
     match result {
         Ok(_) => (),
         Err(e) => {
-            eprintln!("Error: {}", e);
+            // Include the complete anyhow context chain. A generic command
+            // context must not hide integrity or fail-closed safety errors
+            // such as malformed configuration or an unsupported keystore.
+            eprintln!("Error: {:#}", e);
             std::process::exit(1);
         },
     }

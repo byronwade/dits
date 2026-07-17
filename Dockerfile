@@ -1,9 +1,8 @@
-# Dits CLI — multi-stage Docker build.
+# Dits CLI — source-built local evaluation image.
 #
-# This is the supported, cross-platform way to run `dits` — including on
-# Windows, where the npm package currently ships no prebuilt binary
-# ("Binary not found for your platform"). It compiles the CLI from source in
-# a pinned Rust toolchain and ships a small Debian runtime image.
+# This Dockerfile compiles the local CLI from source and places it in a small
+# Debian runtime image. It is not a published or supported Dits image, does not
+# add a hosted service or working remotes, and is not a Windows distribution.
 #
 #   docker build -t dits .
 #   docker run --rm -v "$PWD:/data" dits init
@@ -13,7 +12,7 @@
 # instead of root, e.g.:
 #   docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/data" dits init
 #
-# Note: the COPY paths in the runtime stage assume linux/amd64 (x86_64).
+# The COPY paths in the runtime stage currently make this a linux/amd64 build.
 #
 # -------- Stage 1: Build --------
 # Pin the toolchain so a future compiler release can't silently break the build.
@@ -33,7 +32,7 @@ COPY . .
 # Build only the dits CLI in release mode; `-p dits --bin dits` skips the
 # wasm/web packages that aren't part of the CLI. The trailing --version is a
 # build-time smoke test: the build fails loudly if the binary can't run.
-RUN cargo build --release -p dits --bin dits \
+RUN cargo build --locked --release -p dits --bin dits \
     && cp target/release/dits /usr/local/bin/dits \
     && /usr/local/bin/dits --version
 

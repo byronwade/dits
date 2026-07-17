@@ -50,21 +50,25 @@ pub struct RemoteStore {
 }
 
 impl RemoteStore {
-    /// Open or create a remote store in the given .dits directory.
-    pub fn new(dits_dir: &Path) -> Self {
+    /// Open a remote store in the given `.dits` directory.
+    ///
+    /// A malformed existing file is an error. Treating it as an empty map would
+    /// let the next mutation overwrite remote configuration the caller may need
+    /// to recover.
+    pub fn open(dits_dir: &Path) -> Result<Self, RemoteError> {
         let config_path = dits_dir.join("remotes");
-        let remotes = Self::load(&config_path).unwrap_or_default();
-        Self { config_path, remotes }
+        let remotes = Self::load(&config_path)?;
+        Ok(Self { config_path, remotes })
     }
 
     /// Load remotes from disk.
-    fn load(path: &Path) -> Option<HashMap<String, Remote>> {
+    fn load(path: &Path) -> Result<HashMap<String, Remote>, RemoteError> {
         if !path.exists() {
-            return None;
+            return Ok(HashMap::new());
         }
-        let file = File::open(path).ok()?;
+        let file = File::open(path)?;
         let reader = BufReader::new(file);
-        serde_json::from_reader(reader).ok()
+        Ok(serde_json::from_reader(reader)?)
     }
 
     /// Save remotes to disk.
@@ -166,6 +170,9 @@ pub enum RemoteError {
 
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
+
+    #[error("Invalid remotes JSON: {0}")]
+    Json(#[from] serde_json::Error),
 }
 
 /// Parse a remote URL to determine its type.
@@ -212,7 +219,7 @@ mod tests {
     #[test]
     fn test_remote_store_add_remove() {
         let dir = tempdir().unwrap();
-        let mut store = RemoteStore::new(dir.path());
+        let mut store = RemoteStore::open(dir.path()).unwrap();
 
         // Add a remote
         let remote = Remote::new("origin", "https://example.com/repo");
@@ -229,7 +236,7 @@ mod tests {
     #[test]
     fn test_remote_store_rename() {
         let dir = tempdir().unwrap();
-        let mut store = RemoteStore::new(dir.path());
+        let mut store = RemoteStore::open(dir.path()).unwrap();
 
         store
             .add(Remote::new("old-name", "https://example.com/repo"))
@@ -255,7 +262,7 @@ mod tests {
 
         // Create and save
         {
-            let mut store = RemoteStore::new(dir.path());
+            let mut store = RemoteStore::open(dir.path()).unwrap();
             store
                 .add(Remote::new("origin", "https://example.com/repo"))
                 .unwrap();
@@ -263,7 +270,7 @@ mod tests {
 
         // Load and verify
         {
-            let store = RemoteStore::new(dir.path());
+            let store = RemoteStore::open(dir.path()).unwrap();
             assert!(store.exists("origin"));
             assert_eq!(store.get("origin").unwrap().url, "https://example.com/repo");
         }

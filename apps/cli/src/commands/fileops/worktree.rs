@@ -12,7 +12,7 @@ use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::store::Repository;
+use crate::{store::Repository, util::safe_join_repo_path};
 
 /// Worktree information
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -188,17 +188,22 @@ pub fn add(path: &str, branch: Option<&str>, new_branch: bool, force: bool) -> R
 
 fn checkout_to_worktree(repo: &Repository, worktree_path: &Path) -> Result<()> {
     // Copy files from the current working tree to the new worktree
-    let repo_root = repo.root();
-
     // Get files from manifest
     if let Some(head) = repo.head()? {
         let commit = repo.load_commit(&head)?;
         let manifest = repo.load_manifest(&commit.manifest)?;
 
+        // Resolve the complete checkout before creating any tracked paths, so
+        // a malicious path or pre-existing symlink cannot yield a partial copy.
+        let mut checkout_paths = Vec::with_capacity(manifest.len());
         for (path, _entry) in manifest.iter() {
-            let source_path = repo_root.join(path);
-            let dest_path = worktree_path.join(path);
+            checkout_paths.push((
+                repo.resolve_worktree_path(path)?,
+                safe_join_repo_path(worktree_path, path)?,
+            ));
+        }
 
+        for (source_path, dest_path) in checkout_paths {
             if source_path.exists() {
                 if let Some(parent) = dest_path.parent() {
                     fs::create_dir_all(parent)?;

@@ -1,8 +1,8 @@
 /**
- * Product registry — Dits ships two marketing surfaces on one engine:
+ * Product registry — Dits presents one shipping alpha and one research lens:
  *
  *   • "media" — the creative product (video, photos, large files) at `/`
- *   • "ai"    — Dits for AI (model weights, datasets, checkpoints) at `/ai`
+ *   • "ai"    — a research lens for model, dataset, and research artifacts
  *
  * The header, footer, and launcher all read from this single source so the two
  * sections stay structurally identical while differing in copy, nav, and accent.
@@ -41,13 +41,12 @@ export const PRODUCTS: Product[] = [
     id: "media",
     name: "Dits",
     label: "Media",
-    tagline: "Video & Large Files",
+    tagline: "Media & Asset Pipelines",
     home: "/",
     nav: [
       { title: "Docs", href: "/docs" },
       { title: "How it works", href: "/how-it-works" },
       { title: "Benchmarks", href: "/benchmarks" },
-      { title: "Playground", href: "/playground" },
       { title: "FAQ", href: "/faq" },
       { title: "About", href: "/about" },
       { title: "Community", href: "/community" },
@@ -70,9 +69,9 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: "ai",
-    name: "Dits for AI",
-    label: "AI",
-    tagline: "Models, Datasets & Research Data",
+    name: "Dits for AI research",
+    label: "AI research",
+    tagline: "Future model and dataset workflows",
     home: "/ai",
     nav: [
       { title: "How it works", href: "/ai/how-it-works" },

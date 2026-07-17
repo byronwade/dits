@@ -5,9 +5,9 @@ import { cn } from "@/lib/utils";
  * Honesty banner for docs that describe roadmap features.
  *
  * Several capabilities (networked sync, push/pull/fetch to a remote, P2P) are
- * designed and partially scaffolded but do NOT work end-to-end yet — the CLI
- * prints placeholders. This callout marks those pages so the docs match what
- * actually ships today. See the home page and /docs/roadmap for status.
+ * designed or scaffolded but do not work end-to-end. Remote and P2P operations
+ * fail nonzero without transfer or repository changes. This callout marks those
+ * pages so the docs match what ships today.
  */
 export function RoadmapCallout({
   children,

@@ -1,82 +1,68 @@
 # Security Policy
 
-## Supported Versions
+**Maturity:** Current policy for the alpha source release
 
-We actively support and patch security vulnerabilities in the following versions:
+Dits is pre-1.0, local-first software intended for evaluation. Repository formats,
+security controls, and compatibility guarantees may change between alpha releases.
+Keep independent backups of important data.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 0.1.x   | :white_check_mark: |
-| < 0.1   | :x:                |
+## Supported versions
 
-## Reporting a Vulnerability
+Security maintenance is best effort for the current `main` branch and recent alpha
+releases. No version has a guaranteed support, response, or fix window.
 
-We take security vulnerabilities seriously. If you discover a security issue in Dits, please help us by reporting it responsibly.
+## Report a vulnerability
 
-### How to Report
+Do not publish exploit details, proof-of-concept code, secrets, or affected data in a
+public issue.
 
-**Please do NOT report security vulnerabilities through public GitHub issues.**
+If GitHub offers the private vulnerability report form for this repository, use
+[GitHub private vulnerability reporting](https://github.com/byronwade/dits/security/advisories/new).
+If that form is unavailable, open a public issue that contains no sensitive details
+and asks the maintainer to provide a private reporting channel.
 
-Instead, please report security vulnerabilities by emailing:
-**security@dits.io**
+Include, when available:
 
-Include the following information in your report:
-- A clear description of the vulnerability
-- Steps to reproduce the issue
-- Potential impact and severity
-- Any suggested fixes or mitigations (optional)
+- the affected version or commit, platform, and component;
+- reproduction steps and a minimal proof of concept;
+- expected impact and required preconditions; and
+- possible mitigations or fixes.
 
-### What to Expect
+Reports are handled on a best-effort basis. The maintainers may coordinate a patch,
+release note, or GitHub security advisory when warranted, but do not promise response
+deadlines, release deadlines, reporter credit, or a CVE.
 
-- **Acknowledgment**: We'll acknowledge receipt of your report within 24 hours
-- **Investigation**: We'll investigate the issue and provide regular updates (at least weekly)
-- **Fix Timeline**: We'll work on a fix based on the severity:
-  - Critical: 24-48 hours
-  - High: 1 week
-  - Medium: 2 weeks
-  - Low: Next regular release
-- **Disclosure**: We'll coordinate disclosure timing with you
-- **Credit**: We'll credit you in the security advisory (unless you prefer anonymity)
+## Scope
 
-### Scope
+Security-relevant code maintained in this repository is in scope, including:
 
-This security policy applies to:
-- The Dits CLI application
-- The Dits web interface
-- The Dits server/API
-- Official Dits SDKs and libraries
-- DitsHub (the hosted service)
+- `packages/dits-core`;
+- `apps/cli`;
+- `packages/npm`; and
+- `packages/dits-wasm` and `apps/web` where they contain maintained security-relevant
+  code.
 
-### Safe Harbor
+DitsHub, a hosted API or service, public SDKs, remote repository exchange, P2P
+transfer, and third-party services are not shipped Dits products and are out of scope.
+See [`docs/STATUS.md`](docs/STATUS.md) for the authoritative product boundary.
 
-We consider security research conducted in accordance with this policy to be authorized. We will not pursue legal action against researchers who follow these guidelines.
+## Important alpha limitations
 
-## Security Updates
+- `dits serve` has no authentication or authorization, binds to all network
+  interfaces by default, and exposes repository refs and stored object bytes. Run it
+  only on a trusted or isolated network behind a firewall. Do not expose it to the
+  public Internet.
+- The early convergent/message-locked encryption experiment is disabled and
+  repositories containing its keystore fail closed. It did not cover embedded Git
+  blobs or every metadata path; convergent encryption also leaks content equality.
+- Local locks and audit records are not multi-user authorization or a hosted audit
+  control.
+- Network push, remote authentication, remote lock leases, and hosted security
+  controls are not current capabilities.
 
-Security updates will be released as patch versions with the following naming convention:
-- `0.1.2-security` for security patches
-- Regular changelog entries for security fixes
-- CVEs assigned where appropriate
+## Research, legal terms, and bounties
 
-## Bug Bounty
-
-We offer bounties for qualifying security vulnerabilities:
-- Critical: $1,000 - $5,000
-- High: $500 - $1,000
-- Medium: $100 - $500
-- Low: Recognition
-
-Details at: https://ditshub.com/security/bounty
-
-## Contact
-
-For security-related questions:
-- Email: security@dits.io
-- PGP Key: Available at https://ditshub.com/security/pgp
-
-## Previous Security Advisories
-
-See our [security advisories page](https://ditshub.com/security/advisories) for previously disclosed vulnerabilities.
-
-
-
+This policy does not offer a bug bounty, paid award, certification, service-level
+commitment, legal safe harbor, or authorization to test systems you do not own or have
+permission to test. Researchers are responsible for complying with applicable law and
+must avoid privacy violations, data loss, and service disruption.

@@ -189,7 +189,7 @@ fn apply_commits(
 
             if is_new || is_modified {
                 // Apply the change
-                let full_path = repo.root().join(path);
+                let full_path = repo.resolve_worktree_path(path)?;
 
                 if let Some(parent) = full_path.parent() {
                     fs::create_dir_all(parent)?;

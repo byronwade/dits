@@ -12,7 +12,7 @@ echo ""
 # Build the optimized version
 echo "Building optimized Dits..."
 cd apps/cli
-cargo build --release
+cargo build --locked --release
 cd ../..
 
 # Create test data
@@ -91,6 +91,5 @@ echo "✓ Multi-peer download framework"
 echo "✓ Zero-copy I/O with memory mapping"
 echo "✓ Adaptive chunk sizing"
 echo "✓ Real-time performance monitoring"
-
 
 

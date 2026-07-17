@@ -1,5 +1,9 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+import { DocPageHeader } from "@/components/doc-page-header";
+import { CodeBlock } from "@/components/ui/code-block";
+import { Callout } from "@/components/ui/callout";
 import {
   Table,
   TableBody,
@@ -8,460 +12,134 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Callout } from "@/components/ui/callout";
-import { DocPageHeader } from "@/components/doc-page-header";
-import { Snowflake, Sun, Settings, BarChart } from "lucide-react";
-import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
-  title: "Storage Tier Commands",
-  description: "Commands for managing hot, warm, and cold storage tiers in Dits",
+  title: "Experimental Local Lifecycle Commands",
+  description:
+    "Actual freeze, thaw, status, and policy syntax for the local lifecycle experiment; no cloud storage movement or speed guarantee.",
 };
 
 const commands = [
-  { command: "freeze-init", description: "Initialize lifecycle tracking", usage: "dits freeze-init [OPTIONS]" },
-  { command: "freeze-status", description: "Show storage tier status", usage: "dits freeze-status [OPTIONS]" },
-  { command: "freeze", description: "Move chunks to colder storage", usage: "dits freeze [OPTIONS] <PATH>" },
-  { command: "thaw", description: "Restore chunks from cold storage", usage: "dits thaw [OPTIONS] <PATH>" },
-  { command: "freeze-policy", description: "Set or view lifecycle policy", usage: "dits freeze-policy [OPTIONS]" },
+  { command: "freeze-init", behavior: "Initialize local tracking for existing chunks", usage: "dits freeze-init" },
+  { command: "freeze-status", behavior: "Summarize locally tracked lifecycle labels", usage: "dits freeze-status" },
+  { command: "freeze", behavior: "Move selected local chunks to another local tier directory", usage: "dits freeze [FILES]... [OPTIONS]" },
+  { command: "thaw", behavior: "Move selected local chunks back to the hot object directory", usage: "dits thaw [FILES]... [--all]" },
+  { command: "freeze-policy", behavior: "List, select, or inspect a local policy preset", usage: "dits freeze-policy [NAME] [--list]" },
 ];
 
 export default function StorageCommandsPage() {
   return (
-    <div className="prose dark:prose-invert max-w-none">
+    <div className="prose max-w-none dark:prose-invert">
       <DocPageHeader
-        eyebrow="CLI Reference"
-        title="Storage Tier Commands"
-        description="Manage data across hot, warm, and cold storage tiers. Automatically move infrequently accessed files to cheaper storage while keeping active files instantly available."
+        eyebrow="Experimental CLI"
+        title="Local Lifecycle Commands"
+        description="Manage an alpha freeze/thaw experiment inside one local repository. Cloud storage and transparent hydration are not implemented."
       />
 
-      <Callout type="note" title="Tiered Storage Architecture" className="not-prose my-6">
-        <strong>Hot:</strong> Local SSD for active files (instant access).
-        <strong> Warm:</strong> Cloud object storage like S3 Standard (seconds).
-        <strong> Cold:</strong> Archive storage like Glacier (hours). Dits moves
-        data between tiers based on access patterns.
+      <Callout type="warning" title="Back up before freezing" className="not-prose my-6">
+        These commands can move chunks out of <code>.dits/objects</code> and can
+        compress the archive copy. A frozen file may not be usable through normal
+        repository reads until its chunks are thawed. Evaluate only on disposable
+        or independently backed-up data and verify the result.
       </Callout>
 
       <Table className="not-prose my-6">
         <TableHeader>
           <TableRow>
             <TableHead>Command</TableHead>
-            <TableHead>Description</TableHead>
+            <TableHead>Current behavior</TableHead>
             <TableHead>Usage</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {commands.map((cmd) => (
-            <TableRow key={cmd.command}>
-              <TableCell className="font-mono font-medium">{cmd.command}</TableCell>
-              <TableCell>{cmd.description}</TableCell>
-              <TableCell className="font-mono text-sm">{cmd.usage}</TableCell>
+          {commands.map((item) => (
+            <TableRow key={item.command}>
+              <TableCell className="font-mono font-medium">{item.command}</TableCell>
+              <TableCell>{item.behavior}</TableCell>
+              <TableCell className="font-mono text-sm">{item.usage}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
 
-      <h2 className="flex items-center gap-2">
-        <Settings className="h-5 w-5" />
-        dits freeze-init
-      </h2>
+      <h2>Initialize and inspect</h2>
+
       <p>
-        Initialize lifecycle tracking for the repository. Sets up storage tier
-        configuration and metadata tracking.
+        <code>freeze-init</code> records existing local chunks in the lifecycle
+        tracker. <code>freeze-status</code> reports local counts, bytes, and
+        policy-eligible transitions. Neither command accepts configuration,
+        provider, cost, JSON, or verbosity flags.
       </p>
 
-      <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits freeze-init [OPTIONS]`}
+        code={`dits freeze-init
+dits freeze-status`}
       />
 
-      <h3>Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`--warm-backend <URL>    Configure warm storage backend
---cold-backend <URL>    Configure cold storage backend
---hot-limit <SIZE>      Maximum hot storage size (default: 100GB)
--v, --verbose           Show detailed setup`}
-      />
+      <h2><code>dits freeze</code></h2>
 
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Initialize with defaults
-$ dits freeze-init
-
-Initializing lifecycle tracking...
-
-Storage Tiers:
-  HOT:  .dits/objects/ (local)
-  WARM: Not configured
-  COLD: Not configured
-
-Lifecycle tracking enabled.
-Run 'dits freeze-policy' to configure automatic tiering.
-
-# Initialize with S3 backends
-$ dits freeze-init \\
-    --warm-backend s3://my-bucket/warm \\
-    --cold-backend s3-glacier://my-bucket/cold \\
-    --hot-limit 50GB
-
-Initializing lifecycle tracking...
-
-Storage Tiers:
-  HOT:  .dits/objects/ (local, limit: 50 GB)
-  WARM: s3://my-bucket/warm
-  COLD: s3-glacier://my-bucket/cold
-
-Testing connectivity... done
-Lifecycle tracking enabled.`}
-      />
-
-      <h2 className="flex items-center gap-2">
-        <BarChart className="h-5 w-5" />
-        dits freeze-status
-      </h2>
       <p>
-        Show the current status of all storage tiers. Displays size, object counts,
-        and cost estimates.
+        With file paths, moves their chunks to the local tier selected by
+        <code> --tier</code> (cold by default). <code>--all</code> selects all
+        eligible chunks and defaults to archive. <code>--apply-policy</code>
+        applies the selected local policy. These modes do not upload data.
       </p>
 
-      <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits freeze-status [OPTIONS]`}
+        code={`dits freeze footage/old-take.mov
+dits freeze footage/old-take.mov --tier warm
+dits freeze --all --tier archive
+dits freeze --apply-policy`}
       />
 
-      <h3>Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`--cost              Show cost estimates
---files             List files by tier
---json              Output as JSON
--v, --verbose       Show detailed information`}
-      />
+      <h2><code>dits thaw</code></h2>
 
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`$ dits freeze-status
-
-Storage Tier Status:
-
-  Tier    Location                       Size      Objects   Access
-  ────────────────────────────────────────────────────────────────────
-  HOT     .dits/objects/                 45.2 GB   12,456    instant
-  WARM    s3://my-bucket/warm            234.5 GB  45,892    ~seconds
-  COLD    s3-glacier://my-bucket/cold    1.2 TB    156,234   ~hours
-
-  Total Storage: 1.48 TB
-
-Recent Activity (last 7 days):
-  Promoted to HOT:   234 chunks (2.1 GB)
-  Demoted to WARM:   567 chunks (5.4 GB)
-  Archived to COLD:  1,234 chunks (15 GB)
-
-# Show cost estimates
-$ dits freeze-status --cost
-
-Monthly Cost Estimate:
-
-  HOT (local):       $0.00 (local storage)
-
-  WARM (S3 Standard):
-    Storage:         234.5 GB × $0.023/GB = $5.39
-    Requests:        45,000 × $0.0004    = $0.18
-    Transfer:        50 GB × $0.09/GB    = $4.50
-    Subtotal:        $10.07
-
-  COLD (Glacier):
-    Storage:         1.2 TB × $0.004/GB  = $4.80
-    Retrieval:       2 restores avg      = $3.00
-    Subtotal:        $7.80
-
-  Total Estimated: $17.87/month
-
-# List files by tier
-$ dits freeze-status --files
-
-HOT (45.2 GB, 12,456 chunks):
-  footage/scene01.mov     2.3 GB   last accessed: 2h ago
-  footage/scene02.mov     1.8 GB   last accessed: 1d ago
-  project.prproj          125 MB   last accessed: 10m ago
-  ...
-
-WARM (234.5 GB, 45,892 chunks):
-  footage/old-takes/*     45 GB    last accessed: 14d ago
-  archive/2024/*          189 GB   last accessed: 30d ago
-  ...`}
-      />
-
-      <h2 className="flex items-center gap-2">
-        <Snowflake className="h-5 w-5" />
-        dits freeze
-      </h2>
       <p>
-        Manually move files or chunks to colder storage. Useful for archiving
-        completed projects or rarely accessed media.
+        With file paths, restores locally warm or cold chunks and queues locally
+        archived chunks for the experiment&apos;s simulated delay. <code>--all</code>
+        selects every cold or archived chunk. With no paths, the command processes
+        the local thaw queue. There are no expedited, bulk, wait, notify, or
+        provider retrieval options.
       </p>
 
-      <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits freeze [OPTIONS] <PATH>...`}
+        code={`dits thaw footage/old-take.mov
+dits thaw --all
+
+# Process the local archive thaw queue
+dits thaw`}
       />
 
-      <h3>Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`--tier <TIER>       Target tier (warm, cold) - default: warm
---reason <TEXT>     Reason for freezing
--n, --dry-run       Show what would be frozen
---progress          Show progress
--v, --verbose       Show detailed output`}
-      />
+      <h2><code>dits freeze-policy</code></h2>
 
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Freeze old footage to warm storage
-$ dits freeze footage/2023-archive/
-
-Freezing: footage/2023-archive/
-  Files: 156
-  Size: 234.5 GB
-  Target tier: WARM
-
-Uploading to warm storage... 100% ████████████████████
-Removing from hot storage... done
-
-Frozen: 234.5 GB moved to WARM tier
-
-# Freeze to cold storage (for long-term archive)
-$ dits freeze --tier cold footage/completed-projects/
-
-Freezing: footage/completed-projects/
-  Files: 89
-  Size: 1.2 TB
-  Target tier: COLD
-
-Warning: Cold storage retrieval takes 3-12 hours.
-Continue? [y/N] y
-
-Uploading to cold storage... 100% ████████████████████
-Frozen: 1.2 TB moved to COLD tier
-
-# Dry run
-$ dits freeze -n footage/2023-archive/
-
-Would freeze:
-  footage/2023-archive/project1/  (45.2 GB)
-  footage/2023-archive/project2/  (89.1 GB)
-  footage/2023-archive/project3/  (100.2 GB)
-
-Total: 234.5 GB would move to WARM`}
-      />
-
-      <h2 className="flex items-center gap-2">
-        <Sun className="h-5 w-5" />
-        dits thaw
-      </h2>
       <p>
-        Restore files from cold or warm storage to hot storage. Required before
-        accessing archived files.
+        Lists or selects one built-in preset. Arbitrary key/value rules,
+        immediate-apply flags, and cloud lifecycle configuration are not part of
+        this command.
       </p>
 
-      <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits thaw [OPTIONS] <PATH>...`}
+        code={`dits freeze-policy --list
+dits freeze-policy default
+dits freeze-policy aggressive
+dits freeze-policy conservative`}
       />
 
-      <h3>Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`--expedited         Use expedited retrieval (faster, higher cost)
---bulk              Use bulk retrieval (slower, lower cost)
---wait              Wait for thaw to complete
---notify            Send notification when complete
--n, --dry-run       Show what would be thawed`}
-      />
+      <Callout type="note" title="Local directories, not service levels" className="not-prose my-6">
+        Warm, cold, and archive map to directories inside <code>.dits</code>.
+        The labels carry no access-time, durability, availability, replication,
+        retention, recovery, or cost guarantee.
+      </Callout>
 
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Thaw archived footage
-$ dits thaw footage/2023-archive/
-
-Thawing: footage/2023-archive/
-
-Current tier: COLD
-Retrieval method: Standard
-Estimated time: 3-5 hours
-
-Initiating restore request... done
-
-Thaw request submitted.
-You will be notified when files are ready.
-
-Check status with: dits freeze-status
-
-# Expedited thaw (faster, costs more)
-$ dits thaw --expedited footage/2023-archive/project1/hero.mov
-
-Thawing: footage/2023-archive/project1/hero.mov (2.3 GB)
-
-Retrieval method: Expedited
-Estimated time: 1-5 minutes
-Additional cost: ~$0.03/GB = $0.07
-
-Restoring... done!
-File is now available in HOT storage.
-
-# Wait for thaw to complete
-$ dits thaw --wait footage/old-project/
-
-Thawing: footage/old-project/ (45 GB)
-Estimated time: 3-5 hours
-
-Waiting for restore... ████████░░░░░░░░░░░░ 42%
-ETA: 2h 15m remaining
-
-# Check thaw status
-$ dits freeze-status
-
-Pending Thaw Operations:
-  footage/2023-archive/  (234.5 GB)
-    Status: RESTORING
-    Progress: 65%
-    ETA: 1h 30m`}
-      />
-
-      <h2 className="flex items-center gap-2">
-        <Settings className="h-5 w-5" />
-        dits freeze-policy
-      </h2>
       <p>
-        Configure automatic lifecycle policies. Files are automatically moved
-        between tiers based on access patterns.
+        See the <Link href="/docs/advanced/storage-tiers">lifecycle boundary</Link>,
+        <Link href="/docs/cli/maintenance"> maintenance commands</Link>, and
+        <Link href="/docs/roadmap"> status and roadmap</Link>.
       </p>
-
-      <h3>Synopsis</h3>
-      <CodeBlock
-        language="bash"
-        code={`dits freeze-policy [OPTIONS]`}
-      />
-
-      <h3>Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`--set <KEY=VALUE>   Set a policy value
---remove <KEY>      Remove a policy rule
---list              List current policies
---apply             Apply policies immediately
---json              Output as JSON`}
-      />
-
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`# View current policies
-$ dits freeze-policy --list
-
-Lifecycle Policies:
-
-  Default Rules:
-    warm-after:     7d   (move to warm after 7 days idle)
-    cold-after:     90d  (move to cold after 90 days idle)
-    evict-hot:      30d  (remove from hot after synced to warm)
-
-  Pattern Rules:
-    raw/**          warm-after: 3d, cold-after: 30d
-    *.prproj        warm-after: never (keep hot)
-    archive/**      cold-after: 1d
-
-# Set default warm policy
-$ dits freeze-policy --set warm-after=14d
-
-Updated: Files move to WARM after 14 days without access.
-
-# Keep project files always hot
-$ dits freeze-policy --set "pattern.*.prproj.warm-after=never"
-
-Updated: *.prproj files will never be moved to warm storage.
-
-# Aggressive archival for raw footage
-$ dits freeze-policy --set "pattern.raw/**.warm-after=3d"
-$ dits freeze-policy --set "pattern.raw/**.cold-after=30d"
-
-Updated: raw/** files move to warm after 3d, cold after 30d.
-
-# Apply policies immediately (run lifecycle check)
-$ dits freeze-policy --apply
-
-Applying lifecycle policies...
-
-Would move to WARM:
-  footage/old-takes/   45.2 GB   (idle 14+ days)
-
-Would move to COLD:
-  archive/2024-q1/     189 GB    (idle 90+ days)
-
-Apply these changes? [y/N] y
-
-Processing...
-  Moving to WARM: 45.2 GB
-  Moving to COLD: 189 GB
-
-Done.`}
-      />
-
-      <h2>Storage Backend Configuration</h2>
-      <CodeBlock
-        language="bash"
-        code={`# .dits/config
-
-[storage.warm]
-    type = s3
-    bucket = my-project-warm
-    region = us-west-2
-    storageClass = STANDARD_IA
-
-[storage.cold]
-    type = s3-glacier
-    bucket = my-project-archive
-    region = us-west-2
-    retrievalTier = Standard
-
-[lifecycle]
-    warmAfter = 7d
-    coldAfter = 90d
-    evictHotAfter = 30d`}
-      />
-
-      <h2>Related Commands</h2>
-      <ul>
-        <li>
-          <Link href="/docs/cli/vfs">VFS Commands</Link> - Mount and cache management
-        </li>
-        <li>
-          <Link href="/docs/cli/maintenance">Maintenance Commands</Link> - Garbage collection
-        </li>
-        <li>
-          <Link href="/docs/cli/remotes">Remote Commands</Link> - Push/pull with remotes
-        </li>
-      </ul>
-
-      <h2>Related Topics</h2>
-      <ul>
-        <li>
-          <Link href="/docs/advanced/storage-tiers">Storage Tiers Guide</Link> - Deep dive into tiered storage
-        </li>
-        <li>
-          <Link href="/docs/configuration">Configuration</Link> - Backend configuration
-        </li>
-      </ul>
     </div>
   );
 }

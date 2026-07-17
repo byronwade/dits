@@ -1,317 +1,39 @@
-import { Metadata } from "next";
-import Link from "next/link";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { Callout } from "@/components/ui/callout";
-import { DocPageHeader } from "@/components/doc-page-header";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import { Shield, Database, Settings } from "lucide-react";
+import type { Metadata } from "next";
+
+import { DesignBoundaryPage } from "@/components/docs/design-boundary-page";
 
 export const metadata: Metadata = {
-    title: "Self-Hosting Guide",
-    description: "Complete guide to self-hosting Dits on your own infrastructure",
+  title: "Self-Hosting Design Boundary",
+  description:
+    "Design archive for a possible future self-hosted Dits service; no deployable authenticated repository server is available.",
 };
 
-export default function SelfHostingPage() {
-    return (
-        <div className="prose dark:prose-invert max-w-none">
-            <DocPageHeader
-                eyebrow="Deployment"
-                title="Self-Hosting Guide"
-                description="A planned guide for running a hosted Dits server on your own infrastructure, intended to give you complete control over your data, security, and customization."
-            />
-
-            <Callout type="important" className="not-prose my-6">
-                <strong>Planned &mdash; not yet available.</strong> There is no Dits
-                server to self-host today. The server binary, storage service, and the
-                container images referenced below are part of the roadmap and have not
-                been built. Dits today is a local-first Rust CLI &mdash; install it with{" "}
-                <code>npm install -g @byronwade/dits</code>. Treat this page as a design
-                sketch of the intended architecture, not as working deployment
-                instructions. Do not depend on it yet.
-            </Callout>
-
-            <Callout type="note" title="Full Data Sovereignty" className="not-prose my-6">
-                Self-hosting is intended to give you complete control over your data and
-                compliance with any regulatory requirements.
-            </Callout>
-
-            <h2>Why Self-Host?</h2>
-
-            <div className="not-prose grid gap-6 md:grid-cols-3 my-8">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Shield className="h-5 w-5 text-brand" />
-                            Security &amp; Privacy
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ul className="text-sm space-y-1 text-muted-foreground">
-                            <li>Complete data ownership</li>
-                            <li>Custom security policies</li>
-                            <li>Air-gapped networks</li>
-                            <li>Regulatory compliance</li>
-                        </ul>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Settings className="h-5 w-5 text-brand" />
-                            Customization
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ul className="text-sm space-y-1 text-muted-foreground">
-                            <li>Custom integrations</li>
-                            <li>Modified workflows</li>
-                            <li>Branding options</li>
-                            <li>Feature flags</li>
-                        </ul>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Database className="h-5 w-5 text-brand" />
-                            Infrastructure Control
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ul className="text-sm space-y-1 text-muted-foreground">
-                            <li>Choose your hardware</li>
-                            <li>Storage optimization</li>
-                            <li>Network configuration</li>
-                            <li>Cost management</li>
-                        </ul>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <h2>System Requirements</h2>
-
-            <div className="overflow-x-auto my-6">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Component</TableHead>
-                            <TableHead>Minimum</TableHead>
-                            <TableHead>Recommended</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow>
-                            <TableCell>CPU</TableCell>
-                            <TableCell>4 cores</TableCell>
-                            <TableCell>8+ cores</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>RAM</TableCell>
-                            <TableCell>8 GB</TableCell>
-                            <TableCell>32+ GB</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Storage</TableCell>
-                            <TableCell>100 GB SSD</TableCell>
-                            <TableCell>1+ TB NVMe</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Network</TableCell>
-                            <TableCell>100 Mbps</TableCell>
-                            <TableCell>1+ Gbps</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>OS</TableCell>
-                            <TableCell colSpan={2}>Linux (Ubuntu 22.04, Debian 12, RHEL 9)</TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            </div>
-
-            <h2>Installation Methods</h2>
-
-            <div className="not-prose grid gap-6 md:grid-cols-2 my-8">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Docker (Recommended)</CardTitle>
-                        <CardDescription>
-                            Fastest and easiest deployment method
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-muted-foreground mb-4">
-                            Use Docker Compose for quick setup with all dependencies included.
-                        </p>
-                        <Link href="/docs/deployment/docker" className="text-brand hover:underline text-sm">
-                            View Docker deployment guide →
-                        </Link>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Binary Installation</CardTitle>
-                        <CardDescription>
-                            Direct installation without containers
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <pre className="bg-background p-4 rounded-lg overflow-x-auto text-sm"><code>{`# Download latest release
-curl -LO https://releases.dits.io/latest/dits-server
-
-# Make executable
-chmod +x dits-server
-
-# Run server
-./dits-server --config /etc/dits/config.toml`}</code></pre>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <h2>Configuration</h2>
-
-            <h3>Server Configuration File</h3>
-            <pre className="bg-muted p-4 rounded-lg overflow-x-auto"><code>{`# /etc/dits/config.toml
-
-[server]
-host = "0.0.0.0"
-port = 8080
-tls_cert = "/etc/dits/ssl/cert.pem"
-tls_key = "/etc/dits/ssl/key.pem"
-
-[database]
-url = "postgres://dits:password@localhost:5432/dits"
-max_connections = 50
-ssl_mode = "require"
-
-[storage]
-type = "local"
-path = "/var/lib/dits/chunks"
-# Or use S3-compatible storage:
-# type = "s3"
-# bucket = "dits-chunks"
-# region = "us-east-1"
-
-[cache]
-type = "redis"
-url = "redis://localhost:6379"
-size = "4GB"
-
-[auth]
-jwt_secret = "your-secure-secret"
-token_expiry = "24h"
-
-[logging]
-level = "info"
-format = "json"
-output = "/var/log/dits/server.log"`}</code></pre>
-
-            <h2>Security Hardening</h2>
-
-            <div className="not-prose bg-muted p-6 rounded-lg my-6">
-                <h3 className="font-semibold mb-4">Recommended Security Measures</h3>
-                <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <h4 className="font-medium mb-2">Network Security</h4>
-                        <ul className="text-sm space-y-1 text-muted-foreground">
-                            <li>Enable TLS 1.3 for all connections</li>
-                            <li>Use firewall to restrict access</li>
-                            <li>Set up VPN for admin access</li>
-                            <li>Enable rate limiting</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 className="font-medium mb-2">System Security</h4>
-                        <ul className="text-sm space-y-1 text-muted-foreground">
-                            <li>Run as non-root user</li>
-                            <li>Enable SELinux/AppArmor</li>
-                            <li>Keep system updated</li>
-                            <li>Use encrypted storage</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <h2>Systemd Service</h2>
-
-            <pre className="bg-muted p-4 rounded-lg overflow-x-auto"><code>{`# /etc/systemd/system/dits.service
-
-[Unit]
-Description=Dits Server
-After=network.target postgresql.service redis.service
-
-[Service]
-Type=simple
-User=dits
-Group=dits
-ExecStart=/usr/local/bin/dits-server --config /etc/dits/config.toml
-Restart=always
-RestartSec=5
-LimitNOFILE=65535
-
-[Install]
-WantedBy=multi-user.target`}</code></pre>
-
-            <pre className="bg-muted p-4 rounded-lg overflow-x-auto mt-4"><code>{`# Enable and start service
-sudo systemctl daemon-reload
-sudo systemctl enable dits
-sudo systemctl start dits
-
-# Check status
-sudo systemctl status dits`}</code></pre>
-
-            <h2>Backup Strategy</h2>
-
-            <div className="not-prose grid gap-6 md:grid-cols-2 my-8">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Database Backup</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <pre className="bg-background p-4 rounded-lg overflow-x-auto text-sm"><code>{`# Daily database backup
-pg_dump -U dits dits | gzip > \\
-  /backups/db-$(date +%Y%m%d).sql.gz
-
-# Point-in-time recovery
-# Configure WAL archiving in postgresql.conf`}</code></pre>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Chunk Storage Backup</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <pre className="bg-background p-4 rounded-lg overflow-x-auto text-sm"><code>{`# Incremental backup with rsync
-rsync -avz --delete \\
-  /var/lib/dits/chunks/ \\
-  backup-server:/backups/chunks/
-
-# Or use deduplicating backup
-restic backup /var/lib/dits/chunks`}</code></pre>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <Callout type="tip" title="Need Help?" className="not-prose my-6">
-                See our <Link href="/docs/troubleshooting" className="underline">troubleshooting guide</Link> for
-                common issues, or join the community for support.
-            </Callout>
-        </div>
-    );
+export default function SelfHostingDesignPage() {
+  return (
+    <DesignBoundaryPage
+      title="Self-Hosting Design Boundary"
+      summary="Running a utility process is not equivalent to operating a supported repository service."
+      status="Dits has no deployable self-hosted control plane, user service, authenticated remote, database schema, worker system, admin UI, upgrade contract, or server backup procedure. The quarantined backend crates and historical diagrams are not active product components."
+      targets={[
+        "A single documented service topology with secure defaults and explicit state ownership.",
+        "Local operator control over identity, storage, retention, backups, upgrades, and observability.",
+        "Repeatable installation and recovery procedures proven against released artifacts.",
+      ]}
+      prerequisites={[
+        "A maintained authenticated server and complete repository-exchange protocol.",
+        "Authorization, audit, secret lifecycle, abuse controls, migrations, and disaster recovery.",
+        "Published packages, support matrix, threat model, operational runbooks, and conformance tests.",
+      ]}
+      current={[
+        "Keep repositories local and copy them with local-filesystem clone or independently managed backup tools.",
+        "Use dits serve only as an unauthenticated object utility on a trusted or isolated network behind a firewall.",
+        "Never expose dits serve to the public Internet or treat it as a complete remote repository.",
+      ]}
+      related={[
+        { href: "/docs/architecture/security", label: "Current security boundary" },
+        { href: "/docs/cli/remotes", label: "Remote command status" },
+        { href: "/docs/deployment", label: "Deployment design boundary" },
+      ]}
+    />
+  );
 }

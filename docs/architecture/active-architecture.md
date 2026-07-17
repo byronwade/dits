@@ -1,7 +1,8 @@
 # Active Architecture
 
-**Maturity:** Current architecture with explicit Experimental and Design
-boundaries.
+**Maturity:** Current
+
+This page maps Current code and marks Experimental and Design boundaries explicitly.
 
 This document is the canonical code map for the repository. It describes what
 the root Cargo workspace builds, not the larger historical platform described
@@ -82,8 +83,8 @@ Responsibilities include:
 - repository operations;
 - hybrid libgit2 text storage;
 - local locks;
-- local and placeholder remote configuration;
-- sync/serve support.
+- local remote-configuration records, while transfer commands fail closed;
+- local object-serving and experimental transport utilities, not repository sync.
 
 Required invariants:
 
@@ -230,7 +231,7 @@ web documentation -> invented command behavior
 | Proxy/segmentation | Experimental | media modules/tests |
 | FUSE | Experimental/feature-gated | `fuser` feature |
 | Local HTTP serve | Current utility | serve command |
-| Network push/pull/fetch/sync | Design/placeholders | `STATUS.md` |
+| Network push/pull/fetch/sync | Design; commands fail closed | `STATUS.md` |
 | P2P/QUIC repository transfer | Design/scaffolding | p2p/stream modules |
 | Hosted REST/DB/worker platform | Historical | `legacy/backend-crates` |
 | Public SDK ecosystem | Design | no stable public protocol |

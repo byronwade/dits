@@ -202,26 +202,29 @@ fn apply_sparse_checkout(repo: &Repository) -> Result<()> {
         .collect();
 
     // Get current HEAD to determine what files to restore
-    let head_commit = repo.head()?;
-    if head_commit.is_none() {
+    let Some(head_commit) = repo.head()? else {
         return Ok(());
-    }
-    let commit = repo.load_commit(&head_commit.unwrap())?;
+    };
+    let commit = repo.load_commit(&head_commit)?;
     let manifest = repo.load_manifest(&commit.manifest)?;
 
     let _index = repo.load_index()?;
-    let repo_root = repo.root();
 
+    // Preflight all paths before deleting or restoring anything.
+    let mut resolved_paths = Vec::with_capacity(manifest.len());
     for (path, entry) in manifest.iter() {
+        resolved_paths.push((path, entry, repo.resolve_worktree_path(path)?));
+    }
+
+    for (path, entry, file_path) in resolved_paths {
         let matches = matchers.iter().any(|m| m.matches(path));
-        let file_path = repo_root.join(path);
 
         if !matches && file_path.exists() {
             // Remove file that doesn't match sparse patterns
             fs::remove_file(&file_path)?;
 
             // Clean up empty parent directories
-            cleanup_empty_parents(&file_path, repo_root)?;
+            cleanup_empty_parents(&file_path, repo.root())?;
         } else if matches && !file_path.exists() {
             // Restore file that matches sparse patterns but is missing
             restore_file(repo, path, entry)?;
@@ -233,22 +236,16 @@ fn apply_sparse_checkout(repo: &Repository) -> Result<()> {
 
 /// Restore a single file from the current HEAD commit
 fn restore_file(repo: &Repository, path: &str, entry: &ManifestEntry) -> Result<()> {
-    let full_path = repo.root().join(path);
+    let full_path = repo.resolve_worktree_path(path)?;
 
     // Create parent directories
     if let Some(parent) = full_path.parent() {
         fs::create_dir_all(parent)?;
     }
 
-    // Check if this is an MP4 file with MP4 metadata
-    if entry.mp4_metadata.is_some() {
-        // For MP4 files, we need special handling
-        // For now, fall back to regular file reconstruction
-        // TODO: Implement proper MP4 reconstruction for sparse checkout
-        restore_regular_file(repo, &full_path, entry)?;
-    } else {
-        restore_regular_file(repo, &full_path, entry)?;
-    }
+    // MP4-specific reconstruction is not implemented for sparse checkout yet;
+    // both MP4 and regular entries currently use the strategy-aware fallback.
+    restore_regular_file(repo, &full_path, entry)?;
 
     Ok(())
 }

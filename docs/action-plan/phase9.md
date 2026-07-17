@@ -1,5 +1,11 @@
 # Engineering Execution Manual — Phase 9 (The Black Box)
 
+**Maturity:** Historical
+
+This is a retained execution plan, not current capability status or the active roadmap.
+Completion boxes and phase language must be read against docs/STATUS.md and the root
+ROADMAP.md.
+
 **Project:** Dits (Data-Intensive Version Control System)
 **Phase:** 9 — The Black Box (Security & Encryption)
 **Objective:** Enterprise-grade client-side encryption with convergent deduplication, RBAC-managed keys, audit logging, and compliance-ready architecture for media workflows handling sensitive content.

@@ -1,21 +1,9 @@
 # Commit (The Snapshot)
 
-Commits capture repository state by mapping paths to asset recipes.
+**Maturity:** Current
 
-```rust
-struct Commit {
-    id: String,                       // Commit hash
-    parent_id: Option<String>,        // Linear or DAG history
-    author: String,                   // Identity string
-    message: String,                  // Commit message
-    timestamp: u64,                   // Unix epoch seconds
-    assets: HashMap<String, String>,  // Map [path -> AssetHash]
-}
-```
+A commit references a manifest hash, primary and optional merge parents, message, author, committer, and timestamp. Its content ID uses the versioned framed identity described by ADR 0004. Rust serialization is still an implementation detail rather than a public interchange contract.
 
-Notes:
-- Commit hashes derive from content (assets + metadata) to ensure integrity.
-- Parent linkage supports history and branch merges.
-- Asset map stores references to asset recipes, not raw files.
-
-
+See [commit identity ADR](../adr/0004-versioned-commit-identity.md) and [`../STATUS.md`](../STATUS.md). Any serialized form not
+explicitly governed by an accepted ADR and conformance corpus remains an implementation
+detail.

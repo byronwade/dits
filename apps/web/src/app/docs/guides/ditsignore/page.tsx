@@ -258,8 +258,11 @@ echo "*.swp" >> ~/.ditsignore_global`}
             />
 
             <Callout type="warning" title="Already Tracked Files" className="not-prose my-6">
-                Adding a file to .ditsignore won&apos;t remove it if it&apos;s already tracked.
-                Use <code>dits rm --cached filename</code> to untrack it first.
+                Adding a path to <code>.ditsignore</code> does not remove an entry
+                that is already tracked. The current CLI has no dedicated
+                untrack-while-preserving-the-worktree command. Treat ignore rules
+                as a pre-staging filter, check <code>dits status</code>, and
+                evaluate any tracked-file removal workflow only on backed-up data.
             </Callout>
 
             <h2>Related Topics</h2>

@@ -1,690 +1,149 @@
-# Contributing Guide
+# Contributing to Dits
 
-How to contribute to Dits: code, documentation, and community guidelines.
+**Maturity:** Current
 
----
+Dits is an alpha local-first version-control system for large media and asset
+pipelines. The highest-value contributions improve correctness, format evidence,
+recovery, representative fixtures, and documentation truth.
 
-## Overview
+All participation is governed by the repository
+[`CODE_OF_CONDUCT.md`](../../CODE_OF_CONDUCT.md).
 
-Thank you for your interest in contributing to Dits! This guide covers everything you need to know to contribute effectively to the project.
+## Read first
 
----
+1. [`../STATUS.md`](../STATUS.md) — current, experimental, roadmap, and historical boundaries.
+2. [`../architecture/active-architecture.md`](../architecture/active-architecture.md) — live workspace and dependency direction.
+3. [`../../ROADMAP.md`](../../ROADMAP.md) — dependency-ordered gates.
+4. [`../adr/README.md`](../adr/README.md) — accepted decisions.
+5. [`../marketing/positioning.md`](../marketing/positioning.md) — public claim rules.
 
-## Code of Conduct
+## Workspace
 
-We are committed to providing a welcoming and inclusive environment. All contributors must adhere to our Code of Conduct:
+| Path | Role |
+|---|---|
+| `apps/cli` | Canonical `dits` Rust binary and library modules |
+| `packages/dits-core` | Shared deterministic chunking and hashing engine |
+| `apps/web` | Website, documentation, and playground |
+| `packages/npm` | npm launcher and packaged binary layout |
+| `legacy/backend-crates` | Historical backend research; excluded from the root workspace |
 
-### Our Standards
+PostgreSQL, Redis, Docker, or a hosted server are not required for the current
+product. Do not reconnect the legacy backend to the root workspace without an
+accepted architectural decision.
 
-**Be Respectful:** Treat everyone with respect. No harassment, discrimination, or personal attacks.
+## Setup
 
-**Be Constructive:** Provide helpful feedback. Focus on the code, not the person.
+Prerequisites:
 
-**Be Collaborative:** Work together towards common goals. Help others learn and grow.
-
-**Be Professional:** Maintain professional conduct in all interactions.
-
-### Enforcement
-
-Violations may result in:
-1. Warning
-2. Temporary ban from the project
-3. Permanent ban
-
-Report violations to: the project maintainers via GitHub
-
----
-
-## Getting Started
-
-### Prerequisites
-
-```bash
-# Required tools
-- Rust 1.75+ (rustup recommended)
-- Node.js 20+ (for web UI)
-- PostgreSQL 15+
-- Docker (for testing)
-- Git
-
-# Optional but recommended
-- cargo-watch (live reload)
-- cargo-nextest (faster tests)
-- just (command runner)
-```
-
-### Development Setup
+- Rust stable for builds/tests and nightly rustfmt for the repository formatting check;
+- Node.js 20 and npm for the website;
+- Git;
+- platform FUSE development libraries only when testing the optional `fuser` feature.
 
 ```bash
-# 1. Fork the repository on GitHub
-# 2. Clone your fork
 git clone https://github.com/YOUR_USERNAME/dits.git
 cd dits
 
-# 3. Add upstream remote
-git remote add upstream https://github.com/byronwade/dits.git
+cargo build --locked -p dits
+npm ci
 
-# 4. Build the CLI (the canonical product lives at apps/cli)
-cargo build --release
-# To enable VFS mount support (local-only):
-cargo build --release --features fuser
-
-# 5. Run tests to verify setup (469 passing)
-cargo test
+cargo test --locked --workspace
+npm --workspace apps/web run test:ci
 ```
 
-> The `dits-migrate` / `dits-server` binaries and the PostgreSQL/`docker-compose` setup
-> belonged to the quarantined backend (`legacy/backend-crates`) and are **not** part of the
-> current architecture. The product is the local-first CLI at `apps/cli`; no database or
-> server is required to build, test, or run it.
+## Good first contribution types
 
-### Repository Structure
+- Reduce a corruption, crash-safety, or recovery failure to a regression test.
+- Add a generated or redistributable real-media fixture with documented provenance.
+- Define deterministic test vectors for an object or manifest format.
+- Remove a file-sized buffer from ingest and measure peak memory.
+- Reconcile a command page with actual `dits --help` output.
+- Label a historical or design document so it cannot be mistaken for current behavior.
+- Reproduce a competitor workload fairly and publish the method and raw results.
 
-> ⚠️ The `dits-*` backend crates described in older docs are quarantined in `legacy/backend-crates`; the current architecture is the modules under `apps/cli/src/`.
+Discuss new persistent formats, protocol changes, or broad features in an issue
+before implementation.
 
-The canonical product is the local-first CLI at `apps/cli` (binary `dits`). Its
-architecture is a set of modules under `apps/cli/src/`:
+## Correctness rules
 
-```
-dits/
-├── apps/
-│   └── cli/
-│       └── src/
-│           ├── core/         # VCS object model, index, refs, commits
-│           ├── store/        # Local object/chunk storage
-│           ├── mp4/          # ISOBMFF/MP4 parsing & roundtrip
-│           ├── facr/         # FACR frame engine (facr-add/checkout/trim, photo)
-│           ├── segment/      # Segmentation / assembly
-│           ├── proxy/        # Proxy generation & management
-│           ├── vfs/          # Virtual filesystem mount
-│           ├── security/     # Locking, encryption, auth, audit
-│           ├── metadata/     # Metadata scan/show
-│           ├── dependency/   # Dependency graph
-│           ├── lifecycle/    # Freeze/thaw tiered storage
-│           ├── p2p/          # P2P scaffolding (roadmap, not implemented)
-│           └── commands/     # CLI command handlers
-├── legacy/
-│   └── backend-crates/       # QUARANTINED former backend workspace (not current)
-├── docs/                     # Documentation
-└── tests/                    # Integration tests
-```
+- Preserve exact source bytes unless the command explicitly creates a derived asset.
+- Keep cryptographic identity separate from perceptual similarity.
+- Verify digests and lengths on untrusted reads and imports.
+- Make object and ref visibility atomic.
+- Version persistent formats and use deterministic encodings where IDs depend on bytes.
+- Reject unsupported media layouts safely.
+- Keep large-file operations bounded-memory.
+- Add failure tests, not only happy-path tests.
 
----
+## Documentation rules
 
-## Contribution Types
+Every product claim must be clearly current, experimental, roadmap, or
+historical. A placeholder command, demo, type definition, or design page does
+not make a feature current.
 
-### Code Contributions
+Measured claims require a committed artifact with the corpus, command, commit,
+hardware, environment, sample count, and raw output. Never invent test counts,
+customer results, capacity limits, storage savings, prices, or delivery dates.
 
-We accept contributions for:
-- Bug fixes
-- New features (discuss first in an issue)
-- Performance improvements
-- Documentation improvements
-- Test coverage improvements
+If a change alters product truth, update implementation and tests first, then:
 
-### Documentation
+1. `docs/STATUS.md`;
+2. concepts and active architecture;
+3. the roadmap or ADR;
+4. CLI/user documentation;
+5. website and package copy.
 
-Help improve our docs:
-- Fix typos and errors
-- Add missing information
-- Improve clarity and examples
-- Translate documentation
+## Before opening a pull request
 
-### Issue Triage
-
-Help manage issues:
-- Reproduce and verify bugs
-- Add missing information
-- Suggest solutions
-- Close duplicates
-
-### Community Support
-
-Help other users:
-- Answer questions on GitHub Discussions
-- Help on Discord
-- Write tutorials and blog posts
-
----
-
-## Development Workflow
-
-### Branch Strategy
-
-```
-main          <- Production-ready code
-├── develop   <- Integration branch (optional)
-├── feature/* <- New features
-├── fix/*     <- Bug fixes
-├── docs/*    <- Documentation changes
-└── refactor/* <- Code refactoring
-```
-
-### Creating a Branch
+Run the proportionate subset while developing and the complete relevant suite
+before handoff:
 
 ```bash
-# Sync with upstream
-git fetch upstream
-git checkout main
-git merge upstream/main
+cargo +nightly fmt --all -- --check
+cargo +stable clippy --locked --all-targets --all-features -- -D warnings
+cargo test --locked --workspace
 
-# Create feature branch
-git checkout -b feature/my-feature
+npm --workspace apps/web run lint
+npm --workspace apps/web run test:ci
+npm --workspace apps/web run build
 
-# Or bug fix branch
-git checkout -b fix/issue-123
+bash scripts/check-cli-docs.sh
+bash scripts/check-product-truth.sh
+git diff --check
 ```
 
-### Making Changes
+The optional all-features Rust check requires system FUSE development packages.
 
-1. **Write code** following our style guide
-2. **Write tests** for new functionality
-3. **Update documentation** if needed
-4. **Run tests locally** before pushing
+## Pull request shape
 
-```bash
-# Run tests
-cargo test
+Use a focused branch and explain:
 
-# Run specific test
-cargo test test_name
+- the user or architectural problem;
+- the current product boundary affected;
+- persistent-format or compatibility impact;
+- tests and fixtures added;
+- commands run and any environment limitations;
+- documentation or maturity labels changed;
+- follow-up work deliberately left out.
 
-# Run with nextest (faster)
-cargo nextest run
+Prefer reviewable changes with explicit evidence over a large speculative phase
+implementation.
 
-# Run lints
-cargo clippy --all-targets --all-features
+## Commit style
 
-# Format code
-cargo fmt
+Conventional Commit prefixes are useful but not mandatory. Clear examples:
 
-# Check for issues
-just check
+```text
+fix(store): publish objects atomically after verification
+test(mp4): add truncated co64 fixture
+docs(status): mark remote sync as roadmap
+perf(ingest): bound the read window for large assets
 ```
 
-### Commit Guidelines
-
-We use [Conventional Commits](https://www.conventionalcommits.org/):
-
-```
-<type>(<scope>): <description>
-
-[optional body]
-
-[optional footer]
-```
-
-**Types:**
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation only
-- `style`: Code style (formatting, semicolons)
-- `refactor`: Code refactoring
-- `perf`: Performance improvement
-- `test`: Adding tests
-- `chore`: Maintenance tasks
-- `ci`: CI/CD changes
-
-**Examples:**
-
-```bash
-# Feature
-git commit -m "feat(chunker): add support for variable chunk sizes"
-
-# Bug fix with issue reference
-git commit -m "fix(api): handle empty repository clone
-
-Fixes #123"
-
-# Documentation
-git commit -m "docs(readme): update installation instructions"
-
-# Breaking change
-git commit -m "feat(protocol)!: change wire format to binary
-
-BREAKING CHANGE: Wire protocol version bumped to 2.0.
-Clients must upgrade to continue connecting."
-```
-
-### Pull Request Process
-
-1. **Push your branch**
-```bash
-git push origin feature/my-feature
-```
-
-2. **Create Pull Request**
-   - Use a clear, descriptive title
-   - Reference related issues
-   - Fill out the PR template
-   - Add appropriate labels
-
-3. **PR Template**
-```markdown
-## Description
-Brief description of changes
-
-## Related Issues
-Fixes #123
-Related to #456
-
-## Type of Change
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Breaking change
-- [ ] Documentation
-
-## Testing
-How to test these changes
-
-## Checklist
-- [ ] Tests pass locally
-- [ ] Code follows style guidelines
-- [ ] Documentation updated
-- [ ] Changelog updated (if applicable)
-```
-
-4. **Review Process**
-   - At least one maintainer review required
-   - CI must pass
-   - Address feedback promptly
-   - Squash commits if requested
-
-5. **Merge**
-   - Maintainers will merge approved PRs
-   - We use squash merge for most PRs
-   - Rebase merge for multi-commit features
-
----
-
-## Code Style
-
-### Rust Style Guide
-
-```rust
-// Use rustfmt defaults with these overrides (.rustfmt.toml):
-// edition = "2021"
-// max_width = 100
-// use_small_heuristics = "Max"
-
-// Good: Clear, idiomatic Rust
-pub fn chunk_file(path: &Path, options: &ChunkOptions) -> Result<Vec<Chunk>> {
-    let file = File::open(path)?;
-    let reader = BufReader::new(file);
-
-    let chunker = FastCdc::new(
-        options.min_size,
-        options.avg_size,
-        options.max_size,
-    );
-
-    chunker.chunk_reader(reader)
-}
-
-// Error handling: Use thiserror for library errors
-#[derive(Debug, thiserror::Error)]
-pub enum ChunkError {
-    #[error("IO error: {0}")]
-    Io(#[from] std::io::Error),
-
-    #[error("Invalid chunk size: {size} (must be {min}-{max})")]
-    InvalidSize { size: usize, min: usize, max: usize },
-}
-
-// Documentation: Use rustdoc conventions
-/// Chunks a file using content-defined chunking.
-///
-/// # Arguments
-///
-/// * `path` - Path to the file to chunk
-/// * `options` - Chunking options (min/avg/max size)
-///
-/// # Returns
-///
-/// A vector of chunks with their hashes and boundaries.
-///
-/// # Errors
-///
-/// Returns an error if the file cannot be read or chunking fails.
-///
-/// # Example
-///
-/// ```rust
-/// use dits_core::chunk_file;
-///
-/// let chunks = chunk_file(Path::new("video.mp4"), &ChunkOptions::default())?;
-/// println!("Created {} chunks", chunks.len());
-/// ```
-pub fn chunk_file(path: &Path, options: &ChunkOptions) -> Result<Vec<Chunk>> {
-    // ...
-}
-```
-
-### TypeScript Style Guide
-
-```typescript
-// Use Prettier + ESLint defaults
-
-// Good: Clear types, functional style
-interface ChunkUploadOptions {
-  concurrency: number;
-  retries: number;
-  onProgress?: (progress: UploadProgress) => void;
-}
-
-async function uploadChunks(
-  chunks: Chunk[],
-  options: ChunkUploadOptions
-): Promise<UploadResult> {
-  const { concurrency, retries, onProgress } = options;
-
-  const results = await pMap(
-    chunks,
-    (chunk) => uploadChunk(chunk, { retries }),
-    { concurrency }
-  );
-
-  return {
-    uploaded: results.filter((r) => r.success).length,
-    failed: results.filter((r) => !r.success),
-  };
-}
-```
-
-### SQL Style Guide
-
-```sql
--- Use lowercase keywords
--- Use snake_case for identifiers
--- Align columns for readability
-
-select
-    r.id,
-    r.name,
-    r.created_at,
-    count(c.id) as commit_count
-from repositories r
-left join commits c on c.repository_id = r.id
-where r.organization_id = $1
-    and r.deleted_at is null
-group by r.id, r.name, r.created_at
-order by r.created_at desc
-limit 100;
-```
-
----
-
-## Testing
-
-### Test Categories
-
-```rust
-// Unit tests: In the same file as code
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_chunk_boundaries() {
-        let data = b"hello world";
-        let chunks = chunk_data(data, &ChunkOptions::default());
-        assert_eq!(chunks.len(), 1);
-    }
-}
-
-// Integration tests: In tests/ directory
-// tests/integration/chunking_test.rs
-#[tokio::test]
-async fn test_end_to_end_chunking() {
-    let server = TestServer::start().await;
-    let client = server.client();
-
-    let repo = client.create_repo("test").await.unwrap();
-    let file = generate_test_video(1024 * 1024);
-
-    client.push_file(&repo, &file).await.unwrap();
-
-    let pulled = client.pull_file(&repo, &file.name).await.unwrap();
-    assert_eq!(file.content, pulled.content);
-}
-```
-
-### Running Tests
-
-```bash
-# All tests
-cargo test
-
-# Specific crate
-cargo test -p dits-core
-
-# Specific test
-cargo test test_chunk_boundaries
-
-# Integration tests only
-cargo test --test '*'
-
-# With coverage
-cargo tarpaulin --out Html
-
-# Benchmarks
-cargo bench
-```
-
-### Test Requirements
-
-- All new features must have tests
-- Bug fixes should include regression tests
-- Aim for >80% code coverage
-- Integration tests for cross-component features
-
----
-
-## Documentation
-
-### Code Documentation
-
-- All public APIs must be documented
-- Include examples for complex functions
-- Document error conditions
-- Update changelog for user-facing changes
-
-### Building Documentation
-
-```bash
-# Build Rust docs
-cargo doc --open
-
-# Build all documentation
-just docs
-
-# Serve documentation locally
-just docs-serve
-```
-
-### Writing Documentation
-
-```markdown
-# Feature Name
-
-Brief description of the feature.
-
-## Overview
-
-More detailed explanation with context.
-
-## Usage
-
-### Basic Example
-
-\`\`\`rust
-// Example code with comments
-let result = feature.do_thing()?;
-\`\`\`
-
-### Advanced Example
-
-\`\`\`rust
-// More complex example
-\`\`\`
-
-## Configuration
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `foo` | `u32` | `100` | Description of foo |
-
-## Notes
-
-- Important considerations
-- Edge cases
-- Performance implications
-```
-
----
-
-## Release Process
-
-### Versioning
-
-We follow [Semantic Versioning](https://semver.org/):
-
-- **MAJOR**: Breaking changes
-- **MINOR**: New features (backward compatible)
-- **PATCH**: Bug fixes (backward compatible)
-
-### Release Cycle
-
-- Patch releases: As needed
-- Minor releases: Every 4-6 weeks
-- Major releases: Annually (or as needed)
-
-### Changelog
-
-Update `CHANGELOG.md` for user-facing changes:
-
-```markdown
-## [Unreleased]
-
-### Added
-- New feature X (#123)
-
-### Changed
-- Improved performance of Y (#456)
-
-### Fixed
-- Bug in Z (#789)
-
-### Deprecated
-- Old API method, use new method instead
-
-### Removed
-- Legacy feature after deprecation period
-
-### Security
-- Fixed vulnerability in W
-```
-
----
-
-## Getting Help
-
-### Communication Channels
-
-- **GitHub Issues**: Bug reports, feature requests
-- **GitHub Discussions**: Questions, ideas, show & tell
-- **Discord**: Real-time chat (#dev channel)
-- **Email**: GitHub Issues (https://github.com/byronwade/dits/issues)
-
-### Finding Issues to Work On
-
-Look for issues labeled:
-- `good first issue`: Good for newcomers
-- `help wanted`: We'd appreciate help
-- `documentation`: Docs improvements needed
-- `bug`: Confirmed bugs
-- `enhancement`: Feature requests
-
-### Asking Questions
-
-Before asking:
-1. Search existing issues/discussions
-2. Check the documentation
-3. Try to reproduce/debug
-
-When asking:
-- Provide context
-- Include error messages
-- Share relevant code/config
-- Describe what you've tried
-
----
-
-## Recognition
-
-### Contributors
-
-All contributors are recognized in:
-- `CONTRIBUTORS.md` file
-- Release notes
-- GitHub contributor graph
-
-### Types of Recognition
-
-- **Code contributors**: Listed in CONTRIBUTORS.md
-- **Documentation contributors**: Listed in docs credits
-- **Community contributors**: Highlighted in community updates
-- **Core contributors**: May be invited to join maintainer team
-
----
-
-## Maintainer Guidelines
-
-### For Maintainers
-
-```markdown
-# Review Checklist
-
-- [ ] Code follows style guidelines
-- [ ] Tests are adequate
-- [ ] Documentation is updated
-- [ ] Changelog is updated (if needed)
-- [ ] No security issues introduced
-- [ ] Performance is acceptable
-- [ ] Breaking changes are documented
-```
-
-### Merging PRs
-
-1. Ensure CI passes
-2. Ensure adequate review
-3. Use squash merge for single-purpose PRs
-4. Use rebase merge for multi-commit features
-5. Delete branch after merge
-
-### Issue Triage
-
-Labels to apply:
-- Priority: `P0` (critical), `P1` (high), `P2` (medium), `P3` (low)
-- Type: `bug`, `enhancement`, `documentation`, `question`
-- Status: `needs-triage`, `confirmed`, `in-progress`, `blocked`
-- Area: `core`, `server`, `client`, `web`, `plugins`
-
----
-
-## License
-
-By contributing, you agree that your contributions will be licensed under the same license as the project:
-
-- **Core**: Apache 2.0 / MIT dual license
-- **Enterprise features**: Proprietary (contact for contributor agreement)
-
----
-
-## Notes
-
-- We aim to review PRs within 48 hours
-- Be patient during busy periods
-- Quality over speed
-- Ask for help if stuck
-- Have fun!
+## Reporting problems
+
+Use [GitHub Issues](https://github.com/byronwade/dits/issues) for reproducible
+bugs and [GitHub Discussions](https://github.com/byronwade/dits/discussions) for
+design questions. Include the Dits commit/version, OS, architecture, filesystem,
+exact commands, smallest redistributable fixture, expected behavior, actual
+behavior, and hashes when exact bytes are relevant.

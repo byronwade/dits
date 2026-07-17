@@ -1,5 +1,9 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+import { DocPageHeader } from "@/components/doc-page-header";
+import { CodeBlock } from "@/components/ui/code-block";
+import { Callout } from "@/components/ui/callout";
 import {
   Table,
   TableBody,
@@ -8,398 +12,171 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Callout } from "@/components/ui/callout";
-import { DocPageHeader } from "@/components/doc-page-header";
-import { Plus, Trash2, Move, RotateCcw, GitCommit, Archive } from "lucide-react";
-import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
-  title: "File Commands",
-  description: "Commands for adding, removing, staging, and managing files in Dits repositories",
+  title: "Local File Commands",
+  description:
+    "Current add, restore, commit, stash, clean, and archive syntax for local Dits repositories.",
 };
 
 const commands = [
-  {
-    command: "add",
-    description: "Add files to staging area",
-    usage: "dits add <pathspec>...",
-  },
-  {
-    command: "rm",
-    description: "Remove files from tracking",
-    usage: "dits rm <file>...",
-  },
-  {
-    command: "mv",
-    description: "Move or rename files",
-    usage: "dits mv <source> <dest>",
-  },
-  {
-    command: "restore",
-    description: "Restore working tree files",
-    usage: "dits restore <pathspec>...",
-  },
-  {
-    command: "commit",
-    description: "Record changes to repository",
-    usage: "dits commit -m <message>",
-  },
-  {
-    command: "stash",
-    description: "Temporarily save changes",
-    usage: "dits stash [push | pop | list]",
-  },
+  { command: "add", behavior: "Stage one or more local files or directories", usage: "dits add <PATH>..." },
+  { command: "restore", behavior: "Restore or unstage selected local paths", usage: "dits restore <PATH>... [OPTIONS]" },
+  { command: "commit", behavior: "Create a local commit from the index", usage: "dits commit -m <MESSAGE>" },
+  { command: "stash", behavior: "Manage local working-tree stashes", usage: "dits stash [ACTION] [OPTIONS]" },
+  { command: "clean", behavior: "Preview or remove untracked working-tree paths", usage: "dits clean (-n | -f) [OPTIONS] [PATH]..." },
+  { command: "archive", behavior: "Archive paths selected by a local ref using available worktree bytes", usage: "dits archive [TREE_ISH] [OPTIONS]" },
 ];
 
 export default function FileCommandsPage() {
   return (
-    <div className="prose dark:prose-invert max-w-none">
+    <div className="prose max-w-none dark:prose-invert">
       <DocPageHeader
         eyebrow="CLI Reference"
-        title="File Commands"
-        description="Commands for adding, removing, and managing files in your Dits repository."
+        title="Local File Commands"
+        description="Stage, restore, commit, temporarily set aside, clean, and archive local repository content."
       />
+
+      <Callout type="warning" title="No dits rm or dits mv" className="not-prose my-6">
+        The current parser does not provide <code>dits rm</code> or
+        <code> dits mv</code>. Do not rely on examples written for those
+        nonexistent commands. Check <code>dits status</code> after filesystem
+        changes and keep an independent backup while evaluating deletion and
+        rename workflows.
+      </Callout>
 
       <Table className="not-prose my-6">
         <TableHeader>
           <TableRow>
             <TableHead>Command</TableHead>
-            <TableHead>Description</TableHead>
+            <TableHead>Current behavior</TableHead>
             <TableHead>Usage</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {commands.map((cmd) => (
-            <TableRow key={cmd.command}>
-              <TableCell className="font-mono font-medium">{cmd.command}</TableCell>
-              <TableCell>{cmd.description}</TableCell>
-              <TableCell className="font-mono text-sm">{cmd.usage}</TableCell>
+          {commands.map((item) => (
+            <TableRow key={item.command}>
+              <TableCell className="font-mono font-medium">{item.command}</TableCell>
+              <TableCell>{item.behavior}</TableCell>
+              <TableCell className="font-mono text-sm">{item.usage}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
 
-      <h2 className="flex items-center gap-2">
-        <Plus className="h-5 w-5" />
-        dits add
-      </h2>
+      <h2><code>dits add</code></h2>
+
       <p>
-        Add file contents to the staging area. This chunks the files using
-        content-defined chunking and prepares them for the next commit. For video
-        files, Dits uses format-aware chunking that aligns to keyframes for
-        optimal deduplication.
+        Stages each supplied file or directory for the next commit. The command
+        has no current flags: options such as <code>--all</code>,
+        <code> --dry-run</code>, <code>--patch</code>, and <code>--force</code>
+        are not accepted.
       </p>
 
-      <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits add [options] &lt;pathspec&gt;...`}
+        code={`dits add notes.txt
+dits add footage/ graphics/
+dits add .
+dits status`}
       />
 
-      <h3>Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`--all, -A        Add all changes (new, modified, deleted)
---update, -u     Update tracked files only (no new files)
---force, -f      Allow adding ignored files
---dry-run, -n    Show what would be added
---interactive    Interactive staging mode
---patch, -p      Interactively select portions to add
---verbose, -v    Be verbose about added files`}
-      />
+      <h2><code>dits restore</code></h2>
 
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Add specific file
-$ dits add footage/scene1.mov
-Chunking footage/scene1.mov... 10,234 chunks (10.2 GB)
-
-# Add all files in directory
-$ dits add footage/
-Chunking 5 files... done
-  footage/scene1.mov    10,234 chunks
-  footage/scene2.mov     8,456 chunks
-  footage/scene3.mov    12,789 chunks
-  footage/b-roll-1.mov   3,456 chunks
-  footage/b-roll-2.mov   2,345 chunks
-Total: 37,280 chunks (36.5 GB)
-
-# Add all changes
-$ dits add -A
-
-# See what would be added
-$ dits add --dry-run footage/
-Would add 'footage/scene1.mov'
-Would add 'footage/scene2.mov'
-
-# Add with verbose output
-$ dits add -v project.prproj
-add 'project.prproj' (1,234 chunks, 1.2 MB)`}
-      />
-
-      <Callout type="note" title="Chunking Progress" className="not-prose my-6">
-        Large files show chunking progress with deduplication stats. If chunks
-        already exist from similar files, they&apos;re reused automatically.
-      </Callout>
-
-      <h2 className="flex items-center gap-2">
-        <Trash2 className="h-5 w-5" />
-        dits rm
-      </h2>
       <p>
-        Remove files from the working tree and staging area. The chunks remain
-        in the object store until garbage collection, preserving history.
+        Restores required paths from the default source or a commit selected with
+        <code> --source</code>. Use <code>--staged</code> to unstage and
+        <code> --worktree</code> to select the working tree explicitly. The
+        parser also accepts <code>--ours</code> and <code>--theirs</code>, but
+        merge-conflict restoration is not complete in this alpha.
       </p>
 
-      <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits rm [options] &lt;file&gt;...`}
+        code={`dits restore notes.txt
+dits restore --source <commit-id> footage/scene.mov
+dits restore --staged notes.txt
+dits restore --worktree notes.txt`}
       />
 
-      <h3>Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`--cached         Only remove from staging, keep in working dir
---force, -f      Override up-to-date check
---recursive, -r  Remove directories recursively
---dry-run, -n    Show what would be removed`}
-      />
+      <h2><code>dits commit</code></h2>
 
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Remove a file
-$ dits rm footage/unused-take.mov
-rm 'footage/unused-take.mov'
-
-# Remove from tracking but keep file
-$ dits rm --cached renders/output.mp4
-Stopped tracking 'renders/output.mp4'
-(file still exists in working directory)
-
-# Remove directory
-$ dits rm -r old-footage/
-rm 'old-footage/scene1.mov'
-rm 'old-footage/scene2.mov'
-
-# Preview removal
-$ dits rm --dry-run footage/test-*.mov
-Would remove 'footage/test-1.mov'
-Would remove 'footage/test-2.mov'`}
-      />
-
-      <h2 className="flex items-center gap-2">
-        <Move className="h-5 w-5" />
-        dits mv
-      </h2>
       <p>
-        Move or rename a file, directory, or symlink. Since Dits uses content-
-        addressing, renames are instant regardless of file size.
+        Creates a local commit from staged state. A message is required.
       </p>
 
-      <h3>Synopsis</h3>
-      <CodeBlock
-        language="bash"
-        code={`dits mv [options] &lt;source&gt; &lt;destination&gt;`}
-      />
+      <CodeBlock language="bash" code={`dits commit --message "Add review assets"`} />
 
-      <h3>Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`--force, -f      Force rename even if target exists
---dry-run, -n    Show what would happen
---verbose, -v    Report renamed files`}
-      />
+      <h2><code>dits stash</code></h2>
 
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Rename a file
-$ dits mv footage/scene1.mov footage/scene1-final.mov
-Renamed 'footage/scene1.mov' -> 'footage/scene1-final.mov'
-
-# Move to different directory
-$ dits mv footage/scene1.mov archive/
-Moved 'footage/scene1.mov' -> 'archive/scene1.mov'
-
-# Rename directory
-$ dits mv raw-footage/ source-footage/
-Renamed 'raw-footage/' -> 'source-footage/'`}
-      />
-
-      <Callout type="note" title="Efficient Renames" className="not-prose my-6">
-        Since Dits uses content-addressing, renames are instant regardless of
-        file size - no data is copied, only metadata is updated.
-      </Callout>
-
-      <h2 className="flex items-center gap-2">
-        <RotateCcw className="h-5 w-5" />
-        dits restore
-      </h2>
       <p>
-        Restore working tree files from the index or a specific commit. This
-        reconstructs files from stored chunks, allowing you to discard changes
-        or retrieve previous versions.
+        Supported actions are <code>push</code>, <code>pop</code>,
+        <code> apply</code>, <code>list</code>, <code>drop</code>,
+        <code> clear</code>, and <code>show</code>. Use <code>--message</code>
+        with <code>push</code> and <code>--index</code> to choose a stash for an
+        action that accepts one.
       </p>
 
-      <h3>Synopsis</h3>
       <CodeBlock
         language="bash"
-        code={`dits restore [options] &lt;pathspec&gt;...`}
-      />
-
-      <h3>Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`--source, -s     Restore from specified commit
---staged, -S     Restore staged changes (unstage)
---worktree, -W   Restore working tree (discard changes)
---ours           Use our version (during merge)
---theirs         Use their version (during merge)`}
-      />
-
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Discard changes to a file
-$ dits restore footage/scene1.mov
-Restored 'footage/scene1.mov'
-
-# Unstage a file (keep changes)
-$ dits restore --staged footage/scene1.mov
-Unstaged 'footage/scene1.mov'
-
-# Restore from a specific commit
-$ dits restore -s HEAD~2 footage/scene1.mov
-Restored 'footage/scene1.mov' from a1b2c3d
-
-# Restore entire directory
-$ dits restore footage/
-Restored 5 files
-
-# Discard all changes
-$ dits restore .`}
-      />
-
-      <h2 className="flex items-center gap-2">
-        <GitCommit className="h-5 w-5" />
-        dits commit
-      </h2>
-      <p>
-        Record changes to the repository by creating a new commit object. Commits
-        contain a tree hash pointing to the complete state, parent commit(s),
-        author/committer information, and a message.
-      </p>
-
-      <h3>Synopsis</h3>
-      <CodeBlock
-        language="bash"
-        code={`dits commit [options]`}
-      />
-
-      <h3>Options</h3>
-      <CodeBlock
-        language="bash"
-        code={`--message, -m    Commit message
---all, -a        Automatically stage modified files
---amend          Amend the previous commit
---no-edit        Use previous commit's message (with --amend)
---author         Override author
---date           Override date
---allow-empty    Allow empty commit
---dry-run        Show what would be committed`}
-      />
-
-      <h3>Examples</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Basic commit
-$ dits commit -m "Add scene 1 color grading"
-[main a1b2c3d] Add scene 1 color grading
- 1 file changed, 10.2 GB modified
-
-# Commit with detailed message
-$ dits commit -m "Add scene 1 color grading
-
-- Applied Kodak 2383 LUT
-- Adjusted shadows +10
-- Fixed skin tones in shots 5-8"
-
-# Stage and commit all changes
-$ dits commit -a -m "Update all footage"
-
-# Amend last commit
-$ dits commit --amend -m "Better commit message"
-
-# See what would be committed
-$ dits commit --dry-run
-Changes to be committed:
-  modified: footage/scene1.mov
-  new file: footage/scene4.mov`}
-      />
-
-      <h2 className="flex items-center gap-2">
-        <Archive className="h-5 w-5" />
-        dits stash
-      </h2>
-      <p>
-        Temporarily save changes without committing. Useful when you need to
-        switch branches but have uncommitted work. Stashed changes are stored
-        efficiently using the same chunk deduplication as commits.
-      </p>
-
-      <h3>Synopsis</h3>
-      <CodeBlock
-        language="bash"
-        code={`dits stash [push [-m <message>]]
+        code={`dits stash push --message "Before alternate cut"
 dits stash list
-dits stash show [stash]
-dits stash pop [stash]
-dits stash drop [stash]`}
+dits stash show --index 0
+dits stash apply --index 0
+dits stash drop --index 0`}
       />
 
-      <h3>Examples</h3>
+      <h2><code>dits clean</code></h2>
+
+      <p>
+        Operates on untracked working-tree paths, not historical repository
+        objects. Preview mode or force is required. <code>-d</code> includes
+        directories, <code>-x</code> includes ignored files, <code>-X</code>
+        selects only ignored files, and <code>--exclude</code> preserves matching
+        paths.
+      </p>
+
       <CodeBlock
         language="bash"
-        code={`# Stash current changes
-$ dits stash
-Saved working directory state WIP on main: a1b2c3d Add scene 1
+        code={`# Always preview the exact scope first
+dits clean --dry-run
+dits clean --dry-run -d renders/
 
-# Stash with message
-$ dits stash push -m "WIP: color grading experiment"
-Saved working directory state: WIP: color grading experiment
-
-# List stashes
-$ dits stash list
-stash@{0}: WIP: color grading experiment
-stash@{1}: WIP on main: a1b2c3d Add scene 1
-
-# Apply and remove stash
-$ dits stash pop
-Restored 'footage/scene1.mov'
-Dropped stash@{0}
-
-# Apply without removing
-$ dits stash apply stash@{1}
-
-# Remove a stash
-$ dits stash drop stash@{0}`}
+# Destructive: removes the previewed untracked paths from the working tree
+dits clean --force -d renders/`}
       />
 
-      <h2>Related Commands</h2>
-      <ul>
-        <li>
-          <Link href="/docs/cli/history">History Commands</Link> - View and navigate history
-        </li>
-        <li>
-          <Link href="/docs/concepts/commits">Commits & History</Link> - Understanding commits
-        </li>
-        <li>
-          <Link href="/docs/cli-reference">CLI Reference</Link> - All commands
-        </li>
-      </ul>
+      <Callout type="important" title="Clean is destructive" className="not-prose my-6">
+        <code>clean --force</code> deletes untracked working-tree data. Confirm
+        the dry-run output and backup anything you may need before using it.
+        This is separate from <code>dits gc --dry-run</code>, which only reports
+        unreachable repository-object candidates and never deletes them.
+      </Callout>
+
+      <h2><code>dits archive</code></h2>
+
+      <p>
+        Creates <code>tar</code>, <code>tar.gz</code>, or <code>zip</code> output.
+        A resolvable local commit, branch, or tag selects the manifest paths, but
+        the current implementation reads available bytes from the working tree
+        and skips selected paths that are absent there. Verify the archive; do
+        not treat it as a guaranteed byte-exact historical export. Use
+        <code> --prefix</code> to place members below a directory,
+        <code> --output</code> to select the file, and trailing paths to limit
+        the selection.
+      </p>
+
+      <CodeBlock
+        language="bash"
+        code={`dits archive HEAD --format tar.gz --output review.tar.gz
+dits archive main --format zip --output footage.zip -- footage/`}
+      />
+
+      <p>
+        Use <code>dits &lt;command&gt; --help</code> for exact parser syntax and see
+        <Link href="/docs/cli/maintenance"> maintenance commands</Link> for
+        integrity and storage inspection.
+      </p>
     </div>
   );
 }

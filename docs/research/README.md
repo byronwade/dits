@@ -1,5 +1,10 @@
 # Research
 
+**Maturity:** Design
+
+Research index. Linked proposals do not become Current without implementation, tests, and
+status promotion.
+
 Documents in this directory are **Design** or **Research** unless explicitly
 promoted through an ADR and implemented in the canonical workspace.
 

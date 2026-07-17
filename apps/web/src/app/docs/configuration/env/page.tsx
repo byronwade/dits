@@ -14,102 +14,17 @@ import { CodeBlock } from "@/components/ui/code-block";
 
 export const metadata: Metadata = {
   title: "Environment Variables",
-  description: "Configure Dits behavior using environment variables",
+  description: "Environment variables actually read or supplied by the Dits alpha",
 };
 
-const envVars = [
+const identityLookups = [
   {
-    var: "DITS_DIR",
-    description: "Override .dits directory location",
-    example: "/path/to/.dits",
+    value: "Commit author name",
+    order: "DITS_AUTHOR_NAME → GIT_AUTHOR_NAME → USER → Unknown",
   },
   {
-    var: "DITS_WORK_TREE",
-    description: "Override working tree location",
-    example: "/path/to/worktree",
-  },
-  {
-    var: "DITS_CACHE_DIR",
-    description: "Override cache directory",
-    example: "/path/to/cache",
-  },
-  {
-    var: "DITS_CONFIG_GLOBAL",
-    description: "Override global config file path",
-    example: "~/.config/dits/config",
-  },
-  {
-    var: "DITS_CONFIG_SYSTEM",
-    description: "Override system config file path",
-    example: "/etc/ditsconfig",
-  },
-  {
-    var: "DITS_EDITOR",
-    description: "Override editor for messages",
-    example: "vim",
-  },
-  {
-    var: "DITS_PAGER",
-    description: "Override pager for output",
-    example: "less -R",
-  },
-  {
-    var: "DITS_SSH_COMMAND",
-    description: "Custom SSH command",
-    example: "ssh -i ~/.ssh/custom_key",
-  },
-  {
-    var: "DITS_AUTHOR_NAME",
-    description: "Override author name",
-    example: "Script Bot",
-  },
-  {
-    var: "DITS_AUTHOR_EMAIL",
-    description: "Override author email",
-    example: "bot@example.com",
-  },
-  {
-    var: "DITS_AUTHOR_DATE",
-    description: "Override author date",
-    example: "2024-01-15T10:30:00",
-  },
-  {
-    var: "DITS_COMMITTER_NAME",
-    description: "Override committer name",
-    example: "CI Server",
-  },
-  {
-    var: "DITS_COMMITTER_EMAIL",
-    description: "Override committer email",
-    example: "ci@example.com",
-  },
-  {
-    var: "DITS_COMMITTER_DATE",
-    description: "Override committer date",
-    example: "2024-01-15T10:30:00",
-  },
-];
-
-const debugVars = [
-  {
-    var: "DITS_TRACE",
-    description: "Enable trace logging",
-    values: "0, 1, 2 (verbosity level)",
-  },
-  {
-    var: "DITS_TRACE_PACKET",
-    description: "Trace network packets",
-    values: "0 or 1",
-  },
-  {
-    var: "DITS_TRACE_PERFORMANCE",
-    description: "Trace performance metrics",
-    values: "0 or 1",
-  },
-  {
-    var: "DITS_CURL_VERBOSE",
-    description: "Verbose HTTP output",
-    values: "0 or 1",
+    value: "Commit author email",
+    order: "DITS_AUTHOR_EMAIL → GIT_AUTHOR_EMAIL → <name>@localhost",
   },
 ];
 
@@ -119,267 +34,99 @@ export default function EnvVarsPage() {
       <DocPageHeader
         eyebrow="Configuration"
         title="Environment Variables"
-        description="Environment variables provide a way to configure Dits without modifying configuration files, useful for scripts and CI/CD pipelines."
+        description="The current CLI reads author identity variables; it does not implement general environment-based configuration overrides."
       />
 
-      <Callout type="note" title="Priority Order" className="not-prose my-6">
-        Environment variables override configuration file settings. The full
-        priority order is: Environment → Repository → Global → System → Defaults
+      <Callout type="important" title="No environment config layer" className="not-prose my-6">
+        Environment variables do not override arbitrary TOML keys. Directory, cache,
+        editor, pager, trace, token, and server variables documented in older drafts are
+        not read by the current CLI.
       </Callout>
 
-      <h2>Core Environment Variables</h2>
+      <h2>Commit identity</h2>
       <Table className="not-prose my-6">
         <TableHeader>
           <TableRow>
-            <TableHead>Variable</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Example</TableHead>
+            <TableHead>Value</TableHead>
+            <TableHead>Lookup order</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {envVars.map((env) => (
-            <TableRow key={env.var}>
-              <TableCell className="font-mono text-sm">{env.var}</TableCell>
-              <TableCell>{env.description}</TableCell>
-              <TableCell className="font-mono text-sm">{env.example}</TableCell>
+          {identityLookups.map((item) => (
+            <TableRow key={item.value}>
+              <TableCell>{item.value}</TableCell>
+              <TableCell className="font-mono text-sm">{item.order}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-
-      <h2>Repository Location Variables</h2>
-
-      <h3>DITS_DIR</h3>
-      <p>
-        Override the location of the <code>.dits</code> directory:
-      </p>
       <CodeBlock
         language="bash"
-        code={`# Use a different .dits location
-$ DITS_DIR=/custom/path/.dits dits status
+        code={`export DITS_AUTHOR_NAME="CI Bot"
+export DITS_AUTHOR_EMAIL="ci@example.com"
 
-# Useful for working with multiple repositories
-$ DITS_DIR=/repo1/.dits dits log
-$ DITS_DIR=/repo2/.dits dits log`}
+dits add output.mov
+dits commit -m "Record generated output"`}
       />
-
-      <h3>DITS_WORK_TREE</h3>
       <p>
-        Set the working tree location independently from the repository:
-      </p>
-      <CodeBlock
-        language="bash"
-        code={`# Work tree in different location
-$ DITS_DIR=/repo/.dits DITS_WORK_TREE=/worktree dits status
-
-# Useful for bare repositories with worktrees
-$ export DITS_DIR=/srv/repo.dits
-$ export DITS_WORK_TREE=/var/www/site
-$ dits pull`}
-      />
-
-      <h3>DITS_CACHE_DIR</h3>
-      <p>
-        Override where Dits stores cached chunks:
-      </p>
-      <CodeBlock
-        language="bash"
-        code={`# Use faster storage for cache
-$ export DITS_CACHE_DIR=/ssd/dits-cache
-
-# Shared cache for CI runners
-$ export DITS_CACHE_DIR=/shared/cache/dits`}
-      />
-
-      <h2>Author/Committer Override</h2>
-      <p>
-        Override the author and committer information for commits:
+        <code>DITS_AUTHOR_DATE</code> and <code>DITS_COMMITTER_*</code> are not read. A
+        commit currently uses the same resolved identity for author and committer and
+        records the current time.
       </p>
 
-      <CodeBlock
-        language="bash"
-        code={`# In a CI pipeline, commit as the CI system
-$ export DITS_AUTHOR_NAME="CI Bot"
-$ export DITS_AUTHOR_EMAIL="ci@example.com"
-$ export DITS_COMMITTER_NAME="CI Bot"
-$ export DITS_COMMITTER_EMAIL="ci@example.com"
-$ dits commit -m "Automated commit"
+      <h2>Lock owner lookup</h2>
+      <p>
+        Advisory lock commands first ask Git for <code>user.email</code>, then fall back
+        to <code>USER</code> or <code>USERNAME</code>. This lookup is separate from Dits
+        TOML configuration.
+      </p>
 
-# Backdate a commit (for importing history)
-$ DITS_AUTHOR_DATE="2023-06-15T14:30:00" dits commit -m "Import"`}
-      />
-
-      <h2>Editor and Pager</h2>
-      <CodeBlock
-        language="bash"
-        code={`# Use a specific editor for this session
-$ DITS_EDITOR="nano" dits commit
-
-# Disable pager
-$ DITS_PAGER="" dits log
-
-# Use a custom pager
-$ DITS_PAGER="less -FRSX" dits diff`}
-      />
-
-      <h2>SSH Configuration</h2>
-      <CodeBlock
-        language="bash"
-        code={`# Use a specific SSH key
-$ DITS_SSH_COMMAND="ssh -i ~/.ssh/deploy_key" dits clone git@example.com:repo
-
-# Use SSH with custom options
-$ export DITS_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"
-$ dits push`}
-      />
-
-      <h2>Debug and Trace Variables</h2>
+      <h2>Hook context supplied by Dits</h2>
+      <p>When Dits starts a hook process, it supplies:</p>
       <Table className="not-prose my-6">
         <TableHeader>
           <TableRow>
             <TableHead>Variable</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Values</TableHead>
+            <TableHead>Meaning</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {debugVars.map((env) => (
-            <TableRow key={env.var}>
-              <TableCell className="font-mono text-sm">{env.var}</TableCell>
-              <TableCell>{env.description}</TableCell>
-              <TableCell className="font-mono text-sm">{env.values}</TableCell>
-            </TableRow>
-          ))}
+          <TableRow>
+            <TableCell className="font-mono">DITS_DIR</TableCell>
+            <TableCell>The current repository&apos;s .dits directory</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell className="font-mono">DITS_HOOK</TableCell>
+            <TableCell>The hook filename being executed</TableCell>
+          </TableRow>
         </TableBody>
       </Table>
-
-      <h3>Debugging Commands</h3>
-      <CodeBlock
-        language="bash"
-        code={`# Enable trace logging
-$ DITS_TRACE=1 dits fetch
-trace: fetch origin
-trace: connecting to example.com
-trace: negotiating pack...
-
-# More verbose tracing
-$ DITS_TRACE=2 dits push
-
-# Trace network packets
-$ DITS_TRACE_PACKET=1 dits clone https://example.com/repo
-
-# Performance tracing
-$ DITS_TRACE_PERFORMANCE=1 dits add large-file.mov
-performance: chunking: 2.345s
-performance: hashing: 0.567s
-performance: staging: 0.123s`}
-      />
-
-      <h2>CI/CD Examples</h2>
-
-      <h3>GitHub Actions</h3>
-      <CodeBlock
-        language="bash"
-        code={`# .github/workflows/deploy.yml
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    env:
-      DITS_AUTHOR_NAME: "GitHub Actions"
-      DITS_AUTHOR_EMAIL: "actions@github.com"
-      DITS_CACHE_DIR: /tmp/dits-cache
-    steps:
-      - uses: actions/checkout@v4
-      - name: Configure Dits
-        run: |
-          dits config user.name "$DITS_AUTHOR_NAME"
-          dits config user.email "$DITS_AUTHOR_EMAIL"
-      - name: Deploy
-        run: |
-          dits add .
-          dits commit -m "Deploy from CI"
-          dits push`}
-      />
-
-      <h3>GitLab CI</h3>
-      <CodeBlock
-        language="bash"
-        code={`# .gitlab-ci.yml
-variables:
-  DITS_AUTHOR_NAME: "GitLab CI"
-  DITS_AUTHOR_EMAIL: "ci@gitlab.com"
-  DITS_SSH_COMMAND: "ssh -o StrictHostKeyChecking=no"
-
-deploy:
-  script:
-    - dits push`}
-      />
-
-      <h3>Jenkins</h3>
-      <CodeBlock
-        language="bash"
-        code={`// Jenkinsfile
-pipeline {
-    environment {
-        DITS_AUTHOR_NAME = 'Jenkins'
-        DITS_AUTHOR_EMAIL = 'jenkins@example.com'
-    }
-    stages {
-        stage('Build') {
-            steps {
-                sh 'dits pull'
-                sh 'make build'
-            }
-        }
-    }
-}`}
-      />
-
-      <h2>Shell Configuration</h2>
       <p>
-        Add environment variables to your shell profile:
+        These are output context for hook subprocesses. Setting <code>DITS_DIR</code>
+        before invoking Dits does not redirect repository discovery.
       </p>
 
-      <CodeBlock
-        language="bash"
-        code={`# ~/.bashrc or ~/.zshrc
+      <h2>Not implemented</h2>
+      <p>
+        The current alpha does not read <code>DITS_WORK_TREE</code>,{" "}
+        <code>DITS_CACHE_DIR</code>, <code>DITS_CONFIG_GLOBAL</code>,{" "}
+        <code>DITS_CONFIG_SYSTEM</code>, <code>DITS_EDITOR</code>,{" "}
+        <code>DITS_PAGER</code>, <code>DITS_SSH_COMMAND</code>,{" "}
+        <code>DITS_TRACE*</code>, <code>DITS_DEBUG</code>, <code>DITS_TOKEN</code>, or{" "}
+        <code>DITS_SERVER</code>. Support for those names is design work unless and until
+        it is implemented and tested.
+      </p>
 
-# Dits configuration
-export DITS_EDITOR="code --wait"
-export DITS_PAGER="less -R"
-
-# Shared cache
-export DITS_CACHE_DIR="$HOME/.cache/dits"
-
-# Debug mode (uncomment when needed)
-# export DITS_TRACE=1`}
-      />
-
-      <h2>Checking Active Configuration</h2>
-      <CodeBlock
-        language="bash"
-        code={`# See effective configuration including env vars
-$ dits config --show-origin --list
-
-# Check specific value source
-$ dits config --show-origin user.email
-file:~/.ditsconfig    user.email=jane@example.com
-
-# With environment override
-$ DITS_AUTHOR_EMAIL="override@example.com" dits config --show-origin user.email
-command line: user.email=override@example.com`}
-      />
-
-      <h2>Related Topics</h2>
+      <h2>Related topics</h2>
       <ul>
         <li>
-          <Link href="/docs/configuration/global">Global Configuration</Link>
+          <Link href="/docs/configuration">Configuration overview</Link>
         </li>
         <li>
-          <Link href="/docs/configuration/repository">Repository Configuration</Link>
+          <Link href="/docs/configuration/global">Global configuration</Link>
         </li>
         <li>
-          <Link href="/docs/configuration">Configuration Overview</Link>
+          <Link href="/docs/configuration/repository">Repository configuration</Link>
         </li>
       </ul>
     </div>

@@ -20,11 +20,11 @@ const glossaryTerms = [
     },
     {
         term: "Chunk",
-        definition: "A portion of a file created by the chunking algorithm. Dits stores files as collections of chunks, enabling efficient storage and transfer.",
+        definition: "A portion of file content created by the chunking algorithm and stored locally by its BLAKE3 identifier.",
     },
     {
         term: "Clone",
-        definition: "Creating a complete copy of a repository, including all history and branches.",
+        definition: "Creating a repository copy. Dits currently supports clone from another local filesystem path only; network clone fails.",
     },
     {
         term: "Commit",
@@ -48,11 +48,11 @@ const glossaryTerms = [
     },
     {
         term: "Fetch",
-        definition: "Downloading commits and objects from a remote repository without merging them into your local branches.",
+        definition: "A roadmap remote operation. The current command returns a nonzero error without changing objects, refs, or the working tree.",
     },
     {
         term: "FUSE",
-        definition: "Filesystem in Userspace. A technology that allows Dits to mount repositories as virtual filesystems without kernel modifications.",
+        definition: "Filesystem in Userspace. Dits has an experimental, local-only mount path behind the optional fuser Cargo feature.",
     },
     {
         term: "HEAD",
@@ -60,15 +60,15 @@ const glossaryTerms = [
     },
     {
         term: "Hash",
-        definition: "A fixed-size string computed from content using a cryptographic function (SHA-256). Used to uniquely identify chunks and commits.",
+        definition: "A fixed-size identifier computed from content. Dits uses BLAKE3 for its content-addressed objects and chunks.",
     },
     {
         term: "Hook",
-        definition: "A script that runs automatically at specific points in the Dits workflow, like before a commit or after a push.",
+        definition: "A local script associated with a supported Dits workflow event, such as a commit step.",
     },
     {
         term: "Hydration",
-        definition: "The process of downloading actual file content when accessing a file in a sparsely-cloned or mounted repository.",
+        definition: "Materializing file bytes from objects already available to a local repository. Remote on-demand hydration is not implemented.",
     },
     {
         term: "Index",
@@ -76,7 +76,7 @@ const glossaryTerms = [
     },
     {
         term: "Lock",
-        definition: "A mechanism to prevent others from editing a file while you're working on it. Essential for binary files that can't be merged.",
+        definition: "A local advisory record of editing intent. Current locks are not synchronized, remote leases, authorization, or enforcement against other tools.",
     },
     {
         term: "Merge",
@@ -84,15 +84,15 @@ const glossaryTerms = [
     },
     {
         term: "Mount",
-        definition: "Making a repository's contents accessible as a virtual filesystem. Files appear as regular files but are fetched on-demand.",
+        definition: "An experimental local FUSE view, available only in source builds that enable the fuser feature. It does not fetch from a remote.",
     },
     {
         term: "Origin",
-        definition: "The default name for the main remote repository, typically where you cloned from.",
+        definition: "A conventional remote configuration name. Local clone records its source path as origin, but remote transfer remains disabled.",
     },
     {
         term: "P2P (Peer-to-Peer)",
-        definition: "Planned direct synchronization between machines without a central server. P2P in Dits is currently scaffolding (it prints placeholders and transfers no data) — see the roadmap.",
+        definition: "Planned direct repository exchange between peers. Current P2P code is nonfunctional scaffolding and transfers no repository data.",
     },
     {
         term: "Proxy File",
@@ -100,11 +100,11 @@ const glossaryTerms = [
     },
     {
         term: "Pull",
-        definition: "Fetching changes from a remote repository and merging them into your current branch. Equivalent to fetch + merge.",
+        definition: "A roadmap remote operation. The current command returns a nonzero error without changing objects, refs, or the working tree.",
     },
     {
         term: "Push",
-        definition: "Uploading your local commits to a remote repository.",
+        definition: "A roadmap remote operation. The current command returns a nonzero error and uploads no repository data.",
     },
     {
         term: "Rebase",
@@ -116,19 +116,19 @@ const glossaryTerms = [
     },
     {
         term: "Remote",
-        definition: "A repository hosted elsewhere (server, cloud, or another machine) that you sync with.",
+        definition: "A named URL stored in local configuration. Saving one does not enable repository exchange in the current alpha.",
     },
     {
         term: "Repository (Repo)",
         definition: "A directory containing your project files and the complete history of changes, stored in the .dits directory.",
     },
     {
-        term: "SHA-256",
-        definition: "The cryptographic hash function used by Dits to generate content identifiers. Produces a 256-bit (64 character) hash.",
+        term: "BLAKE3",
+        definition: "The cryptographic hash function Dits uses for current content identifiers. A digest detects changed bytes but is not an author signature.",
     },
     {
         term: "Sparse Checkout",
-        definition: "Cloning a repository without downloading all file contents. Only metadata is fetched; files are hydrated on-demand.",
+        definition: "Selecting local paths for the working tree. It is not network partial clone or remote on-demand hydration.",
     },
     {
         term: "Stage",
@@ -140,7 +140,7 @@ const glossaryTerms = [
     },
     {
         term: "Storage Tier",
-        definition: "Different storage backends with varying performance and cost characteristics (hot, warm, cold, archive).",
+        definition: "A lifecycle label used by local freeze/thaw experiments. Automatic cloud-tier movement is not a current capability.",
     },
     {
         term: "Tag",
@@ -152,11 +152,11 @@ const glossaryTerms = [
     },
     {
         term: "VFS (Virtual Filesystem)",
-        definition: "The feature that allows mounting Dits repositories as regular filesystems for seamless access.",
+        definition: "The experimental local FUSE mount path. It is feature-gated and does not provide remote hydration.",
     },
     {
         term: "Wire Protocol",
-        definition: "The communication protocol used between Dits clients and servers for efficient data transfer.",
+        definition: "A future repository-exchange contract. No complete Dits client/server wire protocol is implemented today.",
     },
     {
         term: "Working Directory",

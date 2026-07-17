@@ -1,75 +1,187 @@
-# Dits — Authoritative Implementation Status
+# Dits Implementation Status
 
-*Single source of truth for what the code actually does. Generated from `dits --help` and
-verified against `apps/cli/src`. Every other doc must match this file. Last verified: 2026-06-12.*
+**Maturity:** Current
 
-## Canonical product
+**Product version:** 0.1.5
 
-The product is the **local-first CLI at `apps/cli`** (binary `dits`, **469 passing tests**
-across the workspace; version **0.1.5**, published on npm as `@byronwade/dits`).
-A former backend crate workspace (`dits-api`, `dits-worker`, `dits-db`, `dits-storage`,
-`dits-protocol`, `dits-sdk`, `dits-core`, `dits-chunker`, `dits-cache`, `dits-signal`) was
-**quarantined to `legacy/backend-crates`** and is **not current architecture**. Do not
-document those crates as live.
+**Last repository review:** 2026-07-16
 
-## What works today (local)
+This file is the authority for public capability claims. Command-level truth is
+checked against `dits --help` by `scripts/check-cli-docs.sh`. A design, test,
+scaffold, or demo does not make a feature Current.
 
-- **Core VCS:** `init`, `add`, `status`, `commit`, `log`, `checkout`, `branch`, `switch`,
-  `diff`, `tag`, `merge`, `show`, `reflog`, `bisect`, `rebase`, `cherry-pick`, `reset`,
-  `restore`*, `config`, `stash`, `grep`, `blame`, `describe`, `shortlog`, `worktree`,
-  `sparse-checkout`, `hooks`, `archive`, `maintenance`, `completions`, `clean`, `gc`*, `fsck`.
-- **Media / MP4:** `inspect`, `roundtrip`, `segment`, `assemble`, `proxy-generate`,
-  `proxy-status`, `proxy-list`, `proxy-delete`, `video-init`, `video-add-clip`, `video-show`,
-  `video-list`, `meta-scan`, `meta-show`, `meta-list`.
-- **FACR frame engine (real, requires FFmpeg):** `facr-add`, `facr-checkout`, `facr-trim`,
-  `facr-demo` (video); `photo-add`, `photo-edit`, `photo-render` (photos).
-- **Introspection:** `inspect-file`, `repo-stats`, `cache-stats`.
-- **Locking & security (local):** `lock`, `unlock`, `locks`, `encrypt-init`, `encrypt-status`,
-  `login`, `logout`, `change-password`, `audit`, `audit-stats`, `audit-export`.
-- **Lifecycle:** `freeze-init`, `freeze-status`, `freeze`, `thaw`, `freeze-policy`.
-- **Dependency graph:** `dep-check`, `dep-graph`, `dep-list`.
+## Canonical product boundary
 
-\* `restore` does not yet do full merge-conflict resolution; `gc` does not yet repack.
+The root Cargo workspace builds:
 
-## Roadmap — NOT implemented (do not document as working)
+```text
+packages/dits-core   shared deterministic chunking/hashing engine
+apps/cli             `dits` library and command-line binary
+```
 
-- **Networked sync (Phase 4b):** `push`, `pull`, `fetch`, `sync` print placeholders and do
-  not transfer data over a network. `clone` only works against a **local filesystem path**,
-  not a network remote. `remote` manages config only.
-- **P2P (Wormhole):** `p2p` and all subcommands (share/connect/cache/ping/mount) are
-  scaffolding — no data transfer, no NAT traversal, no QUIC sync.
-- **Networked delta sync over QUIC:** the `push`/`pull` porcelain does **not** use QUIC and
-  transfers no data over a network. (See "Implemented but not wired in" — the QUIC delta
-  engine itself exists and is tested, just not connected to push/pull.)
-- **Hosted service / Ditshub / REST API / official SDKs / SaaS pricing:** do not exist. The
-  only server in-tree is the embedded per-repo object server (`serve`); there is no hosted
-  API, no published SDK packages (`@dits/sdk`, `dits-sdk`), and no managed cloud.
+`packages/dits-wasm` is a standalone wrapper used by the web playground. The
+former hosted/backend crate workspace is quarantined under
+`legacy/backend-crates`; it is Historical and does not define current object,
+repository, protocol, or product behavior.
 
-## Implemented, but feature-gated or not wired into the porcelain (don't omit these)
+## Current — local and offline
 
-- **`serve` (embedded remote server):** real axum/TCP server that serves object bytes from a
-  repo (`store/remote_server.rs`, wired at `main.rs`). It works; it is not "scaffolding only".
-- **QUIC delta engine:** `stream/quic_origin.rs` is a real, tested QUIC implementation
-  (`push_delta` sends only missing segments). It is exposed via `stream-demo` but is **not**
-  wired into the `push`/`pull` commands.
-- **FUSE/VFS mount (`dits mount` / `dits unmount`):** fully implemented (`vfs/fuse.rs`) but
-  **gated behind the `fuser` Cargo feature** — absent from a default build. Local-only;
-  remote/on-demand hydration is roadmap. There is **no `dits vfs` command**.
+### Repository and history
 
-## Documentation rules (apply everywhere)
+- Initialize, stage, inspect, commit, log, and check out local repositories.
+- Branch, switch, tag, diff, merge, show, reflog, bisect, rebase, cherry-pick,
+  reset, restore, stash, grep, blame, describe, shortlog, worktree, sparse
+  checkout, hooks, archive, maintenance, completions, clean, read-only GC
+  reporting, and fsck.
+- Hybrid storage routes supported text workflows through libgit2 and large
+  binary content through Dits manifests/chunks.
+- Fail-closed local filesystem clone, including validated Dits objects, refs,
+  local configuration, and the embedded Git object database needed to
+  materialize the source HEAD or an explicitly selected branch. Metadata
+  symlinks/special files and destinations inside the source are rejected before
+  destination creation; checkout failure returns nonzero and leaves the
+  incomplete destination available for inspection.
 
-1. Never present `push`/`pull`/`fetch`/`sync`/`clone`(network)/`p2p`/QUIC as working — label
-   them **roadmap / scaffolding**.
-2. Never describe the quarantined `dits-*` backend crates as current architecture. The
-   architecture is the modules under `apps/cli/src/` (`core`, `store`, `mp4`, `facr`,
-   `segment`, `proxy`, `vfs`, `security`, `metadata`, `dependency`, `lifecycle`, `p2p`,
-   `commands`).
-3. Document FACR/photo where media versioning is discussed.
-4. Tests: **469 passing** across the workspace (`cargo test --workspace`). The historical
-   "~123"/"120+" figures are stale undercounts — do not repeat them.
-5. Version is **0.1.5** everywhere (Cargo workspace, `@byronwade/dits` on npm, download page,
-   docs). Do not use `1.0.0`, `0.1.2`, `0.1.0`, or `0.1.4`.
-6. License is **Apache-2.0 OR MIT** (dual). Never describe it as MIT-only.
-7. Install that works: `npm install -g @byronwade/dits` (+ bun/pnpm) or build from source.
-   `cargo install dits`, Homebrew taps, and the SDK packages are **not published** — label
-   them planned, not working.
+Named limitations:
+
+- Local clone copies committed object/ref/config state, not local indexes,
+  working-tree changes, locks, audit records, generated proxy caches, metadata
+  caches, lifecycle records, or experimental project side stores.
+- Reflog recording is incomplete. When a reflog file is absent, `dits reflog`
+  labels and displays a limited view reconstructed from commit history; it is
+  not a complete undo log for every ref-changing action.
+- `restore` does not provide complete merge-conflict resolution.
+- Destructive GC is disabled. `dits gc --dry-run` reports candidate unreachable
+  objects; it does not delete objects or locks. Reachability and a quarantine
+  policy must be complete before deletion is enabled.
+- Public repository encoding and cross-version compatibility are not yet a
+  stable third-party contract.
+
+### Storage and integrity
+
+- FastCDC chunking and BLAKE3 content IDs.
+- Deduplication of byte-identical chunks.
+- Digest verification on object read and byte-exact reconstruction tests.
+- Read-only `fsck` verification of commit/manifest identity, ref targets,
+  manifest-referenced chunks, Git blobs and MP4 structural blobs, chunk layout,
+  and regular-entry aggregate size/content identity.
+- Repository, file, and cache inspection commands.
+- Local lifecycle (`freeze`/`thaw`), metadata, dependency, ignore, and audit
+  facilities.
+
+Named limitations:
+
+- Large-file ingest is not yet bounded by the target memory formula; the
+  current path can hold file-sized and copied buffers.
+- Loose object storage is not appropriate for very high object counts until
+  packfiles and indexes are implemented.
+- Exact format support is bounded by the current corpus; no universal
+  MP4/MOV/media support claim is valid.
+
+### Media
+
+- MP4/ISOBMFF inspection and selected parse/deconstruct/reconstruct workflows.
+- Local segmentation/assembly, proxy generation, clip tracking, and metadata
+  inspection.
+- Experimental FACR video and photo commands using FFmpeg, including trim and
+  selected EDL/OTIO demonstrations.
+
+FACR is Experimental. It does not replace imported masters, define a universal
+decoded-frame identity, or make external re-encodes byte-deduplicable.
+
+### Local security and locks
+
+- Local binary locks.
+- Local audit log inspection/export.
+
+The early repository-encryption experiment is disabled. `encrypt-init`,
+`login`, and `change-password` fail without changing a keystore;
+`encrypt-status` reports legacy state, and `logout` can clear a legacy key
+cache. A repository containing the experimental keystore fails closed before
+normal repository operations because the experiment did not encrypt the
+embedded Git store or every metadata path.
+
+Convergent/message-locked encryption leaks content equality and is not
+equivalent to randomized repository-key encryption. Remote authentication,
+multi-user authorization, remote lock leases, and hosted audit policy are not
+Current.
+
+## Experimental or feature-gated
+
+- FACR video/photo identity and rendition experiments.
+- `stream-demo`, including in-process QUIC delta-transfer demonstrations.
+- FUSE mount/unmount behind the optional `fuser` Cargo feature; local only.
+- Proxy, segmentation, and media-derivation experiments beyond their explicitly
+  tested fixtures.
+
+Experimental code must be described with its dependencies, fidelity contract,
+and safe fallback.
+
+## Design/scaffolding — not functional product
+
+- Local-path and Internet `push`, `pull`, `fetch`, and `sync`; these commands
+  return a nonzero error without changing objects, refs, or the working tree.
+- Network clone. Local filesystem clone is the only current repository-copy
+  workflow.
+- A complete remote CAS/ref protocol and remote lock coordination.
+- Remote VFS hydration and partial clone.
+- P2P rendezvous, NAT traversal, and peer repository transfer. Every parsed
+  `dits p2p` operation fails nonzero before creating or changing repository,
+  target-directory, cache, socket, or mount state.
+- Hosted DitsHub, REST APIs, webhooks, managed storage, and public SDK packages.
+- Multi-tenant/cross-customer deduplication.
+- Packfiles, multi-pack indexing, public bundle format, and independent readers.
+- Full semantic edit/rendition/provenance graph.
+
+The embedded per-repository HTTP object server and tested QUIC demo are real
+utilities, but they do not implement complete repository exchange or safe remote
+ref transactions.
+
+Security warning: `dits serve` binds to all network interfaces and has no
+authentication or authorization. It exposes repository refs and stored object bytes.
+Use it only on a trusted or isolated network behind a firewall; do not expose it to
+the public Internet.
+
+## Installation status
+
+Available:
+
+- `npm install -g @byronwade/dits` and equivalent bun/pnpm global install for
+  the binaries actually present in the artifact; published v0.1.5 contains
+  `darwin-arm64` and `win32-x64` only;
+- build from source.
+
+Not available:
+
+- `cargo install dits` from crates.io;
+- a published Homebrew tap;
+- a `curl | sh` installer;
+- an official Docker image or deployable server distribution;
+- official Go, Python, JavaScript, or Rust SDK packages.
+
+## Documentation rules
+
+1. State Current, Experimental, Design, or Historical near the top of a
+   capability document.
+2. Do not describe network transfer, P2P, remote locks, hosted APIs, SDKs, or
+   cloud tiers as usable today.
+3. Do not treat a demo transport as complete repository semantics.
+4. Do not treat perceptual similarity as exact identity.
+5. Distinguish measured, modeled, projected, and example figures.
+6. Link performance claims to raw machine-readable evidence and a commit.
+7. Keep originals, decoded identities, and encoded renditions distinct.
+8. Update implementation, tests, this file, the roadmap, and public website in
+   that order.
+
+## Verification commands
+
+```bash
+cargo test --locked --workspace
+bash scripts/check-cli-docs.sh
+npm --workspace apps/web run test:ci
+npm --workspace apps/web run build
+```
+
+The checked-in benchmark evidence is `benchmarks/latest.json`. CI test counts
+and benchmark values are observations for a specific commit, not timeless
+product properties.

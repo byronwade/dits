@@ -68,6 +68,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Verify tag matches the source version
+        shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            EXPECTED="$INPUT_VERSION"
+          else
+            EXPECTED="${GITHUB_REF_NAME#v}"
+          fi
+          SOURCE_VERSION=$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -1)
+          CLI_VERSION=$(sed -n 's/^version = "\([^"]*\)"/\1/p' apps/cli/Cargo.toml | head -1)
+          CORE_VERSION=$(sed -n 's/^version = "\([^"]*\)"/\1/p' packages/dits-core/Cargo.toml | head -1)
+          NPM_VERSION=$(node -p "require('./packages/npm/package.json').version")
+          NPM_LOCK_VERSION=$(node -p "require('./package-lock.json').packages['packages/npm'].version")
+          if [ "$SOURCE_VERSION" != "$EXPECTED" ] ||
+             [ "$CLI_VERSION" != "$EXPECTED" ] ||
+             [ "$CORE_VERSION" != "$EXPECTED" ] ||
+             [ "$NPM_VERSION" != "$EXPECTED" ] ||
+             [ "$NPM_LOCK_VERSION" != "$EXPECTED" ]; then
+            echo "Release version mismatch: tag/input=$EXPECTED workspace=$SOURCE_VERSION cli=$CLI_VERSION core=$CORE_VERSION npm=$NPM_VERSION package-lock=$NPM_LOCK_VERSION" >&2
+            echo "Update source versions and review docs/STATUS.md before publishing." >&2
+            exit 1
+          fi
+
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -84,7 +110,7 @@ jobs:
       - name: Build (cross)
         if: matrix.cross
         working-directory: apps/cli
-        run: cross build --release --target ${{ matrix.target }}
+        run: cross build --locked --release --target ${{ matrix.target }}
 
       - name: Build (native)
         if: "!matrix.cross"
@@ -95,7 +121,7 @@ jobs:
           # it depends on vcruntime140.dll and fails to start where that isn't
           # installed). No-op on macOS/Linux.
           RUSTFLAGS: ${{ runner.os == 'Windows' && '-C target-feature=+crt-static' || '' }}
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --locked --release --target ${{ matrix.target }}
 
       - name: Smoke test (run the freshly built binary)
         if: matrix.smoke
@@ -126,11 +152,17 @@ jobs:
 
       - name: Create tarball (Unix)
         if: runner.os != 'Windows'
+        shell: bash
         run: |
           cd artifacts/${{ matrix.platform }}
           tar -czvf ../dits-${{ matrix.platform }}.tar.gz dits
           cd ..
-          sha256sum dits-${{ matrix.platform }}.tar.gz > dits-${{ matrix.platform }}.tar.gz.sha256
+          archive="dits-${{ matrix.platform }}.tar.gz"
+          if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum "$archive" > "$archive.sha256"
+          else
+            shasum -a 256 "$archive" > "$archive.sha256"
+          fi
 
       - name: Create zip (Windows)
         if: runner.os == 'Windows'
@@ -170,11 +202,10 @@ jobs:
       - name: Get version
         id: version
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
-          else
-            echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
-          fi
+          set -euo pipefail
+          SOURCE_VERSION=$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -1)
+          test -n "$SOURCE_VERSION"
+          printf 'version=%s\n' "$SOURCE_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Download all archives
         uses: actions/download-artifact@v4
@@ -187,33 +218,20 @@ jobs:
         run: ls -la release-assets/
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           name: v${{ steps.version.outputs.version }}
-          tag_name: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', inputs.version) || github.ref_name }}
+          tag_name: v${{ steps.version.outputs.version }}
           generate_release_notes: true
+          fail_on_unmatched_files: true
           files: release-assets/*
           body: |
             ## Installation
 
-            ### Quick Install (Recommended)
-            ```bash
-            curl -fsSL https://raw.githubusercontent.com/byronwade/dits/main/install.sh | sh
-            ```
-
-            ### Homebrew (macOS/Linux)
-            ```bash
-            brew tap byronwade/dits https://github.com/byronwade/dits
-            brew install dits
-            ```
-
-            ### npm / bun / pnpm
-            ```bash
-            npm install -g @byronwade/dits
-            ```
-
             ### Manual Download
-            Download the archive for your platform below, extract, and add to PATH.
+            Download the archive for your platform below, verify its adjacent SHA-256
+            file, extract it, and add `dits` to PATH. Dits is alpha software: evaluate
+            it on disposable or independently backed-up data.
 
             | Platform | File |
             |----------|------|
@@ -225,6 +243,10 @@ jobs:
             | Linux (ARM64 musl) | `dits-linux-arm64-musl.tar.gz` |
             | Windows (x64) | `dits-win32-x64.zip` |
             | Windows (ARM64) | `dits-win32-arm64.zip` |
+
+            The release workflow also attempts to publish the same assembled binary
+            matrix to `@byronwade/dits`. A GitHub release does not by itself prove that
+            npm publication succeeded; check the npm package version before installing.
 
   publish-npm:
     name: Publish to npm
@@ -258,9 +280,17 @@ jobs:
           ls -la */
 
       - name: Update version
+        env:
+          RELEASE_VERSION: ${{ needs.release.outputs.version }}
         run: |
           cd packages/npm
-          npm version ${{ needs.release.outputs.version }} --no-git-tag-version --allow-same-version
+          npm version "$RELEASE_VERSION" --no-git-tag-version --allow-same-version
+
+      - name: Verify packaged launcher
+        run: |
+          cd packages/npm
+          node scripts/verify-binaries.js
+          node bin/dits --version
 
       - name: Publish
         env:
@@ -268,82 +298,3 @@ jobs:
         run: |
           cd packages/npm
           npm publish --access public
-
-  update-homebrew:
-    name: Update Homebrew Formula
-    needs: [build, release]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Download SHA256 files
-        uses: actions/download-artifact@v4
-        with:
-          pattern: archive-*
-          path: sha-files
-          merge-multiple: true
-
-      - name: Update formula
-        run: |
-          VERSION="${{ needs.release.outputs.version }}"
-
-          # Read SHA256 values
-          SHA_DARWIN_ARM64=$(cat sha-files/dits-darwin-arm64.tar.gz.sha256 | awk '{print $1}')
-          SHA_DARWIN_X64=$(cat sha-files/dits-darwin-x64.tar.gz.sha256 | awk '{print $1}')
-          SHA_LINUX_ARM64=$(cat sha-files/dits-linux-arm64.tar.gz.sha256 | awk '{print $1}')
-          SHA_LINUX_X64=$(cat sha-files/dits-linux-x64.tar.gz.sha256 | awk '{print $1}')
-
-          # Update formula
-          cat > Formula/dits.rb << EOF
-          # typed: false
-          # frozen_string_literal: true
-
-          class Dits < Formula
-            desc "Version control for video and large binary files"
-            homepage "https://github.com/byronwade/dits"
-            version "$VERSION"
-            license any_of: ["Apache-2.0", "MIT"]
-
-            on_macos do
-              on_arm do
-                url "https://github.com/byronwade/dits/releases/download/v#{version}/dits-darwin-arm64.tar.gz"
-                sha256 "$SHA_DARWIN_ARM64"
-              end
-              on_intel do
-                url "https://github.com/byronwade/dits/releases/download/v#{version}/dits-darwin-x64.tar.gz"
-                sha256 "$SHA_DARWIN_X64"
-              end
-            end
-
-            on_linux do
-              on_arm do
-                url "https://github.com/byronwade/dits/releases/download/v#{version}/dits-linux-arm64.tar.gz"
-                sha256 "$SHA_LINUX_ARM64"
-              end
-              on_intel do
-                url "https://github.com/byronwade/dits/releases/download/v#{version}/dits-linux-x64.tar.gz"
-                sha256 "$SHA_LINUX_X64"
-              end
-            end
-
-            def install
-              bin.install "dits"
-            end
-
-            test do
-              system "#{bin}/dits", "--version"
-            end
-          end
-          EOF
-
-      - name: Commit formula update
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Formula/dits.rb
-          git commit -m "Update Homebrew formula to v${{ needs.release.outputs.version }}" || echo "No changes"
-          git push

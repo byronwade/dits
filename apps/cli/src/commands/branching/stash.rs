@@ -168,7 +168,7 @@ fn stash_push(repo: &Repository, stash_path: &Path, message: Option<&str>) -> Re
 
     let mut worktree_changes = Vec::new();
     for (path, entry) in &index.entries {
-        let full_path = repo.root().join(path);
+        let full_path = repo.resolve_worktree_path(path)?;
         if full_path.exists() {
             let metadata = fs::metadata(&full_path)?;
             if metadata.len() != entry.size {
@@ -200,7 +200,7 @@ fn stash_push(repo: &Repository, stash_path: &Path, message: Option<&str>) -> Re
     // Create manifest for worktree state (files that differ from index)
     let mut worktree_manifest = Manifest::new();
     for path in &worktree_changes {
-        let full_path = repo.root().join(path);
+        let full_path = repo.resolve_worktree_path(path)?;
         if full_path.exists() {
             let data = fs::read(&full_path)?;
             let content_hash = Hasher::hash(&data);
@@ -264,7 +264,7 @@ fn stash_push(repo: &Repository, stash_path: &Path, message: Option<&str>) -> Re
         // (incorrectly) reassembled from empty chunk lists, which blanked them.
         for path in &worktree_changes {
             if let Some(entry) = manifest.entries.get(path) {
-                let full_path = repo.root().join(path);
+                let full_path = repo.resolve_worktree_path(path)?;
                 let data = repo.reconstruct_entry_bytes(entry)?;
                 fs::write(&full_path, &data)?;
             }
@@ -273,7 +273,7 @@ fn stash_push(repo: &Repository, stash_path: &Path, message: Option<&str>) -> Re
         // Remove files that were newly added (not in HEAD manifest)
         for (path, entry) in &index.entries {
             if entry.status == FileStatus::Added && !manifest.entries.contains_key(path) {
-                let full_path = repo.root().join(path);
+                let full_path = repo.resolve_worktree_path(path)?;
                 if full_path.exists() {
                     // Don't delete the file, just remove from tracking
                     // The file stays as untracked
@@ -310,7 +310,7 @@ fn stash_apply(repo: &Repository, stash_path: &Path, index: usize, remove: bool)
     // Apply worktree changes
     let mut restored = 0;
     for (path, manifest_entry) in worktree_manifest.iter() {
-        let full_path = repo.root().join(path);
+        let full_path = repo.resolve_worktree_path(path)?;
 
         // Create parent directories
         if let Some(parent) = full_path.parent() {

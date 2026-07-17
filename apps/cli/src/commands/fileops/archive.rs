@@ -8,7 +8,10 @@ use std::{
 
 use anyhow::{Context, Result};
 
-use crate::store::Repository;
+use crate::{
+    store::Repository,
+    util::{normalize_repo_input_path, validate_repo_relative_path},
+};
 
 /// Archive format
 #[derive(Debug, Clone, Copy)]
@@ -51,9 +54,71 @@ pub struct ArchiveOptions {
     pub paths:    Vec<String>,
 }
 
+/// Validated archive member naming and selection options.
+///
+/// Archive readers commonly extract paths verbatim, so both user-controlled
+/// prefixes and selectors are normalized before the output file is created.
+struct ArchivePaths {
+    prefix:    Option<String>,
+    selectors: Vec<String>,
+}
+
+impl ArchivePaths {
+    fn from_options(options: &ArchiveOptions) -> Result<Self> {
+        let prefix = options
+            .prefix
+            .as_deref()
+            .map(|prefix| {
+                normalize_repo_input_path(prefix).map_err(|reason| {
+                    anyhow::anyhow!("Invalid archive prefix '{}': {}", prefix, reason)
+                })
+            })
+            .transpose()?
+            .filter(|prefix| prefix != ".");
+
+        let selectors = options
+            .paths
+            .iter()
+            .map(|selector| {
+                normalize_repo_input_path(selector).map_err(|reason| {
+                    anyhow::anyhow!("Invalid archive path '{}': {}", selector, reason)
+                })
+            })
+            .collect::<Result<Vec<_>>>()?;
+
+        Ok(Self { prefix, selectors })
+    }
+
+    fn includes(&self, path: &str) -> bool {
+        self.selectors.is_empty()
+            || self.selectors.iter().any(|selector| {
+                selector == "."
+                    || path == selector
+                    || matches!(
+                        path.strip_prefix(selector),
+                        Some(remainder) if remainder.starts_with('/')
+                    )
+            })
+    }
+
+    fn member_path(&self, path: &str) -> Result<String> {
+        let member = match &self.prefix {
+            Some(prefix) => format!("{prefix}/{path}"),
+            None => path.to_string(),
+        };
+        validate_repo_relative_path(&member).map_err(|reason| {
+            anyhow::anyhow!("Unsafe archive member path '{}': {}", member, reason)
+        })?;
+        Ok(member)
+    }
+}
+
 /// Create an archive from repository content
 pub fn archive(options: &ArchiveOptions) -> Result<PathBuf> {
     let repo = Repository::open(Path::new(".")).context("Not in a dits repository")?;
+
+    // Validate names before creating or truncating the output file.
+    let archive_paths = ArchivePaths::from_options(options)?;
 
     // Resolve the tree-ish to a commit (handles HEAD, HEAD~N, branches, tags, and
     // full/short hashes — resolve_ref alone does not understand the HEAD symbolic
@@ -64,6 +129,16 @@ pub fn archive(options: &ArchiveOptions) -> Result<PathBuf> {
 
     let commit = repo.load_commit(&commit_hash)?;
     let manifest = repo.load_manifest(&commit.manifest)?;
+
+    // Resolve every selected source and member name before touching the output
+    // file. Besides clearer errors, this prevents a late symlink escape from
+    // leaving behind a partially written archive.
+    for (path, _) in manifest.iter() {
+        if archive_paths.includes(path) {
+            archive_paths.member_path(path)?;
+            repo.resolve_worktree_path(path)?;
+        }
+    }
 
     // Determine output path
     let output_path = match &options.output {
@@ -77,9 +152,13 @@ pub fn archive(options: &ArchiveOptions) -> Result<PathBuf> {
 
     // Create archive
     match options.format {
-        ArchiveFormat::Zip => create_zip_archive(&repo, &manifest, options, &output_path)?,
-        ArchiveFormat::Tar => create_tar_archive(&repo, &manifest, options, &output_path, false)?,
-        ArchiveFormat::TarGz => create_tar_archive(&repo, &manifest, options, &output_path, true)?,
+        ArchiveFormat::Zip => create_zip_archive(&repo, &manifest, &archive_paths, &output_path)?,
+        ArchiveFormat::Tar => {
+            create_tar_archive(&repo, &manifest, &archive_paths, &output_path, false)?
+        },
+        ArchiveFormat::TarGz => {
+            create_tar_archive(&repo, &manifest, &archive_paths, &output_path, true)?
+        },
     }
 
     println!("Created archive: {}", output_path.display());
@@ -89,7 +168,7 @@ pub fn archive(options: &ArchiveOptions) -> Result<PathBuf> {
 fn create_zip_archive(
     repo: &Repository,
     manifest: &crate::core::Manifest,
-    options: &ArchiveOptions,
+    archive_paths: &ArchivePaths,
     output_path: &Path,
 ) -> Result<()> {
     use zip::{write::SimpleFileOptions, ZipWriter};
@@ -100,25 +179,15 @@ fn create_zip_archive(
     let zip_options =
         SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
 
-    let repo_root = repo.root();
-
     for (path, _entry) in manifest.iter() {
-        // Filter by paths if specified
-        if !options.paths.is_empty() {
-            let matches = options.paths.iter().any(|p| path.starts_with(p));
-            if !matches {
-                continue;
-            }
+        if !archive_paths.includes(path) {
+            continue;
         }
 
-        // Build archive path with prefix
-        let archive_path = match &options.prefix {
-            Some(prefix) => format!("{}/{}", prefix.trim_end_matches('/'), path),
-            None => path.clone(),
-        };
+        let archive_path = archive_paths.member_path(path)?;
 
         // Read file content from disk
-        let file_path = repo_root.join(path);
+        let file_path = repo.resolve_worktree_path(path)?;
         if !file_path.exists() {
             continue; // Skip files not in working tree
         }
@@ -136,7 +205,7 @@ fn create_zip_archive(
 fn create_tar_archive(
     repo: &Repository,
     manifest: &crate::core::Manifest,
-    options: &ArchiveOptions,
+    archive_paths: &ArchivePaths,
     output_path: &Path,
     compress: bool,
 ) -> Result<()> {
@@ -145,9 +214,9 @@ fn create_tar_archive(
     if compress {
         let encoder =
             flate2::write::GzEncoder::new(BufWriter::new(file), flate2::Compression::default());
-        write_tar(repo, manifest, options, encoder)?;
+        write_tar(repo, manifest, archive_paths, encoder)?;
     } else {
-        write_tar(repo, manifest, options, BufWriter::new(file))?;
+        write_tar(repo, manifest, archive_paths, BufWriter::new(file))?;
     }
 
     Ok(())
@@ -156,29 +225,20 @@ fn create_tar_archive(
 fn write_tar<W: Write>(
     repo: &Repository,
     manifest: &crate::core::Manifest,
-    options: &ArchiveOptions,
+    archive_paths: &ArchivePaths,
     writer: W,
 ) -> Result<()> {
     let mut tar = tar::Builder::new(writer);
-    let repo_root = repo.root();
 
     for (path, entry) in manifest.iter() {
-        // Filter by paths if specified
-        if !options.paths.is_empty() {
-            let matches = options.paths.iter().any(|p| path.starts_with(p));
-            if !matches {
-                continue;
-            }
+        if !archive_paths.includes(path) {
+            continue;
         }
 
-        // Build archive path with prefix
-        let archive_path = match &options.prefix {
-            Some(prefix) => format!("{}/{}", prefix.trim_end_matches('/'), path),
-            None => path.clone(),
-        };
+        let archive_path = archive_paths.member_path(path)?;
 
         // Read file content from disk
-        let file_path = repo_root.join(path);
+        let file_path = repo.resolve_worktree_path(path)?;
         if !file_path.exists() {
             continue; // Skip files not in working tree
         }
@@ -220,5 +280,43 @@ mod tests {
     fn test_archive_extension() {
         assert_eq!(ArchiveFormat::Zip.extension(), ".zip");
         assert_eq!(ArchiveFormat::TarGz.extension(), ".tar.gz");
+    }
+
+    #[test]
+    fn archive_paths_are_confined_and_component_aware() {
+        let options = ArchiveOptions {
+            format:   ArchiveFormat::Zip,
+            tree_ish: "HEAD".to_string(),
+            prefix:   Some("./release/".to_string()),
+            output:   None,
+            paths:    vec!["src".to_string()],
+        };
+        let paths = ArchivePaths::from_options(&options).unwrap();
+
+        assert!(paths.includes("src/main.rs"));
+        assert!(!paths.includes("src-old/main.rs"));
+        assert_eq!(paths.member_path("src/main.rs").unwrap(), "release/src/main.rs");
+
+        for prefix in ["../escape", "/absolute", "safe/../../escape"] {
+            let options = ArchiveOptions {
+                format:   ArchiveFormat::Tar,
+                tree_ish: "HEAD".to_string(),
+                prefix:   Some(prefix.to_string()),
+                output:   None,
+                paths:    Vec::new(),
+            };
+            assert!(ArchivePaths::from_options(&options).is_err());
+        }
+
+        for selector in ["../escape", "/absolute", "safe/../../escape"] {
+            let options = ArchiveOptions {
+                format:   ArchiveFormat::Tar,
+                tree_ish: "HEAD".to_string(),
+                prefix:   None,
+                output:   None,
+                paths:    vec![selector.to_string()],
+            };
+            assert!(ArchivePaths::from_options(&options).is_err());
+        }
     }
 }

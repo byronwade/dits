@@ -162,7 +162,6 @@ fn apply_proxy_checkout(repo: &Repository) -> Result<(usize, u64)> {
     use dits::core::Hash as DitsHash;
 
     let proxy_store = ProxyStore::new(repo.dits_dir());
-    let cwd = std::env::current_dir()?;
 
     // Get HEAD manifest to find video files
     let head = match repo.head()? {
@@ -204,7 +203,7 @@ fn apply_proxy_checkout(repo: &Repository) -> Result<(usize, u64)> {
             if let Ok(Some(variant)) = proxy_store.load(&content_hash, *variant_type) {
                 // Found a proxy - load and write it
                 if let Ok(Some(proxy_data)) = proxy_store.load_data(&variant.content_hash) {
-                    let file_path = cwd.join(path);
+                    let file_path = repo.resolve_worktree_path(path)?;
                     let original_size = entry.size;
 
                     // Write proxy in place of original

@@ -1,5 +1,7 @@
 # Operations Runbooks
 
+**Maturity:** Historical
+
 > ⚠️ Describes the quarantined backend service (see legacy/backend-crates), NOT the current product. Dits today is a local-first CLI — no server or database required. This doc is retained as design reference for a future hosted offering.
 
 This directory contains operational runbooks for common scenarios and incidents.
@@ -10,16 +12,14 @@ This directory contains operational runbooks for common scenarios and incidents.
 - [High Latency](./high-latency.md) - API response times elevated
 - [Service Down](./service-down.md) - Complete or partial outage
 - [Database Issues](./database-issues.md) - PostgreSQL problems
-- [Storage Issues](./storage-issues.md) - S3/object storage problems
 
 ### Maintenance
 - [Scaling](./scaling.md) - Horizontal and vertical scaling
-- [Upgrades](./upgrades.md) - Version upgrades and rollbacks
-- [Certificate Rotation](./certificate-rotation.md) - TLS certificate management
 
 ### Recovery
-- [Disaster Recovery](./disaster-recovery.md) - DR failover procedures
-- [Data Recovery](./data-recovery.md) - Restore deleted/corrupted data
+
+Missing runbooks named in older indexes were never checked in and are not
+current operational guidance.
 
 ## Runbook Format
 
@@ -48,4 +48,3 @@ Each runbook follows this structure:
 2. **P2 (High)**: Page on-call, 15 min response
 3. **P3 (Medium)**: Slack alert, 1 hour response
 4. **P4 (Low)**: Ticket, next business day
-

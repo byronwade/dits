@@ -2,7 +2,7 @@
 
 use std::path::Path;
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use console::style;
 use indicatif::{ProgressBar, ProgressStyle};
 
@@ -25,6 +25,7 @@ pub fn add(files: &[String]) -> Result<()> {
     );
 
     let mut total_result = crate::store::repository::AddResult::default();
+    let mut failed_paths = 0usize;
 
     for file in files {
         progress.set_message(file.clone());
@@ -32,6 +33,8 @@ pub fn add(files: &[String]) -> Result<()> {
         match repo.add(file) {
             Ok(result) => {
                 total_result.files_staged += result.files_staged;
+                total_result.files_deleted += result.files_deleted;
+                total_result.files_unstaged += result.files_unstaged;
                 total_result.files_ignored += result.files_ignored;
                 total_result.symlinks_skipped += result.symlinks_skipped;
                 total_result.new_chunks += result.new_chunks;
@@ -41,6 +44,7 @@ pub fn add(files: &[String]) -> Result<()> {
             },
             Err(crate::store::repository::RepoError::FileNotFound(f)) => {
                 progress.println(format!("{} File not found: {}", style("!").yellow().bold(), f));
+                failed_paths += 1;
             },
             Err(crate::store::repository::RepoError::FileIgnored(f)) => {
                 progress.println(format!(
@@ -57,6 +61,7 @@ pub fn add(files: &[String]) -> Result<()> {
                     file,
                     e
                 ));
+                failed_paths += 1;
             },
         }
 
@@ -74,9 +79,24 @@ pub fn add(files: &[String]) -> Result<()> {
         );
     }
 
-    // Print summary
-    if total_result.files_staged > 0 {
-        println!("{} Staged {} file(s)", style("✓").green().bold(), total_result.files_staged);
+    if total_result.files_deleted > 0 {
+        println!("{} Staged {} deletion(s)", style("✓").green().bold(), total_result.files_deleted);
+    }
+    if total_result.files_unstaged > 0 {
+        println!(
+            "{} Removed {} vanished new file(s) from the index",
+            style("✓").green().bold(),
+            total_result.files_unstaged
+        );
+    }
+
+    // Print summary. Deletions are included in files_staged for commit/status
+    // accounting but have their own clearer message above.
+    let content_files_staged = total_result
+        .files_staged
+        .saturating_sub(total_result.files_deleted);
+    if content_files_staged > 0 {
+        println!("{} Staged {} file(s)", style("✓").green().bold(), content_files_staged);
 
         let total_bytes = total_result.new_bytes + total_result.dedup_bytes;
         let total_chunks = total_result.new_chunks + total_result.dedup_chunks;
@@ -100,14 +120,21 @@ pub fn add(files: &[String]) -> Result<()> {
         if total_result.files_ignored > 0 {
             println!("  {} file(s) ignored", total_result.files_ignored);
         }
-    } else if total_result.files_ignored > 0 {
+    } else if total_result.files_ignored > 0
+        && total_result.files_deleted == 0
+        && total_result.files_unstaged == 0
+    {
         println!(
             "{} All {} file(s) were ignored",
             style("!").yellow().bold(),
             total_result.files_ignored
         );
-    } else {
+    } else if total_result.files_deleted == 0 && total_result.files_unstaged == 0 {
         println!("{} No files to stage", style("!").yellow().bold());
+    }
+
+    if failed_paths > 0 {
+        bail!("Failed to add {} path(s); successful paths remain staged", failed_paths);
     }
 
     Ok(())

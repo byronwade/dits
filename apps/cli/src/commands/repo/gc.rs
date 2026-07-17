@@ -2,27 +2,33 @@
 
 use std::{collections::HashSet, fs, path::Path};
 
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 
-use crate::{core::Hash, store::Repository};
+use crate::{commands::branching::stash::StashList, core::Hash, store::Repository};
 
 /// Run garbage collection.
 pub fn gc(dry_run: bool, prune: bool, aggressive: bool) -> Result<()> {
-    let dits_dir = std::path::Path::new(".dits");
-    if !dits_dir.exists() {
-        bail!("Not a dits repository");
+    let repo =
+        Repository::open_read_only(Path::new(".")).context("Could not open Dits repository")?;
+
+    if !dry_run {
+        bail!(
+            "Destructive garbage collection is disabled in this alpha until reachability covers \
+             every object type and deletion has a quarantine/grace period. Run `dits gc \
+             --dry-run` for a read-only report. No objects or locks were changed."
+        );
     }
 
-    println!("Running garbage collection...");
+    println!("Auditing garbage collection candidates (read-only)...");
 
     let mut stats = GcStats::default();
 
     // Step 1: Collect all reachable objects
-    let reachable = collect_reachable_objects(dits_dir)?;
+    let reachable = collect_reachable_objects(&repo)?;
     stats.reachable_objects = reachable.len();
 
     // Step 2: Find unreferenced objects
-    let objects_dir = dits_dir.join("objects");
+    let objects_dir = repo.dits_dir().join("objects");
     let unreferenced = find_unreferenced_objects(&objects_dir, &reachable)?;
     stats.unreferenced_objects = unreferenced.len();
 
@@ -33,43 +39,17 @@ pub fn gc(dry_run: bool, prune: bool, aggressive: bool) -> Result<()> {
         }
     }
 
-    // Step 4: Prune expired locks
-    let locks_pruned = if prune {
-        prune_expired_locks(dits_dir)?
-    } else {
-        0
-    };
-    stats.locks_pruned = locks_pruned;
-
-    // Step 5: Remove unreferenced objects (if not dry run)
-    if !dry_run && !unreferenced.is_empty() {
-        for obj_path in &unreferenced {
-            if let Err(e) = fs::remove_file(obj_path) {
-                eprintln!("Warning: Could not remove {}: {}", obj_path.display(), e);
-            }
-        }
-        stats.objects_removed = unreferenced.len();
-
-        // Clean up empty fan-out directories
-        cleanup_empty_directories(&objects_dir)?;
-    }
-
-    // Step 6: Aggressive mode - repack objects
-    if aggressive && !dry_run {
-        println!("Aggressive mode: repacking objects...");
-        // In a full implementation, this would:
-        // - Re-delta compress objects
-        // - Repack into fewer files
-        // - Optimize storage layout
-        println!("  (Repacking not yet implemented)");
+    if prune || aggressive {
+        println!(
+            "Note: --prune and --aggressive are ignored in read-only mode; no locks or objects \
+             were changed."
+        );
     }
 
     // Print summary
     println!();
-    if dry_run {
-        println!("Dry run - no changes made");
-        println!();
-    }
+    println!("Dry run - no changes made");
+    println!();
 
     println!("Garbage collection summary:");
     println!("  Reachable objects: {}", stats.reachable_objects);
@@ -77,19 +57,7 @@ pub fn gc(dry_run: bool, prune: bool, aggressive: bool) -> Result<()> {
 
     if stats.bytes_to_free > 0 {
         let size_str = format_size(stats.bytes_to_free);
-        if dry_run {
-            println!("  Space to be freed: {}", size_str);
-        } else {
-            println!("  Space freed: {}", size_str);
-        }
-    }
-
-    if prune {
-        println!("  Expired locks pruned: {}", stats.locks_pruned);
-    }
-
-    if !dry_run && stats.objects_removed > 0 {
-        println!("  Objects removed: {}", stats.objects_removed);
+        println!("  Candidate space (not removed): {}", size_str);
     }
 
     Ok(())
@@ -100,17 +68,14 @@ pub fn gc(dry_run: bool, prune: bool, aggressive: bool) -> Result<()> {
 struct GcStats {
     reachable_objects:    usize,
     unreferenced_objects: usize,
-    objects_removed:      usize,
     bytes_to_free:        u64,
-    locks_pruned:         usize,
 }
 
 /// Collect every object hash reachable from any ref, by actually walking the
-/// object graph: refs/HEAD/tags/stash -> commits -> parents -> manifest ->
-/// per-entry content/chunks/mp4 blobs. (Git-text content lives in the git
+/// object graph: refs/HEAD/tags/index/stash -> commits -> parents -> manifest
+/// -> per-entry content/chunks/mp4 blobs. (Git-text content lives in the git
 /// engine, not `.dits/objects`, so it is never scanned for pruning here.)
-fn collect_reachable_objects(_dits_dir: &Path) -> Result<HashSet<String>> {
-    let repo = Repository::open(Path::new("."))?;
+fn collect_reachable_objects(repo: &Repository) -> Result<HashSet<String>> {
     let mut reachable: HashSet<String> = HashSet::new();
     let mut seen: HashSet<Hash> = HashSet::new();
     let mut stack: Vec<Hash> = Vec::new();
@@ -129,21 +94,40 @@ fn collect_reachable_objects(_dits_dir: &Path) -> Result<HashSet<String>> {
             stack.push(h);
         }
     }
-    // Stash entries also keep commits alive — harvest any 64-hex hashes they
-    // contain.
-    let stash_dir = Path::new(".dits").join("stash");
-    if stash_dir.exists() {
-        for entry in fs::read_dir(&stash_dir)?.flatten() {
-            if let Ok(content) = fs::read_to_string(entry.path()) {
-                for tok in content.split(|c: char| !c.is_ascii_hexdigit()) {
-                    if tok.len() == 64 {
-                        if let Ok(h) = Hash::from_hex(tok) {
-                            stack.push(h);
-                        }
-                    }
+    // The staging index owns objects even before they appear in a commit.
+    let index = repo.load_index_read_only()?;
+    if let Some(base_commit) = index.base_commit {
+        stack.push(base_commit);
+    }
+    for entry in index.entries.values() {
+        reachable.insert(entry.content_hash.to_hex());
+        for chunk in &entry.chunks {
+            reachable.insert(chunk.hash.to_hex());
+        }
+        if let Some(mp4) = &entry.mp4_metadata {
+            if let Some(hash) = &mp4.ftyp_hash {
+                reachable.insert(hash.to_hex());
+            }
+            if let Some(hash) = &mp4.moov_hash {
+                reachable.insert(hash.to_hex());
+            }
+            for atom in &mp4.other_atoms {
+                if let Some(hash) = &atom.hash {
+                    reachable.insert(hash.to_hex());
                 }
             }
         }
+    }
+    // Stash entries are stored in one typed JSON file. Their base commits and
+    // two manifests are independent roots and must survive any future GC.
+    let stash_path = repo.dits_dir().join("stash.json");
+    let stash_list = StashList::load(&stash_path)?;
+    for entry in stash_list.entries {
+        if let Some(base_commit) = entry.base_commit {
+            stack.push(base_commit);
+        }
+        mark_manifest(repo, entry.index_manifest, &mut reachable);
+        mark_manifest(repo, entry.worktree_manifest, &mut reachable);
     }
 
     while let Some(commit_hash) = stack.pop() {
@@ -158,23 +142,7 @@ fn collect_reachable_objects(_dits_dir: &Path) -> Result<HashSet<String>> {
         };
 
         // The commit's manifest and everything it references.
-        reachable.insert(commit.manifest.to_hex());
-        if let Ok(manifest) = repo.load_manifest(&commit.manifest) {
-            for entry in manifest.entries.values() {
-                reachable.insert(entry.content_hash.to_hex());
-                for chunk in &entry.chunks {
-                    reachable.insert(chunk.hash.to_hex());
-                }
-                if let Some(mp4) = &entry.mp4_metadata {
-                    if let Some(h) = &mp4.ftyp_hash {
-                        reachable.insert(h.to_hex());
-                    }
-                    if let Some(h) = &mp4.moov_hash {
-                        reachable.insert(h.to_hex());
-                    }
-                }
-            }
-        }
+        mark_manifest(repo, commit.manifest, &mut reachable);
 
         if let Some(p) = commit.parent {
             stack.push(p);
@@ -185,6 +153,34 @@ fn collect_reachable_objects(_dits_dir: &Path) -> Result<HashSet<String>> {
     }
 
     Ok(reachable)
+}
+
+/// Mark a manifest and every Dits object it directly references.
+fn mark_manifest(repo: &Repository, manifest_hash: Hash, reachable: &mut HashSet<String>) {
+    reachable.insert(manifest_hash.to_hex());
+    let Ok(manifest) = repo.load_manifest(&manifest_hash) else {
+        return;
+    };
+
+    for entry in manifest.entries.values() {
+        reachable.insert(entry.content_hash.to_hex());
+        for chunk in &entry.chunks {
+            reachable.insert(chunk.hash.to_hex());
+        }
+        if let Some(mp4) = &entry.mp4_metadata {
+            if let Some(hash) = &mp4.ftyp_hash {
+                reachable.insert(hash.to_hex());
+            }
+            if let Some(hash) = &mp4.moov_hash {
+                reachable.insert(hash.to_hex());
+            }
+            for atom in &mp4.other_atoms {
+                if let Some(hash) = &atom.hash {
+                    reachable.insert(hash.to_hex());
+                }
+            }
+        }
+    }
 }
 
 /// Find unreferenced objects.
@@ -228,40 +224,6 @@ fn find_unreferenced_objects(
     }
 
     Ok(unreferenced)
-}
-
-/// Prune expired locks.
-fn prune_expired_locks(dits_dir: &Path) -> Result<usize> {
-    use crate::store::locks::LockStore;
-
-    let mut store = LockStore::new(dits_dir);
-    let before_count = store.list().len();
-    store.cleanup_expired();
-    let after_count = store.list().len();
-
-    Ok(before_count.saturating_sub(after_count))
-}
-
-/// Clean up empty fan-out directories.
-fn cleanup_empty_directories(objects_dir: &Path) -> Result<()> {
-    if !objects_dir.exists() {
-        return Ok(());
-    }
-
-    for entry in fs::read_dir(objects_dir)? {
-        let entry = entry?;
-        let path = entry.path();
-
-        if path.is_dir() {
-            // Check if directory is empty
-            let is_empty = fs::read_dir(&path)?.next().is_none();
-            if is_empty {
-                let _ = fs::remove_dir(&path);
-            }
-        }
-    }
-
-    Ok(())
 }
 
 /// Format byte size as human-readable string.
