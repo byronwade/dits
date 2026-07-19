@@ -14,15 +14,15 @@ use globset::{Glob, GlobSet, GlobSetBuilder};
 #[derive(Debug)]
 pub struct IgnoreMatcher {
     /// Compiled glob patterns for ignored files.
-    ignore_set: GlobSet,
+    ignore_set:    GlobSet,
     /// Negation patterns (files to include despite matching ignore).
-    negate_set: GlobSet,
+    negate_set:    GlobSet,
     /// Whether any user-provided negation exists. An ignored directory can
     /// only be pruned from a tree walk when no negation could re-include one
     /// of its descendants.
     has_negations: bool,
     /// Root directory for relative pattern matching.
-    root:       PathBuf,
+    root:          PathBuf,
 }
 
 impl IgnoreMatcher {
@@ -53,7 +53,7 @@ impl IgnoreMatcher {
             ignore_set: builder.build().unwrap_or_else(|_| GlobSet::empty()),
             negate_set: negate_builder.build().unwrap_or_else(|_| GlobSet::empty()),
             has_negations,
-            root:       root.to_path_buf(),
+            root: root.to_path_buf(),
         }
     }
 

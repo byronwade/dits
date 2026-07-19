@@ -124,10 +124,8 @@ impl CheckoutWriter {
             .file_name()
             .and_then(|name| name.to_str())
             .unwrap_or("checkout");
-        let temporary = parent.join(format!(
-            ".{file_name}.{}.checkout.tmp",
-            uuid::Uuid::new_v4().simple()
-        ));
+        let temporary =
+            parent.join(format!(".{file_name}.{}.checkout.tmp", uuid::Uuid::new_v4().simple()));
         let file = fs::OpenOptions::new()
             .write(true)
             .create_new(true)
@@ -910,8 +908,7 @@ impl Repository {
     ) -> Result<(AddResult, bool), RepoError> {
         if !full_path.exists() {
             let mut result = AddResult::default();
-            let (matched, changed) =
-                self.stage_missing_under_scope(index, path, &mut result)?;
+            let (matched, changed) = self.stage_missing_under_scope(index, path, &mut result)?;
             if matched {
                 return Ok((result, changed));
             }
@@ -1626,8 +1623,7 @@ impl Repository {
                 let Ok(relative) = entry.path().strip_prefix(&self.work_dir) else {
                     return false;
                 };
-                let relative =
-                    crate::util::normalize_separators(&relative.to_string_lossy());
+                let relative = crate::util::normalize_separators(&relative.to_string_lossy());
                 self.ignore.should_descend_into(&relative)
             })
             .filter_map(|e| e.ok())
@@ -3225,11 +3221,7 @@ mod tests {
     #[test]
     fn test_status_pruning_preserves_negated_file_in_ignored_directory() {
         let temp = tempdir().unwrap();
-        fs::write(
-            temp.path().join(".ditsignore"),
-            "ignored/\n!ignored/keep.txt\n",
-        )
-        .unwrap();
+        fs::write(temp.path().join(".ditsignore"), "ignored/\n!ignored/keep.txt\n").unwrap();
         fs::create_dir(temp.path().join("ignored")).unwrap();
         fs::write(temp.path().join("ignored/keep.txt"), b"keep").unwrap();
         fs::write(temp.path().join("ignored/drop.txt"), b"drop").unwrap();

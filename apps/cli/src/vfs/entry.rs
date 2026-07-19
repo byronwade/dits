@@ -425,10 +425,7 @@ mod tests {
     fn test_chunks_for_range_handles_boundaries_gaps_and_zero_size() {
         let mut entry = VfsEntry::directory("test".into(), 1, 0);
         entry.entry_type = VfsEntryType::File;
-        entry.chunks = vec![
-            ChunkRef::new(Hash::ZERO, 0, 100),
-            ChunkRef::new(Hash::ZERO, 200, 100),
-        ];
+        entry.chunks = vec![ChunkRef::new(Hash::ZERO, 0, 100), ChunkRef::new(Hash::ZERO, 200, 100)];
 
         assert!(entry.chunks_for_range(100, 100).is_empty());
         assert!(entry.chunks_for_range(50, 0).is_empty());

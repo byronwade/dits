@@ -217,7 +217,11 @@ impl ChunkCache {
 
         // A content-addressed entry is immutable. If another read already cached it,
         // do not rewrite or count it twice.
-        if fs::metadata(&path).await.map(|m| m.is_file()).unwrap_or(false) {
+        if fs::metadata(&path)
+            .await
+            .map(|m| m.is_file())
+            .unwrap_or(false)
+        {
             return Ok(());
         }
 
@@ -453,11 +457,8 @@ mod tests {
 
         let store = Arc::new(ObjectStore::new(temp.path()));
         store.init().unwrap();
-        let config = CacheConfig {
-            l2_max_bytes: 10,
-            l2_path: l2_path.clone(),
-            ..Default::default()
-        };
+        let config =
+            CacheConfig { l2_max_bytes: 10, l2_path: l2_path.clone(), ..Default::default() };
         let cache = ChunkCache::new(config, store);
         cache.init().await.unwrap();
 
