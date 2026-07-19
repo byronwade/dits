@@ -10,34 +10,17 @@
 //! - Phase 4: Virtual filesystem (FUSE) for on-demand hydration
 
 mod commands;
-mod config {
-    pub use dits::config::*;
-}
-mod core;
-mod facr;
 mod hooks;
-mod mp4;
-mod p2p;
-mod segment;
-mod security {
-    pub use dits::security::*;
-}
-mod store;
-mod stream;
 mod telemetry;
-mod util {
-    pub use dits::util::*;
-}
-mod vfs;
 
-// p2p::host refers to `crate::Repository` (a root re-export in the library
-// crate); mirror it here so the p2p module compiles in the binary crate too.
+// Compile the engine and storage implementation once in the canonical library
+// crate. CLI-only dispatch, hooks, and telemetry remain in this binary crate;
+// their existing `crate::<module>` paths resolve through these imports.
 use std::sync::Arc;
 
 use clap::{Parser, Subcommand};
+pub(crate) use dits::{config, core, facr, mp4, segment, store, stream, util, vfs};
 use tokio::sync::Mutex;
-
-pub(crate) use crate::store::Repository;
 
 #[derive(Parser)]
 #[command(name = "dits")]
@@ -481,6 +464,10 @@ enum Commands {
         /// preserved)
         #[arg(long)]
         encrypt:         bool,
+        /// Print the objective byte/reuse report and exit without starting the
+        /// HTTP player
+        #[arg(long)]
+        report_only:     bool,
         /// HTTP port for the player
         #[arg(long, default_value = "8088")]
         port:            u16,
@@ -1332,6 +1319,7 @@ async fn main() {
             otio,
             import,
             encrypt,
+            report_only,
             port,
         } => {
             commands::stream_demo(
@@ -1346,6 +1334,7 @@ async fn main() {
                 otio,
                 import,
                 encrypt,
+                report_only,
                 port,
             )
             .await

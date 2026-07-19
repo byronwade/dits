@@ -29,9 +29,10 @@ pub fn commit(message: &str) -> Result<()> {
                 message
             );
 
-            // Get stats
-            let stats = repo.stats()?;
-            println!("  {} file(s) committed, {} total chunks", files_committed, stats.chunk_count);
+            // Avoid walking the entire object store merely to decorate the
+            // success message. Full repository statistics remain available
+            // through `dits stats`.
+            println!("  {} file(s) committed", files_committed);
 
             Ok(())
         },

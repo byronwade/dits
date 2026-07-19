@@ -77,9 +77,13 @@ if (profile === "ci") {
   }
 }
 
-for (const out of [path.join(HERE, "latest.json"),
-  path.join(ROOT, "apps", "web", "public", "benchmarks", "comparative", "latest.json")]) {
-  mkdirSync(path.dirname(out), { recursive: true });
-  writeFileSync(out, JSON.stringify(doc, null, 2) + "\n");
+if (process.exitCode) {
+  console.error("comparative benchmark failed validation; existing result artifacts were not replaced");
+} else {
+  for (const out of [path.join(HERE, "latest.json"),
+    path.join(ROOT, "apps", "web", "public", "benchmarks", "comparative", "latest.json")]) {
+    mkdirSync(path.dirname(out), { recursive: true });
+    writeFileSync(out, JSON.stringify(doc, null, 2) + "\n");
+  }
+  console.log(`wrote ${doc.records.length} records (profile=${profile})`);
 }
-console.log(`wrote ${doc.records.length} records (profile=${profile})`);

@@ -43,7 +43,7 @@ export async function runCumulative({ edits = 15, duration = 8, log = () => {} }
     const points = [];
     for (let i = 0; i < versions.length; i++) {
       sh(DITS, ["facr-add", versions[i], "--store", store,
-        "--manifest", path.join(work, `m${i}.json`)], { allowFail: true });
+        "--manifest", path.join(work, `m${i}.json`)]);
       points.push({ edit: i + 1, total_bytes: dirSizeBytes(store) });
     }
     series.push({ tool: "dits-facr", points });

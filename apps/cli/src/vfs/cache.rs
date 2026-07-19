@@ -120,12 +120,10 @@ impl CacheStats {
 impl ChunkCache {
     /// Create a new chunk cache.
     pub fn new(config: CacheConfig, object_store: Arc<ObjectStore>) -> Self {
-        // Calculate L1 capacity based on average chunk size (~64KB)
-        let avg_chunk_size = 64 * 1024;
-        let l1_capacity = config.l1_max_bytes / avg_chunk_size;
-
         let l1 = Cache::builder()
-            .max_capacity(l1_capacity)
+            // A moka cache with a weigher interprets max_capacity in weight units.
+            // The weigher below returns bytes, so the capacity must also be bytes.
+            .max_capacity(config.l1_max_bytes)
             .weigher(|_key: &Hash, value: &Arc<Vec<u8>>| -> u32 {
                 // Weight by actual size
                 value.len().try_into().unwrap_or(u32::MAX)
@@ -145,6 +143,10 @@ impl ChunkCache {
     /// Initialize the cache (create directories).
     pub async fn init(&self) -> std::io::Result<()> {
         fs::create_dir_all(&self.l2_path).await?;
+        // L2 survives process restarts. Rebuild its byte accounting before
+        // accepting writes so a fresh process cannot silently exceed the cap.
+        let mut l2_size = self.l2_size.write().await;
+        *l2_size = inventory_regular_file_bytes(&self.l2_path).await?;
         Ok(())
     }
 
@@ -203,24 +205,33 @@ impl ChunkCache {
     async fn put_l2(&self, hash: &Hash, data: &[u8]) -> std::io::Result<()> {
         let path = self.l2_chunk_path(hash);
 
-        // Check if we have room in L2 cache
-        let data_size = data.len() as u64;
-        {
-            let current_size = *self.l2_size.read().await;
-            if current_size + data_size > self.config.l2_max_bytes {
-                // L2 cache is full, skip caching (LRU eviction would be more complex)
-                // In production, we'd implement proper eviction based on access time
-                return Ok(());
-            }
-        }
-
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent).await?;
         }
-        fs::write(&path, data).await?;
 
-        // Update size tracking
-        *self.l2_size.write().await += data_size;
+        // Serialize the existence check, capacity decision, write, and accounting.
+        // Without this guard concurrent misses can both observe free capacity and
+        // overfill (or double-count) the cache.
+        let data_size = data.len() as u64;
+        let mut current_size = self.l2_size.write().await;
+
+        // A content-addressed entry is immutable. If another read already cached it,
+        // do not rewrite or count it twice.
+        if fs::metadata(&path)
+            .await
+            .map(|m| m.is_file())
+            .unwrap_or(false)
+        {
+            return Ok(());
+        }
+
+        if current_size.saturating_add(data_size) > self.config.l2_max_bytes {
+            // L2 cache is full, skip caching (LRU eviction would be more complex).
+            return Ok(());
+        }
+
+        fs::write(&path, data).await?;
+        *current_size = current_size.saturating_add(data_size);
         Ok(())
     }
 
@@ -271,10 +282,14 @@ impl ChunkCache {
     /// Clear all caches.
     pub async fn clear(&self) -> std::io::Result<()> {
         self.l1.invalidate_all();
+        // Synchronize with put_l2 so clearing cannot race a cache publication and
+        // leave byte accounting out of sync with disk.
+        let mut l2_size = self.l2_size.write().await;
         if self.l2_path.exists() {
             fs::remove_dir_all(&self.l2_path).await?;
-            fs::create_dir_all(&self.l2_path).await?;
         }
+        fs::create_dir_all(&self.l2_path).await?;
+        *l2_size = 0;
         *self.stats.write().await = CacheStats::default();
         Ok(())
     }
@@ -288,6 +303,29 @@ impl ChunkCache {
     pub fn l1_weighted_size(&self) -> u64 {
         self.l1.weighted_size()
     }
+}
+
+/// Inventory regular-file bytes below an L2 cache root without following
+/// symlinks. Unexpected regular files still consume the cache's disk budget and
+/// are therefore included; symlinks are ignored so accounting never escapes the
+/// configured cache directory.
+async fn inventory_regular_file_bytes(root: &std::path::Path) -> std::io::Result<u64> {
+    let mut total = 0u64;
+    let mut pending = vec![root.to_path_buf()];
+
+    while let Some(dir) = pending.pop() {
+        let mut entries = fs::read_dir(dir).await?;
+        while let Some(entry) = entries.next_entry().await? {
+            let file_type = entry.file_type().await?;
+            if file_type.is_dir() {
+                pending.push(entry.path());
+            } else if file_type.is_file() {
+                total = total.saturating_add(entry.metadata().await?.len());
+            }
+        }
+    }
+
+    Ok(total)
 }
 
 /// Synchronous wrapper for use in FUSE handlers.
@@ -388,5 +426,49 @@ mod tests {
 
         let stats = cache.stats().await;
         assert_eq!(stats.misses, 1);
+    }
+
+    #[tokio::test]
+    async fn test_l1_capacity_is_measured_in_bytes() {
+        let temp = tempdir().unwrap();
+        let store = Arc::new(ObjectStore::new(temp.path()));
+        store.init().unwrap();
+
+        let config = CacheConfig {
+            l1_max_bytes: 10,
+            l2_path: temp.path().join("cache"),
+            ..Default::default()
+        };
+        let cache = ChunkCache::new(config, store);
+        let hash = Chunk::new(vec![1; 8]).hash;
+        cache.l1.insert(hash, Arc::new(vec![1; 8])).await;
+        cache.l1.run_pending_tasks().await;
+
+        assert!(cache.l1.get(&hash).await.is_some());
+        assert_eq!(cache.l1_weighted_size(), 8);
+    }
+
+    #[tokio::test]
+    async fn test_init_inventories_existing_l2_bytes_and_enforces_limit() {
+        let temp = tempdir().unwrap();
+        let l2_path = temp.path().join("cache");
+        std::fs::create_dir_all(l2_path.join("aa")).unwrap();
+        std::fs::write(l2_path.join("aa/existing"), vec![7; 7]).unwrap();
+
+        let store = Arc::new(ObjectStore::new(temp.path()));
+        store.init().unwrap();
+        let config =
+            CacheConfig { l2_max_bytes: 10, l2_path: l2_path.clone(), ..Default::default() };
+        let cache = ChunkCache::new(config, store);
+        cache.init().await.unwrap();
+
+        assert_eq!(*cache.l2_size.read().await, 7);
+        let chunk = Chunk::new(vec![2; 4]);
+        cache.put_l2(&chunk.hash, &chunk.data).await.unwrap();
+        assert!(!cache.l2_chunk_path(&chunk.hash).exists());
+        assert_eq!(*cache.l2_size.read().await, 7);
+
+        cache.clear().await.unwrap();
+        assert_eq!(*cache.l2_size.read().await, 0);
     }
 }

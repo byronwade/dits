@@ -14,11 +14,15 @@ use globset::{Glob, GlobSet, GlobSetBuilder};
 #[derive(Debug)]
 pub struct IgnoreMatcher {
     /// Compiled glob patterns for ignored files.
-    ignore_set: GlobSet,
+    ignore_set:    GlobSet,
     /// Negation patterns (files to include despite matching ignore).
-    negate_set: GlobSet,
+    negate_set:    GlobSet,
+    /// Whether any user-provided negation exists. An ignored directory can
+    /// only be pruned from a tree walk when no negation could re-include one
+    /// of its descendants.
+    has_negations: bool,
     /// Root directory for relative pattern matching.
-    root:       PathBuf,
+    root:          PathBuf,
 }
 
 impl IgnoreMatcher {
@@ -26,6 +30,7 @@ impl IgnoreMatcher {
     pub fn new(root: &Path) -> Self {
         let mut builder = GlobSetBuilder::new();
         let mut negate_builder = GlobSetBuilder::new();
+        let mut has_negations = false;
 
         // Always ignore .dits directory
         if let Ok(glob) = Glob::new("**/.dits/**") {
@@ -39,14 +44,16 @@ impl IgnoreMatcher {
         let ignore_file = root.join(".ditsignore");
         if ignore_file.exists() {
             if let Ok(content) = fs::read_to_string(&ignore_file) {
-                Self::parse_ignore_file(&content, &mut builder, &mut negate_builder);
+                has_negations =
+                    Self::parse_ignore_file(&content, &mut builder, &mut negate_builder);
             }
         }
 
         Self {
             ignore_set: builder.build().unwrap_or_else(|_| GlobSet::empty()),
             negate_set: negate_builder.build().unwrap_or_else(|_| GlobSet::empty()),
-            root:       root.to_path_buf(),
+            has_negations,
+            root: root.to_path_buf(),
         }
     }
 
@@ -55,7 +62,8 @@ impl IgnoreMatcher {
         content: &str,
         ignore_builder: &mut GlobSetBuilder,
         negate_builder: &mut GlobSetBuilder,
-    ) {
+    ) -> bool {
+        let mut has_negations = false;
         for line in content.lines() {
             let line = line.trim();
 
@@ -66,6 +74,7 @@ impl IgnoreMatcher {
 
             // Handle negation patterns
             let (pattern, is_negation) = if let Some(stripped) = line.strip_prefix('!') {
+                has_negations = true;
                 (stripped.trim(), true)
             } else {
                 (line, false)
@@ -84,6 +93,7 @@ impl IgnoreMatcher {
                 }
             }
         }
+        has_negations
     }
 
     /// Convert gitignore-style pattern to glob patterns.
@@ -127,6 +137,19 @@ impl IgnoreMatcher {
     /// Check if a path should be ignored (accepts string).
     pub fn is_ignored_str(&self, path: &str) -> bool {
         self.is_ignored(Path::new(path))
+    }
+
+    /// Return whether a directory walker should descend into `path`.
+    ///
+    /// Repository metadata is always pruned. Other ignored directories are
+    /// pruned only when the ignore file has no negations; otherwise a child
+    /// may be explicitly re-included and the walker must inspect it.
+    pub(crate) fn should_descend_into(&self, path: &str) -> bool {
+        if path.split('/').any(|component| component == ".dits") {
+            return false;
+        }
+
+        !self.is_ignored_str(path) || self.has_negations
     }
 
     /// Filter a list of paths, returning only non-ignored ones.
@@ -204,6 +227,27 @@ mod tests {
 
         assert!(matcher.is_ignored_str("video.mp4"));
         assert!(!matcher.is_ignored_str("important.mp4"));
+    }
+
+    #[test]
+    fn test_directory_pruning_preserves_negated_descendants() {
+        let dir = TempDir::new().unwrap();
+        create_test_ignore(dir.path(), "ignored/\n!ignored/keep.txt\n");
+        let matcher = IgnoreMatcher::new(dir.path());
+
+        assert!(matcher.should_descend_into("ignored"));
+        assert!(!matcher.is_ignored_str("ignored/keep.txt"));
+        assert!(!matcher.should_descend_into(".dits"));
+    }
+
+    #[test]
+    fn test_ignored_directory_without_negations_can_be_pruned() {
+        let dir = TempDir::new().unwrap();
+        create_test_ignore(dir.path(), "ignored/\n");
+        let matcher = IgnoreMatcher::new(dir.path());
+
+        assert!(!matcher.should_descend_into("ignored"));
+        assert!(matcher.should_descend_into("src"));
     }
 
     #[test]
