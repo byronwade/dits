@@ -926,7 +926,7 @@ impl Repository {
             self.add_file(index, path, full_path, &mut result)?;
         } else if full_path.is_dir() {
             // Add all files in directory
-            for entry in WalkDir::new(&full_path)
+            for entry in WalkDir::new(full_path)
                 .into_iter()
                 .filter_map(|e| e.ok())
                 .filter(|e| e.file_type().is_file() || e.file_type().is_symlink())
