@@ -30,6 +30,27 @@ test("missing metric key fails", () => {
   assert.equal(validateRecord(bad).ok, false);
 });
 
+test("available runner must report elapsed time and deduplication", () => {
+  const bad = { workload: "x", workload_label: "x", tier: "dits", tool: "dits-facr",
+    dataset: { bytes: 1, codec: "h264", label: "x" },
+    metrics: { stored_bytes: null, wire_bytes: null, wall_ms: null, peak_rss_bytes: null,
+      restore_ms: null, dedup_pct: null },
+    tool_version: "x", run_timestamp: "x", git_sha: "x", machine: "x", available: true };
+  const result = validateRecord(bad);
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((e) => e.includes("wall_ms required")));
+  assert.ok(result.errors.some((e) => e.includes("dedup_pct required")));
+});
+
+test("invalid numeric metrics fail", () => {
+  const bad = { workload: "x", workload_label: "x", tier: "dits", tool: "dits-facr",
+    dataset: { bytes: 1, codec: "h264", label: "x" },
+    metrics: { stored_bytes: -1, wire_bytes: null, wall_ms: Number.NaN,
+      peak_rss_bytes: null, restore_ms: null, dedup_pct: 101 },
+    tool_version: "x", run_timestamp: "x", git_sha: "x", machine: "x", available: true };
+  assert.equal(validateRecord(bad).ok, false);
+});
+
 test("vocabularies exported", () => {
   assert.ok(TIERS.includes("bleeding-edge") && TOOLS.includes("restic"));
 });

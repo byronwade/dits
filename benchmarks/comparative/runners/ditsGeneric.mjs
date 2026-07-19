@@ -9,7 +9,7 @@ export const available = () => has(DITS);
 
 export async function run({ v1, v2 }) {
   const repo = mkdtempSync(path.join(tmpdir(), "ditsg-"));
-  const d = (...a) => sh(DITS, a, { cwd: repo, allowFail: true });
+  const d = (...a) => sh(DITS, a, { cwd: repo });
   d("init");
   copyFileSync(v1, path.join(repo, "asset.bin")); d("add", "asset.bin"); d("commit", "-m", "v1");
   const s1 = dirSizeBytes(path.join(repo, ".dits"));

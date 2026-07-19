@@ -41,6 +41,7 @@ pub async fn stream_demo(
     otio: bool,
     import: Option<String>,
     encrypt: bool,
+    report_only: bool,
     port: u16,
 ) -> Result<()> {
     check_ffmpeg().context("FFmpeg is required for stream-demo")?;
@@ -227,6 +228,13 @@ pub async fn stream_demo(
             s2.skipped
         );
         println!("  => only the changed segments crossed the network.");
+    }
+
+    // Benchmarks and automation need the objective report, not a long-running
+    // demo server. Exit successfully once every measured operation is complete.
+    if report_only {
+        let _ = std::fs::remove_dir_all(&work);
+        return Ok(());
     }
 
     // 6. Serve the browser proof (hls.js loads the master playlist and adapts

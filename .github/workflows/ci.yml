@@ -7,6 +7,13 @@ on:
     branches: [ main, develop ]
   workflow_dispatch:
 
+# A newer commit on the same branch makes an in-flight CI run obsolete. Keep
+# separate pull requests and branches independent while releasing their runner
+# capacity as soon as superseded work can no longer be merged.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
@@ -24,15 +31,8 @@ jobs:
         with:
           components: rustfmt, clippy
 
-      - name: Cache Cargo registry
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
+      - name: Cache Cargo dependencies and tools
+        uses: Swatinem/rust-cache@v2.9.1
 
       - name: Install cargo-audit
         run: cargo install --locked cargo-audit
@@ -48,9 +48,6 @@ jobs:
           --ignore RUSTSEC-2025-0141
           --ignore RUSTSEC-2025-0119
 
-      - name: Check for vulnerable dependencies
-        run: cargo audit --format json | jq -e '.vulnerabilities.found == false'
-
   # Rust linting and formatting
   lint-rust:
     name: Lint Rust
@@ -63,6 +60,11 @@ jobs:
         with:
           components: clippy
 
+      # Restore the compiled cache while stable is active so its automatic key
+      # is scoped to the compiler that produces clippy and documentation output.
+      - name: Cache Cargo dependencies and compiled outputs
+        uses: Swatinem/rust-cache@v2.9.1
+
       # rustfmt.toml uses nightly-only options, so formatting is authored with
       # nightly rustfmt. Stable `cargo fmt --check` can't apply those options and
       # would always report a diff — run the format check on nightly instead.
@@ -70,16 +72,6 @@ jobs:
         uses: dtolnay/rust-toolchain@nightly
         with:
           components: rustfmt
-
-      - name: Cache Cargo registry
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
 
       # fuser feature requires libfuse3-dev for --all-features compilation
       - name: Install system dependencies
@@ -92,7 +84,7 @@ jobs:
         run: cargo +stable clippy --locked --all-targets --all-features -- -D warnings
 
       - name: Check documentation
-        run: cargo doc --locked --no-deps --document-private-items
+        run: cargo +stable doc --locked --no-deps --document-private-items
 
       - name: Check CLI docs match the binary
         run: bash scripts/check-cli-docs.sh
@@ -113,15 +105,8 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Cache Cargo registry
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
+      - name: Cache Cargo dependencies, tools, and compiled outputs
+        uses: Swatinem/rust-cache@v2.9.1
 
       - name: Install cargo-nextest
         run: cargo install --locked cargo-nextest
@@ -155,15 +140,8 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Cache Cargo registry
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
+      - name: Cache Cargo dependencies and compiled outputs
+        uses: Swatinem/rust-cache@v2.9.1
 
       - name: Build CLI
         working-directory: apps/cli
@@ -206,15 +184,10 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: Cache Cargo registry
-        uses: actions/cache@v4
+      - name: Cache Cargo dependencies and compiled outputs
+        uses: Swatinem/rust-cache@v2.9.1
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
+          key: ${{ matrix.target }}
 
       - name: Build CLI
         working-directory: apps/cli
@@ -291,15 +264,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Cache Cargo registry
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
+      - name: Cache Cargo dependencies and compiled outputs
+        uses: Swatinem/rust-cache@v2.9.1
 
       - name: Install FFmpeg + git-lfs
         run: sudo apt-get update && sudo apt-get install -y ffmpeg git-lfs
@@ -342,30 +308,6 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
-      # actions-rs/audit was removed from GitHub; run cargo-audit directly.
-      # Mirror the exact ignore list from the Security Audit job.
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache Cargo registry
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
-
-      - name: Install cargo-audit
-        run: cargo install --locked cargo-audit
-
-      - name: Scan Rust dependencies
-        run: >-
-          cargo audit --deny warnings
-          --ignore RUSTSEC-2025-0141
-          --ignore RUSTSEC-2025-0119
-
       # This repo uses npm (root package-lock.json), not pnpm. `--audit-level
       # high` gates on genuinely actionable advisories without failing on the
       # low/moderate transitive noise common in large frontend trees.
@@ -401,6 +343,14 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+
+      # CodeQL must observe a real Rust compilation. Cache downloads and Cargo
+      # tools, but never restore target artifacts that could make this build a
+      # no-op from the extractor's point of view.
+      - name: Cache Cargo dependencies without compiled outputs
+        uses: Swatinem/rust-cache@v2.9.1
+        with:
+          cache-targets: false
 
       - name: Build CLI
         working-directory: apps/cli

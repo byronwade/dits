@@ -27,10 +27,11 @@ pub fn add(files: &[String]) -> Result<()> {
     let mut total_result = crate::store::repository::AddResult::default();
     let mut failed_paths = 0usize;
 
-    for file in files {
+    let outcomes = repo.add_paths(files)?;
+    for (file, outcome) in files.iter().zip(outcomes) {
         progress.set_message(file.clone());
 
-        match repo.add(file) {
+        match outcome {
             Ok(result) => {
                 total_result.files_staged += result.files_staged;
                 total_result.files_deleted += result.files_deleted;

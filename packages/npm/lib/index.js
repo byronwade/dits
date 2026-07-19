@@ -8,7 +8,7 @@
  * 3. Executing the binary with passed arguments
  */
 
-const { execFileSync, spawnSync } = require('child_process');
+const { spawnSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
@@ -33,27 +33,36 @@ function isMusl() {
   if (process.platform !== 'linux') return false;
   if (cachedMusl !== undefined) return cachedMusl;
 
+  // Node exposes the runtime libc in its in-process diagnostic report. Prefer
+  // that over spawning `ldd`, which used to add a child process to every fresh
+  // CLI invocation through the npm shim.
   try {
-    // Check ldd version output
-    const output = execFileSync('ldd', ['--version'], {
-      encoding: 'utf8',
-      stdio: ['pipe', 'pipe', 'pipe']
-    });
-    cachedMusl = output.toLowerCase().includes('musl');
-  } catch {
-    // ldd failed, try checking /etc/os-release for Alpine
-    try {
-      const osRelease = fs.readFileSync('/etc/os-release', 'utf8');
-      cachedMusl = osRelease.toLowerCase().includes('alpine');
-    } catch {
-      // Also check if /lib/ld-musl-* exists
-      try {
-        const libDir = fs.readdirSync('/lib');
-        cachedMusl = libDir.some(f => f.startsWith('ld-musl'));
-      } catch {
-        cachedMusl = false;
-      }
+    const header = process.report?.getReport?.().header;
+    if (header?.glibcVersionRuntime) {
+      cachedMusl = false;
+      return cachedMusl;
     }
+  } catch {
+    // Fall through to filesystem probes on runtimes without diagnostic reports.
+  }
+
+  // Alpine is the common musl distribution. This small synchronous read is a
+  // fallback only and avoids executing another program.
+  try {
+    const osRelease = fs.readFileSync('/etc/os-release', 'utf8');
+    if (osRelease.toLowerCase().includes('alpine')) {
+      cachedMusl = true;
+      return cachedMusl;
+    }
+  } catch {
+    // Continue to the dynamic-loader probe.
+  }
+
+  try {
+    const libDir = fs.readdirSync('/lib');
+    cachedMusl = libDir.some(f => f.startsWith('ld-musl'));
+  } catch {
+    cachedMusl = false;
   }
 
   return cachedMusl;

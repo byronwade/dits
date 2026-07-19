@@ -52,6 +52,42 @@ fn commit_and_checkout_are_byte_identical_for_text_and_binary() {
 }
 
 #[test]
+fn commit_success_reports_files_without_scanning_for_total_chunks() {
+    let tmp = init_repo();
+    let dir = tmp.path();
+    fs::write(dir.join("asset.bin"), b"asset bytes").unwrap();
+    dits(dir).args(["add", "asset.bin"]).assert().success();
+
+    let output = dits(dir)
+        .args(["commit", "-m", "fast commit"])
+        .assert()
+        .success();
+    let stdout = String::from_utf8_lossy(&output.get_output().stdout);
+    assert!(stdout.contains("1 file(s) committed"), "unexpected output:\n{stdout}");
+    assert!(!stdout.contains("total chunks"), "unexpected output:\n{stdout}");
+}
+
+#[test]
+fn multi_path_add_keeps_successes_when_one_input_fails() {
+    let tmp = init_repo();
+    let dir = tmp.path();
+    fs::write(dir.join("kept.bin"), b"keep this content").unwrap();
+
+    dits(dir)
+        .args(["add", "kept.bin", "missing.bin"])
+        .assert()
+        .failure();
+    dits(dir)
+        .args(["commit", "-m", "partial add"])
+        .assert()
+        .success();
+
+    fs::remove_file(dir.join("kept.bin")).unwrap();
+    dits(dir).args(["checkout", "HEAD"]).assert().success();
+    assert_eq!(fs::read(dir.join("kept.bin")).unwrap(), b"keep this content");
+}
+
+#[test]
 fn diff_shows_only_the_changed_lines() {
     let tmp = init_repo();
     let dir = tmp.path();

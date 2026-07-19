@@ -30,9 +30,9 @@ export async function runScaling({ durations = [2, 4, 8, 16], log = () => {} } =
     // dits-facr: store base, then variant — delta is the changed frames only.
     {
       const store = path.join(work, `s${dur}`);
-      sh(DITS, ["facr-add", base, "--store", store, "--manifest", path.join(work, `bm${dur}.json`)], { allowFail: true });
+      sh(DITS, ["facr-add", base, "--store", store, "--manifest", path.join(work, `bm${dur}.json`)]);
       const s0 = dirSizeBytes(store);
-      sh(DITS, ["facr-add", variant, "--store", store, "--manifest", path.join(work, `vm${dur}.json`)], { allowFail: true });
+      sh(DITS, ["facr-add", variant, "--store", store, "--manifest", path.join(work, `vm${dur}.json`)]);
       const delta = Math.max(0, dirSizeBytes(store) - s0);
       ditsPts.push({ dataset_bytes: fileBytes, dedup_pct: pct(fileBytes, delta) });
     }

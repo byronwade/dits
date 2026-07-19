@@ -131,26 +131,34 @@ impl VfsEntry {
 
     /// Find chunk(s) covering a byte range.
     pub fn chunks_for_range(&self, offset: u64, size: u64) -> Vec<(usize, &ChunkRef, u64, u64)> {
-        let mut result = Vec::new();
-        let end = offset + size;
-        let mut chunk_start = 0u64;
+        if size == 0 {
+            return Vec::new();
+        }
 
-        for (idx, chunk) in self.chunks.iter().enumerate() {
-            let chunk_end = chunk_start + chunk.size;
+        let mut result = Vec::new();
+        let end = offset.saturating_add(size);
+
+        // Chunk references are stored in file-offset order. Skip directly to the
+        // first chunk whose end is after the requested offset instead of scanning
+        // from chunk zero on every range read.
+        let first = self
+            .chunks
+            .partition_point(|chunk| chunk.offset.saturating_add(chunk.size) <= offset);
+
+        for (idx, chunk) in self.chunks.iter().enumerate().skip(first) {
+            let chunk_start = chunk.offset;
+            if chunk_start >= end {
+                break;
+            }
+            let chunk_end = chunk_start.saturating_add(chunk.size);
 
             // Check if this chunk overlaps with our range
             if chunk_end > offset && chunk_start < end {
                 // Calculate the overlap
                 let read_start = offset.saturating_sub(chunk_start);
-                let read_end = (end - chunk_start).min(chunk.size);
+                let read_end = end.saturating_sub(chunk_start).min(chunk.size);
                 result.push((idx, chunk, read_start, read_end - read_start));
             }
-
-            if chunk_start >= end {
-                break;
-            }
-
-            chunk_start = chunk_end;
         }
 
         result
@@ -396,5 +404,38 @@ mod tests {
         // Second chunk: read from offset 0, length 50
         assert_eq!(ranges[1].2, 0);
         assert_eq!(ranges[1].3, 50);
+    }
+
+    #[test]
+    fn test_chunks_for_range_uses_chunk_offsets_near_tail() {
+        let mut entry = VfsEntry::directory("test".into(), 1, 0);
+        entry.entry_type = VfsEntryType::File;
+        entry.chunks = (0..10_000)
+            .map(|i| ChunkRef::new(Hash::ZERO, i * 100, 100))
+            .collect();
+
+        let ranges = entry.chunks_for_range(999_950, 50);
+        assert_eq!(ranges.len(), 1);
+        assert_eq!(ranges[0].0, 9_999);
+        assert_eq!(ranges[0].2, 50);
+        assert_eq!(ranges[0].3, 50);
+    }
+
+    #[test]
+    fn test_chunks_for_range_handles_boundaries_gaps_and_zero_size() {
+        let mut entry = VfsEntry::directory("test".into(), 1, 0);
+        entry.entry_type = VfsEntryType::File;
+        entry.chunks = vec![
+            ChunkRef::new(Hash::ZERO, 0, 100),
+            ChunkRef::new(Hash::ZERO, 200, 100),
+        ];
+
+        assert!(entry.chunks_for_range(100, 100).is_empty());
+        assert!(entry.chunks_for_range(50, 0).is_empty());
+
+        let ranges = entry.chunks_for_range(50, 200);
+        assert_eq!(ranges.len(), 2);
+        assert_eq!((ranges[0].0, ranges[0].2, ranges[0].3), (0, 50, 50));
+        assert_eq!((ranges[1].0, ranges[1].2, ranges[1].3), (1, 0, 50));
     }
 }

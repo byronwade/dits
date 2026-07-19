@@ -94,7 +94,7 @@ contracts:
 | MP4 inspection and reconstruction | `inspect`, `roundtrip`, `segment`, `assemble` | Tested fixture/container subset; preserve the original. |
 | Virtual filesystem and cache | `mount`, `unmount`, `cache-stats` | Local only; mount support requires the optional `fuser` build feature. |
 | Frame-addressable video | `facr-demo`, `facr-add`, `facr-checkout`, `facr-trim`, `facr-import-edl`, `facr-import-otio` | Experimental; FFmpeg is required where runtime help says so. |
-| Streaming demonstration | `stream-demo` | In-process experiment, not a repository sync protocol or hosted service. |
+| Streaming demonstration | `stream-demo` | In-process experiment, not a repository sync protocol or hosted service. Use `--report-only` to print byte/reuse results without starting the HTTP player. |
 | Photo rendition experiment | `photo-add`, `photo-edit`, `photo-render` | Non-destructive edit demonstration; not a DAM or RAW pipeline. |
 | Timeline experiment | `video-init`, `video-add-clip`, `video-show`, `video-list` | Local metadata workflow with bounded parser support. |
 | Proxy experiment | `proxy-generate`, `proxy-status`, `proxy-list`, `proxy-delete` | Derived local media; originals remain authoritative. |

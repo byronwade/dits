@@ -37,7 +37,7 @@ use crate::{
         FileClassifier, FileMode, FileStatus, FileType, Hash, Hasher, IgnoreMatcher, Index,
         IndexEntry, Manifest, ManifestEntry, Mp4Metadata, StorageStrategy, StoredAtom,
     },
-    mp4::{Deconstructor, Mp4Parser},
+    mp4::Deconstructor,
     security::KeyStore,
     store::{GitTextEngine, ObjectStore, RefStore},
 };
@@ -100,6 +100,107 @@ pub enum RepoError {
     EncryptionUnsupported,
 }
 
+/// Same-directory checkout writer that keeps the destination untouched until
+/// every object has been loaded and the complete byte count is known.
+///
+/// This bounds restore memory to one decoded chunk while preserving the prior
+/// failure behavior: a missing or corrupt object cannot leave a tracked file
+/// partially truncated.
+struct CheckoutWriter {
+    destination:          PathBuf,
+    temporary:            PathBuf,
+    writer:               Option<BufWriter<File>>,
+    existing_permissions: Option<fs::Permissions>,
+    bytes_written:        u64,
+    published:            bool,
+}
+
+impl CheckoutWriter {
+    fn new(destination: &Path) -> Result<Self, RepoError> {
+        let parent = destination.parent().ok_or_else(|| {
+            io::Error::new(io::ErrorKind::InvalidInput, "checkout path has no parent directory")
+        })?;
+        let file_name = destination
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("checkout");
+        let temporary = parent.join(format!(
+            ".{file_name}.{}.checkout.tmp",
+            uuid::Uuid::new_v4().simple()
+        ));
+        let file = fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&temporary)?;
+
+        Ok(Self {
+            destination: destination.to_path_buf(),
+            temporary,
+            writer: Some(BufWriter::new(file)),
+            existing_permissions: fs::metadata(destination).ok().map(|m| m.permissions()),
+            bytes_written: 0,
+            published: false,
+        })
+    }
+
+    fn write_all(&mut self, data: &[u8]) -> Result<(), RepoError> {
+        self.writer
+            .as_mut()
+            .expect("checkout writer is available before publication")
+            .write_all(data)?;
+        self.bytes_written = self
+            .bytes_written
+            .checked_add(data.len() as u64)
+            .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "checkout size overflow"))?;
+        Ok(())
+    }
+
+    fn finish(mut self, expected_size: u64) -> Result<(), RepoError> {
+        if self.bytes_written != expected_size {
+            return Err(RepoError::IndexError(format!(
+                "checkout for '{}' reconstructed {} bytes, expected {}",
+                self.destination.display(),
+                self.bytes_written,
+                expected_size
+            )));
+        }
+
+        if let Some(writer) = self.writer.as_mut() {
+            writer.flush()?;
+        }
+        drop(self.writer.take());
+
+        // File::create historically retained an existing file's permissions.
+        // Preserve that behavior even though publication now uses rename.
+        if let Some(permissions) = self.existing_permissions.take() {
+            fs::set_permissions(&self.temporary, permissions)?;
+        }
+
+        #[cfg(windows)]
+        if self.destination.exists() {
+            // std::fs::rename does not replace existing files on Windows.
+            // The fully validated temporary file is already closed at this
+            // point, so this keeps the non-atomic window platform-specific and
+            // as small as the standard library permits.
+            fs::remove_file(&self.destination)?;
+        }
+
+        fs::rename(&self.temporary, &self.destination)?;
+        self.published = true;
+        Ok(())
+    }
+}
+
+impl Drop for CheckoutWriter {
+    fn drop(&mut self) {
+        // Close before unlinking; Windows rejects removal of an open file.
+        drop(self.writer.take());
+        if !self.published {
+            let _ = fs::remove_file(&self.temporary);
+        }
+    }
+}
+
 /// Cached index with metadata for performance optimization.
 #[derive(Clone)]
 struct CachedIndex {
@@ -107,6 +208,35 @@ struct CachedIndex {
     index: Index,
     /// Last modification time of the index file.
     mtime: std::time::SystemTime,
+}
+
+#[derive(Debug)]
+enum IndexTextDecodeError {
+    Utf8(std::str::Utf8Error),
+    Json(serde_json::Error),
+}
+
+#[derive(Debug)]
+struct IndexDecodeError {
+    bincode: bincode::Error,
+    text:    IndexTextDecodeError,
+}
+
+impl std::fmt::Display for IndexDecodeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.text {
+            IndexTextDecodeError::Utf8(error) => write!(
+                f,
+                "index is neither valid bincode ({}) nor UTF-8 JSON ({})",
+                self.bincode, error
+            ),
+            IndexTextDecodeError::Json(error) => write!(
+                f,
+                "index is neither valid bincode ({}) nor valid JSON ({})",
+                self.bincode, error
+            ),
+        }
+    }
 }
 
 /// A Dits repository.
@@ -484,8 +614,7 @@ impl Repository {
     // ========== Index Operations ==========
 
     /// Load the index with caching for performance optimization.
-    /// Supports both binary format (Phase 6+) and legacy JSON format for
-    /// backwards compatibility.
+    /// Supports the current JSON representation and legacy bincode indexes.
     pub fn load_index(&self) -> Result<Index, RepoError> {
         let index_path = self.dits_dir.join("index");
 
@@ -521,56 +650,34 @@ impl Repository {
         let data = Self::read_index_bytes(&index_path)?;
         let mtime = index_path.metadata()?.modified()?;
 
-        // Try binary format first (Phase 6+), fall back to JSON for backwards
-        // compatibility
-        let index = match crate::util::deserialize_bincode_with_limit::<Index>(
-            &data,
-            MAX_INDEX_FILE_SIZE,
-        ) {
+        // Current indexes are JSON. Dispatch on the first significant byte so
+        // the normal path does not pay for a guaranteed failed bincode parse,
+        // while still accepting every legacy bincode index.
+        let index = match Self::decode_index_bytes(&data) {
             Ok(index) => index,
-            Err(bincode_err) => {
-                // Fall back to JSON deserialization for legacy indexes
-                match String::from_utf8(data) {
-                    Ok(json) => match Index::from_json(&json) {
-                        Ok(index) => index,
-                        Err(json_err) => {
-                            eprintln!(
-                                "Warning: Index file appears to be corrupted (bincode error: {}, \
-                                 JSON error: {}). Creating new empty index.",
-                                bincode_err, json_err
-                            );
-                            // Backup the corrupted index file
-                            let backup_path = index_path.with_extension("index.corrupted");
-                            if let Err(e) = fs::rename(&index_path, &backup_path) {
-                                eprintln!("Warning: Could not backup corrupted index file: {}", e);
-                            } else {
-                                eprintln!(
-                                    "Corrupted index file backed up to: {}",
-                                    backup_path.display()
-                                );
-                            }
-                            Index::new()
-                        },
-                    },
-                    Err(utf8_err) => {
-                        eprintln!(
-                            "Warning: Index file contains invalid UTF-8 data (bincode error: {}, \
-                             UTF-8 error: {}). Creating new empty index.",
-                            bincode_err, utf8_err
-                        );
-                        // Backup the corrupted index file
-                        let backup_path = index_path.with_extension("index.corrupted");
-                        if let Err(e) = fs::rename(&index_path, &backup_path) {
-                            eprintln!("Warning: Could not backup corrupted index file: {}", e);
-                        } else {
-                            eprintln!(
-                                "Corrupted index file backed up to: {}",
-                                backup_path.display()
-                            );
-                        }
-                        Index::new()
-                    },
+            Err(error) => {
+                match &error.text {
+                    IndexTextDecodeError::Utf8(utf8_error) => eprintln!(
+                        "Warning: Index file contains invalid UTF-8 data (bincode error: {}, \
+                         UTF-8 error: {}). Creating new empty index.",
+                        error.bincode, utf8_error
+                    ),
+                    IndexTextDecodeError::Json(json_error) => eprintln!(
+                        "Warning: Index file appears to be corrupted (bincode error: {}, JSON \
+                         error: {}). Creating new empty index.",
+                        error.bincode, json_error
+                    ),
                 }
+
+                // Preserve the existing recovery behavior: move malformed
+                // bytes aside before returning a fresh index.
+                let backup_path = index_path.with_extension("index.corrupted");
+                if let Err(e) = fs::rename(&index_path, &backup_path) {
+                    eprintln!("Warning: Could not backup corrupted index file: {}", e);
+                } else {
+                    eprintln!("Corrupted index file backed up to: {}", backup_path.display());
+                }
+                Index::new()
             },
         };
 
@@ -597,26 +704,8 @@ impl Repository {
         }
 
         let data = Self::read_index_bytes(&index_path)?;
-        let index = match crate::util::deserialize_bincode_with_limit::<Index>(
-            &data,
-            MAX_INDEX_FILE_SIZE,
-        ) {
-            Ok(index) => index,
-            Err(bincode_err) => {
-                let json = String::from_utf8(data).map_err(|utf8_err| {
-                    RepoError::IndexError(format!(
-                        "index is neither valid bincode ({bincode_err}) nor UTF-8 JSON \
-                         ({utf8_err})"
-                    ))
-                })?;
-                Index::from_json(&json).map_err(|json_err| {
-                    RepoError::IndexError(format!(
-                        "index is neither valid bincode ({bincode_err}) nor valid JSON \
-                         ({json_err})"
-                    ))
-                })?
-            },
-        };
+        let index = Self::decode_index_bytes(&data)
+            .map_err(|error| RepoError::IndexError(error.to_string()))?;
 
         Self::validate_index_paths(&index)?;
         Ok(index)
@@ -662,6 +751,46 @@ impl Repository {
         Ok(data)
     }
 
+    fn index_bytes_look_like_json(data: &[u8]) -> bool {
+        data.iter()
+            .copied()
+            .find(|byte| !byte.is_ascii_whitespace())
+            .is_some_and(|byte| matches!(byte, b'{' | b'['))
+    }
+
+    fn decode_json_index(data: &[u8]) -> Result<Index, IndexTextDecodeError> {
+        let json = std::str::from_utf8(data).map_err(IndexTextDecodeError::Utf8)?;
+        Index::from_json(json).map_err(IndexTextDecodeError::Json)
+    }
+
+    fn decode_bincode_index(data: &[u8]) -> Result<Index, bincode::Error> {
+        crate::util::deserialize_bincode_with_limit::<Index>(data, MAX_INDEX_FILE_SIZE)
+    }
+
+    fn decode_index_bytes(data: &[u8]) -> Result<Index, IndexDecodeError> {
+        if Self::index_bytes_look_like_json(data) {
+            let text = match Self::decode_json_index(data) {
+                Ok(index) => return Ok(index),
+                Err(error) => error,
+            };
+            let bincode = match Self::decode_bincode_index(data) {
+                Ok(index) => return Ok(index),
+                Err(error) => error,
+            };
+            Err(IndexDecodeError { bincode, text })
+        } else {
+            let bincode = match Self::decode_bincode_index(data) {
+                Ok(index) => return Ok(index),
+                Err(error) => error,
+            };
+            let text = match Self::decode_json_index(data) {
+                Ok(index) => return Ok(index),
+                Err(error) => error,
+            };
+            Err(IndexDecodeError { bincode, text })
+        }
+    }
+
     fn validate_index_paths(index: &Index) -> Result<(), RepoError> {
         for (path, entry) in &index.entries {
             crate::util::validate_repo_relative_path(path)
@@ -680,9 +809,80 @@ impl Repository {
 
     /// Add a file to the staging area.
     pub fn add(&self, path: &str) -> Result<AddResult, RepoError> {
-        // Store repository-relative paths with `/` on every platform so manifests
-        // and commit hashes match across Windows and Unix. `Path::join` accepts
-        // `/` on Windows, so normalizing up front is safe.
+        let (path, full_path) = self.prepare_add_path(path)?;
+        let mut index = self.load_index()?;
+        let (result, should_save) =
+            self.add_prepared_path_to_index(&mut index, &path, &full_path)?;
+        if should_save {
+            self.save_index(&index)?;
+        }
+        Ok(result)
+    }
+
+    /// Add multiple paths while loading and publishing the index only once.
+    ///
+    /// Each path is isolated from the next: a failed path discards its index
+    /// mutations, successful paths remain staged, and the caller receives one
+    /// result per input path in the original order.
+    pub fn add_paths<S: AsRef<str>>(
+        &self,
+        paths: &[S],
+    ) -> Result<Vec<Result<AddResult, RepoError>>, RepoError> {
+        if paths.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        // Resolve and reject malformed/ignored inputs before loading the index,
+        // matching the side-effect behavior of the former per-path CLI loop.
+        let prepared: Vec<_> = paths
+            .iter()
+            .map(|path| self.prepare_add_path(path.as_ref()))
+            .collect();
+        let mut index = if prepared.iter().any(Result::is_ok) {
+            Some(self.load_index()?)
+        } else {
+            None
+        };
+        let mut should_save = false;
+        let mut outcomes = Vec::with_capacity(paths.len());
+
+        for path in prepared {
+            let (path, full_path) = match path {
+                Ok(path) => path,
+                Err(error) => {
+                    outcomes.push(Err(error));
+                    continue;
+                },
+            };
+
+            // Preserve the old per-path atomicity. Object writes may still be
+            // left deduplicated in the store after an error, just as they were
+            // when `add` saved only after a complete path succeeded.
+            let mut candidate = index
+                .as_ref()
+                .expect("prepared path requires an index")
+                .clone();
+            match self.add_prepared_path_to_index(&mut candidate, &path, &full_path) {
+                Ok((result, path_should_save)) => {
+                    if path_should_save {
+                        index = Some(candidate);
+                        should_save = true;
+                    }
+                    outcomes.push(Ok(result));
+                },
+                Err(error) => outcomes.push(Err(error)),
+            }
+        }
+
+        if should_save {
+            self.save_index(index.as_ref().expect("changed path requires an index"))?;
+        }
+        Ok(outcomes)
+    }
+
+    fn prepare_add_path(&self, path: &str) -> Result<(String, PathBuf), RepoError> {
+        // Store repository-relative paths with `/` on every platform so
+        // manifests and commit hashes match across Windows and Unix.
         let path = crate::util::normalize_repo_input_path(path)
             .map_err(|reason| RepoError::InvalidPath { path: path.to_string(), reason })?;
         let full_path = if path == "." {
@@ -691,30 +891,42 @@ impl Repository {
             self.resolve_worktree_path(&path)?
         };
 
-        if !full_path.exists() {
-            let mut index = self.load_index()?;
-            let mut result = AddResult::default();
-            let (matched, changed) =
-                self.stage_missing_under_scope(&mut index, &path, &mut result)?;
-            if matched {
-                if changed {
-                    self.save_index(&index)?;
-                }
-                return Ok(result);
-            }
-            return Err(RepoError::FileNotFound(path));
+        // Missing paths are allowed through so tracked deletions can be staged.
+        // Existing ignored paths fail before the index is loaded or repaired.
+        if full_path.exists() && self.ignore.is_ignored_str(&path) {
+            return Err(RepoError::FileIgnored(path));
         }
 
-        // Check if path is ignored
-        if self.ignore.is_ignored_str(&path) {
+        Ok((path, full_path))
+    }
+
+    /// Apply one prepared path to an in-memory index. The boolean indicates
+    /// whether the caller should publish the resulting index.
+    fn add_prepared_path_to_index(
+        &self,
+        index: &mut Index,
+        path: &str,
+        full_path: &Path,
+    ) -> Result<(AddResult, bool), RepoError> {
+        if !full_path.exists() {
+            let mut result = AddResult::default();
+            let (matched, changed) =
+                self.stage_missing_under_scope(index, path, &mut result)?;
+            if matched {
+                return Ok((result, changed));
+            }
+            return Err(RepoError::FileNotFound(path.to_string()));
+        }
+
+        // Recheck after preparation in case a batch input changed on disk.
+        if self.ignore.is_ignored_str(path) {
             return Err(RepoError::FileIgnored(path.to_string()));
         }
 
-        let mut index = self.load_index()?;
         let mut result = AddResult::default();
 
         if full_path.is_file() {
-            self.add_file(&mut index, &path, &full_path, &mut result)?;
+            self.add_file(index, path, full_path, &mut result)?;
         } else if full_path.is_dir() {
             // Add all files in directory
             for entry in WalkDir::new(&full_path)
@@ -746,17 +958,16 @@ impl Repository {
                     continue;
                 }
 
-                self.add_file(&mut index, &rel_path, entry.path(), &mut result)?;
+                self.add_file(index, &rel_path, entry.path(), &mut result)?;
             }
 
             // Treat a directory add as a complete reconciliation of tracked
             // paths in that scope. Missing tracked files become staged
             // deletions; a newly staged file that disappeared is unstaged.
-            self.stage_missing_under_scope(&mut index, &path, &mut result)?;
+            self.stage_missing_under_scope(index, path, &mut result)?;
         }
 
-        self.save_index(&index)?;
-        Ok(result)
+        Ok((result, true))
     }
 
     fn stage_missing_under_scope(
@@ -1120,16 +1331,8 @@ impl Repository {
         full_path: &Path,
         result: &mut AddResult,
     ) -> Result<(), RepoError> {
-        // Parse MP4 structure
-        let structure = match Mp4Parser::parse(full_path) {
-            Ok(s) => s,
-            Err(_) => {
-                // If parsing fails, fall back to regular file handling
-                return self.add_regular_file(index, rel_path, full_path, result);
-            },
-        };
-
-        // Deconstruct the MP4
+        // Deconstruction already parses and retains the MP4 structure. Reuse
+        // it instead of parsing every media file twice.
         let deconstructed = match Deconstructor::deconstruct(full_path) {
             Ok(d) => d,
             Err(_) => {
@@ -1137,6 +1340,7 @@ impl Repository {
                 return self.add_regular_file(index, rel_path, full_path, result);
             },
         };
+        let structure = &deconstructed.structure;
 
         // Compute content hash of the full file for change detection
         let data = fs::read(full_path)?;
@@ -1414,6 +1618,18 @@ impl Repository {
         let mut working_files = Vec::new();
         for entry in WalkDir::new(&self.work_dir)
             .into_iter()
+            .filter_entry(|entry| {
+                if entry.depth() == 0 || !entry.file_type().is_dir() {
+                    return true;
+                }
+
+                let Ok(relative) = entry.path().strip_prefix(&self.work_dir) else {
+                    return false;
+                };
+                let relative =
+                    crate::util::normalize_separators(&relative.to_string_lossy());
+                self.ignore.should_descend_into(&relative)
+            })
             .filter_map(|e| e.ok())
             .filter(|e| e.file_type().is_file())
         {
@@ -1484,7 +1700,7 @@ impl Repository {
 
         // Process working files and detect unstaged renames
         if let Some(ref manifest) = head_manifest {
-            let mut potential_renames = Vec::new();
+            let mut potential_rename_paths = Vec::new();
             let mut head_files_in_working = std::collections::HashSet::new();
 
             // First pass: identify modified, type-changed files and collect working files
@@ -1539,7 +1755,7 @@ impl Repository {
                 } else {
                     // File doesn't exist in HEAD - could be new or renamed
                     status.untracked.push(rel_path.clone());
-                    potential_renames.push((rel_path.clone(), full_path.clone()));
+                    potential_rename_paths.push((rel_path.clone(), full_path.clone()));
                 }
             }
 
@@ -1556,38 +1772,56 @@ impl Repository {
                 if staged {
                     continue;
                 }
-                missing_from_working.push((head_path.clone(), head_entry.content_hash));
+                missing_from_working.push((
+                    head_path.clone(),
+                    head_entry.content_hash,
+                    head_entry.size,
+                ));
             }
 
-            // Second pass: detect renames by matching content hashes. Each
-            // untracked path can satisfy at most one missing source path.
-            let mut matched_new_paths = std::collections::HashSet::new();
-            for (old_path, old_hash) in &missing_from_working {
-                let mut renamed = false;
-                // Look for an untracked file with the same content hash
-                for (new_path, new_full_path) in &potential_renames {
-                    if matched_new_paths.contains(new_path) {
+            // Only files whose size matches a missing source can be renames.
+            // Hash each viable untracked candidate once, then match through a
+            // hash map instead of rereading it for every missing path.
+            let missing_sizes: std::collections::HashSet<u64> = missing_from_working
+                .iter()
+                .map(|(_, _, size)| *size)
+                .collect();
+            let mut potential_renames =
+                std::collections::HashMap::<Hash, std::collections::VecDeque<String>>::new();
+            if !missing_sizes.is_empty() {
+                for (new_path, new_full_path) in potential_rename_paths {
+                    let Ok(metadata) = fs::metadata(&new_full_path) else {
+                        continue;
+                    };
+                    if !missing_sizes.contains(&metadata.len()) {
                         continue;
                     }
                     if let Ok(data) = fs::read(new_full_path) {
-                        let new_hash = Hasher::hash(&data);
-                        if new_hash == *old_hash {
-                            // Found an unstaged rename!
-                            status
-                                .unstaged_renamed
-                                .push((old_path.clone(), new_path.clone()));
-                            // Remove from untracked since it's a rename
-                            status.untracked.retain(|p| p != new_path);
-                            matched_new_paths.insert(new_path.clone());
-                            renamed = true;
-                            break;
-                        }
+                        potential_renames
+                            .entry(Hasher::hash(&data))
+                            .or_default()
+                            .push_back(new_path);
                     }
                 }
-                if !renamed {
+            }
+
+            let mut matched_new_paths = std::collections::HashSet::new();
+            for (old_path, old_hash, _) in &missing_from_working {
+                if let Some(new_path) = potential_renames
+                    .get_mut(old_hash)
+                    .and_then(|paths| paths.pop_front())
+                {
+                    status
+                        .unstaged_renamed
+                        .push((old_path.clone(), new_path.clone()));
+                    matched_new_paths.insert(new_path);
+                } else {
                     status.deleted.push(old_path.clone());
                 }
             }
+            status
+                .untracked
+                .retain(|path| !matched_new_paths.contains(path));
         } else {
             // No HEAD manifest, all working files are untracked
             for (rel_path, _) in working_files {
@@ -1946,15 +2180,22 @@ impl Repository {
             other_atoms_data.insert(stored_atom.atom_type.clone(), data);
         }
 
-        // Reassemble mdat data from chunks
-        let mut mdat_data = Vec::with_capacity(mp4_meta.mdat_size as usize);
-        for chunk_ref in &entry.chunks {
-            let chunk = self.objects.load_chunk(&chunk_ref.hash)?;
-            mdat_data.extend_from_slice(&chunk.data);
+        // Chunk references carry the complete mdat byte count, so atom offsets
+        // can be calculated without materializing the media payload.
+        let mdat_size = entry.chunks.iter().try_fold(0u64, |total, chunk| {
+            total.checked_add(chunk.size).ok_or_else(|| {
+                RepoError::IndexError(format!("mdat size overflow for '{}'", entry.path))
+            })
+        })?;
+        if mdat_size != mp4_meta.mdat_size {
+            return Err(RepoError::IndexError(format!(
+                "mdat size mismatch for '{}': chunk references total {}, metadata records {}",
+                entry.path, mdat_size, mp4_meta.mdat_size
+            )));
         }
 
         // Create mdat header
-        let mdat_header = crate::mp4::create_mdat_header(mdat_data.len() as u64);
+        let mdat_header = crate::mp4::create_mdat_header(mdat_size);
 
         // Determine atom order and calculate positions
         // If we have a saved atom_order, use it; otherwise use default: ftyp, moov,
@@ -1978,7 +2219,7 @@ impl Repository {
                 },
                 "mdat" => {
                     mdat_data_start = current_offset + mdat_header.len() as u64;
-                    current_offset += mdat_header.len() as u64 + mdat_data.len() as u64;
+                    current_offset += mdat_header.len() as u64 + mdat_size;
                 },
                 other => {
                     if let Some(data) = other_atoms_data.get(other) {
@@ -1998,9 +2239,10 @@ impl Repository {
             )?;
         }
 
-        // Write the reconstructed MP4
-        let file = File::create(full_path)?;
-        let mut writer = BufWriter::new(file);
+        // Stream the reconstructed MP4 to a same-directory temporary file.
+        // Only the small structural atoms and one decoded mdat chunk are held
+        // in memory at a time.
+        let mut writer = CheckoutWriter::new(full_path)?;
 
         for atom_type in &atom_order {
             match atom_type.as_str() {
@@ -2012,7 +2254,19 @@ impl Repository {
                 },
                 "mdat" => {
                     writer.write_all(&mdat_header)?;
-                    writer.write_all(&mdat_data)?;
+                    for chunk_ref in &entry.chunks {
+                        let chunk = self.objects.load_chunk(&chunk_ref.hash)?;
+                        if chunk.data.len() as u64 != chunk_ref.size {
+                            return Err(RepoError::IndexError(format!(
+                                "chunk size mismatch for '{}': {} records {}, object contains {}",
+                                entry.path,
+                                chunk_ref.hash,
+                                chunk_ref.size,
+                                chunk.data.len()
+                            )));
+                        }
+                        writer.write_all(&chunk.data)?;
+                    }
                 },
                 other => {
                     if let Some(data) = other_atoms_data.get(other) {
@@ -2022,7 +2276,7 @@ impl Repository {
             }
         }
 
-        writer.flush()?;
+        writer.finish(entry.size)?;
 
         result.files_restored += 1;
         result.bytes_restored += entry.size;
@@ -2084,7 +2338,9 @@ impl Repository {
             if let (Some(ref git_oid), Some(ref engine)) = (&entry.git_oid, &self.git_engine) {
                 let oid = GitTextEngine::parse_oid(git_oid)?;
                 let data = engine.read_blob(oid)?;
-                fs::write(full_path, &data)?;
+                let mut writer = CheckoutWriter::new(full_path)?;
+                writer.write_all(&data)?;
+                writer.finish(entry.size)?;
                 result.files_restored += 1;
                 result.bytes_restored += entry.size;
                 return Ok(());
@@ -2092,14 +2348,24 @@ impl Repository {
             // Fall through to chunk-based restore if Git engine not available
         }
 
-        // Reassemble file from chunks
-        let mut data = Vec::with_capacity(entry.size as usize);
+        // Reassemble directly into a temporary worktree file. A failed object
+        // load leaves the existing destination untouched.
+        let mut writer = CheckoutWriter::new(full_path)?;
         for chunk_ref in &entry.chunks {
             let chunk = self.objects.load_chunk(&chunk_ref.hash)?;
-            data.extend_from_slice(&chunk.data);
+            if chunk.data.len() as u64 != chunk_ref.size {
+                return Err(RepoError::IndexError(format!(
+                    "chunk size mismatch for '{}': {} records {}, object contains {}",
+                    entry.path,
+                    chunk_ref.hash,
+                    chunk_ref.size,
+                    chunk.data.len()
+                )));
+            }
+            writer.write_all(&chunk.data)?;
         }
 
-        fs::write(full_path, &data)?;
+        writer.finish(entry.size)?;
         result.files_restored += 1;
         result.bytes_restored += entry.size;
 
@@ -2566,6 +2832,24 @@ mod tests {
     }
 
     #[test]
+    fn test_index_decoder_dispatches_current_json_and_legacy_bincode() {
+        let mut index = Index::new();
+        index.base_commit = Some(Hash::ZERO);
+
+        let json = format!(" \n{}", index.to_json());
+        assert!(Repository::index_bytes_look_like_json(json.as_bytes()));
+        let decoded_json = Repository::decode_index_bytes(json.as_bytes()).unwrap();
+        assert_eq!(decoded_json.base_commit, Some(Hash::ZERO));
+
+        let legacy = bincode::serialize(&index).unwrap();
+        assert!(!Repository::index_bytes_look_like_json(&legacy));
+        let decoded_legacy = Repository::decode_index_bytes(&legacy).unwrap();
+        assert_eq!(decoded_legacy.base_commit, Some(Hash::ZERO));
+
+        assert!(Repository::decode_index_bytes(b"{not valid JSON").is_err());
+    }
+
+    #[test]
     fn test_open_rejects_malformed_local_config_without_rewriting_it() {
         let temp = tempdir().unwrap();
         let repo = Repository::init(temp.path()).unwrap();
@@ -2599,6 +2883,30 @@ mod tests {
         let log = repo.log(10).unwrap();
         assert_eq!(log.len(), 1);
         assert_eq!(log[0].message, "Initial commit");
+    }
+
+    #[test]
+    fn test_add_paths_keeps_successes_when_another_path_fails() {
+        let temp = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+        fs::write(temp.path().join("first.txt"), b"first").unwrap();
+        fs::write(temp.path().join("second.txt"), b"second").unwrap();
+
+        let outcomes = repo
+            .add_paths(&["first.txt", "missing.txt", "second.txt"])
+            .unwrap();
+        assert_eq!(outcomes.len(), 3);
+        assert!(outcomes[0].is_ok());
+        assert!(matches!(
+            &outcomes[1],
+            Err(RepoError::FileNotFound(path)) if path == "missing.txt"
+        ));
+        assert!(outcomes[2].is_ok());
+
+        let index = repo.load_index().unwrap();
+        assert!(index.get("first.txt").is_some());
+        assert!(index.get("second.txt").is_some());
+        assert!(index.get("missing.txt").is_none());
     }
 
     #[test]
@@ -2798,6 +3106,37 @@ mod tests {
     }
 
     #[test]
+    fn test_failed_streaming_checkout_keeps_existing_file() {
+        let temp = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+        let file = temp.path().join("large.bin");
+        let content: Vec<u8> = (0..300_000).map(|i| (i % 251) as u8).collect();
+
+        fs::write(&file, &content).unwrap();
+        repo.add("large.bin").unwrap();
+        let commit = repo.commit("chunked file").unwrap();
+        let manifest = repo.objects.load_manifest(&commit.manifest).unwrap();
+        let entry = manifest.get("large.bin").unwrap();
+        assert!(entry.chunks.len() > 1);
+
+        let missing = entry.chunks.last().unwrap().hash.to_hex();
+        let missing_path = repo
+            .dits_dir
+            .join("objects/chunks")
+            .join(&missing[..2])
+            .join(&missing[2..]);
+        fs::remove_file(missing_path).unwrap();
+        fs::write(&file, b"keep existing bytes").unwrap();
+
+        assert!(repo.checkout(&commit.hash).is_err());
+        assert_eq!(fs::read(&file).unwrap(), b"keep existing bytes");
+        assert!(!fs::read_dir(temp.path())
+            .unwrap()
+            .filter_map(Result::ok)
+            .any(|entry| entry.file_name().to_string_lossy().contains("checkout.tmp")));
+    }
+
+    #[test]
     fn test_add_rejects_paths_outside_the_repository() {
         let temp = tempdir().unwrap();
         let repo = Repository::init(temp.path()).unwrap();
@@ -2881,6 +3220,24 @@ mod tests {
         let status = repo.status().unwrap();
         assert!(status.staged_new.contains(&"untracked.txt".to_string()));
         assert!(!status.untracked.contains(&"untracked.txt".to_string()));
+    }
+
+    #[test]
+    fn test_status_pruning_preserves_negated_file_in_ignored_directory() {
+        let temp = tempdir().unwrap();
+        fs::write(
+            temp.path().join(".ditsignore"),
+            "ignored/\n!ignored/keep.txt\n",
+        )
+        .unwrap();
+        fs::create_dir(temp.path().join("ignored")).unwrap();
+        fs::write(temp.path().join("ignored/keep.txt"), b"keep").unwrap();
+        fs::write(temp.path().join("ignored/drop.txt"), b"drop").unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+
+        let status = repo.status().unwrap();
+        assert!(status.untracked.contains(&"ignored/keep.txt".to_string()));
+        assert!(!status.untracked.contains(&"ignored/drop.txt".to_string()));
     }
 
     // ========== Phase 4 Tests ==========

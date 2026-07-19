@@ -202,7 +202,7 @@ impl OutputCodec {
 }
 
 /// Map a manifest's recorded codec name to the on-disk frame extension.
-pub(crate) fn frame_ext(codec: &str) -> &str {
+pub fn frame_ext(codec: &str) -> &str {
     match codec {
         "" | "png" => "png",
         "webp" | "webp-vl" => "webp",
