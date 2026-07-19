@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If Dits contributes to your work, please cite this repository."
+type: software
+title: "Dits: local-first version control for media and asset pipelines"
+authors:
+  - family-names: Wade
+    given-names: Byron
+    alias: byronwade
+repository-code: "https://github.com/byronwade/dits"
+url: "https://dits.byronwade.com"
+license:
+  - Apache-2.0
+  - MIT
+keywords:
+  - version control
+  - media assets
+  - content-addressed storage
+  - large files
+  - reproducible pipelines

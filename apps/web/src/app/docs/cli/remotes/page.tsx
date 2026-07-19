@@ -9,7 +9,7 @@ export const metadata: Metadata = genMeta({
   title: "Dits Remote Commands - Alpha Status",
   description:
     "Current alpha behavior for Dits remote configuration, local clone, and disabled transfer commands.",
-  canonical: "https://dits.dev/docs/cli/remotes",
+  canonical: "https://dits.byronwade.com/docs/cli/remotes",
 });
 
 export default function RemoteCommandsPage() {

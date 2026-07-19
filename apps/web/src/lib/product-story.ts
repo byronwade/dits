@@ -2,7 +2,7 @@ export const PRODUCT_POSITIONING = {
   category: "Open, local-first version control for large media and asset pipelines.",
   tagline: "Version the source. Explain every result.",
   description:
-    "Dits gives asset-heavy teams exact local history today and is building toward a reproducible graph of edits, dependencies, and renditions shared through an open protocol.",
+    "Dits gives mixed code-and-media projects Git-shaped local history with chunked, content-addressed storage. Exact local workflows work today; semantic media and team sync are roadmap.",
   version: "v0.1.5 alpha",
 } as const;
 

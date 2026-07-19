@@ -10,7 +10,7 @@ export const metadata: Metadata = genMeta({
   title: "Troubleshooting the Dits Alpha",
   description:
     "Current troubleshooting guidance for package targets, local repositories, integrity checks, disabled remotes, report-only GC, and experimental paths.",
-  canonical: "https://dits.dev/docs/troubleshooting",
+  canonical: "https://dits.byronwade.com/docs/troubleshooting",
 });
 
 export default function TroubleshootingPage() {
@@ -250,7 +250,7 @@ dits unlock path/to/file --force`}
 
       <p>
         Search <Link href="https://github.com/byronwade/dits/issues">GitHub issues</Link>
-        and <Link href="https://github.com/byronwade/dits/discussions">discussions</Link>.
+        and <Link href="https://github.com/byronwade/dits/issues/new/choose">structured issue forms</Link>.
         A new report should include the exact command and error, Dits version,
         platform details, expected behavior, and a minimal fixture you have
         permission to share. Remove secrets, personal data, proprietary media,

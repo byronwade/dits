@@ -10,7 +10,7 @@ export const metadata: Metadata = genMeta({
   title: "Dits Security Model - Local Alpha",
   description:
     "The current Dits trust boundary, integrity checks, disabled encryption and transfer paths, telemetry behavior, and safe evaluation guidance.",
-  canonical: "https://dits.dev/docs/architecture/security",
+  canonical: "https://dits.byronwade.com/docs/architecture/security",
 });
 
 export default function SecurityPage() {
@@ -128,13 +128,14 @@ dits telemetry disable`}
 
       <h2>Reporting security issues</h2>
       <p>
-        Use GitHub&apos;s{" "}
-        <Link href="https://github.com/byronwade/dits/security/advisories/new">
-          private vulnerability-reporting flow
+        Use the details-free{" "}
+        <Link href="https://github.com/byronwade/dits/issues/new?template=security-contact.yml">
+          security contact form
         </Link>{" "}
-        for a report that should not start publicly. The project does not promise a
-        bounty, response deadline, embargo window, or remediation SLA. General bugs
-        can be filed in the{" "}
+        to ask a maintainer to arrange private follow-up. The request is public,
+        so include no vulnerability details, proof of concept, secrets, affected
+        data, paths, or logs. The project does not promise a bounty, response
+        deadline, embargo window, or remediation SLA. General bugs can be filed in the{" "}
         <Link href="https://github.com/byronwade/dits/issues">public issue tracker</Link>.
       </p>
     </div>

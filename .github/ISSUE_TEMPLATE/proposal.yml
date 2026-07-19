@@ -1,0 +1,63 @@
+name: Focused proposal
+description: Propose a user-centered improvement or bounded design change.
+title: "proposal: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Dits orders work by evidence and dependency. Explain the workflow before the mechanism, and distinguish what should ship now from roadmap design.
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem
+      description: Who has this problem, in what real workflow, and what do they do today?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe the observable result without prescribing an implementation.
+    validations:
+      required: true
+  - type: dropdown
+    id: horizon
+    attributes:
+      label: Proposed maturity horizon
+      options:
+        - Current alpha improvement
+        - Experimental proof
+        - Roadmap design
+        - Unsure
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence or workflow example
+      description: Link public references, share a redistributable example, or explain how success could be tested.
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Format, fidelity, security, or compatibility impact
+      description: Note any new persistent bytes, migrations, derived-media behavior, trust boundary, or recovery requirement.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Include existing Dits paths and established open formats or tools that may already solve part of the problem.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Project checks
+      options:
+        - label: I read the implementation status and roadmap.
+          required: true
+        - label: I am not presenting this proposal as a shipped capability.
+          required: true
+        - label: I searched for an existing issue or ADR.
+          required: true
+        - label: I agree to follow the Code of Conduct.
+          required: true

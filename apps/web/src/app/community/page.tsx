@@ -7,7 +7,7 @@ import { GithubIcon } from "@/components/icons/github-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Bug, FlaskConical, GitPullRequest, MessageCircle } from "lucide-react";
+import { BookOpen, Bug, FlaskConical, GitPullRequest, Star } from "lucide-react";
 
 import { generateMetadata as genMeta } from "@/lib/seo";
 
@@ -15,29 +15,29 @@ export const metadata: Metadata = genMeta({
   title: "Help Shape Dits - Early Open-Source Project",
   description:
     "Evaluate the Dits alpha, report reproducible issues, improve documentation, and contribute tests or code on GitHub.",
-  canonical: "https://dits.dev/community",
+  canonical: "https://dits.byronwade.com/community",
   keywords: ["Dits open source", "Dits contributors", "Dits GitHub", "media version control alpha"],
   openGraph: {
     type: "website",
-    images: [{ url: "/dits.png", width: 1200, height: 630, alt: "Help shape Dits" }],
+    images: [{ url: "/dits-social-preview.png", width: 1280, height: 640, alt: "Help shape Dits" }],
   },
   twitter: { card: "summary_large_image" },
 });
 
 const projectLinks = [
   {
-    title: "GitHub Discussions",
-    description: "Ask a question or share evaluation notes. Replies are volunteer-led and not guaranteed.",
-    icon: MessageCircle,
-    href: "https://github.com/byronwade/dits/discussions",
-    action: "Open discussions",
+    title: "Star the project",
+    description: "Follow Dits as the local alpha becomes safer and help other media-pipeline builders discover it.",
+    icon: Star,
+    href: "https://github.com/byronwade/dits",
+    action: "Star Dits",
   },
   {
     title: "GitHub Issues",
     description: "Report a reproducible bug or propose a focused improvement. The project has no response-time SLA.",
     icon: Bug,
-    href: "https://github.com/byronwade/dits/issues",
-    action: "Open issues",
+    href: "https://github.com/byronwade/dits/issues/new/choose",
+    action: "Choose an issue form",
   },
   {
     title: "Source repository",

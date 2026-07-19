@@ -5,7 +5,7 @@
 Public messaging authority; capability claims remain subordinate to docs/STATUS.md and
 measured evidence.
 
-> Public messaging authority. Last reviewed: 2026-07-16. Product maturity and
+> Public messaging authority. Last reviewed: 2026-07-18. Product maturity and
 > feature availability are governed by [`docs/STATUS.md`](../STATUS.md).
 
 ## Positioning statement
@@ -15,6 +15,12 @@ measured evidence.
 It gives teams exact source history today and is building toward a reproducible
 graph of edits, dependencies, and renditions that can move through an open,
 verified protocol.
+
+Hero clarifier:
+
+> Dits gives mixed code-and-media projects Git-shaped local history with
+> chunked, content-addressed storage. Exact local workflows work today;
+> semantic media and team sync are roadmap.
 
 Short form:
 
@@ -109,7 +115,8 @@ microbenchmark into a repository-level performance claim.
 - **Tagline:** Version the source. Explain every result.
 - **Technical:** Exact local history with content-addressed, chunked storage.
 - **Vision:** A reproducible graph of source, edits, dependencies, and renditions.
-- **CTA:** Try the local alpha. Help shape the format and protocol.
+- **CTA:** Try the local alpha. Star Dits on GitHub. Contribute a fixture or
+  failure case.
 
 ## Messages to retire
 
@@ -122,10 +129,26 @@ microbenchmark into a repository-level performance claim.
 
 ## Calls to action
 
-The appropriate alpha calls to action are:
+The appropriate alpha calls to action, in order, are:
 
 1. install the npm-packaged CLI;
 2. try it on a disposable or backed-up project;
-3. run the verification suite or reproduce a benchmark;
+3. star the repository if the problem resonates;
 4. contribute a real-world fixture, failure case, or design review;
-5. follow the dependency-ordered [`ROADMAP.md`](../../ROADMAP.md).
+5. run the verification suite or reproduce a benchmark; and
+6. follow the dependency-ordered [`ROADMAP.md`](../../ROADMAP.md).
+
+## GitHub storefront
+
+Keep GitHub repository settings aligned with this document:
+
+- **About:** `Open-source, local-first version control for large media and binary assets. Exact local history today; explainable media pipelines next.`
+- **Website:** `https://dits.byronwade.com`
+- **Topics:** `rust`, `version-control`, `large-files`, `binary-files`,
+  `local-first`, `content-addressable-storage`, `fastcdc`, `blake3`, `media`,
+  `game-development`, `virtual-production`, `vfx`, `post-production`,
+  `creative-tools`, `developer-tools`
+- **Social preview:** `.github/assets/dits-social-preview.png` (1280×640)
+
+The About field must never describe Dits as a shipped distributed VCS while
+network repository exchange remains Design.

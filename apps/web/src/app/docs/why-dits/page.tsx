@@ -17,7 +17,7 @@ export const metadata: Metadata = genMeta({
   title: "Why Evaluate Dits - Fit, Trade-offs, and Alternatives",
   description:
     "When the Dits local alpha may be worth evaluating, when to keep Git LFS, Xet, Perforce, a cloud drive, or a review platform, and what Dits still must prove.",
-  canonical: "https://dits.dev/docs/why-dits",
+  canonical: "https://dits.byronwade.com/docs/why-dits",
 });
 
 const alternatives = [

@@ -10,7 +10,7 @@ export const metadata: Metadata = genMeta({
   title: "Install Dits v0.1.5",
   description:
     "Install the Dits local alpha from the published npm package or build the Rust workspace from source.",
-  canonical: "https://dits.dev/docs/installation",
+  canonical: "https://dits.byronwade.com/docs/installation",
 });
 
 export default function InstallationPage() {

@@ -10,7 +10,7 @@ export const metadata: Metadata = genMeta({
   title: "Getting Started with the Dits Local Alpha",
   description:
     "Install Dits from npm, create a safe local evaluation repository, commit files, inspect history, and verify a restored snapshot.",
-  canonical: "https://dits.dev/docs/getting-started",
+  canonical: "https://dits.byronwade.com/docs/getting-started",
 });
 
 export default function GettingStartedPage() {

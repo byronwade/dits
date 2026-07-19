@@ -1,22 +1,16 @@
 {
-  "name": "Dits - Version Control for Video & Large Files",
+  "name": "Dits — Local-First Version Control for Media & Assets",
   "short_name": "Dits",
-  "description": "Open-source version control system designed for video production and large binary files",
+  "description": "Open, local-first version control for large media and asset pipelines.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
-  "orientation": "portrait-primary",
+  "background_color": "#11120f",
+  "theme_color": "#a8b937",
+  "orientation": "any",
   "categories": ["developer", "productivity"],
   "lang": "en-US",
   "dir": "ltr",
   "icons": [
-    {
-      "src": "/dits.png",
-      "sizes": "any",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
     {
       "src": "/icon-192x192.png",
       "sizes": "192x192",
@@ -29,22 +23,5 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "screenshots": [
-    {
-      "src": "/screenshot-desktop.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide"
-    },
-    {
-      "src": "/screenshot-mobile.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow"
-    }
   ]
 }
-
-
-

@@ -16,8 +16,8 @@ import { generateMetadata as genMeta } from "@/lib/seo";
 export const metadata: Metadata = genMeta({
   title: "Contact the Dits Open-Source Project",
   description:
-    "Ask a Dits question, report a reproducible bug, or privately disclose a security concern.",
-  canonical: "https://dits.dev/contact",
+    "Ask a Dits question, report a reproducible bug, or request private follow-up for a security concern.",
+  canonical: "https://dits.byronwade.com/contact",
 });
 
 const options = [
@@ -27,23 +27,23 @@ const options = [
     description:
       "Open an issue with the Dits version, platform, filesystem, exact commands, expected result, and a disposable fixture when possible.",
     label: "Open an issue",
-    href: "https://github.com/byronwade/dits/issues/new",
+    href: "https://github.com/byronwade/dits/issues/new?template=bug-report.yml",
   },
   {
     icon: MessagesSquare,
-    title: "Questions and design discussion",
+    title: "Questions and focused proposals",
     description:
-      "Use GitHub Discussions for evaluation questions, format review, workflow evidence, and contributor coordination.",
-    label: "Join the discussion",
-    href: "https://github.com/byronwade/dits/discussions",
+      "Use the structured GitHub forms for evaluation questions, workflow evidence, and bounded design proposals.",
+    label: "Choose an issue form",
+    href: "https://github.com/byronwade/dits/issues/new/choose",
   },
   {
     icon: ShieldAlert,
     title: "Security reports",
     description:
-      "Use GitHub's private vulnerability-reporting flow when disclosure should not begin in a public issue.",
-    label: "Report privately",
-    href: "https://github.com/byronwade/dits/security/advisories/new",
+      "Open a details-free public contact request so a maintainer can arrange a private follow-up channel.",
+    label: "Request private follow-up",
+    href: "https://github.com/byronwade/dits/issues/new?template=security-contact.yml",
   },
 ] as const;
 

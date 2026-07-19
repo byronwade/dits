@@ -9,7 +9,7 @@ export const metadata: Metadata = genMeta({
   title: "Dits Testing and Evidence",
   description:
     "How to run the current Dits tests and the correctness, compatibility, recovery, and conformance evidence still required.",
-  canonical: "https://dits.dev/docs/testing",
+  canonical: "https://dits.byronwade.com/docs/testing",
 });
 
 export default function TestingPage() {

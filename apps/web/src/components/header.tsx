@@ -19,8 +19,7 @@ import {
 } from "@/components/ui/sheet";
 import { AlphaBanner } from "@/components/alpha-banner";
 import { SkipLink } from "@/components/skip-link";
-import { ProductLauncher } from "@/components/product-launcher";
-import { getProduct, PRODUCTS, type NavItem } from "@/lib/products";
+import { getProduct, type NavItem } from "@/lib/products";
 
 function activeIndex(navItems: NavItem[], pathname: string | null): number {
   if (!pathname) return -1;
@@ -134,11 +133,10 @@ function DockNav({
 
 /**
  * Global site header — refined, professional top bar on byronwade/ui tokens.
- * The top-left pairs the logo with a product launcher ([ Dits | AI ]) so you
- * can switch between the media site and the AI site; the active product drives
- * the centered morphing dock of text links. Theme toggle + primary CTA trail.
- * Mobile collapses to a Sheet. The active product is derived from the path, so
- * this component stays prop-less across both surfaces.
+ * The top-left pairs the logo with the active product name. The centered dock
+ * follows the active section while the primary GitHub CTA stays constant.
+ * Research routes remain reachable directly without competing with the core
+ * media product in global navigation.
  *
  * AGENTS.md compliance:
  * - MUST: "Skip to content" link
@@ -165,9 +163,7 @@ export function Header() {
 
       <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-border/60 bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/55">
         <div className="container grid h-16 grid-cols-[1fr_auto] items-center gap-4 md:grid-cols-[1fr_auto_1fr]">
-          {/* Logo + product launcher. The launcher lives in the bar on desktop
-              and moves into the slide-out menu on mobile; the wordmark fills in
-              for product context on small screens. */}
+          {/* Logo and focused product wordmark. */}
           <div className="flex items-center gap-2.5">
             <Link
               href={product.home}
@@ -182,13 +178,10 @@ export function Header() {
                 className="h-8 w-8 object-contain transition-transform duration-300 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-105"
                 priority
               />
-              <span className="text-base font-bold tracking-tight text-foreground md:hidden">
+              <span className="text-base font-bold tracking-tight text-foreground">
                 {product.name}
               </span>
             </Link>
-            <div className="hidden md:flex">
-              <ProductLauncher />
-            </div>
           </div>
 
           {/* Centered morphing dock (desktop) */}
@@ -230,9 +223,7 @@ export function Header() {
               Star on GitHub
             </Button>
 
-            {/* Mobile menu — holds the product switcher and BOTH products'
-                navigation, so you can switch product and navigate from one
-                place. Controlled so it closes on navigation. */}
+            {/* Mobile menu for the active product. */}
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger
                 render={
@@ -254,48 +245,34 @@ export function Header() {
                   <SheetTitle>Menu</SheetTitle>
                 </SheetHeader>
 
-                {/* Product switcher (full width) */}
-                <div className="mt-2" onClick={() => setMenuOpen(false)}>
-                  <ProductLauncher className="w-full" />
-                </div>
-
                 <nav
                   className="mt-5 flex flex-1 flex-col"
                   aria-label="Mobile navigation"
                 >
-                  {PRODUCTS.map((p, idx) => (
-                    <div
-                      key={p.id}
-                      className={cn(
-                        idx > 0 && "mt-4 border-t border-border pt-4",
-                      )}
-                    >
-                      <div className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        {p.name}
-                      </div>
-                      <div className="flex flex-col">
-                        {p.nav.map((item) => {
-                          const itemActive = isItemActive(item.href);
-                          return (
-                            <Link
-                              key={item.href}
-                              href={item.href}
-                              onClick={() => setMenuOpen(false)}
-                              aria-current={itemActive ? "page" : undefined}
-                              className={cn(
-                                "flex min-h-[40px] items-center rounded-lg px-3 py-2 text-[15px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                                itemActive
-                                  ? "bg-accent text-foreground"
-                                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
-                              )}
-                            >
-                              {item.title}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
+                  <div className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {product.name}
+                  </div>
+                  <div className="flex flex-col">
+                    {product.nav.map((item) => {
+                      const itemActive = isItemActive(item.href);
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setMenuOpen(false)}
+                          aria-current={itemActive ? "page" : undefined}
+                          className={cn(
+                            "flex min-h-[40px] items-center rounded-lg px-3 py-2 text-[15px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                            itemActive
+                              ? "bg-accent text-foreground"
+                              : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
+                          )}
+                        >
+                          {item.title}
+                        </Link>
+                      );
+                    })}
+                  </div>
 
                   <Link
                     href="https://github.com/byronwade/dits"

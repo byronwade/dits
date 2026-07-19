@@ -28,7 +28,7 @@ export const metadata: Metadata = genMeta({
   title: "How Dits Works - Objects, History, and Media Graphs",
   description:
     "How the Dits local alpha chunks and addresses large assets, records exact history, and plans to add reproducible media derivation and verified collaboration.",
-  canonical: "https://dits.dev/how-it-works",
+  canonical: "https://dits.byronwade.com/how-it-works",
 });
 
 const localFlow = [

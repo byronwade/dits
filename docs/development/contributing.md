@@ -142,8 +142,8 @@ perf(ingest): bound the read window for large assets
 
 ## Reporting problems
 
-Use [GitHub Issues](https://github.com/byronwade/dits/issues) for reproducible
-bugs and [GitHub Discussions](https://github.com/byronwade/dits/discussions) for
-design questions. Include the Dits commit/version, OS, architecture, filesystem,
+Use the structured [GitHub issue forms](https://github.com/byronwade/dits/issues/new/choose)
+for reproducible bugs, evaluation questions, fixtures, and focused design
+proposals. Include the Dits commit/version, OS, architecture, filesystem,
 exact commands, smallest redistributable fixture, expected behavior, actual
 behavior, and hashes when exact bytes are relevant.

@@ -19,7 +19,7 @@ export const metadata: Metadata = genMeta({
   title: "Dits FAQ - Current Capabilities and Roadmap",
   description:
     "Straight answers about the Dits local alpha, its audience, comparison with Git LFS and Xet, production readiness, and collaboration roadmap.",
-  canonical: "https://dits.dev/faq",
+  canonical: "https://dits.byronwade.com/faq",
 });
 
 const additionalFaqs = [

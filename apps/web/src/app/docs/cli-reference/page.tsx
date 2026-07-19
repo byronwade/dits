@@ -41,7 +41,7 @@ import Script from "next/script";
 export const metadata: Metadata = genMeta({
   title: "Dits CLI Reference - Alpha Commands and Status",
   description: "Command reference for the Dits alpha, with supported local operations, experimental features, and disabled commands labeled explicitly.",
-  canonical: "https://dits.dev/docs/cli-reference",
+  canonical: "https://dits.byronwade.com/docs/cli-reference",
   keywords: [
     "dits cli",
     "dits commands",
@@ -56,9 +56,9 @@ export const metadata: Metadata = genMeta({
     type: "article",
     images: [
       {
-        url: "/dits.png",
-        width: 1200,
-        height: 630,
+        url: "/dits-social-preview.png",
+        width: 1280,
+        height: 640,
         alt: "Dits CLI Reference - Alpha Commands and Status",
       },
     ],

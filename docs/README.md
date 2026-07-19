@@ -19,6 +19,8 @@ implementation truth.
 | What performance work matters? | [`performance/engineering-plan.md`](performance/engineering-plan.md) |
 | How is this taught and standardized? | [`education/course-standard.md`](education/course-standard.md) |
 | How do I use the CLI? | [`user-guide/cli-reference.md`](user-guide/cli-reference.md) |
+| How should Dits be positioned? | [`marketing/positioning.md`](marketing/positioning.md) |
+| How do we grow the GitHub community? | [`marketing/github-growth.md`](marketing/github-growth.md) |
 
 ## Maturity model
 

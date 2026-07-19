@@ -5,7 +5,8 @@ import { MetadataRoute } from "next";
  * Next.js will call this function to generate sitemap.xml
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://dits.dev";
+  const baseUrl = "https://dits.byronwade.com";
+  const lastModified = new Date("2026-07-18");
 
   // Keep this list limited to current, reviewed pages. Design archives and
   // redirect-only routes are intentionally excluded.
@@ -39,19 +40,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/docs/contributing", priority: 0.5, changefreq: "monthly" },
     { path: "/docs/development", priority: 0.4, changefreq: "monthly" },
     { path: "/docs/code-of-conduct", priority: 0.3, changefreq: "yearly" },
-
-    // Public research notes: these are indexed as research, not as a product.
-    { path: "/ai", priority: 0.4, changefreq: "monthly" },
-    { path: "/ai/how-it-works", priority: 0.3, changefreq: "monthly" },
-    { path: "/ai/benchmarks", priority: 0.3, changefreq: "monthly" },
-    { path: "/ai/docs", priority: 0.3, changefreq: "monthly" },
-    { path: "/ai/faq", priority: 0.3, changefreq: "monthly" },
-    { path: "/ai/about", priority: 0.3, changefreq: "monthly" },
   ];
 
   return routes.map((route) => ({
     url: `${baseUrl}${route.path}`,
     changeFrequency: route.changefreq as MetadataRoute.Sitemap[number]["changeFrequency"],
     priority: route.priority,
+    lastModified,
   }));
 }

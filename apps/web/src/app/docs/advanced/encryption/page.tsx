@@ -9,7 +9,7 @@ export const metadata: Metadata = genMeta({
   title: "Repository Encryption - Disabled in the Alpha",
   description:
     "Current alpha status and fail-closed behavior for the retired Dits repository-encryption experiment.",
-  canonical: "https://dits.dev/docs/advanced/encryption",
+  canonical: "https://dits.byronwade.com/docs/advanced/encryption",
 });
 
 export default function EncryptionPage() {

@@ -12,7 +12,7 @@ export const metadata: Metadata = genMeta({
   title: "About Dits for AI Research",
   description:
     "Why model and dataset workflows are a research application of the Dits asset-history thesis, not a second shipped product.",
-  canonical: "https://dits.dev/ai/about",
+  canonical: "https://dits.byronwade.com/ai/about",
 });
 
 export default function AiAboutPage() {

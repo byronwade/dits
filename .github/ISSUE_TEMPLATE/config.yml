@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Current implementation status
+    url: https://github.com/byronwade/dits/blob/main/docs/STATUS.md
+    about: Check what is Current, Experimental, Design, or Historical before opening an issue.
+  - name: Security vulnerability
+    url: https://github.com/byronwade/dits/blob/main/SECURITY.md
+    about: Read the security policy before requesting a private follow-up channel.
+  - name: Support guide
+    url: https://github.com/byronwade/dits/blob/main/SUPPORT.md
+    about: Choose the right public support path and learn what details to include.

@@ -15,7 +15,7 @@ export const metadata: Metadata = genMeta({
   title: "Dits for AI Research FAQ",
   description:
     "Current boundaries and open questions for applying Dits to model, checkpoint, dataset, and research artifacts.",
-  canonical: "https://dits.dev/ai/faq",
+  canonical: "https://dits.byronwade.com/ai/faq",
 });
 
 const faqs = [

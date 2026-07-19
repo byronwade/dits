@@ -9,7 +9,7 @@ export const metadata: Metadata = genMeta({
   title: "Dits Core Concepts",
   description:
     "The repository, object, chunk, manifest, history, exact-identity, and derivation concepts behind the Dits local alpha.",
-  canonical: "https://dits.dev/docs/concepts",
+  canonical: "https://dits.byronwade.com/docs/concepts",
 });
 
 export default function ConceptsPage() {

@@ -1,212 +1,187 @@
 <div align="center">
-  <img src="apps/web/public/dits.png" alt="Dits logo" width="176" />
+  <img src=".github/assets/dits-social-preview.png" alt="Dits — Version the source. Explain every result." width="100%" />
 </div>
 
-# Dits
+<h1 align="center">Dits</h1>
 
-**Open, local-first version control for large media and asset pipelines.**
+<p align="center"><strong>Open, local-first version control for large media and asset pipelines.</strong></p>
 
-Dits gives large binary projects an inspectable history without storing every
-version as another complete copy. The current alpha CLI chunks files with
-FastCDC, addresses objects with BLAKE3, verifies content on read, and provides a
-Git-like local workflow. The longer-term system adds structure-aware media,
-semantic edit and dependency graphs, and verified collaboration over the same
-open object model.
+<p align="center">
+  Give mixed code-and-media projects Git-shaped local history with chunked,
+  content-addressed storage—then help build the open model that can explain how
+  every output was made.
+</p>
 
-> **Alpha — v0.1.5.** Use Dits for evaluation and local experiments, not as the
-> only copy of important data. Network `push`/`pull`/`fetch`/`sync`, P2P, hosted
-> services, and official SDKs are not shipped. The authoritative capability
-> record is [docs/STATUS.md](docs/STATUS.md).
+<p align="center">
+  <a href="https://github.com/byronwade/dits/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/byronwade/dits/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
+  <a href="https://www.npmjs.com/package/@byronwade/dits"><img alt="npm" src="https://img.shields.io/npm/v/@byronwade/dits?logo=npm&label=npm" /></a>
+  <a href="LICENSE"><img alt="License: Apache-2.0 OR MIT" src="https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-97a927" /></a>
+  <a href="https://github.com/byronwade/dits/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/byronwade/dits?style=flat&logo=github" /></a>
+</p>
 
-## The product thesis
+<p align="center">
+  <a href="#try-dits-in-60-seconds"><strong>Quick start</strong></a> ·
+  <a href="docs/STATUS.md"><strong>What works</strong></a> ·
+  <a href="https://dits.byronwade.com"><strong>Website</strong></a> ·
+  <a href="ROADMAP.md"><strong>Roadmap</strong></a> ·
+  <a href="CONTRIBUTING.md"><strong>Contribute</strong></a>
+</p>
 
-Generic large-file storage can tell you that bytes changed. A useful creative
-history should eventually explain the result:
+> [!WARNING]
+> **Alpha — v0.1.5.** Evaluate Dits on disposable or independently backed-up
+> projects, not as the only copy of important data. The local engine works;
+> Internet repository sync, P2P, hosted services, and official SDKs do not.
+> See the [authoritative implementation status](docs/STATUS.md).
 
-1. **Exact history** — preserve and verify the original bytes.
-2. **Structural history** — understand supported containers, samples, frames,
-   layers, and dependencies without replacing the original.
-3. **Semantic history** — record edits, timelines, derivations, render recipes,
-   tools, color configuration, and provenance.
-4. **Verified collaboration** — move only missing objects while keeping object
-   verification and ref updates independent of the transport or hosted service.
+## Version the source. Explain every result.
 
-The first layer works locally today. MP4 structure handling and FACR experiments
-begin the second layer. The semantic graph and complete remote protocol remain
-roadmap work.
+Creative work is often versioned as `final-v7-really-final`, copied folders,
+or opaque binary blobs. That preserves files, but not a trustworthy account of
+what changed, which source produced an output, or how to reconstruct it.
 
-## Why this is different
+Dits starts with the part that must be right first: exact local history.
 
-Content-defined chunking alone is useful but no longer unique. Dits is designed
-to combine an exact byte CAS with a version-control graph and media-aware
-extensions:
+| The problem | The Dits approach |
+|---|---|
+| Large binary revisions become whole-file copies | Split supported binary content with FastCDC and reuse byte-identical BLAKE3-addressed chunks |
+| Code and assets live in separate histories | Keep Git-backed text history and chunked binary manifests in one local workflow |
+| An exported file hides how it was produced | Build toward explicit edits, dependencies, timelines, and renditions without replacing exact masters |
+| Collaboration can make an unsafe format fail faster | Stabilize verification, recovery, and the repository contract before shipping remote sync |
 
-- immutable, content-addressed objects;
-- commits, refs, branches, tags, diffs, locks, and recovery tools;
-- Git-quality text handling alongside binary chunk manifests;
-- exact imported masters plus separately addressed renditions;
-- interoperable timeline and asset references rather than a proprietary editor;
-- a future remote protocol whose semantics are not coupled to HTTP, QUIC, P2P,
-  or a particular cloud.
+The destination is closer to **Git plus a reproducible build graph for media**
+than another cloud drive or Git LFS wrapper.
 
-The target is closer to **Git plus a reproducible build graph for media** than a
-new cloud drive or a Git LFS wrapper.
-
-## Try the local engine
+## Try Dits in 60 seconds
 
 The published v0.1.5 npm artifact contains Apple-silicon macOS and Windows x64
-binaries. Other targets currently require the source build in
-[Getting started](docs/user-guide/getting-started.md).
+binaries. Other targets can [build from source](docs/user-guide/getting-started.md#build-the-source).
 
 ```bash
 npm install -g @byronwade/dits
 
-mkdir dits-demo
-cd dits-demo
+mkdir dits-demo && cd dits-demo
 dits init
-dits add ./path/to/large-file.bin
-dits commit -m "initial asset snapshot"
-dits status
+printf 'first version\n' > notes.txt
+dits add notes.txt
+dits commit -m "First exact snapshot"
 dits log
 ```
 
-The launcher selects a binary already contained in the package; it does not
-download one during installation. Dits is not currently published to crates.io
-or Homebrew, and there is no `curl | sh` installer.
+Then edit `notes.txt`, run `dits diff`, and commit again. The full
+[safe evaluation guide](docs/user-guide/getting-started.md) covers restore and
+hash verification.
 
-## What works today
+The npm launcher uses a binary already contained in the package. Dits is not
+currently published to crates.io or Homebrew, and there is no `curl | sh`
+installer.
 
-The canonical product is the root Rust workspace:
+## What you can use today
 
-```text
-packages/dits-core   deterministic FastCDC/BLAKE3 engine
-apps/cli             repository library and `dits` command-line interface
-```
+The current Rust workspace provides a local, offline alpha:
 
-Current local capabilities include:
-
-- content-addressed chunk storage, deduplication, read verification, and
-  byte-exact reconstruction;
-- local add/status/commit/log/checkout plus branches, tags, diff, merge,
-  rebase, stash, reflog, bisect, worktrees, sparse checkout, and other familiar
-  version-control operations;
-- hybrid text and binary storage;
-- bounded MP4/ISOBMFF structure inspection and reconstruction paths;
-- local locks, integrity checking, audit, metadata, dependency, lifecycle,
-  proxy, and repository-inspection commands;
-- experimental FACR video/photo workflows that require FFmpeg;
-- an experimental, feature-gated local FUSE mount;
-- local filesystem clone/object transfer and an embedded per-repository object
-  server.
-
-See [docs/STATUS.md](docs/STATUS.md) and the generated
-[CLI reference](docs/user-guide/cli-reference.md) for exact command-level
-limitations.
-
-## What is not shipped
-
-- Internet-capable repository `push`, `pull`, `fetch`, `sync`, or network clone.
-- Remote ref transactions, remote lock leases, or remote on-demand hydration.
-- P2P discovery, NAT traversal, or peer repository transfer.
-- A managed DitsHub service, REST API, webhooks, or public SDK packages.
-- A stable public repository format or third-party conformance guarantee.
-- Production support for every MP4/MOV variant or every creative file format.
-
-The repository contains experiments and design documents for several of these
-areas. They are evidence and research, not shipped product surface.
-
-## Architecture
+- Git-shaped `init`, `add`, `status`, `commit`, `log`, `diff`, `checkout`,
+  branch, tag, merge, rebase, stash, worktree, sparse-checkout, and recovery
+  workflows;
+- FastCDC chunking, BLAKE3 content IDs, byte-identical chunk reuse, verified
+  reads, and byte-exact reconstruction paths;
+- hybrid text and binary storage in one repository;
+- local filesystem clone, integrity inspection, read-only GC reporting, locks,
+  audit, metadata, dependency, lifecycle, and repository-inspection tools;
+- bounded MP4/ISOBMFF handling plus experimental FACR video/photo, proxy, and
+  feature-gated local FUSE paths.
 
 ```text
-semantic edits, timelines, dependencies, provenance       design
-structure-aware media and renditions                       bounded / experimental
-commits, trees, manifests, refs                             current local engine
-chunks, blobs, verification, atomic storage                current trust core
+source files
+   ├── text ───────────────→ embedded Git objects
+   └── large binary/media ─→ FastCDC chunks ─→ BLAKE3-addressed objects
+                                      ╲        ╱
+                                       commit graph
 ```
 
-Lower layers do not depend on hosted-service policy. Originals remain exact
-objects; decoded identities, perceptual features, proxies, and exports are
-separate representations with explicit fidelity contracts.
+The exact command-by-command boundary lives in
+[`docs/STATUS.md`](docs/STATUS.md) and the generated
+[`CLI reference`](docs/user-guide/cli-reference.md).
 
-Read:
+## What comes next
 
-- [Active architecture](docs/architecture/active-architecture.md)
-- [Technical foundations](docs/research/technical-foundations.md)
-- [ADR 0001 — one canonical engine](docs/adr/0001-one-canonical-engine.md)
-- [ADR 0002 — exact CAS and semantic media graph](docs/adr/0002-exact-cas-semantic-media-graph.md)
+| Layer | Status | Goal |
+|---|---|---|
+| Exact source history | **Current alpha** | Verifiable local history and reconstruction for mixed text and binary projects |
+| Media-aware storage | **Current + experimental** | Preserve exact masters while representing supported structure and derived renditions separately |
+| Reproducible asset graph | **Research** | Make edits, dependencies, timelines, and provenance explicit and interoperable |
+| Verified collaboration | **Roadmap** | Exchange missing objects and update refs safely over an open, transport-independent protocol |
 
-## Evidence, not promises
+Work is deliberately dependency-ordered: data safety → stable repository
+contract → scale → semantic media proof → verified remote CAS → ecosystem.
+Read the [roadmap and acceptance gates](ROADMAP.md).
 
-The checked-in machine-readable benchmark source is
-[benchmarks/latest.json](benchmarks/latest.json). Its current measured
-microbenchmarks were recorded on an Apple M2 Pro at commit `9b79be2`:
+## Built first for asset-heavy teams
+
+Dits is being shaped around small and mid-sized teams that combine Git-shaped
+engineering with large, frequently changing assets:
+
+- **Game development** — code, textures, audio, models, and generated assets in
+  one inspectable project history;
+- **Virtual production and VFX** — exact masters plus explicit dependencies,
+  proxies, and future timeline interchange;
+- **Post-production** — source-preserving experiments around frames, audio,
+  trims, EDL, and OTIO;
+- **Tool builders and researchers** — an open object model, reproducible
+  benchmarks, ADRs, and conformance work that can be independently reviewed.
+
+These are the initial workflows and research direction, not claims of complete
+production support today.
+
+## Evidence, not adjectives
+
+The checked-in [benchmark artifact](benchmarks/latest.json) records component
+microbenchmarks on an Apple M2 Pro at commit `9b79be2`:
 
 | Measurement | Result |
 |---|---:|
-| BLAKE3 hash, 1 MiB blocks | 1,809.96 MB/s |
+| BLAKE3 hashing, 1 MiB blocks | 1,809.96 MB/s |
 | FastCDC chunking, 32 MiB input | 991.76 MB/s |
-| SHA-256 hash, 1 MiB blocks | 348.37 MB/s |
+| SHA-256 hashing, 1 MiB blocks | 348.37 MB/s |
 
-These are component measurements, not end-to-end repository, network, memory,
-or production-scale claims. See [benchmark policy](docs/performance/benchmarks.md)
-and [performance engineering plan](docs/performance/engineering-plan.md).
+These numbers measure components—not end-to-end repository speed, network
+performance, memory use, storage savings, or production scale. See the
+[benchmark policy](docs/performance/benchmarks.md) and
+[performance engineering plan](docs/performance/engineering-plan.md).
 
-## Roadmap
+## Help shape the open format
 
-Work is ordered by proof and dependency, not feature count:
+The most valuable alpha contributions are concrete and reproducible:
 
-1. **Credibility and safety** — bounded-memory ingest, atomic publication,
-   golden media corpus, crash and mutation tests.
-2. **Repository contract** — versioned object envelopes, canonical encodings,
-   compatibility policy, conformance vectors, repair behavior.
-3. **Scale** — tree objects, packfiles, multi-pack indexes, indexed reachability,
-   object-count benchmarks.
-4. **Semantic media proof** — exact masters, OTIO-compatible edit graphs,
-   renditions, color/fidelity contracts, optional C2PA bindings.
-5. **Verified remote CAS** — find-missing, streaming transfer, resume, bundles,
-   compare-and-swap refs, remote lock leases; HTTP first, optional QUIC/P2P later.
-6. **Ecosystem** — adapters, independent readers, stable SDKs, and an optional
-   hosted control plane built on the same public protocol.
+- reduce a failure to a regression test;
+- contribute a redistributable real-media fixture and provenance record;
+- test an actual game, virtual-production, or post workflow;
+- define deterministic format vectors or review an ADR;
+- reproduce a benchmark and publish the raw method;
+- make installation, documentation, or recovery clearer.
 
-See [ROADMAP.md](ROADMAP.md) for acceptance gates and issue links.
+Start with [`CONTRIBUTING.md`](CONTRIBUTING.md), browse the
+[`good first issue`](https://github.com/byronwade/dits/labels/good%20first%20issue)
+and [`help wanted`](https://github.com/byronwade/dits/labels/help%20wanted)
+queues, or open the appropriate
+[`issue form`](https://github.com/byronwade/dits/issues/new/choose).
 
-## Initial product wedge
+If this is a problem you want solved, **[star Dits](https://github.com/byronwade/dits)**
+to follow its progress and help the right builders find it.
 
-Dits is being designed first for small and mid-sized game, virtual-production,
-post-production, and VFX teams that already feel the limits of Git LFS, shared
-drives, copied project folders, or expensive centralized infrastructure. The
-first useful team product must provide migration, trustworthy remote sync,
-binary locks, sparse workspaces, and integrations without requiring creators to
-be Git experts.
+## Project map
 
-## Documentation map
-
-- [Documentation guide](docs/README.md) — authority and maturity rules
-- [Implementation status](docs/STATUS.md) — what the code does today
-- [Concepts](docs/concepts.md) — current object and repository model
-- [Roadmap](ROADMAP.md) — ordered execution plan
-- [Product direction](REVIEW-AND-VISION.md) — market and positioning decisions
-- [Systems course](docs/education/course-standard.md) — teaching and
-  conformance direction
-- [Contributing](docs/development/contributing.md) — development workflow
-- [Security](SECURITY.md) — reporting vulnerabilities
-
-## Contributing
-
-The highest-leverage work is tracked in issues
-[#34](https://github.com/byronwade/dits/issues/34) through
-[#40](https://github.com/byronwade/dits/issues/40). Changes that affect
-persistent bytes, protocol behavior, media fidelity, or security require an ADR,
-compatibility analysis, failure tests, and reproducible evidence.
-
-```bash
-git clone https://github.com/byronwade/dits.git
-cd dits
-cargo build --locked --workspace
-cargo test --locked --workspace
-bash scripts/check-cli-docs.sh
-```
+| Start here | Purpose |
+|---|---|
+| [Implementation status](docs/STATUS.md) | What is Current, Experimental, Design, or Historical |
+| [Getting started](docs/user-guide/getting-started.md) | Install, evaluate, restore, and verify safely |
+| [Core concepts](docs/concepts.md) | Objects, manifests, commits, refs, and repository vocabulary |
+| [Active architecture](docs/architecture/active-architecture.md) | Live workspace and dependency boundaries |
+| [Roadmap](ROADMAP.md) | Dependency-ordered delivery gates and linked issues |
+| [Product direction](REVIEW-AND-VISION.md) | Audience, positioning, competitive context, and decisions |
+| [Contributing](CONTRIBUTING.md) | Newcomer paths, setup, checks, and pull-request expectations |
+| [Security](SECURITY.md) | Alpha limitations and private vulnerability reporting |
 
 ## License
 
-Dits is dual-licensed under Apache-2.0 OR MIT.
+Dits is dual-licensed under [Apache-2.0](LICENSE) OR
+[MIT](LICENSE-MIT), at your option.

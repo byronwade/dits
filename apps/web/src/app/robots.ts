@@ -5,7 +5,7 @@ import { MetadataRoute } from "next";
  * Next.js will call this function to generate robots.txt
  */
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = "https://dits.dev";
+  const baseUrl = "https://dits.byronwade.com";
 
   return {
     rules: {

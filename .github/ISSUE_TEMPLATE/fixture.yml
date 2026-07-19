@@ -1,0 +1,61 @@
+name: Workflow or fixture contribution
+description: Contribute a redistributable media case, failure corpus, or reproducible workflow.
+title: "fixture: "
+labels:
+  - help wanted
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Real fixtures are high-value contributions. Only share content you have the right to redistribute, and strip private metadata before uploading it.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Contribution type
+      options:
+        - Generated test fixture
+        - Redistributable real-media fixture
+        - Malformed or failure-inducing corpus
+        - Game or virtual-production workflow
+        - Post-production or VFX workflow
+        - Benchmark reproduction
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Workflow and value
+      description: Explain what this represents and which Dits behavior it can prove or falsify.
+    validations:
+      required: true
+  - type: textarea
+    id: provenance
+    attributes:
+      label: Provenance and redistribution rights
+      description: State how the fixture was created or sourced, its license, and why it can be redistributed.
+    validations:
+      required: true
+  - type: textarea
+    id: technical
+    attributes:
+      label: Technical details
+      description: Format, codec, dimensions, duration, size, hashes, tools, color metadata, and any expected edge case.
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction or generation steps
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Rights and privacy checks
+      options:
+        - label: I have the right to redistribute this fixture under the stated license.
+          required: true
+        - label: I removed personal, location, account, device, and proprietary metadata.
+          required: true
+        - label: I can provide source or generation steps sufficient to verify provenance.
+          required: true
+        - label: I agree to follow the Code of Conduct.
+          required: true

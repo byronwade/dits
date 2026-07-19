@@ -17,7 +17,7 @@ export const metadata: Metadata = genMeta({
   title: "Dits Documentation - Local Alpha and Product Design",
   description:
     "Documentation for the Dits local alpha, including getting started, CLI reference, concepts, architecture, maturity, and roadmap.",
-  canonical: "https://dits.dev/docs",
+  canonical: "https://dits.byronwade.com/docs",
 });
 
 const sections = [

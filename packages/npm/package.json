@@ -1,7 +1,7 @@
 {
   "name": "@byronwade/dits",
   "version": "0.1.5",
-  "description": "Open, local-first version control for large media and asset pipelines",
+  "description": "Open, local-first version control for large media and binary asset pipelines",
   "license": "Apache-2.0 OR MIT",
   "author": "Byron Wade",
   "repository": {
@@ -9,7 +9,7 @@
     "url": "git+https://github.com/byronwade/dits.git",
     "directory": "packages/npm"
   },
-  "homepage": "https://github.com/byronwade/dits",
+  "homepage": "https://dits.byronwade.com",
   "bugs": {
     "url": "https://github.com/byronwade/dits/issues"
   },
@@ -25,7 +25,13 @@
     "deduplication",
     "content-addressed",
     "chunking",
-    "blake3"
+    "blake3",
+    "local-first",
+    "media-assets",
+    "game-development",
+    "virtual-production",
+    "creative-tools",
+    "developer-tools"
   ],
   "bin": {
     "dits": "bin/dits"
@@ -35,7 +41,8 @@
     "bin",
     "lib",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "LICENSE-MIT"
   ],
   "scripts": {
     "build": "echo 'Binaries built via cargo'",

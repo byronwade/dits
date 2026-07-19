@@ -12,7 +12,7 @@ export const metadata: Metadata = genMeta({
   title: "License — Apache-2.0 OR MIT",
   description:
     "Dits is free and open source, dual-licensed under the Apache License 2.0 or the MIT License. Use it under whichever license suits your project.",
-  canonical: "https://dits.dev/license",
+  canonical: "https://dits.byronwade.com/license",
 });
 
 const REPO = "https://github.com/byronwade/dits/blob/main";

@@ -19,7 +19,7 @@ export const metadata: Metadata = genMeta({
   title: "Dits for AI Research — Models, Datasets & Derivation",
   description:
     "A Dits research track exploring exact history and reproducible derivation for model, dataset, and scientific artifacts. Not a separate shipped product.",
-  canonical: "https://dits.dev/ai",
+  canonical: "https://dits.byronwade.com/ai",
 });
 
 const questions = [

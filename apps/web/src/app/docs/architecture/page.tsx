@@ -9,7 +9,7 @@ export const metadata: Metadata = genMeta({
   title: "Dits Active Architecture",
   description:
     "The current local-first Rust workspace, module boundaries, trust core, experimental media paths, and future remote protocol boundary.",
-  canonical: "https://dits.dev/docs/architecture",
+  canonical: "https://dits.byronwade.com/docs/architecture",
 });
 
 export default function ArchitecturePage() {

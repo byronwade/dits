@@ -1,0 +1,17 @@
+name: Code of Conduct contact request
+description: Ask a maintainer to arrange a private follow-up channel.
+title: "conduct: private follow-up requested"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This request is public. Do not include names, messages, screenshots, personal information, or incident details. A maintainer will arrange a private follow-up channel on a best-effort basis.
+  - type: checkboxes
+    id: request
+    attributes:
+      label: Contact request
+      options:
+        - label: I need a maintainer to arrange a private channel for a Code of Conduct matter.
+          required: true
+        - label: I understand this issue is public and have not included sensitive details.
+          required: true

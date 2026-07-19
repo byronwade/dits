@@ -10,7 +10,7 @@ export const metadata: Metadata = genMeta({
   title: "Privacy - Dits Website and Local Playground",
   description:
     "How the Dits website and browser playground handle data, external links, and standard hosting logs.",
-  canonical: "https://dits.dev/privacy",
+  canonical: "https://dits.byronwade.com/privacy",
 });
 
 export default function PrivacyPage() {

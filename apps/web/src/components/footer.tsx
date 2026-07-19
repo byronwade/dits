@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { MessageCircle, Bug } from "lucide-react";
+import { LifeBuoy, Bug } from "lucide-react";
 import { GithubIcon } from "@/components/icons/github-icon";
 import { getProduct } from "@/lib/products";
 
@@ -15,14 +15,14 @@ const communityLinks = [
     label: "View Dits on GitHub",
   },
   {
-    title: "Discussions",
-    href: "https://github.com/byronwade/dits/discussions",
-    icon: MessageCircle,
-    label: "Join GitHub Discussions",
+    title: "Support",
+    href: "https://github.com/byronwade/dits/blob/main/SUPPORT.md",
+    icon: LifeBuoy,
+    label: "Read the Dits support guide",
   },
   {
     title: "Report Issues",
-    href: "https://github.com/byronwade/dits/issues",
+    href: "https://github.com/byronwade/dits/issues/new/choose",
     icon: Bug,
     label: "Report an issue on GitHub",
   },

@@ -16,9 +16,13 @@ export const metadata: Metadata = genMeta({
   ],
   openGraph: {
     type: "website",
-    images: [{ url: "/dits.png", width: 1200, height: 630, alt: "Dits for AI research" }],
+    images: [{ url: "/dits-social-preview.png", width: 1280, height: 640, alt: "Dits for AI research" }],
   },
   twitter: { card: "summary_large_image" },
+  robots: {
+    index: false,
+    follow: true,
+  },
 });
 
 /**

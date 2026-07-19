@@ -11,6 +11,7 @@ import {
 
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { GithubIcon } from "@/components/icons/github-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +36,7 @@ export const metadata: Metadata = genMeta({
   title: "Dits - Local-First Version Control for Media & Assets",
   description:
     "Dits is open, local-first version control for large media and asset pipelines. Evaluate the local alpha and help shape its open format.",
-  canonical: "https://dits.dev",
+  canonical: "https://dits.byronwade.com",
 });
 
 const layerIcons = [GitBranch, Boxes, Waypoints, Network];
@@ -50,6 +51,7 @@ export default function HomePage() {
             <div className="mx-auto max-w-4xl text-center">
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <StatusPill tone="warning">{PRODUCT_POSITIONING.version}</StatusPill>
+                <Badge variant="secondary">Open source</Badge>
                 <Badge variant="secondary">Local engine available</Badge>
                 <Badge variant="outline">Remote collaboration: roadmap</Badge>
               </div>
@@ -68,11 +70,18 @@ export default function HomePage() {
                   <ArrowRight data-icon="inline-end" />
                 </Button>
                 <Button
-                  variant="outline"
                   size="lg"
-                  render={<Link href="/docs/architecture" />}
+                  variant="outline"
+                  render={
+                    <Link
+                      href="https://github.com/byronwade/dits"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    />
+                  }
                 >
-                  Read the architecture
+                  <GithubIcon className="size-4" />
+                  Star Dits on GitHub
                 </Button>
               </div>
               <div className="mx-auto mt-10 max-w-2xl rounded-2xl border border-border bg-card p-4 text-left shadow-card">
@@ -94,6 +103,13 @@ dits log`}</code></pre>
                 macOS and Windows x64; other targets require a source build. Use
                 a disposable or independently backed-up project.
               </p>
+              <Link
+                href="/docs/architecture"
+                className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline"
+              >
+                Read the architecture
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
             </div>
           </div>
         </section>
@@ -267,7 +283,8 @@ dits log`}</code></pre>
                   />
                 }
               >
-                Review the source
+                <GithubIcon className="size-4" />
+                Star Dits on GitHub
               </Button>
             </div>
           </div>

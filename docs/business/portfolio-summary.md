@@ -5,14 +5,15 @@
 Current alpha product brief with future layers explicitly separated from shipped local
 behavior.
 
-> Current strategy summary. Last reviewed: 2026-07-16.
+> Current strategy summary. Last reviewed: 2026-07-18.
 
 ## One sentence
 
 **Dits is open, local-first version control for large media and asset pipelines.**
 
-It provides exact local history today and is building toward a reproducible
-graph of edits, dependencies, and renditions shared through an open protocol.
+It gives mixed code-and-media projects Git-shaped local history with chunked,
+content-addressed storage. Exact local workflows work today; a reproducible
+graph of edits, dependencies, and renditions plus team sync are roadmap.
 
 ## Why it matters
 

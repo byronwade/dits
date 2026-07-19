@@ -1,0 +1,17 @@
+name: Security contact request
+description: Ask a maintainer to arrange a private vulnerability-reporting channel.
+title: "security: private follow-up requested"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This request is public. Do not include exploit details, proof-of-concept code, secrets, affected data, paths, logs, or identifying information. A maintainer will arrange a private follow-up channel on a best-effort basis.
+  - type: checkboxes
+    id: request
+    attributes:
+      label: Contact request
+      options:
+        - label: I need a maintainer to arrange a private channel for a security report.
+          required: true
+        - label: I understand this issue is public and have not included sensitive details.
+          required: true

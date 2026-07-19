@@ -16,7 +16,7 @@ export const metadata: Metadata = genMeta({
   title: "How the Dits AI Research Model Works",
   description:
     "Exact content identity, optional similarity indexes, and reproducible derivation for AI artifacts—with current and roadmap boundaries.",
-  canonical: "https://dits.dev/ai/how-it-works",
+  canonical: "https://dits.byronwade.com/ai/how-it-works",
 });
 
 const layers = [

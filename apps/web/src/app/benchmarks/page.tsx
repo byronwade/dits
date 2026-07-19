@@ -22,7 +22,7 @@ export const metadata: Metadata = genMeta({
   title: "Dits Benchmarks - Reproducible Performance Evidence",
   description:
     "The measured Dits component benchmarks, their environment and limitations, and the end-to-end evidence still needed.",
-  canonical: "https://dits.dev/benchmarks",
+  canonical: "https://dits.byronwade.com/benchmarks",
 });
 
 const requiredSuite = [

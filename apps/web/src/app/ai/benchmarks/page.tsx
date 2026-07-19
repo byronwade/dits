@@ -12,7 +12,7 @@ export const metadata: Metadata = genMeta({
   title: "Dits AI Research Benchmarks",
   description:
     "The AI-specific benchmark evidence Dits has and the model, checkpoint, and dataset workloads still required.",
-  canonical: "https://dits.dev/ai/benchmarks",
+  canonical: "https://dits.byronwade.com/ai/benchmarks",
 });
 
 export default function AiBenchmarksPage() {

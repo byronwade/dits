@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 
-const SITE_URL = "https://dits.dev";
+const SITE_URL = "https://dits.byronwade.com";
 const SITE_NAME = "Dits";
 const DEFAULT_DESCRIPTION =
   "Dits is open, local-first version control for large media and asset pipelines.";
@@ -81,9 +81,9 @@ export function generateMetadata(config: SEOConfig): Metadata {
 
   const ogImages = openGraph?.images || [
     {
-      url: "/dits.png",
-      width: 1200,
-      height: 630,
+      url: "/dits-social-preview.png",
+      width: 1280,
+      height: 640,
       alt: `${title} - ${SITE_NAME}`,
     },
   ];
@@ -151,8 +151,8 @@ export function generateMetadata(config: SEOConfig): Metadata {
       },
     },
     icons: {
-      icon: "/dits.png",
-      apple: "/dits.png",
+      icon: "/icon-192x192.png",
+      apple: "/apple-touch-icon.png",
     },
     manifest: "/manifest.json",
   };
@@ -201,7 +201,10 @@ export function generateSoftwareApplicationSchema({
       price: offers.price,
       priceCurrency: offers.priceCurrency,
     },
-    license: "https://opensource.org/licenses/Apache-2.0",
+    license: [
+      "https://www.apache.org/licenses/LICENSE-2.0",
+      "https://opensource.org/license/mit",
+    ],
     ...(aggregateRating && {
       aggregateRating: {
         "@type": "AggregateRating",
@@ -223,7 +226,7 @@ export function generateOrganizationSchema() {
     "@type": "Organization",
     name: SITE_NAME,
     url: SITE_URL,
-    logo: `${SITE_URL}/dits.png`,
+    logo: `${SITE_URL}/icon-512x512.png`,
     description: DEFAULT_DESCRIPTION,
     sameAs: [
       "https://github.com/byronwade/dits",
@@ -281,7 +284,7 @@ export function generateArticleSchema({
     "@type": "Article",
     headline,
     description,
-    image: image ? (image.startsWith("http") ? image : `${SITE_URL}${image}`) : `${SITE_URL}/dits.png`,
+    image: image ? (image.startsWith("http") ? image : `${SITE_URL}${image}`) : `${SITE_URL}/dits-social-preview.png`,
     ...(datePublished && { datePublished }),
     ...(dateModified && { dateModified }),
     author: {
@@ -293,7 +296,7 @@ export function generateArticleSchema({
       name: publisher,
       logo: {
         "@type": "ImageObject",
-        url: `${SITE_URL}/dits.png`,
+        url: `${SITE_URL}/icon-512x512.png`,
       },
     },
     ...(section && { articleSection: section }),
@@ -546,7 +549,7 @@ export function generateVideoObjectSchema({
     ? thumbnailUrl.startsWith("http")
       ? thumbnailUrl
       : `${SITE_URL}${thumbnailUrl}`
-    : `${SITE_URL}/dits.png`;
+    : `${SITE_URL}/dits-social-preview.png`;
 
   return {
     "@context": "https://schema.org",

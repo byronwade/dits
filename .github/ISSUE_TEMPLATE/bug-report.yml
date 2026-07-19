@@ -1,0 +1,80 @@
+name: Bug report
+description: Report a reproducible failure in the current local alpha.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping make Dits safer. Use disposable or independently backed-up data, and never attach private media or secrets.
+  - type: input
+    id: version
+    attributes:
+      label: Dits version or commit
+      description: Paste `dits --version` or the exact commit SHA.
+      placeholder: "0.1.5 or 54b18ee"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Repository and history
+        - Storage, chunking, or reconstruction
+        - Integrity, recovery, or fsck
+        - CLI behavior
+        - Media or FACR experiment
+        - npm launcher or installation
+        - Website or documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, architecture, filesystem, shell, installation method, and relevant dependency versions.
+      placeholder: "macOS 15, arm64, APFS, zsh, npm package; FFmpeg 7.1 if relevant"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include exact commands and the smallest safe fixture description. Do not upload proprietary data.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and output
+      description: Redact usernames, paths, tokens, and private content.
+    validations:
+      required: true
+  - type: textarea
+    id: integrity
+    attributes:
+      label: Data-integrity details
+      description: If bytes changed or disappeared, include independent hashes, backup status, and whether the original remains available.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Safety checks
+      options:
+        - label: I reproduced this on disposable or independently backed-up data.
+          required: true
+        - label: I removed secrets, personal data, private media, and proprietary fixtures.
+          required: true
+        - label: I searched existing issues and read the current implementation status.
+          required: true
+        - label: I agree to follow the Code of Conduct.
+          required: true

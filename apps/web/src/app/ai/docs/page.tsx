@@ -9,7 +9,7 @@ export const metadata: Metadata = genMeta({
   title: "Dits for AI Research Notes",
   description:
     "Open questions and design constraints for applying the Dits exact-history and derivation model to AI and scientific artifacts.",
-  canonical: "https://dits.dev/ai/docs",
+  canonical: "https://dits.byronwade.com/ai/docs",
 });
 
 export default function AiDocsOverview() {

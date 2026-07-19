@@ -13,7 +13,7 @@ export const metadata: Metadata = genMeta({
   title: "Playground - Run the Dits Engine in Your Browser",
   description:
     "Use the Dits WebAssembly engine locally in your browser to inspect content-defined chunk identities and exact reuse across controlled edits.",
-  canonical: "https://dits.dev/playground",
+  canonical: "https://dits.byronwade.com/playground",
   keywords: [
     "dits playground",
     "content-defined chunking demo",
@@ -23,7 +23,7 @@ export const metadata: Metadata = genMeta({
   ],
   openGraph: {
     type: "website",
-    images: [{ url: "/dits.png", width: 1200, height: 630, alt: "Dits Playground" }],
+    images: [{ url: "/dits-social-preview.png", width: 1280, height: 640, alt: "Dits Playground" }],
   },
   twitter: { card: "summary_large_image" },
 });

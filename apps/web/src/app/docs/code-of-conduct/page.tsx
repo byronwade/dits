@@ -7,7 +7,7 @@ import { generateMetadata as genMeta } from "@/lib/seo";
 export const metadata: Metadata = genMeta({
     title: "Code of Conduct",
     description: "Community guidelines and code of conduct for the Dits project",
-    canonical: "https://dits.dev/docs/code-of-conduct",
+    canonical: "https://dits.byronwade.com/docs/code-of-conduct",
 });
 
 export default function CodeOfConductPage() {
@@ -112,8 +112,8 @@ export default function CodeOfConductPage() {
                     <li>
                         <strong>1. Report:</strong> Instances of abusive, harassing, or otherwise
                         unacceptable behavior may be reported through the{" "}
-                        <a href="https://github.com/byronwade/dits/issues/new" className="text-brand">
-                            Dits GitHub issue tracker
+                        <a href="https://github.com/byronwade/dits/issues/new?template=conduct-contact.yml" className="text-brand">
+                            Code of Conduct contact form
                         </a>. GitHub issues are public, so omit sensitive details and ask a
                         maintainer to arrange a private follow-up channel.
                     </li>
@@ -198,10 +198,13 @@ export default function CodeOfConductPage() {
 
             <Callout type="tip" title="Questions?" className="not-prose my-6">
                 Ask a general question in{" "}
-                <a href="https://github.com/byronwade/dits/discussions" className="underline">
-                    GitHub Discussions
-                </a>. For a conduct report, use the public issue tracker only to request a
-                private follow-up channel; do not post sensitive details.
+                <a href="https://github.com/byronwade/dits/issues/new/choose" className="underline">
+                    GitHub issue forms
+                </a>. For a conduct report, use the{" "}
+                <a href="https://github.com/byronwade/dits/issues/new?template=conduct-contact.yml" className="underline">
+                    details-free contact form
+                </a>{" "}
+                only to request a private follow-up channel.
             </Callout>
         </div>
     );

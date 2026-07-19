@@ -19,7 +19,7 @@ export const metadata: Metadata = genMeta({
   title: "About Dits - Open, Local-First Asset History",
   description:
     "Why Dits is building open, local-first version control and reproducible history for large media and asset pipelines.",
-  canonical: "https://dits.dev/about",
+  canonical: "https://dits.byronwade.com/about",
 });
 
 const principles = [

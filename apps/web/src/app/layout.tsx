@@ -44,9 +44,9 @@ export const metadata: Metadata = genMeta({
     type: "website",
     images: [
       {
-        url: "/dits.png",
-        width: 1200,
-        height: 630,
+        url: "/dits-social-preview.png",
+        width: 1280,
+        height: 640,
         alt: "Dits - Local-First Version Control for Media and Assets",
       },
     ],

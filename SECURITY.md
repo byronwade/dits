@@ -16,10 +16,12 @@ releases. No version has a guaranteed support, response, or fix window.
 Do not publish exploit details, proof-of-concept code, secrets, or affected data in a
 public issue.
 
-If GitHub offers the private vulnerability report form for this repository, use
-[GitHub private vulnerability reporting](https://github.com/byronwade/dits/security/advisories/new).
-If that form is unavailable, open a public issue that contains no sensitive details
-and asks the maintainer to provide a private reporting channel.
+GitHub private vulnerability reporting is not currently enabled for this repository.
+Use the [security contact
+form](https://github.com/byronwade/dits/issues/new?template=security-contact.yml)
+to ask a maintainer to arrange a private reporting channel. That request is a
+public issue, so include no vulnerability details, proof of concept, secrets,
+affected data, identifying information, paths, or logs.
 
 Include, when available:
 

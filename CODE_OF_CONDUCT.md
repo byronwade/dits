@@ -37,10 +37,11 @@ This Code of Conduct applies within all community spaces, and also applies when 
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported through the [Dits GitHub issue tracker](https://github.com/byronwade/dits/issues/new).
-GitHub issues are public: do not include sensitive details, private messages, or
-personal information. Instead, state that you need to report a Code of Conduct
-matter and ask a maintainer to arrange a private follow-up channel.
+reported through the [Code of Conduct contact
+form](https://github.com/byronwade/dits/issues/new?template=conduct-contact.yml).
+The contact request is public: do not include sensitive details, private
+messages, names, or personal information. The form only asks a maintainer to
+arrange a private follow-up channel.
 
 Maintainers will review reports on a best-effort basis and handle information
 shared through an agreed private channel as discreetly as practical. Content
@@ -87,5 +88,4 @@ For answers to common questions about this code of conduct, see the FAQ at [http
 [Mozilla CoC]: https://github.com/mozilla/diversity
 [FAQ]: https://www.contributor-covenant.org/faq
 [translations]: https://www.contributor-covenant.org/translations
-
 
