@@ -1,11 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { WebVitals } from "@/components/web-vitals";
-import { generateMetadata as genMeta, generateOrganizationSchema, generateSoftwareApplicationSchema, generateWebSiteSchema } from "@/lib/seo";
-import Script from "next/script";
+import { safeJsonLd } from "@/lib/safe-json-ld";
+import {
+  generateMetadata as genMeta,
+  generateOrganizationSchema,
+  generateSoftwareApplicationSchema,
+  generateWebSiteSchema,
+} from "@/lib/seo";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -78,21 +84,21 @@ export default function RootLayout({
           id="organization-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(organizationSchema),
+            __html: safeJsonLd(organizationSchema),
           }}
         />
         <Script
           id="software-application-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(softwareApplicationSchema),
+            __html: safeJsonLd(softwareApplicationSchema),
           }}
         />
         <Script
           id="website-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(websiteSchema),
+            __html: safeJsonLd(websiteSchema),
           }}
         />
       </head>

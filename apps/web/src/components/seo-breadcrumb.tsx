@@ -1,6 +1,7 @@
 "use client";
 
 import Script from "next/script";
+import { safeJsonLd } from "@/lib/safe-json-ld";
 import { generateBreadcrumbSchema } from "@/lib/seo";
 import {
   Breadcrumb,
@@ -41,7 +42,7 @@ export function SEOBreadcrumb({ items, className }: SEOBreadcrumbProps) {
         id="breadcrumb-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(schema),
+          __html: safeJsonLd(schema),
         }}
       />
       <Breadcrumb className={className}>

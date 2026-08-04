@@ -35,6 +35,7 @@ import {
   Settings,
 } from "lucide-react";
 
+import { safeJsonLd } from "@/lib/safe-json-ld";
 import { generateMetadata as genMeta, generateArticleSchema, generateItemListSchema, generateCollectionPageSchema, generateBreadcrumbSchema } from "@/lib/seo";
 import Script from "next/script";
 
@@ -383,28 +384,28 @@ export default function CLIReferencePage() {
         id="command-list-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(commandListSchema),
+          __html: safeJsonLd(commandListSchema),
         }}
       />
       <Script
         id="article-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(articleSchema),
+          __html: safeJsonLd(articleSchema),
         }}
       />
       <Script
         id="collection-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(collectionSchema),
+          __html: safeJsonLd(collectionSchema),
         }}
       />
       <Script
         id="breadcrumb-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbSchema),
+          __html: safeJsonLd(breadcrumbSchema),
         }}
       />
       <div className="prose dark:prose-invert max-w-none">

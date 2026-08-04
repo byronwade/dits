@@ -28,7 +28,12 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Next.js 16 Cache Components / Partial Prerendering.
+  cacheComponents: true,
   output: "standalone",
+  experimental: {
+    optimizePackageImports: ["lucide-react", "date-fns", "recharts"],
+  },
   async headers() {
     return [
       {
