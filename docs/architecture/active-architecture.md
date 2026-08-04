@@ -80,7 +80,8 @@ Responsibilities include:
 
 - loose content-addressed objects;
 - refs/HEAD/branches;
-- repository operations;
+- repository operations, including streaming FastCDC ingest for large
+  classified binaries and atomic index publication;
 - hybrid libgit2 text storage;
 - local locks;
 - local remote-configuration records, while transfer commands fail closed;
@@ -95,6 +96,9 @@ Required invariants:
 5. Garbage collection starts from every protected root.
 6. A failed operation cannot publish a manifest/ref that references missing
    objects.
+7. Index state is published only via temp file + rename after validated JSON.
+8. Large binary ingest must not require a whole-file user-space buffer; source
+   size/mtime mutation during ingest fails closed.
 
 ### Command layer: `apps/cli/src/commands`
 

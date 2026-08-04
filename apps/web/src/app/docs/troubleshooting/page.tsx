@@ -124,9 +124,10 @@ dits commit --message "Add file"`}
 
       <p>
         Preserve the worktree and <code>dits status</code> output before trying
-        another operation. Restore does not yet cover complete merge-conflict
-        resolution. Use an independently verified backup to recover important
-        bytes instead of guessing at internal state.
+        another operation. <code>restore --ours/--theirs</code> fails closed
+        without changing files; merge-conflict resolution is not implemented.
+        Use an independently verified backup to recover important bytes instead
+        of guessing at internal state.
       </p>
 
       <h2>Remote commands fail</h2>
@@ -178,11 +179,13 @@ dits gc --dry-run`}
       <h2>High memory or slow ingest</h2>
 
       <p>
-        Current large-file ingest is not bounded by the target streaming-memory
-        formula and can hold file-sized and copied buffers. There is no supported
-        memory-limit, disk-buffer, or debug-profile configuration key. Reproduce
-        with a smaller backed-up fixture, monitor the process with OS tools, and
-        report the file size, format, hardware, filesystem, and elapsed time.
+        Classified binaries of 1&nbsp;MiB or larger stream through FastCDC so
+        peak buffers track the chunker <code>max_size</code>. Text and
+        MP4-specialized paths may still hold file-sized buffers. There is no
+        supported memory-limit, disk-buffer, or debug-profile configuration key.
+        Reproduce with a smaller backed-up fixture, monitor the process with OS
+        tools, and report the file size, format, hardware, filesystem, and
+        elapsed time.
       </p>
 
       <p>

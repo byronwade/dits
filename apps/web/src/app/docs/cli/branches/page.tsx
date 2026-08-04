@@ -113,8 +113,8 @@ dits merge feature/color-pass --message "Merge color pass"`}
 
       <Callout type="warning" title="Conflict handling is still alpha" className="not-prose my-6">
         Inspect <code>dits status</code> after a conflict and keep an independent
-        backup. The current <code>restore</code> command does not provide complete
-        merge-conflict resolution for every path.
+        backup. <code>restore --ours/--theirs</code> fails closed without changing
+        files; merge-conflict resolution is not implemented.
       </Callout>
 
       <h2><code>dits rebase</code></h2>

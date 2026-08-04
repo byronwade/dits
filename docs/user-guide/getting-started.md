@@ -150,8 +150,10 @@ it directly to the public Internet.
 - Destructive GC is disabled; `dits gc --dry-run` only reports candidates.
 - The incomplete encryption experiment is disabled. Repositories containing
   its legacy keystore fail closed.
-- Large-file ingest can still use file-sized buffers, and loose-object storage
-  is not ready for very high object counts.
+- Large classified binaries (≥1 MiB) use streaming FastCDC ingest so peak
+  buffers track the chunker `max_size`; text and MP4-specialized paths may still
+  buffer whole files. Loose-object storage is not ready for very high object
+  counts until packfiles exist.
 - Media compatibility is bounded by tested fixtures; no universal format,
   keyframe, or storage-savings claim is valid.
 - Remote transfer, remote locks, P2P, hosted APIs, and public SDKs are roadmap.

@@ -117,10 +117,10 @@ const commandCategories = [
   },
   {
     title: "Remote Operations",
-    description: "Configure remotes; repository transfer is disabled",
+    description: "Configure remotes; transfer is disabled; local fetch-objects works",
     icon: Cloud,
     href: "/docs/cli/remotes",
-    commands: ["push", "pull", "fetch", "sync"],
+    commands: ["push", "pull", "fetch", "fetch-objects", "sync"],
     color: "text-brand",
     bgColor: "bg-brand/10",
   },
@@ -242,7 +242,7 @@ const allCommands = [
   { name: "status", description: "Show working tree status", category: "Repository", status: "stable" },
   // Files
   { name: "add", description: "Add files to staging area", category: "Files", status: "stable" },
-  { name: "restore", description: "Restore working tree files", category: "Files", status: "stable" },
+  { name: "restore", description: "Restore or unstage paths; --ours/--theirs fail closed", category: "Files", status: "stable" },
   { name: "diff", description: "Show changes between commits", category: "Files", status: "stable" },
   // History
   { name: "commit", description: "Record changes to the repository", category: "History", status: "stable" },
@@ -260,7 +260,7 @@ const allCommands = [
   { name: "rebase", description: "Rebase commits", category: "Advanced Git", status: "stable" },
   { name: "cherry-pick", description: "Apply specific commits", category: "Advanced Git", status: "stable" },
   { name: "bisect", description: "Binary search for bugs", category: "Advanced Git", status: "stable" },
-  { name: "reflog", description: "Show reference logs", category: "Advanced Git", status: "stable" },
+  { name: "reflog", description: "Show reflog; records commit/checkout, may reconstruct history", category: "Advanced Git", status: "stable" },
   { name: "blame", description: "Show authorship by line", category: "Advanced Git", status: "stable" },
   { name: "show", description: "Show various types of objects", category: "Advanced Git", status: "stable" },
   { name: "grep", description: "Search repository content", category: "Advanced Git", status: "stable" },
@@ -270,12 +270,13 @@ const allCommands = [
   { name: "archive", description: "Create archives", category: "Advanced Git", status: "stable" },
   { name: "describe", description: "Describe commits with tags", category: "Advanced Git", status: "stable" },
   { name: "shortlog", description: "Summarize git log output", category: "Advanced Git", status: "stable" },
-  { name: "maintenance", description: "Run maintenance tasks", category: "Advanced Git", status: "stable" },
+  { name: "maintenance", description: "Maintenance helper; pack/repack/prefetch fail closed", category: "Advanced Git", status: "limited" },
   { name: "completions", description: "Generate shell completions", category: "Advanced Git", status: "stable" },
   // Remotes
   { name: "push", description: "Disabled; fails nonzero without transferring data or changing the repository", category: "Remotes", status: "disabled" },
   { name: "pull", description: "Disabled; fails nonzero without fetching, merging, or changing the repository", category: "Remotes", status: "disabled" },
   { name: "fetch", description: "Disabled; fails nonzero without downloading objects or updating refs", category: "Remotes", status: "disabled" },
+  { name: "fetch-objects", description: "Copy missing objects from another local repository (additive; no ref updates)", category: "Remotes", status: "local only" },
   { name: "sync", description: "Disabled; fails nonzero without bidirectional synchronization", category: "Remotes", status: "disabled" },
   // Locks
   { name: "lock", description: "Lock files for exclusive editing", category: "Locks", status: "stable" },

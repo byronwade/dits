@@ -94,10 +94,11 @@ dits bisect reset`}
         </li>
         <li>
           Reflog and bisect are local navigation aids, not synchronized server
-          state. The current alpha does not record every ref-changing action; if
-          a reflog file is absent, the command labels and shows a limited view
-          reconstructed from commit history. Treat neither view as a complete undo
-          journal or durable recovery record.
+          state. Reflog entries are recorded for commit and checkout; other
+          ref-changing commands may not append. If a reflog file is absent, the
+          command labels and shows a limited view reconstructed from commit
+          history. Treat neither view as a complete undo journal or durable
+          recovery record.
         </li>
       </ul>
 

@@ -56,7 +56,8 @@ npm --workspace apps/web run test:ci
 - Reduce a corruption, crash-safety, or recovery failure to a regression test.
 - Add a generated or redistributable real-media fixture with documented provenance.
 - Define deterministic test vectors for an object or manifest format.
-- Remove a file-sized buffer from ingest and measure peak memory.
+- Extend streaming ingest beyond large classified binaries (text/MP4 paths still
+  buffer whole files) and measure peak RSS against the chunker `max_size`.
 - Reconcile a command page with actual `dits --help` output.
 - Label a historical or design document so it cannot be mistaken for current behavior.
 - Reproduce a competitor workload fairly and publish the method and raw results.

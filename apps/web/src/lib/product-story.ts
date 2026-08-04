@@ -57,7 +57,7 @@ export const PRODUCT_MILESTONES = [
   {
     name: "Stable format and scale",
     state: "Next",
-    summary: "Versioned deterministic objects, bounded-memory ingest, packs, indexes, and trees.",
+    summary: "Versioned deterministic objects; finish text/MP4 bounded ingest; packs, indexes, and trees.",
   },
   {
     name: "Semantic media",
