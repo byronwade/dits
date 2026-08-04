@@ -24,7 +24,9 @@ export default function RemoteCommandsPage() {
       <Callout type="warning" title="Transfer commands fail closed" className="not-prose my-6">
         <code>push</code>, <code>pull</code>, <code>fetch</code>, and <code>sync</code>{" "}
         return a nonzero exit status for both local-path and network remotes. They do
-        not transfer data or change the repository.
+        not transfer data or change the repository. For additive object copy from
+        another local repository, use <code>dits fetch-objects &lt;path&gt;</code>.
+        For a full local repository copy, use <code>dits clone</code>.
       </Callout>
 
       <h2>Remote configuration</h2>

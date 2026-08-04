@@ -93,9 +93,10 @@ export default function RoadmapPage() {
 
       <h3>Gate 2: stable format and scale</h3>
       <p>
-        Versioned canonical objects and manifests, bounded-memory ingest, packs,
-        indexes, tree objects, garbage collection, and representative end-to-end
-        benchmarks.
+        Versioned canonical objects and manifests; finish remaining text/MP4
+        ingest bounds (large classified binary streaming is already Current);
+        packs, indexes, tree objects, garbage collection, and representative
+        end-to-end benchmarks.
       </p>
 
       <h3>Gate 3: semantic media</h3>

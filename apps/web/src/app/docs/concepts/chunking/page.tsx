@@ -59,9 +59,11 @@ export default function ChunkingPage() {
 
       <h2>Current limitations</h2>
       <p>
-        The local alpha still needs stronger bounded-memory ingest, packfiles,
-        high-object-count indexes, and public workload comparisons. The committed
-        FastCDC rate is a component microbenchmark, not repository throughput.
+        Streaming FastCDC ingest is Current for large classified binaries
+        (≥1&nbsp;MiB); text and MP4-specialized paths may still buffer whole
+        files. Packfiles, high-object-count indexes, and public workload
+        comparisons remain open. The committed FastCDC rate is a component
+        microbenchmark, not repository throughput.
       </p>
     </div>
   );

@@ -88,7 +88,8 @@ dits status`}
         <code> --source</code>. Use <code>--staged</code> to unstage and
         <code> --worktree</code> to select the working tree explicitly. The
         parser also accepts <code>--ours</code> and <code>--theirs</code>, but
-        merge-conflict restoration is not complete in this alpha.
+        both fail closed (nonzero exit, no file changes); merge-conflict restore
+        is not implemented.
       </p>
 
       <CodeBlock

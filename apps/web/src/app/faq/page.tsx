@@ -101,11 +101,11 @@ export default function FAQPage() {
               independently backed-up project.
             </p>
             <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
-              <Button render={<Link href="/docs/roadmap" />}>
+              <Button render={<Link href="/docs/roadmap" aria-label="Current status and roadmap"  prefetch={false} />}>
                 Current status and roadmap
                 <ArrowRight data-icon="inline-end" />
               </Button>
-              <Button variant="outline" render={<Link href="/docs/getting-started" />}>
+              <Button variant="outline" render={<Link href="/docs/getting-started" aria-label="Getting started"  prefetch={false} />}>
                 Getting started
               </Button>
             </div>

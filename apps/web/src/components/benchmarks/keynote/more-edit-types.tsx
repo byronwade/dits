@@ -38,6 +38,18 @@ export function MoreEditTypes({ records }: { records: CompRecord[] }) {
     },
   ];
 
+  if (records.length === 0) {
+    return (
+      <div className="mt-7 rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
+        <p className="font-medium text-foreground">No edit-type results yet</p>
+        <p className="mt-2">
+          Run <code className="font-mono text-brand">npm run bench:comparative</code> to populate
+          trim, photo, and grade comparisons.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2">

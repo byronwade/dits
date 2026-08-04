@@ -156,9 +156,10 @@ The full-content hash protects file identity. The chunk list provides reusable
 storage. A manifest must preserve both the ordered chunk references and the
 expected total size.
 
-A future streaming ingest path should compute the full BLAKE3 digest
-incrementally while emitting bounded batches of chunks. It should not require a
-second complete in-memory copy of the file.
+Large binary ingest streams FastCDC chunks while updating the full BLAKE3
+digest incrementally, so peak buffers track the chunker maximum rather than a
+second complete in-memory copy of the file. Text and MP4-specialized paths may
+still buffer whole files.
 
 ## 5. Hybrid text and binary storage
 
@@ -387,7 +388,7 @@ The optimization sequence is documented in
 | FACR frame/photo workflows | Experimental |
 | FUSE mount | Experimental and feature-gated |
 | Packfiles and multi-pack index | Design |
-| Bounded-memory streaming ingest | Design priority |
+| Bounded-memory streaming ingest | Current for large classified binaries |
 | Remote CAS protocol | Design |
 | QUIC/P2P transfer | Scaffolding/design |
 | Hosted REST/API/SDK platform | Historical/design, not current |

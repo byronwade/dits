@@ -32,7 +32,9 @@ export default function InstallationPage() {
       <Callout type="note" title="Packaged platforms" className="not-prose my-6">
         The published v0.1.5 artifact contains <strong>darwin-arm64</strong> and
         <strong> win32-x64</strong> binaries. It does not contain Linux, Intel
-        macOS, or Windows arm64 binaries.
+        macOS, or Windows arm64 binaries. The release workflow already builds the
+        full platform matrix (including Linux glibc/musl), and future publishes
+        refuse an incomplete binary set.
       </Callout>
 
       <CodeBlock

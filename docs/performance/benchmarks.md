@@ -94,7 +94,8 @@ estimates **estimate**. None should be rendered as a measured result.
 Correctness precedes speed. Near-term engineering priorities are:
 
 1. deterministic object identity and byte-exact recovery;
-2. bounded-memory streaming for large inputs;
+2. finish bounded-memory ingest for remaining text/MP4 paths and publish
+   peak-memory evidence (large classified binary streaming is already Current);
 3. useful progress and cancellation behavior;
 4. representative end-to-end benchmarks;
 5. optimization only after profiling those workloads.

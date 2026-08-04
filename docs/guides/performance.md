@@ -18,6 +18,8 @@ commit, fixture, hardware, and method it names. For a new workload, retain:
 - failures and unfavorable comparisons.
 
 Repository chunking keys are documented in the
-[configuration reference](../user-guide/config-reference.md). Very large ingest can
-still hold file-sized and copied buffers, loose-object count remains a scale constraint,
-and destructive GC is disabled. Treat tuning changes as experiments on backed-up data.
+[configuration reference](../user-guide/config-reference.md). Large classified
+binaries (≥1 MiB) stream through FastCDC so peak buffers track the chunker
+`max_size`; text and MP4-specialized paths may still hold file-sized buffers.
+Loose-object count remains a scale constraint, and destructive GC is disabled.
+Treat tuning changes as experiments on backed-up data.

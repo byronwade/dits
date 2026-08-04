@@ -20,6 +20,15 @@ const TONE: Record<BarTone, string> = {
 
 /** Plain "everyone else vs dits" comparison bars — the page's core visual. */
 export function TwoTierBar({ rows }: { rows: BarRow[] }) {
+  if (rows.length === 0) {
+    return (
+      <div className="mt-8 max-w-2xl rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
+        <p className="font-medium text-foreground">No comparison bars yet</p>
+        <p className="mt-2">Benchmark rows will appear here when results are available.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="mt-8 flex max-w-2xl flex-col gap-4">
       {rows.map((r, i) => (

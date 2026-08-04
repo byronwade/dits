@@ -62,11 +62,11 @@ export default function AiResearchPage() {
                 remote sync, or hosted workflows today.
               </p>
               <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-                <Button render={<Link href="/ai/docs" />}>
+                <Button render={<Link href="/ai/docs" aria-label="Read the research notes"  prefetch={false} />}>
                   Read the research notes
                   <ArrowRight data-icon="inline-end" />
                 </Button>
-                <Button variant="outline" render={<Link href="/docs/roadmap" />}>
+                <Button variant="outline" render={<Link href="/docs/roadmap" aria-label="Core product roadmap"  prefetch={false} />}>
                   Core product roadmap
                 </Button>
               </div>

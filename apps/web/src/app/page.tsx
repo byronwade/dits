@@ -64,7 +64,7 @@ export default function HomePage() {
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Button
                   size="lg"
-                  render={<Link href="/docs/getting-started" />}
+                  render={<Link href="/docs/getting-started" aria-label="Try the local alpha"  prefetch={false} />}
                 >
                   Try the local alpha
                   <ArrowRight data-icon="inline-end" />
@@ -76,11 +76,10 @@ export default function HomePage() {
                     <Link
                       href="https://github.com/byronwade/dits"
                       target="_blank"
-                      rel="noopener noreferrer"
-                    />
+                      rel="noopener noreferrer" aria-label="Star Dits on GitHub"  prefetch={false} />
                   }
                 >
-                  <GithubIcon className="size-4" />
+                  <GithubIcon data-icon="inline-start" />
                   Star Dits on GitHub
                 </Button>
               </div>
@@ -106,7 +105,7 @@ dits log`}</code></pre>
               <Link
                 href="/docs/architecture"
                 className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline"
-              >
+               prefetch={false}>
                 Read the architecture
                 <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
@@ -206,7 +205,7 @@ dits log`}</code></pre>
               <Button
                 variant="outline"
                 className="mt-6"
-                render={<Link href="/benchmarks" />}
+                render={<Link href="/benchmarks" aria-label="See method and limitations"  prefetch={false} />}
               >
                 See method and limitations
                 <ArrowRight data-icon="inline-end" />
@@ -250,7 +249,7 @@ dits log`}</code></pre>
               ))}
             </div>
             <div className="mt-8 text-center">
-              <Button variant="outline" render={<Link href="/docs/roadmap" />}>
+              <Button variant="outline" render={<Link href="/docs/roadmap" aria-label="Explore the roadmap"  prefetch={false} />}>
                 Explore the roadmap
                 <ArrowRight data-icon="inline-end" />
               </Button>
@@ -269,7 +268,7 @@ dits log`}</code></pre>
               cases, format reviews, and reproducible workflow evidence.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <Button size="lg" render={<Link href="/docs/getting-started" />}>
+              <Button size="lg" render={<Link href="/docs/getting-started" aria-label="Start locally"  prefetch={false} />}>
                 Start locally
               </Button>
               <Button
@@ -279,11 +278,10 @@ dits log`}</code></pre>
                   <Link
                     href="https://github.com/byronwade/dits"
                     target="_blank"
-                    rel="noopener noreferrer"
-                  />
+                    rel="noopener noreferrer" aria-label="Star Dits on GitHub"  prefetch={false} />
                 }
               >
-                <GithubIcon className="size-4" />
+                <GithubIcon data-icon="inline-start" />
                 Star Dits on GitHub
               </Button>
             </div>

@@ -4,7 +4,7 @@
 
 **Product version:** 0.1.5
 
-**Last repository review:** 2026-07-16
+**Last repository review:** 2026-08-04
 
 This file is the authority for public capability claims. Command-level truth is
 checked against `dits --help` by `scripts/check-cli-docs.sh`. A design, test,
@@ -47,10 +47,11 @@ Named limitations:
 - Local clone copies committed object/ref/config state, not local indexes,
   working-tree changes, locks, audit records, generated proxy caches, metadata
   caches, lifecycle records, or experimental project side stores.
-- Reflog recording is incomplete. When a reflog file is absent, `dits reflog`
-  labels and displays a limited view reconstructed from commit history; it is
-  not a complete undo log for every ref-changing action.
-- `restore` does not provide complete merge-conflict resolution.
+- Reflog recording covers commit and checkout actions. Other ref-changing
+  commands may not yet append entries; when a reflog file is absent, `dits
+  reflog` labels and displays a limited view reconstructed from commit history.
+- `restore --ours/--theirs` fails closed; merge-conflict resolution is not
+  implemented.
 - Destructive GC is disabled. `dits gc --dry-run` reports candidate unreachable
   objects; it does not delete objects or locks. Reachability and a quarantine
   policy must be complete before deletion is enabled.
@@ -60,6 +61,10 @@ Named limitations:
 ### Storage and integrity
 
 - FastCDC chunking and BLAKE3 content IDs.
+- Streaming FastCDC ingest for large binary files (peak buffers track the
+  chunker `max_size`, not the whole file).
+- Source size/mtime mutation checks around ingest; mid-write changes fail closed.
+- Atomic index publication via temp file + rename.
 - Deduplication of byte-identical chunks.
 - Digest verification on object read and byte-exact reconstruction tests.
 - Read-only `fsck` verification of commit/manifest identity, ref targets,
@@ -71,8 +76,8 @@ Named limitations:
 
 Named limitations:
 
-- Large-file ingest is not yet bounded by the target memory formula; the
-  current path can hold file-sized and copied buffers.
+- Text and MP4-specialized ingest paths may still buffer whole files; the
+  streaming path covers classified large binary files at or above 1 MiB.
 - Loose object storage is not appropriate for very high object counts until
   packfiles and indexes are implemented.
 - Exact format support is bounded by the current corpus; no universal
@@ -148,7 +153,10 @@ Available:
 
 - `npm install -g @byronwade/dits` and equivalent bun/pnpm global install for
   the binaries actually present in the artifact; published v0.1.5 contains
-  `darwin-arm64` and `win32-x64` only;
+  `darwin-arm64` and `win32-x64` only. The release workflow builds the full
+  platform matrix (including Linux glibc/musl) and
+  `packages/npm/scripts/verify-binaries.js` refuses incomplete packages on
+  future publishes;
 - build from source.
 
 Not available:

@@ -32,22 +32,20 @@ A contract is valid only for the platforms and features tested.
 
 ## 2. Immediate findings
 
-### 2.1 File-sized memory
+### 2.1 Remaining whole-file buffers
 
-The current repository ingest path reads a complete file before chunking. The
-parallel chunker returns owned chunk buffers. For a large file, peak memory can
-include:
+Large classified binaries (≥1 MiB) stream through FastCDC with incremental
+BLAKE3 hashing, size/mtime mutation checks, and atomic index publication. Peak
+buffers for that path track the chunker `max_size` rather than `file_size`.
 
-- the complete input buffer;
-- a second set of copied chunk payloads;
-- hashing/metadata overhead; and
-- media-specific duplicate buffers.
+Remaining file-sized memory pressure is concentrated in:
 
-The MP4 path can additionally hold an extracted `mdat` payload and then copied
-chunks from that payload.
+- text / small-binary paths that still `read` the whole file;
+- MP4-specialized ingest, which can hold an extracted `mdat` payload and then
+  chunk buffers from that payload; and
+- media-specific duplicate buffers on experimental FACR/proxy paths.
 
-This is the highest-impact runtime problem because it makes “large-file VCS”
-capacity dependent on RAM.
+Closing those remaining paths is the next ingest-memory priority.
 
 ### 2.2 Current-format parse misses
 
@@ -77,19 +75,11 @@ filesystem operations dominate:
 
 Packfiles are a scale feature, not only a compression feature.
 
-### 2.4 Duplicate binary/library compilation
+### 2.4 Duplicate binary/library compilation *(resolved)*
 
-The binary redeclares modules already exposed by the library. This can compile
-substantial source trees twice and makes incremental invalidation broader.
-
-Measure before and after:
-
-- clean debug build wall time;
-- clean release build wall time;
-- incremental build after a command-only change;
-- incremental build after a core type change;
-- release binary size;
-- duplicate symbol/codegen evidence.
+The CLI binary now imports the canonical library modules instead of redeclaring
+them. Keep CLI parsing, process setup, hooks, and telemetry in the binary; do
+not reintroduce parallel module trees that permit type drift.
 
 ### 2.5 FACR temporary-file amplification
 

@@ -17,44 +17,51 @@ interface ErrorBoundaryProps {
 
 interface ErrorFallbackProps {
   error: Error;
-  resetError: () => void;
+  resetErrorBoundary: () => void;
 }
 
-function DefaultErrorFallback({ error, resetError }: ErrorFallbackProps) {
+function DefaultErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="max-w-md w-full space-y-6 text-center">
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="flex w-full max-w-md flex-col gap-6 text-center">
         <div className="flex justify-center">
           <AlertTriangle className="h-16 w-16 text-destructive" />
         </div>
 
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-bold text-foreground">
             Something went wrong
           </h1>
           <p className="text-muted-foreground">
-            We encountered an unexpected error. Please try refreshing the page or go back home.
+            We encountered an unexpected error. Please try again or go back home.
           </p>
         </div>
 
-        <div className="space-y-3">
-          <Button onClick={resetError} className="w-full">
-            <RefreshCw className="mr-2 h-4 w-4" />
+        <div className="flex flex-col gap-3">
+          <Button type="button" onClick={resetErrorBoundary} className="w-full">
+            <RefreshCw data-icon="inline-start" />
             Try Again
           </Button>
 
-          <Button variant="outline" onClick={() => window.location.href = "/"} className="w-full">
-            <Home className="mr-2 h-4 w-4" />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              window.location.href = "/";
+            }}
+            className="w-full"
+          >
+            <Home data-icon="inline-start" />
             Go Home
           </Button>
         </div>
 
         {process.env.NODE_ENV === "development" && (
           <details className="mt-6 text-left">
-            <summary className="cursor-pointer text-sm font-medium mb-2">
+            <summary className="mb-2 cursor-pointer text-sm font-medium">
               Error Details (Development Only)
             </summary>
-            <pre className="text-xs bg-muted p-3 rounded-md overflow-auto max-h-48">
+            <pre className="max-h-48 overflow-auto rounded-md bg-muted p-3 text-xs">
               {error.message}
               {error.stack && `\n\n${error.stack}`}
             </pre>
@@ -82,43 +89,33 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       error,
       errorInfo,
     });
-
-    // In production, you might want to send this to an error reporting service
-    if (process.env.NODE_ENV === "production") {
-      // Example: Send to error reporting service
-      // reportError(error, errorInfo);
-    }
   }
 
-  resetError = () => {
+  resetErrorBoundary = () => {
     this.setState({ hasError: false, error: undefined, errorInfo: undefined });
   };
 
   render() {
     if (this.state.hasError && this.state.error) {
       const FallbackComponent = this.props.fallback || DefaultErrorFallback;
-      return <FallbackComponent error={this.state.error} resetError={this.resetError} />;
+      return (
+        <FallbackComponent
+          error={this.state.error}
+          resetErrorBoundary={this.resetErrorBoundary}
+        />
+      );
     }
 
     return this.props.children;
   }
 }
 
-// Hook for functional components
 export function useErrorHandler() {
   return (error: Error, errorInfo?: { componentStack?: string }) => {
     console.error("Error caught by useErrorHandler:", error, errorInfo);
-
-    // In production, send to error reporting service
-    if (process.env.NODE_ENV === "production") {
-      // reportError(error, errorInfo);
-    }
-
-    // You could also trigger a global error state here
   };
 }
 
-// Higher-order component for class components
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
   fallback?: React.ComponentType<ErrorFallbackProps>
@@ -133,6 +130,3 @@ export function withErrorBoundary<P extends object>(
 
   return WrappedComponent;
 }
-
-
-

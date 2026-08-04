@@ -40,6 +40,7 @@ export function DocsSidebar({ onNavigate }: DocsSidebarProps) {
               <li key={item.href} className="relative">
                 <Link
                   href={item.href}
+                  prefetch={false}
                   onClick={onNavigate}
                   data-active={pathname === item.href}
                   className={cn(

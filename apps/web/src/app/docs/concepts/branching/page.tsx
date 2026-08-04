@@ -28,16 +28,18 @@ export default function BranchingPage() {
       <h2>Text and binary changes</h2>
       <p>
         Text-oriented paths can use familiar line merge behavior. Opaque binary
-        assets do not have a universally safe automatic merge. Local locks and
-        explicit ours/theirs decisions can help, while future semantic records may
-        enable narrower domain-aware conflicts.
+        assets do not have a universally safe automatic merge. Local locks are
+        advisory only; <code>restore --ours/--theirs</code> fails closed and does
+        not resolve conflicts. Future semantic records may enable narrower
+        domain-aware conflicts.
       </p>
 
       <h2>Merge safety</h2>
       <p>
         Inspect status and diffs, commit or stash intentional local work, and keep
-        independent backups during alpha evaluation. The current <code>restore</code>
-        path does not provide complete merge-conflict resolution.
+        independent backups during alpha evaluation.{" "}
+        <code>restore --ours/--theirs</code> fails closed with no worktree or
+        index changes; merge-conflict resolution is not implemented.
       </p>
 
       <Callout type="warning" title="No shared remote branch workflow yet" className="not-prose my-8">

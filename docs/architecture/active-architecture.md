@@ -80,7 +80,8 @@ Responsibilities include:
 
 - loose content-addressed objects;
 - refs/HEAD/branches;
-- repository operations;
+- repository operations, including streaming FastCDC ingest for large
+  classified binaries and atomic index publication;
 - hybrid libgit2 text storage;
 - local locks;
 - local remote-configuration records, while transfer commands fail closed;
@@ -95,6 +96,9 @@ Required invariants:
 5. Garbage collection starts from every protected root.
 6. A failed operation cannot publish a manifest/ref that references missing
    objects.
+7. Index state is published only via temp file + rename after validated JSON.
+8. Large binary ingest must not require a whole-file user-space buffer; source
+   size/mtime mutation during ingest fails closed.
 
 ### Command layer: `apps/cli/src/commands`
 
@@ -110,19 +114,16 @@ hash implementation.
 
 ### Binary: `apps/cli/src/main.rs`
 
-Current state: the binary declares several source modules that are also exposed
-by the `dits` library crate. This keeps some binary-relative paths compiling but
-duplicates module compilation and permits type drift.
-
-Target state:
+Current state: the binary imports the canonical library modules and keeps only
+CLI parsing, process setup, exit codes, hooks, and telemetry in the binary
+crate:
 
 ```rust
-use dits::{Repository, core, facr, mp4, p2p, segment, store, stream, vfs};
+use dits::{config, core, facr, mp4, segment, store, stream, util};
 ```
 
-Only CLI parsing, process setup, exit codes, and presentation remain in the
-binary crate. Library visibility should be made intentional rather than
-duplicating modules.
+Library visibility should remain intentional; do not redeclare engine modules in
+the binary.
 
 ### Media structure: `apps/cli/src/mp4`, `segment`, `proxy`
 

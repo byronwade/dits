@@ -25,6 +25,7 @@ const commands = [
   { command: "repo-stats", behavior: "Show statistics for the current local repository", usage: "dits repo-stats [-v]" },
   { command: "inspect-file", behavior: "Inspect a tracked file and optionally list chunk IDs", usage: "dits inspect-file <PATH> [--chunks]" },
   { command: "config", behavior: "Read or update one selected TOML configuration file", usage: "dits config [OPTIONS] [KEY] [VALUE]" },
+  { command: "maintenance", behavior: "Run named maintenance tasks; pack, incremental-repack, and prefetch fail closed", usage: "dits maintenance [run|status|enable|disable] [TASK]" },
 ];
 
 export default function MaintenanceCommandsPage() {
@@ -76,6 +77,23 @@ dits gc --dry-run --prune --aggressive`}
         reserved and ignored. Do not delete files manually from
         <code> .dits/objects</code>.
       </Callout>
+
+      <h2><code>dits maintenance</code></h2>
+
+      <p>
+        Runs named local maintenance tasks. Packfiles are not implemented, so
+        <code> pack</code> and <code>incremental-repack</code> fail closed without
+        rewriting objects. <code>prefetch</code> fails closed because remote fetch
+        is disabled. Use <code>dits maintenance status</code> and runtime help for
+        the current task list.
+      </p>
+
+      <CodeBlock
+        language="bash"
+        code={`dits maintenance status
+dits maintenance run fsck
+dits maintenance --help`}
+      />
 
       <h2><code>dits fsck</code></h2>
 

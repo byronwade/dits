@@ -55,6 +55,8 @@ than another cloud drive or Git LFS wrapper.
 
 The published v0.1.5 npm artifact contains Apple-silicon macOS and Windows x64
 binaries. Other targets can [build from source](docs/user-guide/getting-started.md#build-the-source).
+The release workflow already builds the full platform matrix for future
+publishes.
 
 ```bash
 npm install -g @byronwade/dits

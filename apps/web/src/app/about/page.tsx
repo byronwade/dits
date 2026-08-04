@@ -142,11 +142,28 @@ export default function AboutPage() {
               still need broader real-world validation.
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <Button render={<Link href="/docs/roadmap" />}>
+              <Button
+                render={
+                  <Link
+                    href="/docs/roadmap"
+                    prefetch={false}
+                    aria-label="Read the roadmap"
+                  />
+                }
+              >
                 Read the roadmap
                 <ArrowRight data-icon="inline-end" />
               </Button>
-              <Button variant="outline" render={<Link href="/docs/getting-started" />}>
+              <Button
+                variant="outline"
+                render={
+                  <Link
+                    href="/docs/getting-started"
+                    prefetch={false}
+                    aria-label="Evaluate locally"
+                  />
+                }
+              >
                 Evaluate locally
               </Button>
             </div>

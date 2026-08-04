@@ -35,9 +35,12 @@ these packaged binaries:
 | macOS | Apple silicon | `darwin-arm64` |
 | Windows | x64 | `win32-x64` |
 
-Linux, Intel macOS, and Windows arm64 currently require a source build. The npm
-launcher selects a binary already present in the package; it does not download
-one during installation.
+Linux, Intel macOS, and Windows arm64 currently require a source build for the
+published v0.1.5 artifact. The release workflow already builds the full platform
+matrix (including Linux glibc/musl), and
+`packages/npm/scripts/verify-binaries.js` refuses incomplete future publishes.
+The npm launcher selects a binary already present in the package; it does not
+download one during installation.
 
 ## Why Dits exists
 

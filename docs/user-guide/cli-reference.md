@@ -54,8 +54,8 @@ or repository state; inspect each command's help before using it on important da
 | --- | --- | --- |
 | Repository and staging | `init`, `add`, `status`, `commit` | Local repository state and snapshots. |
 | History inspection | `log`, `show`, `diff`, `blame` | Output is human-oriented unless the command says otherwise. |
-| Refs and navigation | `branch`, `switch`, `checkout`, `tag`, `reflog` | Local refs only; no remote tracking workflow. |
-| History changes | `merge`, `rebase`, `cherry-pick`, `reset`, `restore`, `bisect`, `stash` | Alpha conflict and recovery behavior; back up first. |
+| Refs and navigation | `branch`, `switch`, `checkout`, `tag`, `reflog` | Local refs only; no remote tracking workflow. Reflog records commit and checkout; other ref changes may omit entries. |
+| History changes | `merge`, `rebase`, `cherry-pick`, `reset`, `restore`, `bisect`, `stash` | Alpha conflict and recovery behavior; back up first. `restore --ours/--theirs` fails closed. |
 | Configuration | `config` | Selects one local or global file; see the configuration reference. |
 
 Use `dits <command> --help` for required operands and modes. In particular,
@@ -71,11 +71,11 @@ operation rather than a documented `checkout -b` shortcut.
 | Dependencies | `dep-check`, `dep-graph`, `dep-list` | Local project-file analysis bounded by supported parsers. |
 | Lifecycle | `freeze-init`, `freeze-status`, `freeze`, `thaw`, `freeze-policy` | Local storage tiers; verify source availability before transitions. |
 | Audit | `audit`, `audit-stats`, `audit-export` | Local audit data, not a hosted compliance service. |
-| Local object copy | `fetch-objects` | Copies missing content-addressed objects from another local Dits repository. |
+| Local object copy | `fetch-objects` | Additive object copy from another local repository; does not update refs or the working tree. Not a substitute for `fetch`/`pull`. |
 | Local locks | `lock`, `unlock`, `locks` | Advisory local locks; no remote lease coordinator. |
 | Working-tree tools | `clean`, `grep`, `worktree`, `sparse-checkout`, `hooks` | `clean` can delete untracked data; preview with `--dry-run`. |
 | Packaging and history summaries | `archive`, `describe`, `shortlog` | Local repository content and refs. |
-| Maintenance and shell support | `maintenance`, `completions` | Inspect subcommand help; maintenance does not enable destructive GC. |
+| Maintenance and shell support | `maintenance`, `completions` | Destructive GC stays disabled. `maintenance run pack`, `incremental-repack`, and `prefetch` fail closed without packing or fetching. |
 | Telemetry | `telemetry` | Explicit `enable`, `disable`, or `status`; disabled by default. |
 
 Malformed repository configuration prevents repository commands from opening it
@@ -112,7 +112,7 @@ is retained as disabled scaffolding and is not an active sharing workflow.
 | --- | --- |
 | `clone` | A validated local filesystem source works and preserves its current HEAD/config unless `--branch` selects another source branch. Network clone fails; no repository network protocol is shipped. A failed checkout returns nonzero and may leave a clearly reported incomplete destination for inspection. |
 | `remote` | Adds, removes, renames, and inspects local remote metadata only. It does not transfer data. |
-| `push`, `pull`, `fetch`, `sync` | Return a nonzero error without changing objects, refs, or the working tree. |
+| `push`, `pull`, `fetch`, `sync` | Return a nonzero error without changing objects, refs, or the working tree. For additive local object copy use `fetch-objects`; for a full local copy use `clone`. |
 | `p2p` | Parsed operations fail nonzero before repository, target, cache, socket, or mount mutation. |
 | `encrypt-init`, `login`, `change-password` | Disabled experiment; each fails without changing the keystore. |
 | `encrypt-status`, `logout` | Inspect or clear legacy experimental state; they do not enable supported encryption. |

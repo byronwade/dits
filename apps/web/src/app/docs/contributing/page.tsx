@@ -31,7 +31,7 @@ export default function ContributingPage() {
         <li>Crash-safety, corruption, and recovery regression tests.</li>
         <li>Generated or redistributable real-media fixtures.</li>
         <li>Deterministic format vectors and compatibility tests.</li>
-        <li>Bounded-memory ingest and high-object-count storage work.</li>
+        <li>Extend streaming ingest to text/MP4 paths; packfiles and high-object-count storage.</li>
         <li>Fair, reproducible workload comparisons.</li>
         <li>CLI and documentation corrections tied to actual behavior.</li>
       </ul>

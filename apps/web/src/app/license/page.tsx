@@ -80,10 +80,16 @@ export default function LicensePage() {
                     variant="outline"
                     className="mt-auto"
                     render={
-                      <Link href={l.href} target="_blank" rel="noopener noreferrer" />
+                      <Link
+                        href={l.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        prefetch={false}
+                        aria-label={`Read the full ${l.spdx} text`}
+                      />
                     }
                   >
-                    <GithubIcon className="mr-2 h-4 w-4" />
+                    <GithubIcon data-icon="inline-start" />
                     Read the full {l.spdx} text
                   </Button>
                 </Card>
@@ -106,11 +112,11 @@ export default function LicensePage() {
               </p>
               <p>
                 Both license texts live in the repository as{" "}
-                <Link href={`${REPO}/LICENSE`} target="_blank" rel="noopener noreferrer" className="text-brand underline-offset-2 hover:underline">
+                <Link href={`${REPO}/LICENSE`} target="_blank" rel="noopener noreferrer" className="text-brand underline-offset-2 hover:underline" prefetch={false}>
                   LICENSE
                 </Link>{" "}
                 (Apache-2.0) and{" "}
-                <Link href={`${REPO}/LICENSE-MIT`} target="_blank" rel="noopener noreferrer" className="text-brand underline-offset-2 hover:underline">
+                <Link href={`${REPO}/LICENSE-MIT`} target="_blank" rel="noopener noreferrer" className="text-brand underline-offset-2 hover:underline" prefetch={false}>
                   LICENSE-MIT
                 </Link>
                 . The canonical declaration is the{" "}
@@ -119,11 +125,11 @@ export default function LicensePage() {
               </p>
             </div>
             <div className="mt-8 flex flex-wrap gap-4">
-              <Button render={<Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer" />}>
-                <GithubIcon className="mr-2 h-4 w-4" />
+              <Button render={<Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer" aria-label="View the repository"  prefetch={false} />}>
+                <GithubIcon data-icon="inline-start" />
                 View the repository
               </Button>
-              <Button variant="outline" render={<Link href="/docs" />}>
+              <Button variant="outline" render={<Link href="/docs" aria-label="Read the docs"  prefetch={false} />}>
                 Read the docs
               </Button>
             </div>

@@ -72,22 +72,18 @@ pub fn restore(
 /// Restore files from a specific version (ours or theirs) during merge
 /// conflict.
 fn restore_conflict_version(_repo: &Repository, paths: &[String], use_ours: bool) -> Result<()> {
-    // For now, this is a simplified implementation
-    // In a full implementation, we'd track conflict state
     let version = if use_ours { "ours" } else { "theirs" };
-
-    for path in paths {
-        println!(
-            "{} Restoring '{}' ({} version)",
-            style("!").yellow().bold(),
-            style(path).cyan(),
-            version
-        );
-        println!("   Note: Full merge conflict resolution not yet implemented.");
-        println!("   Use 'dits checkout <commit> -- {}' to restore from a specific commit.", path);
-    }
-
-    Ok(())
+    let joined = if paths.is_empty() {
+        "<paths>".to_string()
+    } else {
+        paths.join(", ")
+    };
+    anyhow::bail!(
+        "Merge conflict restore (--{version}) is not implemented in this alpha.\nRequested \
+         path(s): {joined}\nNo working-tree or index files were changed.\nUse `dits checkout \
+         <commit> -- <path>` to restore bytes from a known commit once the conflict state is \
+         cleared."
+    );
 }
 
 /// Restore staged files (unstage them).
