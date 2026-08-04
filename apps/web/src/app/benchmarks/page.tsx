@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { ArrowRight, Check, FlaskConical } from "lucide-react";
 
 import { Footer } from "@/components/footer";
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { loadLatestBenchmarks } from "@/lib/benchmarks.server";
 import type { BenchmarkEntry } from "@/lib/benchmarks-types";
+import { MEASURED_BENCHMARKS } from "@/lib/product-story";
 import { generateMetadata as genMeta } from "@/lib/seo";
 
 export const metadata: Metadata = genMeta({
@@ -73,7 +75,25 @@ function formatDetail(entry: BenchmarkEntry): string {
   return parts.join(" · ");
 }
 
-export default async function BenchmarksPage() {
+function FallbackBenchmarkCards() {
+  return (
+    <div className="grid gap-4 md:grid-cols-3">
+      {MEASURED_BENCHMARKS.map((benchmark) => (
+        <Card key={benchmark.name}>
+          <CardHeader>
+            <CardDescription>{benchmark.name}</CardDescription>
+            <CardTitle className="text-2xl">{benchmark.value}</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            {benchmark.detail}
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+async function CachedBenchmarkCards() {
   const run = await loadLatestBenchmarks();
   const byName = new Map((run?.results ?? []).map((r) => [r.name, r]));
   const highlights: BenchmarkEntry[] = [];
@@ -87,6 +107,10 @@ export default async function BenchmarksPage() {
     if (highlights.length >= 4) break;
   }
 
+  if (highlights.length === 0) {
+    return <FallbackBenchmarkCards />;
+  }
+
   const when = run?.meta.timestamp
     ? new Date(run.meta.timestamp).toISOString().slice(0, 10)
     : "uncommitted";
@@ -96,13 +120,39 @@ export default async function BenchmarksPage() {
     .join(", ");
 
   return (
+    <>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {highlights.map((benchmark) => (
+          <Card key={benchmark.name}>
+            <CardHeader>
+              <CardDescription>{benchmark.name}</CardDescription>
+              <CardTitle className="text-2xl">{formatValue(benchmark)}</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              {formatDetail(benchmark)}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      <Callout type="note" title="Measurement environment" className="mt-6">
+        {machine || "See artifact meta"}, {run?.meta.rustc ?? "rustc unknown"}, commit
+        <code> {sha}</code> · recorded {when}. Source:{" "}
+        <code>benchmarks/latest.json</code> via Cache Components (
+        <code>cacheLife(&apos;days&apos;)</code>).
+      </Callout>
+    </>
+  );
+}
+
+export default function BenchmarksPage() {
+  return (
     <div className="min-h-screen bg-background">
       <Header />
       <main id="main-content" className="pt-16">
         <section className="border-b border-border">
           <div className="container py-20 sm:py-28">
             <div className="mx-auto max-w-4xl text-center">
-              <StatusPill tone="info">Committed artifact · {when}</StatusPill>
+              <StatusPill tone="info">Committed artifact · Cache Components</StatusPill>
               <h1 className="mt-5 text-balance text-4xl font-bold tracking-tight sm:text-6xl">
                 Performance evidence, with the boundaries attached
               </h1>
@@ -117,25 +167,9 @@ export default async function BenchmarksPage() {
 
         <section className="container py-16 sm:py-20">
           <div className="mx-auto max-w-5xl">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {highlights.map((benchmark) => (
-                <Card key={benchmark.name}>
-                  <CardHeader>
-                    <CardDescription>{benchmark.name}</CardDescription>
-                    <CardTitle className="text-2xl">{formatValue(benchmark)}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-sm text-muted-foreground">
-                    {formatDetail(benchmark)}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            <Callout type="note" title="Measurement environment" className="mt-6">
-              {machine || "See artifact meta"}, {run?.meta.rustc ?? "rustc unknown"}, commit
-              <code> {sha}</code>. Source artifact:{" "}
-              <code>benchmarks/latest.json</code>. Reproduce with{" "}
-              <code>npm run bench</code>.
-            </Callout>
+            <Suspense fallback={<FallbackBenchmarkCards />}>
+              <CachedBenchmarkCards />
+            </Suspense>
           </div>
         </section>
 
@@ -148,7 +182,7 @@ export default async function BenchmarksPage() {
                   The numbers buyers actually need
                 </h2>
                 <p className="mt-5 leading-7 text-muted-foreground">
-                  Local 32 MiB repository timings are a start. Dits still needs
+                  Local repository timings are a start. Dits still needs
                   peak-memory evidence, real-media fidelity, cold/warm cache
                   series, and competitive store-growth baselines on disclosed
                   machines. Network measurements are impossible today because
@@ -193,7 +227,6 @@ export default async function BenchmarksPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="View raw results"
-                  prefetch={false}
                 />
               }
             >
@@ -202,9 +235,7 @@ export default async function BenchmarksPage() {
             </Button>
             <Button
               variant="outline"
-              render={
-                <Link href="/docs/roadmap" aria-label="See the evidence roadmap" prefetch={false} />
-              }
+              render={<Link href="/docs/roadmap" aria-label="See the evidence roadmap" />}
             >
               See the evidence roadmap
             </Button>

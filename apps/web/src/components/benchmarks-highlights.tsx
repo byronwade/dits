@@ -1,8 +1,9 @@
-"use client";
-
-import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import type { BenchmarkHistory, BenchmarkRun } from "@/lib/benchmarks-types";
+import {
+  loadBenchmarkHistory,
+  loadLatestBenchmarks,
+} from "@/lib/benchmarks.server";
+import type { BenchmarkEntry, BenchmarkHistory, BenchmarkRun } from "@/lib/benchmarks-types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -27,7 +28,10 @@ function keyFor(result: { suite: string; name: string; unit: string }) {
   return `${result.suite}|${result.name}|${result.unit}`;
 }
 
-function deltaPercent(history: BenchmarkHistory | null, current: { suite: string; name: string; unit: string; timestamp?: string; value: number }) {
+function deltaPercent(
+  history: BenchmarkHistory | null,
+  current: BenchmarkEntry,
+) {
   const key = keyFor(current);
   const list = history?.benchmarks?.[key];
   if (!list || list.length < 2) return null;
@@ -38,43 +42,27 @@ function deltaPercent(history: BenchmarkHistory | null, current: { suite: string
   return ((current.value - previous.value) / previous.value) * 100;
 }
 
-export function BenchmarksHighlights() {
-  const [run, setRun] = useState<BenchmarkRun | null>(null);
-  const [history, setHistory] = useState<BenchmarkHistory | null>(null);
+/**
+ * Server Component: reads committed benchmark JSON through Cache Components
+ * (`use cache` in loaders) so the homepage shell stays prerenderable.
+ */
+export async function BenchmarksHighlights() {
+  const [run, history] = await Promise.all([
+    loadLatestBenchmarks(),
+    loadBenchmarkHistory(),
+  ]);
 
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/benchmarks/latest.json", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (!cancelled) setRun(data);
-      })
-      .catch(() => {
-        if (!cancelled) setRun(null);
-      });
-    fetch("/benchmarks/history.json", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (!cancelled) setHistory(data);
-      })
-      .catch(() => {
-        if (!cancelled) setHistory(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const highlights = useMemo(() => {
-    const fastcdc = pick(run, "FastCDC stream (32 MiB)") ?? pick(run, "FastCDC chunk (32 MiB)");
-    const hasher = pick(run, "BLAKE3 hash (1 MiB)");
-    const repo = pick(run, "add+commit+checkout 32 MiB") ?? pick(run, "getBinaryPath");
-    return [fastcdc, hasher, repo].filter(Boolean) as NonNullable<typeof fastcdc>[];
-  }, [run]);
+  const highlights = [
+    pick(run, "FastCDC stream (32 MiB)") ?? pick(run, "FastCDC chunk (32 MiB)"),
+    pick(run, "BLAKE3 hash (1 MiB)"),
+    pick(run, "add+commit+checkout 32 MiB") ?? pick(run, "getBinaryPath"),
+  ].filter(Boolean) as BenchmarkEntry[];
 
   if (!run || highlights.length === 0) return null;
 
-  const when = run.meta.timestamp ? new Date(run.meta.timestamp).toLocaleDateString() : null;
+  const when = run.meta.timestamp
+    ? new Date(run.meta.timestamp).toLocaleDateString()
+    : null;
 
   return (
     <div className="mt-10">
@@ -82,37 +70,40 @@ export function BenchmarksHighlights() {
         <Badge variant="secondary">Benchmarks</Badge>
         <span className="text-xs">
           Latest: {when ?? "—"} ·{" "}
-          <Link href="/docs/benchmarks" className="underline underline-offset-4 hover:text-foreground">
+          <Link
+            href="/benchmarks"
+            className="underline underline-offset-4 hover:text-foreground"
+          >
             View all
           </Link>
         </span>
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        {highlights.map((h) => (
-          <Card key={`${h.suite}:${h.name}`} className="bg-background/60">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">{h.name}</CardTitle>
-              <CardDescription className="text-xs">{h.suite}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-baseline gap-2">
-                <div className="text-lg font-semibold">{formatValue(h.unit, h.value)}</div>
-                {(() => {
-                  const d = deltaPercent(history, h);
-                  if (d === null) return null;
-                  const sign = d > 0 ? "+" : "";
-                  return (
+        {highlights.map((h) => {
+          const d = deltaPercent(history, h);
+          return (
+            <Card key={`${h.suite}:${h.name}`} className="bg-background/60">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">{h.name}</CardTitle>
+                <CardDescription className="text-xs">{h.suite}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline gap-2">
+                  <div className="text-lg font-semibold">
+                    {formatValue(h.unit, h.value)}
+                  </div>
+                  {d !== null ? (
                     <span className="text-xs text-muted-foreground">
-                      ({sign}
+                      ({d > 0 ? "+" : ""}
                       {formatNumber(d)}%)
                     </span>
-                  );
-                })()}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                  ) : null}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );

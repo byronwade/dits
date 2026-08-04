@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import {
   ArrowRight,
   Boxes,
@@ -9,6 +10,7 @@ import {
   Waypoints,
 } from "lucide-react";
 
+import { BenchmarksHighlights } from "@/components/benchmarks-highlights";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { GithubIcon } from "@/components/icons/github-icon";
@@ -198,9 +200,9 @@ dits log`}</code></pre>
                 A small evidence base we can reproduce
               </h2>
               <p className="mt-5 leading-7 text-muted-foreground">
-                These are component microbenchmarks from the committed artifact,
-                recorded on an Apple M2 Pro. They do not establish end-to-end
-                repository, media, or network performance.
+                Committed artifact numbers, loaded through Next.js Cache
+                Components. They do not establish media-scale, peak-memory, or
+                network performance.
               </p>
               <Button
                 variant="outline"
@@ -211,19 +213,25 @@ dits log`}</code></pre>
                 <ArrowRight data-icon="inline-end" />
               </Button>
             </div>
-            <div className="grid gap-4 sm:grid-cols-3">
-              {MEASURED_BENCHMARKS.map((benchmark) => (
-                <Card key={benchmark.name}>
-                  <CardHeader>
-                    <CardDescription>{benchmark.name}</CardDescription>
-                    <CardTitle className="text-xl">{benchmark.value}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-xs text-muted-foreground">
-                    {benchmark.detail}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <Suspense
+              fallback={
+                <div className="grid gap-4 sm:grid-cols-3">
+                  {MEASURED_BENCHMARKS.map((benchmark) => (
+                    <Card key={benchmark.name}>
+                      <CardHeader>
+                        <CardDescription>{benchmark.name}</CardDescription>
+                        <CardTitle className="text-xl">{benchmark.value}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="text-xs text-muted-foreground">
+                        {benchmark.detail}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              }
+            >
+              <BenchmarksHighlights />
+            </Suspense>
           </div>
         </section>
 

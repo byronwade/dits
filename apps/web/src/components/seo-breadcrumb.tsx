@@ -1,6 +1,7 @@
 "use client";
 
 import Script from "next/script";
+import { safeJsonLd } from "@/lib/safe-json-ld";
 import { generateBreadcrumbSchema } from "@/lib/seo";
 import { safeJsonLd } from "@/lib/safe-json-ld";
 import {

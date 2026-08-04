@@ -1,14 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ThemeHotkey } from "@/components/theme-toggle";
-import { CommandMenu } from "@/components/command-menu";
 import { Toaster } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { WebVitals } from "@/components/web-vitals";
-import { generateMetadata as genMeta, generateOrganizationSchema, generateSoftwareApplicationSchema, generateWebSiteSchema } from "@/lib/seo";
 import { safeJsonLd } from "@/lib/safe-json-ld";
-import Script from "next/script";
+import {
+  generateMetadata as genMeta,
+  generateOrganizationSchema,
+  generateSoftwareApplicationSchema,
+  generateWebSiteSchema,
+} from "@/lib/seo";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -110,8 +113,6 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
-            <ThemeHotkey />
-            <CommandMenu />
             <Toaster />
             <WebVitals />
           </ThemeProvider>
