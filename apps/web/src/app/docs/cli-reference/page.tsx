@@ -37,7 +37,6 @@ import {
 
 import { safeJsonLd } from "@/lib/safe-json-ld";
 import { generateMetadata as genMeta, generateArticleSchema, generateItemListSchema, generateCollectionPageSchema, generateBreadcrumbSchema } from "@/lib/seo";
-import { safeJsonLd } from "@/lib/safe-json-ld";
 import Script from "next/script";
 
 export const metadata: Metadata = genMeta({
