@@ -71,21 +71,22 @@ export const PRODUCT_MILESTONES = [
   },
 ] as const;
 
+/** Fallback cards when JSON is unavailable. Prefer `benchmarks/latest.json`. */
 export const MEASURED_BENCHMARKS = [
   {
     name: "BLAKE3 hashing",
-    value: "1,809.96 MB/s",
-    detail: "1 MiB input, 200 iterations",
+    value: "6,722.42 MB/s",
+    detail: "1 MiB input, 200 iterations · Linux Xeon · 2026-08-04",
   },
   {
-    name: "FastCDC chunking",
-    value: "991.76 MB/s",
-    detail: "32 MiB input, 5 iterations",
+    name: "FastCDC streaming",
+    value: "1,104.49 MB/s",
+    detail: "32 MiB input, 5 iterations · Linux Xeon · 2026-08-04",
   },
   {
-    name: "SHA-256 hashing",
-    value: "348.37 MB/s",
-    detail: "1 MiB input, 100 iterations",
+    name: "add+commit+checkout",
+    value: "314.57 ms",
+    detail: "32 MiB binary via streaming ingest · 3 iterations · Linux Xeon",
   },
 ] as const;
 

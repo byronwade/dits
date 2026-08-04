@@ -14,6 +14,8 @@ function formatNumber(value: number) {
 function formatValue(unit: string, value: number) {
   if (unit === "mb_per_s") return `${formatNumber(value)} MB/s`;
   if (unit === "ops_per_s") return `${formatNumber(value)} ops/s`;
+  if (unit === "ms") return `${formatNumber(value)} ms`;
+  if (unit === "chunks") return `${formatNumber(value)} chunks`;
   return `${formatNumber(value)}`;
 }
 
@@ -64,10 +66,10 @@ export function BenchmarksHighlights() {
   }, []);
 
   const highlights = useMemo(() => {
-    const fastcdc = pick(run, "FastCDC chunk (32 MiB)");
+    const fastcdc = pick(run, "FastCDC stream (32 MiB)") ?? pick(run, "FastCDC chunk (32 MiB)");
     const hasher = pick(run, "BLAKE3 hash (1 MiB)");
-    const resolver = pick(run, "getBinaryPath");
-    return [fastcdc, hasher, resolver].filter(Boolean) as NonNullable<typeof fastcdc>[];
+    const repo = pick(run, "add+commit+checkout 32 MiB") ?? pick(run, "getBinaryPath");
+    return [fastcdc, hasher, repo].filter(Boolean) as NonNullable<typeof fastcdc>[];
   }, [run]);
 
   if (!run || highlights.length === 0) return null;

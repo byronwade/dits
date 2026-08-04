@@ -190,6 +190,10 @@ npm --workspace apps/web run test:ci
 npm --workspace apps/web run build
 ```
 
-The checked-in benchmark evidence is `benchmarks/latest.json`. CI test counts
-and benchmark values are observations for a specific commit, not timeless
-product properties.
+The checked-in benchmark evidence is `benchmarks/latest.json` (component plus
+bounded local repository timings) and, for comparative store-growth charts,
+`benchmarks/comparative/latest.json` (showcase profile). Linux CI comparative
+matrix refreshes are recorded at `benchmarks/comparative/ci-latest.json`
+without replacing showcase cumulative/scaling series. CI test counts and
+benchmark values are observations for a specific commit and machine, not
+timeless product properties.

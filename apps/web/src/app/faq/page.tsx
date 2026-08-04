@@ -41,7 +41,7 @@ const additionalFaqs = [
   {
     question: "Are the benchmark numbers end-to-end?",
     answer:
-      "No. The currently published results measure BLAKE3, FastCDC, SHA-256, and small npm helper components on one disclosed machine. Repository, media-workflow, storage-growth, and network claims require a future public suite.",
+      "Partially. Published artifacts include component throughput plus a bounded local add/commit/checkout path for a 32 MiB binary on a disclosed machine. They are not production media-workflow, peak-memory, competitive, or network claims. See benchmarks/latest.json for method and limits.",
   },
   {
     question: "Why wait to build remote sync?",
