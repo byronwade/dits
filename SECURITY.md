@@ -50,10 +50,10 @@ See [`docs/STATUS.md`](docs/STATUS.md) for the authoritative product boundary.
 
 ## Important alpha limitations
 
-- `dits serve` has no authentication or authorization, binds to all network
-  interfaces by default, and exposes repository refs and stored object bytes. Run it
-  only on a trusted or isolated network behind a firewall. Do not expose it to the
-  public Internet.
+- `dits serve` has no authentication or authorization and exposes repository refs
+  and stored object bytes. It binds to `127.0.0.1` by default; use `--bind` only
+  on a trusted or isolated network behind a firewall. CORS is disabled. Do not
+  expose it to the public Internet.
 - The early convergent/message-locked encryption experiment is disabled and
   repositories containing its keystore fail closed. It did not cover embedded Git
   blobs or every metadata path; convergent encryption also leaks content equality.

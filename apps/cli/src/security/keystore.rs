@@ -1,7 +1,7 @@
 //! Secure key storage with encrypted keystore.
 
 use std::{
-    fs::{self, File},
+    fs::{self, File, OpenOptions},
     io::{BufReader, BufWriter},
     path::{Path, PathBuf},
 };
@@ -11,8 +11,7 @@ use serde::{Deserialize, Serialize};
 use super::{
     encryption::{decrypt_with_key, encrypt_with_key},
     keys::{
-        derive_keys, generate_random_bytes, generate_salt, Argon2Params, KeyBundle,
-        SerializableKeyBundle,
+        derive_keys, generate_salt, Argon2Params, KeyBundle, SerializableKeyBundle,
     },
 };
 
@@ -297,7 +296,7 @@ impl KeyStore {
             fs::create_dir_all(parent).map_err(|e| KeyStoreError::Io(e.to_string()))?;
         }
 
-        let file = File::create(&self.path).map_err(|e| KeyStoreError::Io(e.to_string()))?;
+        let file = open_private_file(&self.path)?;
         let writer = BufWriter::new(file);
         serde_json::to_writer_pretty(writer, store)
             .map_err(|e| KeyStoreError::Serialization(e.to_string()))
@@ -312,36 +311,20 @@ impl KeyStore {
         fs::remove_file(&self.path).map_err(|e| KeyStoreError::Io(e.to_string()))
     }
 
-    /// Cache loaded keys for the current session.
-    /// This is a temporary implementation - production should use secure
-    /// keyring.
-    pub fn cache_keys(&self, bundle: &KeyBundle) -> Result<(), KeyStoreError> {
+    /// Intentionally does not persist session keys.
+    ///
+    /// Older alphas wrote `keys.cache` with a cleartext session key beside
+    /// ciphertext. That file is deleted when present; callers must unlock via
+    /// the password path (currently disabled for the encryption experiment).
+    pub fn cache_keys(&self, _bundle: &KeyBundle) -> Result<(), KeyStoreError> {
         let dits_dir = self
             .path
             .parent()
             .ok_or(KeyStoreError::Io("Invalid keystore path".to_string()))?;
         let cache_path = dits_dir.join("keys.cache");
-
-        // Convert to serializable form
-        let serializable_bundle = SerializableKeyBundle::from(bundle);
-
-        // Encrypt the bundle with a session key derived from system entropy
-        // This is not cryptographically secure but provides basic protection
-        let session_key = generate_random_bytes();
-        let (encrypted_bundle, nonce) = encrypt_with_key(
-            &serde_json::to_vec(&serializable_bundle)
-                .map_err(|e| KeyStoreError::Serialization(e.to_string()))?,
-            &session_key,
-        )
-        .map_err(|e| KeyStoreError::Encryption(e.to_string()))?;
-
-        let cache_data = CachedKeys { encrypted_bundle, bundle_nonce: nonce, session_key };
-
-        let cache_file = File::create(&cache_path).map_err(|e| KeyStoreError::Io(e.to_string()))?;
-        let writer = BufWriter::new(cache_file);
-        serde_json::to_writer(writer, &cache_data)
-            .map_err(|e| KeyStoreError::Serialization(e.to_string()))?;
-
+        if cache_path.exists() {
+            fs::remove_file(&cache_path).map_err(|e| KeyStoreError::Io(e.to_string()))?;
+        }
         Ok(())
     }
 
@@ -415,6 +398,19 @@ pub enum KeyStoreError {
 
     #[error("IO error: {0}")]
     Io(String),
+}
+
+fn open_private_file(path: &Path) -> Result<File, KeyStoreError> {
+    let mut options = OpenOptions::new();
+    options.write(true).create(true).truncate(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    options
+        .open(path)
+        .map_err(|e| KeyStoreError::Io(e.to_string()))
 }
 
 #[cfg(test)]

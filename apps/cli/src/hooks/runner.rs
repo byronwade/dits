@@ -47,6 +47,17 @@ pub fn run_hook(
     let hooks_dir = get_hooks_dir(repo_root);
     let hook_path = hooks_dir.join(hook_type.filename());
 
+    // Refuse symlink hooks so an untrusted working tree cannot redirect the
+    // executable outside `.dits/hooks` via a replaced path.
+    let meta = std::fs::symlink_metadata(&hook_path)
+        .with_context(|| format!("Failed to inspect hook: {}", hook_path.display()))?;
+    if meta.file_type().is_symlink() || !meta.file_type().is_file() {
+        anyhow::bail!(
+            "Refusing to execute hook '{}': path must be a regular file under .dits/hooks",
+            hook_path.display()
+        );
+    }
+
     // Build command
     let mut cmd = Command::new(&hook_path);
     cmd.args(args)

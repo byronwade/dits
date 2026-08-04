@@ -116,11 +116,11 @@ is retained as disabled scaffolding and is not an active sharing workflow.
 | `p2p` | Parsed operations fail nonzero before repository, target, cache, socket, or mount mutation. |
 | `encrypt-init`, `login`, `change-password` | Disabled experiment; each fails without changing the keystore. |
 | `encrypt-status`, `logout` | Inspect or clear legacy experimental state; they do not enable supported encryption. |
-| `serve` | Real unauthenticated object server. It is not sync and must not be exposed to the public Internet. |
+| `serve` | Real unauthenticated object server (loopback by default). It is not sync and must not be exposed to the public Internet. |
 
-`serve` binds to all network interfaces and exposes repository refs and stored
-object bytes without authentication or authorization. Use it only on a trusted or
-isolated network behind a firewall.
+`serve` defaults to `127.0.0.1`, disables CORS, and validates repo/object paths.
+`--bind` to a non-loopback address still has no authentication—use only on a
+trusted or isolated network behind a firewall.
 
 ## Exit and safety model
 

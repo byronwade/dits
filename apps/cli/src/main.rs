@@ -1070,11 +1070,15 @@ enum Commands {
         command: TelemetryCommands,
     },
 
-    /// Start a remote server for this repository
+    /// Start an unauthenticated local object/ref server (trusted networks only)
     Serve {
         /// Port to listen on
         #[arg(short, long, default_value = "8080")]
         port:     u16,
+        /// Address to bind (default: loopback). Non-loopback binds expose
+        /// repository bytes with no authentication — trusted/isolated networks only.
+        #[arg(long, default_value = "127.0.0.1")]
+        bind:     String,
         /// Base directory containing repositories
         #[arg(short, long)]
         base_dir: Option<String>,
@@ -1667,12 +1671,12 @@ async fn main() {
                 },
             },
         },
-        Commands::Serve { port, base_dir } => {
+        Commands::Serve { port, bind, base_dir } => {
             use std::path::PathBuf;
             let base = base_dir
                 .map(PathBuf::from)
                 .unwrap_or_else(|| std::env::current_dir().unwrap());
-            match crate::store::remote_server::start_server(base, port).await {
+            match crate::store::remote_server::start_server(base, &bind, port).await {
                 Ok(()) => Ok(()),
                 Err(e) => {
                     eprintln!("Failed to start server: {}", e);

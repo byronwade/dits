@@ -64,8 +64,9 @@ conformance corpus explicitly make them a stable contract.
   dataset, and method. Label modeled or projected figures as such.
 - Do not invent availability, durability, support, capacity, compatibility, or delivery
   commitments.
-- `dits serve` is unauthenticated, binds to all interfaces by default, and is for
-  trusted or isolated networks only. Never recommend public Internet exposure.
+- `dits serve` is unauthenticated, binds to loopback by default, and is for
+  trusted or isolated networks only when rebound. Never recommend public Internet
+  exposure.
 
 ## Change order
 

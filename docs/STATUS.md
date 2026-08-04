@@ -142,10 +142,11 @@ The embedded per-repository HTTP object server and tested QUIC demo are real
 utilities, but they do not implement complete repository exchange or safe remote
 ref transactions.
 
-Security warning: `dits serve` binds to all network interfaces and has no
-authentication or authorization. It exposes repository refs and stored object bytes.
-Use it only on a trusted or isolated network behind a firewall; do not expose it to
-the public Internet.
+Security warning: `dits serve` has no authentication or authorization and
+exposes repository refs and stored object bytes. It binds to loopback
+(`127.0.0.1`) by default, disables CORS, and rejects path-escape / symlink object
+reads. Non-loopback `--bind` is for trusted or isolated networks only; do not
+expose it to the public Internet.
 
 ## Installation status
 
