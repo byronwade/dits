@@ -1,0 +1,456 @@
+{
+  "meta": {
+    "profile": "ci",
+    "generated_at": "2026-08-04T03:18:06.763Z",
+    "git_sha": "124ca7b7ce00c3b099198d649ff15ad61672af48",
+    "machine": "linux x64 Intel(R) Xeon(R) Processor",
+    "assumptions_url": "/benchmarks#methodology",
+    "tool_versions": {
+      "git-lfs": "present",
+      "restic": "n/a",
+      "borg": "n/a",
+      "xdelta3": "n/a",
+      "dits-generic": "present",
+      "dits-facr": "present"
+    }
+  },
+  "records": [
+    {
+      "workload": "reexport",
+      "workload_label": "Re-export a finished clip",
+      "tier": "baseline",
+      "tool": "git-lfs",
+      "dataset": {
+        "bytes": 35991574,
+        "codec": "prores",
+        "label": "Re-export a finished clip"
+      },
+      "metrics": {
+        "stored_bytes": 35992396,
+        "wire_bytes": 35992396,
+        "wall_ms": 279.545226,
+        "peak_rss_bytes": null,
+        "restore_ms": null,
+        "dedup_pct": 0
+      },
+      "derived": {
+        "cost_storage_usd_yr": 0.01,
+        "cost_egress_usd_per_1k": 3.02,
+        "upload_seconds_at_line": 5.5
+      },
+      "tool_version": "git-lfs",
+      "run_timestamp": "2026-08-04T03:18:06.763Z",
+      "git_sha": "124ca7b7ce00c3b099198d649ff15ad61672af48",
+      "machine": "linux x64 Intel(R) Xeon(R) Processor",
+      "available": true
+    },
+    {
+      "workload": "reexport",
+      "workload_label": "Re-export a finished clip",
+      "tier": "bleeding-edge",
+      "tool": "restic",
+      "dataset": {
+        "bytes": 35991574,
+        "codec": "prores",
+        "label": "Re-export a finished clip"
+      },
+      "metrics": {
+        "stored_bytes": null,
+        "wire_bytes": null,
+        "wall_ms": null,
+        "peak_rss_bytes": null,
+        "restore_ms": null,
+        "dedup_pct": null
+      },
+      "derived": {
+        "cost_storage_usd_yr": 0,
+        "cost_egress_usd_per_1k": 0,
+        "upload_seconds_at_line": 0
+      },
+      "tool_version": "restic",
+      "run_timestamp": "2026-08-04T03:18:06.763Z",
+      "git_sha": "124ca7b7ce00c3b099198d649ff15ad61672af48",
+      "machine": "linux x64 Intel(R) Xeon(R) Processor",
+      "available": false
+    },
+    {
+      "workload": "reexport",
+      "workload_label": "Re-export a finished clip",
+      "tier": "bleeding-edge",
+      "tool": "borg",
+      "dataset": {
+        "bytes": 35991574,
+        "codec": "prores",
+        "label": "Re-export a finished clip"
+      },
+      "metrics": {
+        "stored_bytes": null,
+        "wire_bytes": null,
+        "wall_ms": null,
+        "peak_rss_bytes": null,
+        "restore_ms": null,
+        "dedup_pct": null
+      },
+      "derived": {
+        "cost_storage_usd_yr": 0,
+        "cost_egress_usd_per_1k": 0,
+        "upload_seconds_at_line": 0
+      },
+      "tool_version": "borg",
+      "run_timestamp": "2026-08-04T03:18:06.763Z",
+      "git_sha": "124ca7b7ce00c3b099198d649ff15ad61672af48",
+      "machine": "linux x64 Intel(R) Xeon(R) Processor",
+      "available": false
+    },
+    {
+      "workload": "reexport",
+      "workload_label": "Re-export a finished clip",
+      "tier": "bleeding-edge",
+      "tool": "xdelta3",
+      "dataset": {
+        "bytes": 35991574,
+        "codec": "prores",
+        "label": "Re-export a finished clip"
+      },
+      "metrics": {
+        "stored_bytes": null,
+        "wire_bytes": null,
+        "wall_ms": null,
+        "peak_rss_bytes": null,
+        "restore_ms": null,
+        "dedup_pct": null
+      },
+      "derived": {
+        "cost_storage_usd_yr": 0,
+        "cost_egress_usd_per_1k": 0,
+        "upload_seconds_at_line": 0
+      },
+      "tool_version": "xdelta3",
+      "run_timestamp": "2026-08-04T03:18:06.763Z",
+      "git_sha": "124ca7b7ce00c3b099198d649ff15ad61672af48",
+      "machine": "linux x64 Intel(R) Xeon(R) Processor",
+      "available": false
+    },
+    {
+      "workload": "reexport",
+      "workload_label": "Re-export a finished clip",
+      "tier": "dits-generic",
+      "tool": "dits-generic",
+      "dataset": {
+        "bytes": 35991574,
+        "codec": "prores",
+        "label": "Re-export a finished clip"
+      },
+      "metrics": {
+        "stored_bytes": 36267822,
+        "wire_bytes": 36267822,
+        "wall_ms": 325.079915,
+        "peak_rss_bytes": null,
+        "restore_ms": null,
+        "dedup_pct": 0
+      },
+      "derived": {
+        "cost_storage_usd_yr": 0.01,
+        "cost_egress_usd_per_1k": 3.04,
+        "upload_seconds_at_line": 5.5
+      },
+      "tool_version": "dits-generic",
+      "run_timestamp": "2026-08-04T03:18:06.763Z",
+      "git_sha": "124ca7b7ce00c3b099198d649ff15ad61672af48",
+      "machine": "linux x64 Intel(R) Xeon(R) Processor",
+      "available": true
+    },
+    {
+      "workload": "metadata",
+      "workload_label": "Rename / metadata fix",
+      "tier": "bleeding-edge",
+      "tool": "restic",
+      "dataset": {
+        "bytes": 14022083,
+        "codec": "h264",
+        "label": "Rename / metadata fix"
+      },
+      "metrics": {
+        "stored_bytes": null,
+        "wire_bytes": null,
+        "wall_ms": null,
+        "peak_rss_bytes": null,
+        "restore_ms": null,
+        "dedup_pct": null
+      },
+      "derived": {
+        "cost_storage_usd_yr": 0,
+        "cost_egress_usd_per_1k": 0,
+        "upload_seconds_at_line": 0
+      },
+      "tool_version": "restic",
+      "run_timestamp": "2026-08-04T03:18:06.763Z",
+      "git_sha": "124ca7b7ce00c3b099198d649ff15ad61672af48",
+      "machine": "linux x64 Intel(R) Xeon(R) Processor",
+      "available": false
+    },
+    {
+      "workload": "metadata",
+      "workload_label": "Rename / metadata fix",
+      "tier": "bleeding-edge",
+      "tool": "borg",
+      "dataset": {
+        "bytes": 14022083,
+        "codec": "h264",
+        "label": "Rename / metadata fix"
+      },
+      "metrics": {
+        "stored_bytes": null,
+        "wire_bytes": null,
+        "wall_ms": null,
+        "peak_rss_bytes": null,
+        "restore_ms": null,
+        "dedup_pct": null
+      },
+      "derived": {
+        "cost_storage_usd_yr": 0,
+        "cost_egress_usd_per_1k": 0,
+        "upload_seconds_at_line": 0
+      },
+      "tool_version": "borg",
+      "run_timestamp": "2026-08-04T03:18:06.763Z",
+      "git_sha": "124ca7b7ce00c3b099198d649ff15ad61672af48",
+      "machine": "linux x64 Intel(R) Xeon(R) Processor",
+      "available": false
+    },
+    {
+      "workload": "metadata",
+      "workload_label": "Rename / metadata fix",
+      "tier": "bleeding-edge",
+      "tool": "xdelta3",
+      "dataset": {
+        "bytes": 14022083,
+        "codec": "h264",
+        "label": "Rename / metadata fix"
+      },
+      "metrics": {
+        "stored_bytes": null,
+        "wire_bytes": null,
+        "wall_ms": null,
+        "peak_rss_bytes": null,
+        "restore_ms": null,
+        "dedup_pct": null
+      },
+      "derived": {
+        "cost_storage_usd_yr": 0,
+        "cost_egress_usd_per_1k": 0,
+        "upload_seconds_at_line": 0
+      },
+      "tool_version": "xdelta3",
+      "run_timestamp": "2026-08-04T03:18:06.763Z",
+      "git_sha": "124ca7b7ce00c3b099198d649ff15ad61672af48",
+      "machine": "linux x64 Intel(R) Xeon(R) Processor",
+      "available": false
+    },
+    {
+      "workload": "metadata",
+      "workload_label": "Rename / metadata fix",
+      "tier": "dits-generic",
+      "tool": "dits-generic",
+      "dataset": {
+        "bytes": 14022083,
+        "codec": "h264",
+        "label": "Rename / metadata fix"
+      },
+      "metrics": {
+        "stored_bytes": 180673,
+        "wire_bytes": 180673,
+        "wall_ms": 47.203699,
+        "peak_rss_bytes": null,
+        "restore_ms": null,
+        "dedup_pct": 98.7
+      },
+      "derived": {
+        "cost_storage_usd_yr": 0,
+        "cost_egress_usd_per_1k": 0.02,
+        "upload_seconds_at_line": 0
+      },
+      "tool_version": "dits-generic",
+      "run_timestamp": "2026-08-04T03:18:06.763Z",
+      "git_sha": "124ca7b7ce00c3b099198d649ff15ad61672af48",
+      "machine": "linux x64 Intel(R) Xeon(R) Processor",
+      "available": true
+    },
+    {
+      "workload": "facr-regrade",
+      "workload_label": "Re-color a few frames",
+      "tier": "dits",
+      "tool": "dits-facr",
+      "dataset": {
+        "bytes": 0,
+        "codec": "synthetic",
+        "label": "FACR demo clip"
+      },
+      "metrics": {
+        "stored_bytes": null,
+        "wire_bytes": null,
+        "wall_ms": 33.693069,
+        "peak_rss_bytes": null,
+        "restore_ms": null,
+        "dedup_pct": 98.3
+      },
+      "derived": {
+        "cost_storage_usd_yr": 0,
+        "cost_egress_usd_per_1k": 0,
+        "upload_seconds_at_line": 0
+      },
+      "tool_version": "dits-facr",
+      "run_timestamp": "2026-08-04T03:18:06.763Z",
+      "git_sha": "124ca7b7ce00c3b099198d649ff15ad61672af48",
+      "machine": "linux x64 Intel(R) Xeon(R) Processor",
+      "available": true
+    },
+    {
+      "workload": "stream",
+      "workload_label": "Edit 2s of a stream",
+      "tier": "dits",
+      "tool": "dits-facr",
+      "dataset": {
+        "bytes": 0,
+        "codec": "synthetic",
+        "label": "FACR demo clip"
+      },
+      "metrics": {
+        "stored_bytes": 754176,
+        "wire_bytes": 754176,
+        "dedup_pct": 78.5,
+        "wall_ms": 36499.282896,
+        "peak_rss_bytes": null,
+        "restore_ms": null
+      },
+      "derived": {
+        "cost_storage_usd_yr": 0,
+        "cost_egress_usd_per_1k": 0.06,
+        "upload_seconds_at_line": 0.1
+      },
+      "tool_version": "dits-facr",
+      "run_timestamp": "2026-08-04T03:18:06.763Z",
+      "git_sha": "124ca7b7ce00c3b099198d649ff15ad61672af48",
+      "machine": "linux x64 Intel(R) Xeon(R) Processor",
+      "available": true
+    },
+    {
+      "workload": "trim",
+      "workload_label": "Trim / cut a clip",
+      "tier": "dits",
+      "tool": "dits-facr",
+      "dataset": {
+        "bytes": 14022047,
+        "codec": "h264",
+        "label": "Trim / cut a clip"
+      },
+      "metrics": {
+        "stored_bytes": 0,
+        "wire_bytes": 0,
+        "wall_ms": 4.585292,
+        "peak_rss_bytes": null,
+        "restore_ms": null,
+        "dedup_pct": 100
+      },
+      "derived": {
+        "cost_storage_usd_yr": 0,
+        "cost_egress_usd_per_1k": 0,
+        "upload_seconds_at_line": 0
+      },
+      "tool_version": "dits-facr",
+      "run_timestamp": "2026-08-04T03:18:06.763Z",
+      "git_sha": "124ca7b7ce00c3b099198d649ff15ad61672af48",
+      "machine": "linux x64 Intel(R) Xeon(R) Processor",
+      "available": true
+    },
+    {
+      "workload": "photo",
+      "workload_label": "Non-destructive photo edit",
+      "tier": "dits",
+      "tool": "dits-facr",
+      "dataset": {
+        "bytes": 96648,
+        "codec": "png",
+        "label": "Non-destructive photo edit"
+      },
+      "metrics": {
+        "stored_bytes": 0,
+        "wire_bytes": 0,
+        "wall_ms": 3.33216,
+        "peak_rss_bytes": null,
+        "restore_ms": null,
+        "dedup_pct": 100
+      },
+      "derived": {
+        "cost_storage_usd_yr": 0,
+        "cost_egress_usd_per_1k": 0,
+        "upload_seconds_at_line": 0
+      },
+      "tool_version": "dits-facr",
+      "run_timestamp": "2026-08-04T03:18:06.763Z",
+      "git_sha": "124ca7b7ce00c3b099198d649ff15ad61672af48",
+      "machine": "linux x64 Intel(R) Xeon(R) Processor",
+      "available": true
+    },
+    {
+      "workload": "grade-all",
+      "workload_label": "Color-grade the whole clip",
+      "tier": "bleeding-edge",
+      "tool": "restic",
+      "dataset": {
+        "bytes": 14821716,
+        "codec": "h264",
+        "label": "Color-grade the whole clip"
+      },
+      "metrics": {
+        "stored_bytes": null,
+        "wire_bytes": null,
+        "wall_ms": null,
+        "peak_rss_bytes": null,
+        "restore_ms": null,
+        "dedup_pct": null
+      },
+      "derived": {
+        "cost_storage_usd_yr": 0,
+        "cost_egress_usd_per_1k": 0,
+        "upload_seconds_at_line": 0
+      },
+      "tool_version": "restic",
+      "run_timestamp": "2026-08-04T03:18:06.763Z",
+      "git_sha": "124ca7b7ce00c3b099198d649ff15ad61672af48",
+      "machine": "linux x64 Intel(R) Xeon(R) Processor",
+      "available": false
+    },
+    {
+      "workload": "grade-all",
+      "workload_label": "Color-grade the whole clip",
+      "tier": "dits-generic",
+      "tool": "dits-generic",
+      "dataset": {
+        "bytes": 14821716,
+        "codec": "h264",
+        "label": "Color-grade the whole clip"
+      },
+      "metrics": {
+        "stored_bytes": 14952336,
+        "wire_bytes": 14952336,
+        "wall_ms": 140.44189,
+        "peak_rss_bytes": null,
+        "restore_ms": null,
+        "dedup_pct": 0
+      },
+      "derived": {
+        "cost_storage_usd_yr": 0,
+        "cost_egress_usd_per_1k": 1.25,
+        "upload_seconds_at_line": 2.3
+      },
+      "tool_version": "dits-generic",
+      "run_timestamp": "2026-08-04T03:18:06.763Z",
+      "git_sha": "124ca7b7ce00c3b099198d649ff15ad61672af48",
+      "machine": "linux x64 Intel(R) Xeon(R) Processor",
+      "available": true
+    }
+  ],
+  "cumulative": [],
+  "scaling": []
+}

@@ -15,26 +15,86 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { MEASURED_BENCHMARKS } from "@/lib/product-story";
+import { loadLatestBenchmarks } from "@/lib/benchmarks.server";
+import type { BenchmarkEntry } from "@/lib/benchmarks-types";
 import { generateMetadata as genMeta } from "@/lib/seo";
 
 export const metadata: Metadata = genMeta({
   title: "Dits Benchmarks - Reproducible Performance Evidence",
   description:
-    "The measured Dits component benchmarks, their environment and limitations, and the end-to-end evidence still needed.",
+    "Measured Dits component and local repository benchmarks, their environment and limitations, and the evidence still needed.",
   canonical: "https://dits.byronwade.com/benchmarks",
 });
 
 const requiredSuite = [
   "A public corpus with generated fixtures and documented real-file characteristics",
   "Controlled append, insertion, metadata, trim, reorder, and opaque re-encode edits",
-  "Add, commit, checkout, branch switch, integrity, and recovery operations",
+  "Add, commit, checkout, branch switch, integrity, and recovery operations at media scale",
   "Wall time, CPU, memory, bytes read and written, and object-store growth",
   "Cold and warm cache conditions plus byte-fidelity checks",
   "Equivalent workloads for Git LFS, Xet, and relevant studio systems",
 ] as const;
 
-export default function BenchmarksPage() {
+const highlightNames = [
+  "BLAKE3 hash (1 MiB)",
+  "FastCDC stream (32 MiB)",
+  "FastCDC chunk (32 MiB)",
+  "add+commit+checkout 32 MiB",
+  "add 32 MiB binary throughput",
+] as const;
+
+function formatValue(entry: BenchmarkEntry): string {
+  if (entry.unit === "mb_per_s") {
+    return `${entry.value.toLocaleString(undefined, { maximumFractionDigits: 2 })} MB/s`;
+  }
+  if (entry.unit === "ops_per_s") {
+    return `${entry.value.toLocaleString(undefined, { maximumFractionDigits: 0 })} ops/s`;
+  }
+  if (entry.unit === "ms") {
+    return `${entry.value.toLocaleString(undefined, { maximumFractionDigits: 1 })} ms`;
+  }
+  if (entry.unit === "chunks") {
+    return `${entry.value.toLocaleString(undefined, { maximumFractionDigits: 0 })} chunks`;
+  }
+  return String(entry.value);
+}
+
+function formatDetail(entry: BenchmarkEntry): string {
+  const parts: string[] = [entry.suite];
+  if (entry.bytes_per_iter) {
+    const mib = entry.bytes_per_iter / (1024 * 1024);
+    parts.push(
+      Number.isInteger(mib) ? `${mib} MiB / iteration` : `${mib.toFixed(1)} MiB / iteration`,
+    );
+  }
+  if (entry.iterations) {
+    parts.push(`${entry.iterations} iteration${entry.iterations === 1 ? "" : "s"}`);
+  }
+  return parts.join(" · ");
+}
+
+export default async function BenchmarksPage() {
+  const run = await loadLatestBenchmarks();
+  const byName = new Map((run?.results ?? []).map((r) => [r.name, r]));
+  const highlights: BenchmarkEntry[] = [];
+  for (const name of highlightNames) {
+    const entry = byName.get(name);
+    if (!entry) continue;
+    if (name === "FastCDC chunk (32 MiB)" && byName.has("FastCDC stream (32 MiB)")) {
+      continue;
+    }
+    highlights.push(entry);
+    if (highlights.length >= 4) break;
+  }
+
+  const when = run?.meta.timestamp
+    ? new Date(run.meta.timestamp).toISOString().slice(0, 10)
+    : "uncommitted";
+  const sha = run?.meta.git_sha ? run.meta.git_sha.slice(0, 12) : "unknown";
+  const machine = [run?.meta.cpu, run?.meta.arch, run?.meta.platform]
+    .filter(Boolean)
+    .join(", ");
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -42,14 +102,14 @@ export default function BenchmarksPage() {
         <section className="border-b border-border">
           <div className="container py-20 sm:py-28">
             <div className="mx-auto max-w-4xl text-center">
-              <StatusPill tone="info">Committed artifact · 2026-06-03</StatusPill>
+              <StatusPill tone="info">Committed artifact · {when}</StatusPill>
               <h1 className="mt-5 text-balance text-4xl font-bold tracking-tight sm:text-6xl">
                 Performance evidence, with the boundaries attached
               </h1>
               <p className="mx-auto mt-6 max-w-3xl text-pretty text-lg leading-8 text-muted-foreground">
-                The current results are useful component measurements. They are
-                not a claim that a Dits repository, media workflow, or future
-                network runs at the same rate.
+                Results include component throughput and a bounded local
+                add/commit/checkout path. They are not a claim about remotes,
+                packfiles, VFS latency, or competitive media workflows.
               </p>
             </div>
           </div>
@@ -57,23 +117,24 @@ export default function BenchmarksPage() {
 
         <section className="container py-16 sm:py-20">
           <div className="mx-auto max-w-5xl">
-            <div className="grid gap-4 md:grid-cols-3">
-              {MEASURED_BENCHMARKS.map((benchmark) => (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {highlights.map((benchmark) => (
                 <Card key={benchmark.name}>
                   <CardHeader>
                     <CardDescription>{benchmark.name}</CardDescription>
-                    <CardTitle className="text-2xl">{benchmark.value}</CardTitle>
+                    <CardTitle className="text-2xl">{formatValue(benchmark)}</CardTitle>
                   </CardHeader>
                   <CardContent className="text-sm text-muted-foreground">
-                    {benchmark.detail}
+                    {formatDetail(benchmark)}
                   </CardContent>
                 </Card>
               ))}
             </div>
             <Callout type="note" title="Measurement environment" className="mt-6">
-              Apple M2 Pro, arm64 macOS, rustc 1.91.0-nightly, commit
-              <code> 9b79be227be8dd2cf1e9ead2a42e812ebf70565b</code>. BLAKE3
-              and SHA-256 used 1 MiB inputs; FastCDC used 32 MiB inputs.
+              {machine || "See artifact meta"}, {run?.meta.rustc ?? "rustc unknown"}, commit
+              <code> {sha}</code>. Source artifact:{" "}
+              <code>benchmarks/latest.json</code>. Reproduce with{" "}
+              <code>npm run bench</code>.
             </Callout>
           </div>
         </section>
@@ -82,15 +143,16 @@ export default function BenchmarksPage() {
           <div className="container py-20 sm:py-24">
             <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[0.8fr_1.2fr]">
               <div>
-                <Badge variant="outline">Not yet measured</Badge>
+                <Badge variant="outline">Still needed</Badge>
                 <h2 className="mt-4 text-3xl font-bold tracking-tight">
                   The numbers buyers actually need
                 </h2>
                 <p className="mt-5 leading-7 text-muted-foreground">
-                  Dits still needs repeatable evidence for repository operations,
-                  storage growth, real-media fidelity, memory use, VFS latency,
-                  and competitive workflows. Network measurements are impossible
-                  today because network transfer is not implemented.
+                  Local 32 MiB repository timings are a start. Dits still needs
+                  peak-memory evidence, real-media fidelity, cold/warm cache
+                  series, and competitive store-growth baselines on disclosed
+                  machines. Network measurements are impossible today because
+                  network transfer is not implemented.
                 </p>
               </div>
               <Card>
@@ -129,13 +191,21 @@ export default function BenchmarksPage() {
                 <Link
                   href="https://github.com/byronwade/dits/blob/main/benchmarks/latest.json"
                   target="_blank"
-                  rel="noopener noreferrer" aria-label="View raw results"  prefetch={false} />
+                  rel="noopener noreferrer"
+                  aria-label="View raw results"
+                  prefetch={false}
+                />
               }
             >
               View raw results
               <ArrowRight data-icon="inline-end" />
             </Button>
-            <Button variant="outline" render={<Link href="/docs/roadmap" aria-label="See the evidence roadmap"  prefetch={false} />}>
+            <Button
+              variant="outline"
+              render={
+                <Link href="/docs/roadmap" aria-label="See the evidence roadmap" prefetch={false} />
+              }
+            >
               See the evidence roadmap
             </Button>
           </div>

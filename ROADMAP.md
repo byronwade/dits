@@ -31,6 +31,8 @@ the foundation of every later feature.
   atomic.
 - [x] Detect source mutation during ingest or fail with a stable error.
 - [ ] Add crash, disk-full, concurrent-writer, corrupt-object, and retry tests.
+  Corrupt missing/mutated chunk detection via `fsck` is covered; crash,
+  disk-full, concurrent-writer, and retry injection remain open.
 - [ ] Build a generated/licensed golden MP4/MOV corpus with explicit fidelity
   contracts ([#36](https://github.com/byronwade/dits/issues/36)).
 - [ ] Generate the public media support matrix from conformance results.

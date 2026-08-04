@@ -66,6 +66,11 @@ Both profiles write `latest.json` to **two** locations:
 > only showcase fills in `cumulative` and `scaling`. Running the **ci** profile and
 > committing its output will blank the project-over-time (ch08) and scaling (ch09)
 > charts. If you re-run benchmarks for a release, use `:showcase` and commit that.
+>
+> CI matrix refreshes on non-reference machines should write
+> `benchmarks/comparative/ci-latest.json` (and the matching
+> `apps/web/public/benchmarks/comparative/ci-latest.json` copy) and leave the
+> showcase `latest.json` untouched.
 
 ## Tool requirements & graceful degradation
 
