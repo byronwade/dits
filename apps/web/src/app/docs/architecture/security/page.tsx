@@ -84,10 +84,10 @@ Get-FileHash path/to/file -Algorithm SHA256  # PowerShell`}
         repository. Local-path clone works; network clone does not.
       </p>
       <Callout type="important" title="Do not expose dits serve" className="not-prose my-6">
-        The experimental <code>dits serve</code> utility binds to all interfaces and
-        does not implement authentication, authorization, or TLS. Treat it as a
-        developer fixture for an isolated, trusted network only. Do not expose it to
-        the internet or an untrusted LAN.
+        The experimental <code>dits serve</code> utility is unauthenticated and has no
+        TLS. It binds to loopback by default; non-loopback <code>--bind</code> still
+        has no auth. Treat it as a developer fixture for an isolated, trusted network
+        only. Do not expose it to the internet or an untrusted LAN.
       </Callout>
 
       <h2>CLI telemetry</h2>
