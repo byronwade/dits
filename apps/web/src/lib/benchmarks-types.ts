@@ -8,13 +8,16 @@ export interface BenchmarkMeta {
   cpu: string | null;
 }
 
+export type BenchmarkMetric = "throughput" | "latency" | "count";
+export type BenchmarkUnit = "mb_per_s" | "ops_per_s" | "ms" | "chunks";
+
 export interface BenchmarkEntry {
   timestamp?: string;
   git_sha?: string | null;
   suite: string;
   name: string;
-  metric: "throughput";
-  unit: "mb_per_s" | "ops_per_s";
+  metric: BenchmarkMetric;
+  unit: BenchmarkUnit;
   value: number;
   iterations?: number;
   bytes_per_iter?: number;
@@ -31,7 +34,7 @@ export interface BenchmarkHistoryEntry {
   git_sha: string | null;
   suite: string;
   name: string;
-  unit: "mb_per_s" | "ops_per_s";
+  unit: BenchmarkUnit;
   value: number;
   iterations: number | null;
   bytes_per_iter: number | null;

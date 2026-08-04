@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import {
   ArrowRight,
   Boxes,
@@ -9,6 +10,7 @@ import {
   Waypoints,
 } from "lucide-react";
 
+import { BenchmarksHighlights } from "@/components/benchmarks-highlights";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { GithubIcon } from "@/components/icons/github-icon";
@@ -64,7 +66,7 @@ export default function HomePage() {
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Button
                   size="lg"
-                  render={<Link href="/docs/getting-started" />}
+                  render={<Link href="/docs/getting-started" aria-label="Try the local alpha"  prefetch={false} />}
                 >
                   Try the local alpha
                   <ArrowRight data-icon="inline-end" />
@@ -76,11 +78,10 @@ export default function HomePage() {
                     <Link
                       href="https://github.com/byronwade/dits"
                       target="_blank"
-                      rel="noopener noreferrer"
-                    />
+                      rel="noopener noreferrer" aria-label="Star Dits on GitHub"  prefetch={false} />
                   }
                 >
-                  <GithubIcon className="size-4" />
+                  <GithubIcon data-icon="inline-start" />
                   Star Dits on GitHub
                 </Button>
               </div>
@@ -106,7 +107,7 @@ dits log`}</code></pre>
               <Link
                 href="/docs/architecture"
                 className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline"
-              >
+               prefetch={false}>
                 Read the architecture
                 <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
@@ -199,32 +200,38 @@ dits log`}</code></pre>
                 A small evidence base we can reproduce
               </h2>
               <p className="mt-5 leading-7 text-muted-foreground">
-                These are component microbenchmarks from the committed artifact,
-                recorded on an Apple M2 Pro. They do not establish end-to-end
-                repository, media, or network performance.
+                Committed artifact numbers, loaded through Next.js Cache
+                Components. They do not establish media-scale, peak-memory, or
+                network performance.
               </p>
               <Button
                 variant="outline"
                 className="mt-6"
-                render={<Link href="/benchmarks" />}
+                render={<Link href="/benchmarks" aria-label="See method and limitations"  prefetch={false} />}
               >
                 See method and limitations
                 <ArrowRight data-icon="inline-end" />
               </Button>
             </div>
-            <div className="grid gap-4 sm:grid-cols-3">
-              {MEASURED_BENCHMARKS.map((benchmark) => (
-                <Card key={benchmark.name}>
-                  <CardHeader>
-                    <CardDescription>{benchmark.name}</CardDescription>
-                    <CardTitle className="text-xl">{benchmark.value}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-xs text-muted-foreground">
-                    {benchmark.detail}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <Suspense
+              fallback={
+                <div className="grid gap-4 sm:grid-cols-3">
+                  {MEASURED_BENCHMARKS.map((benchmark) => (
+                    <Card key={benchmark.name}>
+                      <CardHeader>
+                        <CardDescription>{benchmark.name}</CardDescription>
+                        <CardTitle className="text-xl">{benchmark.value}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="text-xs text-muted-foreground">
+                        {benchmark.detail}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              }
+            >
+              <BenchmarksHighlights />
+            </Suspense>
           </div>
         </section>
 
@@ -250,7 +257,7 @@ dits log`}</code></pre>
               ))}
             </div>
             <div className="mt-8 text-center">
-              <Button variant="outline" render={<Link href="/docs/roadmap" />}>
+              <Button variant="outline" render={<Link href="/docs/roadmap" aria-label="Explore the roadmap"  prefetch={false} />}>
                 Explore the roadmap
                 <ArrowRight data-icon="inline-end" />
               </Button>
@@ -269,7 +276,7 @@ dits log`}</code></pre>
               cases, format reviews, and reproducible workflow evidence.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <Button size="lg" render={<Link href="/docs/getting-started" />}>
+              <Button size="lg" render={<Link href="/docs/getting-started" aria-label="Start locally"  prefetch={false} />}>
                 Start locally
               </Button>
               <Button
@@ -279,11 +286,10 @@ dits log`}</code></pre>
                   <Link
                     href="https://github.com/byronwade/dits"
                     target="_blank"
-                    rel="noopener noreferrer"
-                  />
+                    rel="noopener noreferrer" aria-label="Star Dits on GitHub"  prefetch={false} />
                 }
               >
-                <GithubIcon className="size-4" />
+                <GithubIcon data-icon="inline-start" />
                 Star Dits on GitHub
               </Button>
             </div>

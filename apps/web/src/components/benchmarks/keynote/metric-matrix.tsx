@@ -81,44 +81,54 @@ export function MetricMatrix({ records }: { records: CompRecord[] }) {
       </div>
 
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full border-collapse font-mono text-sm">
-          <thead>
-            <tr className="border-b border-border text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-              <th className="px-3 py-2.5 font-semibold">What you did</th>
-              {rows[0]?.cells.map((c) => (
-                <th key={c.tool} className="px-3 py-2.5 font-semibold">{c.tool}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.label} className="border-b border-border">
-                <td className="px-3 py-2.5 text-foreground">{row.label}</td>
-                {row.cells.map((c) => {
-                  const isDits = c.tier === "dits";
-                  const isLoss = c.tier === "dits-generic" && active.key === "dedup_pct" && (c.value ?? 0) < 10;
-                  return (
-                    <td
-                      key={c.tool}
-                      className={cn(
-                        "px-3 py-2.5",
-                        !c.available || c.value == null
-                          ? "text-muted-foreground/60"
-                          : isLoss
-                          ? "font-bold text-red-500"
-                          : isDits
-                          ? "font-bold text-brand"
-                          : "text-muted-foreground"
-                      )}
-                    >
-                      {!c.available ? "n/a" : c.value == null ? "—" : active.fmt(c.value)}
-                    </td>
-                  );
-                })}
+        {rows.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
+            <p className="font-medium text-foreground">No benchmark matrix rows</p>
+            <p className="mt-2">
+              Run <code className="font-mono text-brand">npm run bench:comparative</code> to
+              populate comparative metrics.
+            </p>
+          </div>
+        ) : (
+          <table className="w-full border-collapse font-mono text-sm">
+            <thead>
+              <tr className="border-b border-border text-left text-[11px] uppercase tracking-wider text-muted-foreground">
+                <th className="px-3 py-2.5 font-semibold">What you did</th>
+                {rows[0]?.cells.map((c) => (
+                  <th key={c.tool} className="px-3 py-2.5 font-semibold">{c.tool}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.label} className="border-b border-border">
+                  <td className="px-3 py-2.5 text-foreground">{row.label}</td>
+                  {row.cells.map((c) => {
+                    const isDits = c.tier === "dits";
+                    const isLoss = c.tier === "dits-generic" && active.key === "dedup_pct" && (c.value ?? 0) < 10;
+                    return (
+                      <td
+                        key={c.tool}
+                        className={cn(
+                          "px-3 py-2.5",
+                          !c.available || c.value == null
+                            ? "text-muted-foreground/60"
+                            : isLoss
+                            ? "font-bold text-red-500"
+                            : isDits
+                            ? "font-bold text-brand"
+                            : "text-muted-foreground"
+                        )}
+                      >
+                        {!c.available ? "n/a" : c.value == null ? "—" : active.fmt(c.value)}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

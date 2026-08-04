@@ -188,13 +188,22 @@ pub async fn transfer_objects_http(
 ) -> anyhow::Result<TransferStats> {
     use anyhow::Context;
     let base = base_url.trim_end_matches('/');
-    let client = reqwest::Client::new();
+    // Do not follow redirects: a hostile object-list host must not bounce GETs
+    // onto link-local or metadata endpoints.
+    let client = reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .context("building HTTP client")?;
 
-    let list = client
+    let list_response = client
         .get(format!("{base}/object-list"))
         .send()
         .await
-        .context("requesting object list")?
+        .context("requesting object list")?;
+    if list_response.status().is_redirection() {
+        anyhow::bail!("remote object-list responded with a redirect; refusing to follow");
+    }
+    let list = list_response
         .error_for_status()
         .context("remote returned an error for object-list")?
         .text()
@@ -243,11 +252,18 @@ pub async fn transfer_objects_http(
             }
         }
 
-        let bytes = client
+        let object_response = client
             .get(object_url.as_str())
             .send()
             .await
-            .with_context(|| format!("requesting object {}", safe_rel.display()))?
+            .with_context(|| format!("requesting object {}", safe_rel.display()))?;
+        if object_response.status().is_redirection() {
+            anyhow::bail!(
+                "remote object {} responded with a redirect; refusing to follow",
+                safe_rel.display()
+            );
+        }
+        let bytes = object_response
             .error_for_status()
             .with_context(|| format!("remote error for object {}", safe_rel.display()))?
             .bytes()

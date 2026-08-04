@@ -1,12 +1,12 @@
 {
   "meta": {
-    "timestamp": "2026-06-03T14:07:10.620Z",
-    "git_sha": "9b79be227be8dd2cf1e9ead2a42e812ebf70565b",
-    "node": "v22.20.0",
-    "rustc": "rustc 1.91.0-nightly (69b76df90 2025-08-23)",
-    "platform": "darwin",
-    "arch": "arm64",
-    "cpu": "Apple M2 Pro"
+    "timestamp": "2026-08-04T03:21:12.983Z",
+    "git_sha": "15a8bda241041a1c6a88f35e693404cadbf8dac9",
+    "node": "v22.14.0",
+    "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "Intel(R) Xeon(R) Processor"
   },
   "results": [
     {
@@ -14,58 +14,164 @@
       "name": "BLAKE3 hash (1 MiB)",
       "metric": "throughput",
       "unit": "mb_per_s",
-      "value": 1809.9574865420836,
+      "value": 6713.141296318325,
       "iterations": 200,
       "bytes_per_iter": 1048576,
-      "elapsed_ms_total": 110.49983300000001,
-      "timestamp": "2026-06-03T14:07:10.620Z",
-      "git_sha": "9b79be227be8dd2cf1e9ead2a42e812ebf70565b"
+      "elapsed_ms_total": 29.792312000000003,
+      "timestamp": "2026-08-04T03:21:12.983Z",
+      "git_sha": "15a8bda241041a1c6a88f35e693404cadbf8dac9"
     },
     {
       "suite": "rust.dits-engine",
       "name": "FastCDC chunk (32 MiB)",
       "metric": "throughput",
       "unit": "mb_per_s",
-      "value": 991.7642225358497,
+      "value": 1086.61307966351,
       "iterations": 5,
       "bytes_per_iter": 33554432,
-      "elapsed_ms_total": 161.328667,
-      "timestamp": "2026-06-03T14:07:10.620Z",
-      "git_sha": "9b79be227be8dd2cf1e9ead2a42e812ebf70565b"
+      "elapsed_ms_total": 147.246525,
+      "timestamp": "2026-08-04T03:21:12.983Z",
+      "git_sha": "15a8bda241041a1c6a88f35e693404cadbf8dac9"
+    },
+    {
+      "suite": "rust.dits-engine",
+      "name": "FastCDC stream (32 MiB)",
+      "metric": "throughput",
+      "unit": "mb_per_s",
+      "value": 1102.9842085681923,
+      "iterations": 5,
+      "bytes_per_iter": 33554432,
+      "elapsed_ms_total": 145.061007,
+      "timestamp": "2026-08-04T03:21:12.983Z",
+      "git_sha": "15a8bda241041a1c6a88f35e693404cadbf8dac9"
+    },
+    {
+      "suite": "rust.dits-repo",
+      "name": "add 32 MiB binary (streaming)",
+      "metric": "latency",
+      "unit": "ms",
+      "value": 213.20612066666664,
+      "iterations": 3,
+      "elapsed_ms_total": 639.6183619999999,
+      "bytes_per_iter": 33554432,
+      "timestamp": "2026-08-04T03:21:12.983Z",
+      "git_sha": "15a8bda241041a1c6a88f35e693404cadbf8dac9"
+    },
+    {
+      "suite": "rust.dits-repo",
+      "name": "commit after 32 MiB add",
+      "metric": "latency",
+      "unit": "ms",
+      "value": 3.100088,
+      "iterations": 3,
+      "elapsed_ms_total": 9.300264,
+      "bytes_per_iter": 33554432,
+      "timestamp": "2026-08-04T03:21:12.983Z",
+      "git_sha": "15a8bda241041a1c6a88f35e693404cadbf8dac9"
+    },
+    {
+      "suite": "rust.dits-repo",
+      "name": "checkout 32 MiB binary",
+      "metric": "latency",
+      "unit": "ms",
+      "value": 22.474946666666664,
+      "iterations": 3,
+      "elapsed_ms_total": 67.42483999999999,
+      "bytes_per_iter": 33554432,
+      "timestamp": "2026-08-04T03:21:12.983Z",
+      "git_sha": "15a8bda241041a1c6a88f35e693404cadbf8dac9"
+    },
+    {
+      "suite": "rust.dits-repo",
+      "name": "add+commit+checkout 32 MiB",
+      "metric": "latency",
+      "unit": "ms",
+      "value": 238.78115533333332,
+      "iterations": 3,
+      "elapsed_ms_total": 716.3434659999999,
+      "bytes_per_iter": 33554432,
+      "timestamp": "2026-08-04T03:21:12.983Z",
+      "git_sha": "15a8bda241041a1c6a88f35e693404cadbf8dac9"
+    },
+    {
+      "suite": "rust.dits-repo",
+      "name": "add 32 MiB binary throughput",
+      "metric": "throughput",
+      "unit": "mb_per_s",
+      "value": 150.0894997758054,
+      "iterations": 3,
+      "bytes_per_iter": 33554432,
+      "elapsed_ms_total": 639.6183619999999,
+      "timestamp": "2026-08-04T03:21:12.983Z",
+      "git_sha": "15a8bda241041a1c6a88f35e693404cadbf8dac9"
+    },
+    {
+      "suite": "rust.dits-repo",
+      "name": "re-add append-ish 33 MiB edit",
+      "metric": "latency",
+      "unit": "ms",
+      "value": 42.09172,
+      "iterations": 1,
+      "elapsed_ms_total": 42.09172,
+      "bytes_per_iter": 34603008,
+      "timestamp": "2026-08-04T03:21:12.983Z",
+      "git_sha": "15a8bda241041a1c6a88f35e693404cadbf8dac9"
+    },
+    {
+      "suite": "rust.dits-repo",
+      "name": "append-ish edit new chunks",
+      "metric": "count",
+      "unit": "chunks",
+      "value": 5,
+      "iterations": 1,
+      "elapsed_ms_total": 42.09172,
+      "timestamp": "2026-08-04T03:21:12.983Z",
+      "git_sha": "15a8bda241041a1c6a88f35e693404cadbf8dac9"
+    },
+    {
+      "suite": "rust.dits-repo",
+      "name": "append-ish edit dedup chunks",
+      "metric": "count",
+      "unit": "chunks",
+      "value": 428,
+      "iterations": 1,
+      "elapsed_ms_total": 42.09172,
+      "timestamp": "2026-08-04T03:21:12.983Z",
+      "git_sha": "15a8bda241041a1c6a88f35e693404cadbf8dac9"
     },
     {
       "suite": "rust.dits-engine",
       "name": "SHA-256 hash (1 MiB)",
       "metric": "throughput",
       "unit": "mb_per_s",
-      "value": 348.3674196338136,
+      "value": 1621.8652345466896,
       "iterations": 100,
       "bytes_per_iter": 1048576,
-      "elapsed_ms_total": 287.05325,
-      "timestamp": "2026-06-03T14:07:10.620Z",
-      "git_sha": "9b79be227be8dd2cf1e9ead2a42e812ebf70565b"
+      "elapsed_ms_total": 61.657404,
+      "timestamp": "2026-08-04T03:21:12.983Z",
+      "git_sha": "15a8bda241041a1c6a88f35e693404cadbf8dac9"
     },
     {
       "suite": "node.packages/npm",
       "name": "getPlatformKey",
       "metric": "throughput",
       "unit": "ops_per_s",
-      "value": 9683229.417434068,
+      "value": 7830248.481660008,
       "iterations": 250000,
-      "elapsed_ms_total": 25.817832999999997,
-      "timestamp": "2026-06-03T14:07:10.620Z",
-      "git_sha": "9b79be227be8dd2cf1e9ead2a42e812ebf70565b"
+      "elapsed_ms_total": 31.927466999999996,
+      "timestamp": "2026-08-04T03:21:12.983Z",
+      "git_sha": "15a8bda241041a1c6a88f35e693404cadbf8dac9"
     },
     {
       "suite": "node.packages/npm",
       "name": "getBinaryPath",
       "metric": "throughput",
       "unit": "ops_per_s",
-      "value": 750584.987174379,
+      "value": 1282234.4552708154,
       "iterations": 150000,
-      "elapsed_ms_total": 199.844125,
-      "timestamp": "2026-06-03T14:07:10.620Z",
-      "git_sha": "9b79be227be8dd2cf1e9ead2a42e812ebf70565b"
+      "elapsed_ms_total": 116.98328599999999,
+      "timestamp": "2026-08-04T03:21:12.983Z",
+      "git_sha": "15a8bda241041a1c6a88f35e693404cadbf8dac9"
     }
   ]
 }

@@ -6,7 +6,7 @@ use anyhow::{Context, Result};
 use console::style;
 use dits::proxy::{ProxyStore, VariantType};
 
-use crate::{core::Hash, store::Repository};
+use crate::{commands::branching::reflog::record_reflog, core::Hash, store::Repository};
 
 /// Checkout mode.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -37,6 +37,8 @@ pub fn checkout(target: &str, mode: CheckoutMode) -> Result<()> {
         CheckoutMode::Proxy => " (proxy mode)",
     };
 
+    let previous = repo.head()?;
+
     // Resolve the symbolic HEAD ref to the current commit (git's `checkout HEAD`).
     if target == "HEAD" || target == "@" {
         if let Some(hash) = repo.head()? {
@@ -44,6 +46,7 @@ pub fn checkout(target: &str, mode: CheckoutMode) -> Result<()> {
             if mode == CheckoutMode::Proxy {
                 apply_proxy_checkout(&repo)?;
             }
+            let _ = record_reflog(&repo, "HEAD", &hash, previous, "checkout: HEAD");
             println!(
                 "{} HEAD is now at {}{}",
                 style("✓").green().bold(),
@@ -67,6 +70,22 @@ pub fn checkout(target: &str, mode: CheckoutMode) -> Result<()> {
         } else {
             (0, 0)
         };
+        if let Some(hash) = repo.head()? {
+            let _ = record_reflog(
+                &repo,
+                &format!("refs/heads/{target}"),
+                &hash,
+                previous,
+                &format!("checkout: moving to {target}"),
+            );
+            let _ = record_reflog(
+                &repo,
+                "HEAD",
+                &hash,
+                previous,
+                &format!("checkout: moving to {target}"),
+            );
+        }
 
         println!(
             "{} Switched to branch '{}'{}",
@@ -97,6 +116,13 @@ pub fn checkout(target: &str, mode: CheckoutMode) -> Result<()> {
         } else {
             (0, 0)
         };
+        let _ = record_reflog(
+            &repo,
+            "HEAD",
+            &hash,
+            previous,
+            &format!("checkout: moving to {}", hash.short()),
+        );
 
         println!(
             "{} HEAD is now at {}{}",
@@ -129,6 +155,13 @@ pub fn checkout(target: &str, mode: CheckoutMode) -> Result<()> {
             } else {
                 (0, 0)
             };
+            let _ = record_reflog(
+                &repo,
+                "HEAD",
+                &commit.hash,
+                previous,
+                &format!("checkout: moving to {}", commit.short_hash()),
+            );
 
             println!(
                 "{} HEAD is now at {} {}{}",

@@ -75,6 +75,18 @@ export function CumulativeChart({
 }
 
 function ProjectedChart({ rows }: { rows: { tool: string; label: string; color: string; endGb: number }[] }) {
+  if (rows.length === 0) {
+    return (
+      <div className="mt-7 rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
+        <p className="font-medium text-foreground">No projected series yet</p>
+        <p className="mt-2">
+          Run <code className="font-mono text-brand">npm run bench:comparative:showcase</code> to
+          populate cumulative projections.
+        </p>
+      </div>
+    );
+  }
+
   const maxGb = Math.max(...rows.map((r) => r.endGb));
   const y = (g: number) => H - PAD_B - (g / maxGb) * (H - PAD_T - PAD_B);
   return (

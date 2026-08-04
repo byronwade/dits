@@ -74,7 +74,7 @@ export default function ArchitecturePage() {
       <ol>
         <li>Crash-safe local writes and recovery.</li>
         <li>Versioned deterministic objects and manifests.</li>
-        <li>Bounded-memory ingest, packs, indexes, and trees.</li>
+        <li>Remaining text/MP4 bounded-memory ingest, packs, indexes, and trees (large classified binary streaming is already Current).</li>
         <li>Semantic media records proven on real workflows.</li>
         <li>A transport-independent remote protocol and conformance suite.</li>
       </ol>

@@ -248,9 +248,14 @@ export function MorphDock({
   });
 
   // Drop any resize when fully closed so the next open starts at the default box.
-  React.useEffect(() => {
-    if (!open) setSize(null);
-  }, [open]);
+  // Adjust during render (not in an effect) to avoid a stale-size flash.
+  const [prevOpen, setPrevOpen] = React.useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (!open && size !== null) {
+      setSize(null);
+    }
+  }
 
   // Esc + click-away close the morphed panel.
   React.useEffect(() => {
@@ -416,7 +421,7 @@ export function MorphDock({
                   type="button"
                   aria-label="Drag panel"
                   onPointerDown={onDragStart}
-                  className="flex w-full cursor-grab touch-none items-center justify-center py-1 text-dock-foreground/50 outline-none transition-colors hover:text-dock-foreground/80 active:cursor-grabbing"
+                  className="flex w-full cursor-grab touch-none items-center justify-center py-1 text-dock-foreground/50 outline-none transition-colors hover:text-dock-foreground/80 focus-visible:ring-2 focus-visible:ring-white/30 active:cursor-grabbing"
                 >
                   <GripHorizontal className="size-4" />
                 </button>

@@ -274,20 +274,20 @@ impl ObjectStore {
         }
 
         let plaintext_data = if let Some(config) = &self.encryption {
-            match crate::util::deserialize_bincode_with_limit::<EncryptedChunk>(
+            // Fail closed: when encryption is enabled, refuse opaque plaintext
+            // fallback so a corrupt or swapped object cannot be treated as data.
+            let encrypted_chunk = crate::util::deserialize_bincode_with_limit::<EncryptedChunk>(
                 &stored_data,
                 MAX_STORED_CHUNK_SIZE,
-            ) {
-                Ok(encrypted_chunk) => decrypt_chunk(&encrypted_chunk, &config.user_secret)
-                    .map_err(|error| {
-                        ObjectError::SerializationError(format!("Decryption failed: {error}"))
-                    })?,
-                Err(_) => {
-                    // Backwards compatibility for repositories that contain
-                    // plaintext chunks but now have encryption enabled.
-                    stored_data
-                },
-            }
+            )
+            .map_err(|error| {
+                ObjectError::SerializationError(format!(
+                    "Encrypted chunk decode failed (plaintext fallback disabled): {error}"
+                ))
+            })?;
+            decrypt_chunk(&encrypted_chunk, &config.user_secret).map_err(|error| {
+                ObjectError::SerializationError(format!("Decryption failed: {error}"))
+            })?
         } else {
             stored_data
         };

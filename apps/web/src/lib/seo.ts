@@ -151,8 +151,11 @@ export function generateMetadata(config: SEOConfig): Metadata {
       },
     },
     icons: {
-      icon: "/icon-192x192.png",
-      apple: "/apple-touch-icon.png",
+      icon: [
+        { url: "/dits-app-icon.svg", type: "image/svg+xml" },
+        { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      ],
+      apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
     },
     manifest: "/manifest.json",
   };

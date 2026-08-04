@@ -134,9 +134,12 @@ const MEDIA_ROUTES = new Set<string>([
 const AI_ROUTES = new Set<string>([
   ...AI_TOP_ROUTES,
   // AI docs nav can link out to media (e.g. "/docs"); keep only AI-owned routes.
-  ...flattenDocsNav(aiDocsNavigation)
-    .map((l) => l.href)
-    .filter((h) => h === "/ai" || h.startsWith("/ai/")),
+  ...flattenDocsNav(aiDocsNavigation).reduce<string[]>((acc, link) => {
+    if (link.href === "/ai" || link.href.startsWith("/ai/")) {
+      acc.push(link.href);
+    }
+    return acc;
+  }, []),
 ]);
 
 /**

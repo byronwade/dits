@@ -101,7 +101,7 @@ cargo build --locked --release -p dits
             </Callout>
 
             <div className="mt-10 text-center">
-              <Button render={<Link href="/docs/getting-started" />}>
+              <Button render={<Link href="/docs/getting-started" aria-label="Create a safe evaluation repository"  prefetch={false} />}>
                 Create a safe evaluation repository
                 <ArrowRight data-icon="inline-end" />
               </Button>

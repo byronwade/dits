@@ -7,7 +7,7 @@
 //!
 //! - [`hash`] — BLAKE3 content addresses ([`Hash`], [`Hasher`]).
 //! - [`chunk`] — FastCDC chunking ([`Chunk`], [`ChunkRef`], [`ChunkerConfig`],
-//!   [`chunk_data`], [`chunk_data_with_refs`]).
+//!   [`chunk_data`], [`chunk_data_with_refs`], [`stream_chunk_reader`]).
 //!
 //! The optional `parallel` feature adds rayon-based parallel hashing for native
 //! callers; it is off by default and must not be enabled for wasm.
@@ -15,7 +15,10 @@
 pub mod chunk;
 pub mod hash;
 
-pub use chunk::{chunk_data, chunk_data_with_refs, Chunk, ChunkRef, ChunkerConfig};
+pub use chunk::{
+    chunk_data, chunk_data_with_refs, stream_chunk_reader, Chunk, ChunkRef, ChunkStreamError,
+    ChunkerConfig, StreamChunkSummary,
+};
 pub use hash::{Hash, Hasher};
 
 #[cfg(feature = "parallel")]

@@ -126,15 +126,22 @@ export function BenchmarkComparisonChart({
                 )}
             </div>
 
-            <div className="space-y-6">
-                {comparisons.map((comparison) => (
-                    <ComparisonBar
-                        key={comparison.label}
-                        {...comparison}
-                        ditsLabel={ditsLabel}
-                        otherLabel={otherLabel}
-                    />
-                ))}
+            <div className="flex flex-col gap-6">
+                {comparisons.length === 0 ? (
+                    <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                        <p className="font-medium text-foreground">No comparisons available</p>
+                        <p className="mt-2">Comparison bars will appear when benchmark data is loaded.</p>
+                    </div>
+                ) : (
+                    comparisons.map((comparison) => (
+                        <ComparisonBar
+                            key={comparison.label}
+                            {...comparison}
+                            ditsLabel={ditsLabel}
+                            otherLabel={otherLabel}
+                        />
+                    ))
+                )}
             </div>
 
             {/* Legend */}

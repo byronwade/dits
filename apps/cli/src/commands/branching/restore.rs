@@ -72,22 +72,18 @@ pub fn restore(
 /// Restore files from a specific version (ours or theirs) during merge
 /// conflict.
 fn restore_conflict_version(_repo: &Repository, paths: &[String], use_ours: bool) -> Result<()> {
-    // For now, this is a simplified implementation
-    // In a full implementation, we'd track conflict state
     let version = if use_ours { "ours" } else { "theirs" };
-
-    for path in paths {
-        println!(
-            "{} Restoring '{}' ({} version)",
-            style("!").yellow().bold(),
-            style(path).cyan(),
-            version
-        );
-        println!("   Note: Full merge conflict resolution not yet implemented.");
-        println!("   Use 'dits checkout <commit> -- {}' to restore from a specific commit.", path);
-    }
-
-    Ok(())
+    let joined = if paths.is_empty() {
+        "<paths>".to_string()
+    } else {
+        paths.join(", ")
+    };
+    anyhow::bail!(
+        "Merge conflict restore (--{version}) is not implemented in this alpha.\nRequested \
+         path(s): {joined}\nNo working-tree or index files were changed.\nUse `dits checkout \
+         <commit> -- <path>` to restore bytes from a known commit once the conflict state is \
+         cleared."
+    );
 }
 
 /// Restore staged files (unstage them).
@@ -165,13 +161,13 @@ fn restore_worktree_files(
 
     for path in paths {
         if let Some(entry) = manifest.entries.get(path) {
-            // Restore file from chunks
+            // Resolve, create parents, then re-resolve so a symlink race cannot
+            // redirect the write outside the worktree after create_dir_all.
             let full_path = repo.resolve_worktree_path(path)?;
-
-            // Create parent directories
             if let Some(parent) = full_path.parent() {
                 fs::create_dir_all(parent)?;
             }
+            let full_path = repo.resolve_worktree_path(path)?;
 
             // Check if MP4 and has metadata
             if let Some(ref mp4_meta) = entry.mp4_metadata {
@@ -180,7 +176,7 @@ fn restore_worktree_files(
             } else {
                 // Restore regular file (strategy-aware: GitText -> git engine, else chunks).
                 let data = repo.reconstruct_entry_bytes(entry)?;
-                fs::write(&full_path, &data)?;
+                publish_restored_file(&full_path, &data)?;
             }
 
             restored += 1;
@@ -290,21 +286,81 @@ fn restore_mp4_file(
             .collect(),
     };
 
-    // Write the reconstructed MP4
-    let file = fs::File::create(full_path)?;
+    // Reconstruct into a same-directory temporary file, then rename into place
+    // so a replaced symlink destination cannot receive a partial write.
+    let parent = full_path.parent().context("restored path has no parent")?;
+    let temporary = parent.join(format!(
+        ".{}.restore.tmp",
+        full_path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("file")
+    ));
+    let file = fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&temporary)
+        .with_context(|| format!("creating restore temp {}", temporary.display()))?;
     let mut writer = BufWriter::new(file);
 
-    Reconstructor::reconstruct_from_parts(
+    let result = Reconstructor::reconstruct_from_parts(
         &mut writer,
         &ftyp_data,
         &moov_data,
         &structure,
         mp4_meta.needs_offset_patching,
         &mdat_data,
-    )
-    .map_err(|e| anyhow::anyhow!("Failed to reconstruct MP4: {}", e))?;
+    );
+    if let Err(e) = result {
+        let _ = fs::remove_file(&temporary);
+        return Err(anyhow::anyhow!("Failed to reconstruct MP4: {}", e));
+    }
+    if let Err(e) = writer.flush() {
+        let _ = fs::remove_file(&temporary);
+        return Err(e.into());
+    }
+    drop(writer);
 
-    writer.flush()?;
+    #[cfg(windows)]
+    if full_path.exists() {
+        fs::remove_file(full_path)?;
+    }
+    if let Err(e) = fs::rename(&temporary, full_path) {
+        let _ = fs::remove_file(&temporary);
+        return Err(e.into());
+    }
 
+    Ok(())
+}
+
+/// Atomically publish restored bytes via temp file + rename.
+fn publish_restored_file(full_path: &Path, data: &[u8]) -> Result<()> {
+    let parent = full_path.parent().context("restored path has no parent")?;
+    let temporary = parent.join(format!(
+        ".{}.restore.tmp",
+        full_path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("file")
+    ));
+    fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&temporary)
+        .and_then(|mut file| {
+            file.write_all(data)?;
+            file.flush()?;
+            Ok(())
+        })
+        .with_context(|| format!("writing restore temp {}", temporary.display()))?;
+
+    #[cfg(windows)]
+    if full_path.exists() {
+        fs::remove_file(full_path)?;
+    }
+    if let Err(e) = fs::rename(&temporary, full_path) {
+        let _ = fs::remove_file(&temporary);
+        return Err(e.into());
+    }
     Ok(())
 }

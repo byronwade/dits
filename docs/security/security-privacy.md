@@ -60,7 +60,8 @@ only local-filesystem clone is current. No TLS, QUIC, P2P, or remote-authenticat
 claim applies to repository exchange today.
 
 `dits serve` is a narrow embedded object server, not a secure remote. It binds to
-all network interfaces, has no authentication or authorization, and exposes refs
+loopback by default (optional non-loopback `--bind`), has no authentication or
+authorization, and exposes refs
 and stored object bytes. Run it only on a trusted or isolated network behind a
 firewall. Never expose it directly to the public Internet.
 

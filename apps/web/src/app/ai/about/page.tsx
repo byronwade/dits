@@ -59,7 +59,15 @@ export default function AiAboutPage() {
             </div>
           </div>
           <div className="mt-12 text-center">
-            <Button render={<Link href="/ai/how-it-works" />}>
+            <Button
+              render={
+                <Link
+                  href="/ai/how-it-works"
+                  prefetch={false}
+                  aria-label="Explore the research model"
+                />
+              }
+            >
               Explore the research model
               <ArrowRight data-icon="inline-end" />
             </Button>

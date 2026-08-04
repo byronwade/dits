@@ -140,9 +140,9 @@ branch. It is not a substitute for an independent backup. Network URLs are not
 supported by clone, and configured remotes do not transfer repository data.
 
 The embedded `dits serve` object server and `dits fetch-objects` are low-level
-utilities, not complete remote version control. `dits serve` binds without
-authentication; use it only on a trusted or isolated network and never expose
-it directly to the public Internet.
+utilities, not complete remote version control. `dits serve` is unauthenticated
+and defaults to loopback; use non-loopback binds only on a trusted or isolated
+network and never expose the server directly to the public Internet.
 
 ## Important limitations
 
@@ -150,8 +150,10 @@ it directly to the public Internet.
 - Destructive GC is disabled; `dits gc --dry-run` only reports candidates.
 - The incomplete encryption experiment is disabled. Repositories containing
   its legacy keystore fail closed.
-- Large-file ingest can still use file-sized buffers, and loose-object storage
-  is not ready for very high object counts.
+- Large classified binaries (≥1 MiB) use streaming FastCDC ingest so peak
+  buffers track the chunker `max_size`; text and MP4-specialized paths may still
+  buffer whole files. Loose-object storage is not ready for very high object
+  counts until packfiles exist.
 - Media compatibility is bounded by tested fixtures; no universal format,
   keyframe, or storage-savings claim is valid.
 - Remote transfer, remote locks, P2P, hosted APIs, and public SDKs are roadmap.

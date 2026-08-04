@@ -127,7 +127,15 @@ export default function CommunityPage() {
                         <CardDescription className="mb-4">{item.description}</CardDescription>
                         <Button
                           variant="outline"
-                          render={<Link href={item.href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} />}
+                          render={
+                            <Link
+                              href={item.href}
+                              target={external ? "_blank" : undefined}
+                              rel={external ? "noopener noreferrer" : undefined}
+                              prefetch={false}
+                              aria-label={item.action}
+                            />
+                          }
                         >
                           {item.action}
                         </Button>
@@ -172,12 +180,21 @@ export default function CommunityPage() {
                 <CardDescription>Read the contribution guide, keep scope focused, and run the checks available for your change.</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-wrap gap-4">
-                <Button render={<Link href="/docs/contributing" />}>
-                  <BookOpen className="mr-2 size-4" />
+                <Button render={<Link href="/docs/contributing" prefetch={false} aria-label="Contribution guide" />}>
+                  <BookOpen data-icon="inline-start" />
                   Contribution guide
                 </Button>
-                <Button variant="outline" render={<Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer" />}>
-                  <GithubIcon className="mr-2 size-4" />
+                <Button
+                  variant="outline"
+                  render={
+                    <Link
+                      href="https://github.com/byronwade/dits"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      prefetch={false} aria-label="Source on GitHub" />
+                  }
+                >
+                  <GithubIcon data-icon="inline-start" />
                   Source on GitHub
                 </Button>
               </CardContent>

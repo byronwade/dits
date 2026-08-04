@@ -92,7 +92,7 @@ npm --workspace apps/web run build`}
         <li>Crash-safe writes and demonstrated recovery from interrupted operations.</li>
         <li>A public real-media compatibility corpus and support matrix.</li>
         <li>Deterministic, versioned persistent formats with conformance fixtures.</li>
-        <li>Bounded-memory ingest and object-count scaling evidence.</li>
+        <li>Peak-memory evidence for streaming large-binary ingest plus remaining text/MP4 paths; object-count scaling evidence (packs still Design).</li>
         <li>Cross-version checkout and migration behavior.</li>
         <li>Truthful documentation enforced alongside command and product checks.</li>
       </ul>

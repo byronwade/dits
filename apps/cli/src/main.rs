@@ -19,7 +19,7 @@ mod telemetry;
 use std::sync::Arc;
 
 use clap::{Parser, Subcommand};
-pub(crate) use dits::{config, core, facr, mp4, segment, store, stream, util, vfs};
+pub(crate) use dits::{config, core, facr, mp4, segment, store, stream, util};
 use tokio::sync::Mutex;
 
 #[derive(Parser)]
@@ -810,7 +810,7 @@ enum Commands {
         push:    bool,
     },
 
-    /// Push changes to a remote repository
+    /// Push to a remote (fail-closed in this alpha; no objects/refs change)
     Push {
         /// Remote name (default: origin)
         remote: Option<String>,
@@ -824,7 +824,7 @@ enum Commands {
         all:    bool,
     },
 
-    /// Pull changes from a remote repository
+    /// Pull from a remote (fail-closed in this alpha; no objects/refs change)
     Pull {
         /// Remote name (default: origin)
         remote: Option<String>,
@@ -835,7 +835,9 @@ enum Commands {
         rebase: bool,
     },
 
-    /// Fetch objects and refs from a remote repository
+    /// Fetch refs/objects from a named remote (fail-closed; use fetch-objects
+    /// for local additive object copy, or local `clone` to copy a
+    /// repository)
     Fetch {
         /// Remote name (default: origin)
         remote: Option<String>,
@@ -847,8 +849,8 @@ enum Commands {
         prune:  bool,
     },
 
-    /// Pull missing objects from another local dits repo (content-addressed,
-    /// incremental)
+    /// Copy missing content-addressed objects from another local repository
+    /// (additive only; does not update refs or the working tree)
     #[command(name = "fetch-objects")]
     FetchObjects {
         /// Path to the source dits repository
@@ -1068,17 +1070,22 @@ enum Commands {
         command: TelemetryCommands,
     },
 
-    /// Start a remote server for this repository
+    /// Start an unauthenticated local object/ref server (trusted networks only)
     Serve {
         /// Port to listen on
         #[arg(short, long, default_value = "8080")]
         port:     u16,
+        /// Address to bind (default: loopback). Non-loopback binds expose
+        /// repository bytes with no authentication — trusted/isolated networks only.
+        #[arg(long, default_value = "127.0.0.1")]
+        bind:     String,
         /// Base directory containing repositories
         #[arg(short, long)]
         base_dir: Option<String>,
     },
 
-    /// Synchronize with remote repository (bi-directional)
+    /// Synchronize with a remote (fail-closed in this alpha; no objects/refs
+    /// change)
     Sync {
         /// Remote name (default: origin)
         #[arg(default_value = "origin")]
@@ -1664,12 +1671,12 @@ async fn main() {
                 },
             },
         },
-        Commands::Serve { port, base_dir } => {
+        Commands::Serve { port, bind, base_dir } => {
             use std::path::PathBuf;
             let base = base_dir
                 .map(PathBuf::from)
                 .unwrap_or_else(|| std::env::current_dir().unwrap());
-            match crate::store::remote_server::start_server(base, port).await {
+            match crate::store::remote_server::start_server(base, &bind, port).await {
                 Ok(()) => Ok(()),
                 Err(e) => {
                     eprintln!("Failed to start server: {}", e);

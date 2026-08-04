@@ -75,11 +75,11 @@ boundaries.
 
 | Priority | Finding | Consequence | Required response |
 |---|---|---|---|
-| P0 | Large-file ingest materializes the full file and copied chunks; MP4 ingest can duplicate the payload again. | Peak memory grows with asset size and can approach multiple file copies. | Implement bounded-memory streaming or mmap range ingest with backpressure and crash-safe staging. |
-| P0 | Loose object writes historically targeted final paths directly. | A crash or concurrent reader can observe a partial object. | Stage beside the destination and publish without replacement; add crash/concurrency tests. |
+| P0 | Text and MP4-specialized ingest paths can still materialize whole-file buffers; MP4 can duplicate the payload. Large classified binaries (≥1 MiB) already stream FastCDC. | Peak memory for those remaining paths can still grow with asset size. | Extend streaming/mmap ingest to text and MP4 paths with backpressure and crash-safe staging; keep size/mtime mutation checks. |
+| P0 | *(Resolved for objects/index)* Loose objects publish via temp + hard-link; the index publishes via temp + rename. | Remaining risk is incomplete crash/concurrency evidence, not unsafedirect writes. | Keep expanding crash, disk-full, and concurrent-writer tests. |
 | P0 | Real media-format coverage lacks a broad golden corpus. | A “supported MP4” claim can exceed tested layouts and risk user footage. | Build licensed/generated fixtures from cameras, phones, screen recorders, FFmpeg, Resolve/Premiere/FCP exports, fragmented MP4, multiple `mdat`, `co64`, edit lists, and malformed inputs. |
 | P1 | Current JSON writers were paired with bincode-first readers in the manifest and index paths. | Every normal uncached read pays a failed parse; one path also clones the buffer. | Detect the current format first; retain explicit legacy readers behind a version marker. |
-| P1 | The binary redeclares source modules also compiled by the library. | Longer builds, duplicate codegen, binary/library type drift, and confused visibility boundaries. | Make `main.rs` consume the library crate; keep CLI parsing/printing in the binary. |
+| P1 | *(Resolved)* The CLI binary consumes the library crate rather than redeclaring engine modules. | — | Keep CLI parsing/printing in the binary; do not reintroduce module duplication. |
 | P1 | One-file-per-object storage scales poorly at high object counts. | Metadata I/O, directory walks, backup overhead, GC time, and inode pressure dominate. | Add versioned packfiles, checksummed indexes, and a multi-pack index. |
 | P1 | Telemetry was documented as opt-in but its config keys were not supported; its event queue could re-lock itself; machine IDs contributed to identifiers. | Feature was effectively inert and privacy/correctness claims were inaccurate. | Use typed config, random IDs, documented schema, short lock scopes, and no raw arguments/paths. |
 | P2 | Remote commands and P2P are scaffolding rather than one coherent protocol. | Implementing transports independently would create incompatible sync semantics. | Specify object negotiation, verification, resume, and ref transactions before choosing transports. |
@@ -885,7 +885,8 @@ impact, security impact, migration, and acceptance tests.
 
 - Keep one canonical product boundary.
 - Finish truth-labeling docs and remove fabricated operational claims.
-- Make loose-object writes atomic.
+- Make loose-object writes atomic *(done)*; index publishes via temp + rename *(done)*.
+- Stream large classified binary ingest with mutation checks *(done for ≥1 MiB binaries)*.
 - Fix current-format-first deserialization.
 - Repair telemetry config/privacy behavior or remove telemetry.
 - Add golden MP4/MOV fixtures and destructive failure tests.
@@ -896,7 +897,7 @@ what is experimental.
 
 ### Milestone 1 — engine 1.0
 
-- Make binary consume the library rather than recompiling modules.
+- Make binary consume the library rather than recompiling modules *(done)*.
 - Define repository format v1 compatibility policy.
 - Add fsck/repair/quarantine commands.
 - Add transaction journals for ingest/ref updates.
@@ -908,7 +909,7 @@ contract.
 
 ### Milestone 2 — scale
 
-- Implement bounded-memory ingest.
+- Finish bounded-memory ingest for remaining text and MP4-specialized paths.
 - Stream MP4 payload ranges.
 - Introduce tree objects.
 - Add packs, indexes, and multi-pack lookup.
