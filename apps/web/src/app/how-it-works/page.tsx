@@ -177,11 +177,11 @@ export default function HowItWorksPage() {
           <div className="container py-16 text-center">
             <h2 className="text-3xl font-bold tracking-tight">Inspect the design and its open questions</h2>
             <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
-              <Button render={<Link href="/docs/architecture" />}>
+              <Button render={<Link href="/docs/architecture" aria-label="Architecture guide" />}>
                 Architecture guide
                 <ArrowRight data-icon="inline-end" />
               </Button>
-              <Button variant="outline" render={<Link href="/docs/roadmap" />}>
+              <Button variant="outline" render={<Link href="/docs/roadmap" aria-label="Roadmap and gates" />}>
                 Roadmap and gates
               </Button>
             </div>

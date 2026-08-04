@@ -3,6 +3,7 @@
 use std::{fs, path::Path};
 
 use anyhow::{Context, Result};
+use walkdir::WalkDir;
 
 use crate::store::Repository;
 
@@ -141,21 +142,23 @@ fn run_task(repo: &Repository, task: MaintenanceTask) -> Result<()> {
             update_commit_graph(repo)?;
         },
         MaintenanceTask::Prefetch => {
-            // Prefetch from remotes
-            println!("    Prefetching from remotes...");
-            // This would fetch from all configured remotes
+            anyhow::bail!(
+                "Remote prefetch is disabled in this alpha because remote fetch is \
+                 fail-closed.\nNo objects or refs were changed."
+            );
         },
         MaintenanceTask::Fsck => {
             // Verify integrity
             crate::commands::fsck(false)?;
         },
         MaintenanceTask::Pack => {
-            // Pack loose objects
             pack_loose_objects(repo)?;
         },
         MaintenanceTask::IncrementalRepack => {
-            // Incremental repack
-            println!("    Incremental repack...");
+            anyhow::bail!(
+                "Incremental packfile repack is not implemented in this alpha.\nNo objects were \
+                 rewritten or deleted."
+            );
         },
     }
 
@@ -175,26 +178,20 @@ fn update_commit_graph(repo: &Repository) -> Result<()> {
 }
 
 fn pack_loose_objects(repo: &Repository) -> Result<()> {
-    // Count loose objects
     let chunks_dir = repo.dits_dir().join("objects").join("chunks");
-    if !chunks_dir.exists() {
-        return Ok(());
-    }
-
-    let mut loose_count = 0;
-    for entry in fs::read_dir(&chunks_dir)? {
-        let entry = entry?;
-        if entry.file_type()?.is_file() {
-            loose_count += 1;
+    let mut loose_count = 0u64;
+    if chunks_dir.exists() {
+        for entry in WalkDir::new(&chunks_dir).into_iter().filter_map(Result::ok) {
+            if entry.file_type().is_file() {
+                loose_count += 1;
+            }
         }
     }
 
-    println!("    Found {} loose objects", loose_count);
-
-    // In a full implementation, we would pack these into packfiles
-    // For now, just report the count
-
-    Ok(())
+    anyhow::bail!(
+        "Packfiles are not implemented in this alpha (Milestone 2).\nLoose chunk objects \
+         currently present: {loose_count}\nNo objects were packed, rewritten, or deleted."
+    );
 }
 
 /// Check if maintenance is enabled

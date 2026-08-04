@@ -44,7 +44,8 @@ pub async fn fetch_from_remote(remote_name: &str, url: &str, _prune: bool) -> Re
         RemoteType::Local(path) => bail!(
             "Local-path fetch is disabled in this alpha because the current transfer cannot prove \
              that every Dits and embedded Git object is complete.\nRemote: {} ({})\nNo objects or \
-             refs were changed.",
+             refs were changed.\nFor additive object copy without ref updates, use `dits \
+             fetch-objects <path>`. For a full local repository copy, use `dits clone`.",
             remote_name,
             path.display()
         ),

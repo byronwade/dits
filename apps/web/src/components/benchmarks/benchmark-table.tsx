@@ -15,7 +15,8 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Info, Check, X, Minus } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
+import { Info, Check, X, Minus, BarChart3 } from "lucide-react";
 
 interface Column {
     key: string;
@@ -58,57 +59,66 @@ export function BenchmarkTable({
     rows,
 }: BenchmarkTableProps) {
     return (
-        <div className="rounded-xl border bg-card overflow-hidden">
+        <div className="overflow-hidden rounded-xl border bg-card">
             {(title || description) && (
-                <div className="p-4 border-b">
+                <div className="border-b p-4">
                     {title && <h3 className="text-lg font-semibold">{title}</h3>}
                     {description && (
-                        <p className="text-sm text-muted-foreground mt-1">{description}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
                     )}
                 </div>
             )}
 
-            <Table>
-                <TableHeader>
-                    <TableRow className="bg-muted/50">
-                        <TableHead className="font-semibold">Metric</TableHead>
-                        {columns.map((col) => (
-                            <TableHead key={col.key} className="text-center font-semibold">
-                                <div className="flex items-center justify-center gap-1.5">
-                                    {col.label}
-                                    {col.tooltip && (
-                                        <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger render={<Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />} />
-                                                <TooltipContent side="top" className="max-w-xs">
-                                                    <p className="text-xs">{col.tooltip}</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
-                                    )}
-                                </div>
-                            </TableHead>
-                        ))}
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {rows.map((row) => (
-                        <TableRow
-                            key={row.label}
-                            className={cn(
-                                row.highlight && "bg-brand/5 hover:bg-brand/10"
-                            )}
-                        >
-                            <TableCell className="font-medium">{row.label}</TableCell>
+            {rows.length === 0 ? (
+                <EmptyState
+                    icon={BarChart3}
+                    title="No benchmark results"
+                    description="Results will appear here when a comparable run is available."
+                    className="rounded-none border-0"
+                />
+            ) : (
+                <Table>
+                    <TableHeader>
+                        <TableRow className="bg-muted/50">
+                            <TableHead className="font-semibold">Metric</TableHead>
                             {columns.map((col) => (
-                                <TableCell key={col.key} className="text-center">
-                                    <CellValue value={row.values[col.key]} />
-                                </TableCell>
+                                <TableHead key={col.key} className="text-center font-semibold">
+                                    <div className="flex items-center justify-center gap-1.5">
+                                        {col.label}
+                                        {col.tooltip && (
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger render={<Info className="h-3.5 w-3.5 cursor-help text-muted-foreground" />} />
+                                                    <TooltipContent side="top" className="max-w-xs">
+                                                        <p className="text-xs">{col.tooltip}</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        )}
+                                    </div>
+                                </TableHead>
                             ))}
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                    </TableHeader>
+                    <TableBody>
+                        {rows.map((row) => (
+                            <TableRow
+                                key={row.label}
+                                className={cn(
+                                    row.highlight && "bg-brand/5 hover:bg-brand/10"
+                                )}
+                            >
+                                <TableCell className="font-medium">{row.label}</TableCell>
+                                {columns.map((col) => (
+                                    <TableCell key={col.key} className="text-center">
+                                        <CellValue value={row.values[col.key]} />
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            )}
         </div>
     );
 }

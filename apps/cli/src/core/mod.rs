@@ -30,8 +30,8 @@ mod storage_strategy;
 // Storage Strategy Layer (Phase 3.6)
 #[allow(unused_imports)]
 pub use chunk::{
-    chunk_data, chunk_data_parallel, chunk_data_with_refs, chunk_data_with_refs_parallel, Chunk,
-    ChunkRef, ChunkerConfig,
+    chunk_data, chunk_data_parallel, chunk_data_with_refs, chunk_data_with_refs_parallel,
+    stream_chunk_reader, Chunk, ChunkRef, ChunkStreamError, ChunkerConfig, StreamChunkSummary,
 };
 pub use commit::{Author, Commit};
 // Smart Layer exports

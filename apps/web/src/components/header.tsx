@@ -108,6 +108,7 @@ function DockNav({
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               ref={(el) => {
                 itemRefs.current[i] = el;
               }}
@@ -167,6 +168,7 @@ export function Header() {
           <div className="flex items-center gap-2.5">
             <Link
               href={product.home}
+              prefetch={false}
               aria-label={`${product.name} — Go to homepage`}
               className="group flex w-fit items-center gap-2.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
@@ -195,31 +197,33 @@ export function Header() {
               variant="ghost"
               size="icon"
               className="text-muted-foreground hover:text-foreground"
+              aria-label="View Dits on GitHub (opens in new tab)"
               render={
                 <Link
                   href="https://github.com/byronwade/dits"
                   target="_blank"
                   rel="noopener noreferrer"
+                  prefetch={false}
                   aria-label="View Dits on GitHub (opens in new tab)"
                 />
               }
             >
-              <GithubIcon className="size-[18px]" />
+              <GithubIcon />
             </Button>
 
             <ThemeToggle />
 
             <Button
-              className="hidden gap-1.5 sm:inline-flex"
+              className="hidden sm:inline-flex"
               render={
                 <Link
                   href="https://github.com/byronwade/dits"
                   target="_blank"
                   rel="noopener noreferrer"
-                />
+                  prefetch={false} aria-label="Star on GitHub" />
               }
             >
-              <GithubIcon className="size-4" />
+              <GithubIcon data-icon="inline-start" />
               Star on GitHub
             </Button>
 
@@ -235,7 +239,7 @@ export function Header() {
                   />
                 }
               >
-                <Menu className="h-5 w-5" aria-hidden="true" />
+                <Menu aria-hidden="true" />
               </SheetTrigger>
               <SheetContent
                 side="right"
@@ -259,6 +263,7 @@ export function Header() {
                         <Link
                           key={item.href}
                           href={item.href}
+                          prefetch={false}
                           onClick={() => setMenuOpen(false)}
                           aria-current={itemActive ? "page" : undefined}
                           className={cn(
@@ -281,7 +286,7 @@ export function Header() {
                     onClick={() => setMenuOpen(false)}
                     className="mt-6 flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <GithubIcon className="size-4" />
+                    <GithubIcon data-icon="inline-start" />
                     Star on GitHub
                   </Link>
                 </nav>

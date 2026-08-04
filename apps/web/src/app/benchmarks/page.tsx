@@ -129,14 +129,13 @@ export default function BenchmarksPage() {
                 <Link
                   href="https://github.com/byronwade/dits/blob/main/benchmarks/latest.json"
                   target="_blank"
-                  rel="noopener noreferrer"
-                />
+                  rel="noopener noreferrer" aria-label="View raw results" />
               }
             >
               View raw results
               <ArrowRight data-icon="inline-end" />
             </Button>
-            <Button variant="outline" render={<Link href="/docs/roadmap" />}>
+            <Button variant="outline" render={<Link href="/docs/roadmap" aria-label="See the evidence roadmap" />}>
               See the evidence roadmap
             </Button>
           </div>

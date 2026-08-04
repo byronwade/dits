@@ -8,6 +8,11 @@
 //! - Fixed: Insert at start → ALL chunks shift → 0% dedup
 //! - CDC:   Insert at start → Only first chunk changes → 95%+ dedup
 
+use std::{
+    fmt,
+    io::{self, Read},
+};
+
 use crate::hash::{Hash, Hasher};
 #[cfg(feature = "parallel")]
 use rayon::prelude::*;
@@ -251,6 +256,95 @@ pub fn chunk_data_parallel(data: &[u8], config: &ChunkerConfig) -> Vec<Chunk> {
         .collect()
 }
 
+/// Error while streaming chunks from a [`Read`] source.
+#[derive(Debug)]
+pub enum ChunkStreamError {
+    /// Underlying reader failed.
+    Io(io::Error),
+    /// FastCDC rejected the chunker configuration or stream state.
+    Chunker(String),
+}
+
+impl fmt::Display for ChunkStreamError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Io(error) => write!(f, "chunk stream I/O error: {error}"),
+            Self::Chunker(message) => write!(f, "chunk stream error: {message}"),
+        }
+    }
+}
+
+impl std::error::Error for ChunkStreamError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::Io(error) => Some(error),
+            Self::Chunker(_) => None,
+        }
+    }
+}
+
+impl From<io::Error> for ChunkStreamError {
+    fn from(error: io::Error) -> Self {
+        Self::Io(error)
+    }
+}
+
+/// Result of streaming a reader through FastCDC without retaining every chunk.
+#[derive(Debug, Clone)]
+pub struct StreamChunkSummary {
+    /// BLAKE3 content hash of the full byte stream.
+    pub content_hash: Hash,
+    /// Total number of bytes read.
+    pub size: u64,
+    /// Ordered chunk references for the file manifest.
+    pub chunk_refs: Vec<ChunkRef>,
+}
+
+/// Stream a [`Read`] source through FastCDC, invoking `on_chunk` for each chunk.
+///
+/// Peak retained buffers are bounded by the configured `max_size` chunk plus
+/// the caller's handling of each individual chunk. The full file is never
+/// collected into a single allocation.
+///
+/// Chunk boundaries match [`chunk_data`] / [`chunk_data_with_refs`] for the same
+/// bytes and [`ChunkerConfig`].
+pub fn stream_chunk_reader<R, F>(
+    reader: R,
+    config: &ChunkerConfig,
+    mut on_chunk: F,
+) -> Result<StreamChunkSummary, ChunkStreamError>
+where
+    R: Read,
+    F: FnMut(&Chunk) -> Result<(), ChunkStreamError>,
+{
+    let mut content_hasher = Hasher::new();
+    let mut chunk_refs = Vec::new();
+    let mut size = 0u64;
+
+    // Empty readers produce no StreamCDC items; mirror chunk_data([]) → [].
+    let chunker =
+        fastcdc::v2020::StreamCDC::new(reader, config.min_size, config.avg_size, config.max_size);
+
+    for item in chunker {
+        let chunk_data = item.map_err(|error| ChunkStreamError::Chunker(error.to_string()))?;
+        content_hasher.update(&chunk_data.data);
+        size = size
+            .checked_add(chunk_data.length as u64)
+            .ok_or_else(|| ChunkStreamError::Chunker("stream size overflowed u64".to_string()))?;
+
+        let chunk = Chunk::new(chunk_data.data);
+        let chunk_ref = ChunkRef::new(chunk.hash, chunk_data.offset, chunk_data.length as u64);
+        on_chunk(&chunk)?;
+        chunk_refs.push(chunk_ref);
+    }
+
+    Ok(StreamChunkSummary {
+        content_hash: content_hasher.finalize(),
+        size,
+        chunk_refs,
+    })
+}
+
 /// Parallel chunk data with refs using rayon for faster processing.
 ///
 /// Returns both chunks and references, with hashing done in parallel.
@@ -373,6 +467,46 @@ mod tests {
         let chunks = chunk_data(&data, &config);
         assert_eq!(chunks.len(), 1);
         assert_eq!(chunks[0].data, data);
+    }
+
+    #[test]
+    fn test_stream_matches_in_memory_chunking() {
+        let data: Vec<u8> = (0..250_000).map(|i| (i % 251) as u8).collect();
+        let config = ChunkerConfig::small();
+        let (expected_chunks, expected_refs) = chunk_data_with_refs(&data, &config);
+
+        let mut streamed = Vec::new();
+        let summary = stream_chunk_reader(data.as_slice(), &config, |chunk| {
+            streamed.push(chunk.clone());
+            Ok(())
+        })
+        .expect("stream chunking");
+
+        assert_eq!(summary.content_hash, Hasher::hash(&data));
+        assert_eq!(summary.size, data.len() as u64);
+        assert_eq!(streamed.len(), expected_chunks.len());
+        assert_eq!(summary.chunk_refs.len(), expected_refs.len());
+        for (got, expected) in streamed.iter().zip(expected_chunks.iter()) {
+            assert_eq!(got.hash, expected.hash);
+            assert_eq!(got.data, expected.data);
+        }
+        for (got, expected) in summary.chunk_refs.iter().zip(expected_refs.iter()) {
+            assert_eq!(got.hash, expected.hash);
+            assert_eq!(got.offset, expected.offset);
+            assert_eq!(got.size, expected.size);
+        }
+    }
+
+    #[test]
+    fn test_stream_empty_reader() {
+        let config = ChunkerConfig::default();
+        let summary = stream_chunk_reader(std::io::empty(), &config, |_| {
+            panic!("empty reader should not emit chunks")
+        })
+        .expect("empty stream");
+        assert_eq!(summary.size, 0);
+        assert!(summary.chunk_refs.is_empty());
+        assert_eq!(summary.content_hash, Hasher::hash(&[]));
     }
 
     #[cfg(feature = "parallel")]

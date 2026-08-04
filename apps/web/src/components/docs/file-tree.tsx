@@ -67,48 +67,61 @@ function FileTreeNode({ item, level, defaultExpanded = true }: FileTreeNodeProps
 
     const FileIcon = isFolder ? (isExpanded ? FolderOpen : Folder) : getFileIcon(item.name);
 
+    const rowClassName = cn(
+        "flex w-full items-center gap-1.5 rounded-md px-2 py-1 text-left text-sm font-mono",
+        "hover:bg-muted/50 transition-colors",
+        !hasChildren && "cursor-default"
+    );
+
+    const rowStyle = { paddingLeft: `${level * 16 + 8}px` };
+
+    const rowContent = (
+        <>
+            {hasChildren ? (
+                <span className="flex h-4 w-4 items-center justify-center text-muted-foreground" aria-hidden="true">
+                    {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                </span>
+            ) : (
+                <span className="w-4" aria-hidden="true" />
+            )}
+
+            <FileIcon className={cn(
+                "h-4 w-4 shrink-0",
+                isFolder ? "text-brand" : "text-muted-foreground"
+            )} aria-hidden="true" />
+
+            <span className={cn(
+                isFolder ? "font-medium text-foreground" : "text-muted-foreground"
+            )}>
+                {item.name}
+            </span>
+
+            {item.comment && (
+                <span className="ml-2 text-xs text-muted-foreground/60">
+                    {item.comment}
+                </span>
+            )}
+        </>
+    );
+
     return (
         <div>
-            <div
-                className={cn(
-                    "flex items-center gap-1.5 py-1 px-2 rounded-md text-sm font-mono",
-                    "hover:bg-muted/50 transition-colors cursor-default",
-                    isFolder && hasChildren && "cursor-pointer"
-                )}
-                style={{ paddingLeft: `${level * 16 + 8}px` }}
-                onClick={() => hasChildren && setIsExpanded(!isExpanded)}
-            >
-                {/* Expand/collapse indicator for folders with children */}
-                {hasChildren ? (
-                    <span className="w-4 h-4 flex items-center justify-center text-muted-foreground">
-                        {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                    </span>
-                ) : (
-                    <span className="w-4" />
-                )}
+            {hasChildren ? (
+                <button
+                    type="button"
+                    className={rowClassName}
+                    style={rowStyle}
+                    aria-expanded={isExpanded}
+                    onClick={() => setIsExpanded(!isExpanded)}
+                >
+                    {rowContent}
+                </button>
+            ) : (
+                <div className={rowClassName} style={rowStyle}>
+                    {rowContent}
+                </div>
+            )}
 
-                {/* Icon */}
-                <FileIcon className={cn(
-                    "w-4 h-4 flex-shrink-0",
-                    isFolder ? "text-brand" : "text-muted-foreground"
-                )} />
-
-                {/* Name */}
-                <span className={cn(
-                    isFolder ? "text-foreground font-medium" : "text-muted-foreground"
-                )}>
-                    {item.name}
-                </span>
-
-                {/* Comment */}
-                {item.comment && (
-                    <span className="text-muted-foreground/60 text-xs ml-2">
-                        {item.comment}
-                    </span>
-                )}
-            </div>
-
-            {/* Children */}
             {hasChildren && isExpanded && (
                 <div>
                     {item.children!.map((child, index) => (

@@ -23,11 +23,13 @@ Dits accepts a feature into the Current product only when it has:
 **Outcome:** local add, commit, checkout, and inspection are safe enough to form
 the foundation of every later feature.
 
-- [ ] Stream large-file ingest with bounded memory and backpressure
-  ([#34](https://github.com/byronwade/dits/issues/34)).
-- [ ] Publish index state only after every referenced object is durable and
-  verified.
-- [ ] Detect source mutation during ingest or fail with a stable error.
+- [x] Stream large-file ingest with bounded memory and backpressure
+  ([#34](https://github.com/byronwade/dits/issues/34)) — streaming FastCDC for
+  large binaries; text/MP4 specialized paths still buffer whole files.
+- [x] Publish index state only after every referenced object is durable and
+  verified — index writes use temp + rename; object publication was already
+  atomic.
+- [x] Detect source mutation during ingest or fail with a stable error.
 - [ ] Add crash, disk-full, concurrent-writer, corrupt-object, and retry tests.
 - [ ] Build a generated/licensed golden MP4/MOV corpus with explicit fidelity
   contracts ([#36](https://github.com/byronwade/dits/issues/36)).
@@ -52,7 +54,7 @@ Rust implementation details.
 - [ ] Publish exact positive and malformed conformance vectors
   ([#35](https://github.com/byronwade/dits/issues/35)).
 - [ ] Ship a small independent Level 0 verifier.
-- [ ] Make the CLI binary consume the canonical library module graph
+- [x] Make the CLI binary consume the canonical library module graph
   ([#37](https://github.com/byronwade/dits/issues/37)).
 
 **Exit gate:** reference writers are deterministic; current readers reject

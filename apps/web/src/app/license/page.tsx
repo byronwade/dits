@@ -80,10 +80,16 @@ export default function LicensePage() {
                     variant="outline"
                     className="mt-auto"
                     render={
-                      <Link href={l.href} target="_blank" rel="noopener noreferrer" />
+                      <Link
+                        href={l.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        prefetch={false}
+                        aria-label={`Read the full ${l.spdx} text`}
+                      />
                     }
                   >
-                    <GithubIcon className="mr-2 h-4 w-4" />
+                    <GithubIcon data-icon="inline-start" />
                     Read the full {l.spdx} text
                   </Button>
                 </Card>
@@ -119,11 +125,11 @@ export default function LicensePage() {
               </p>
             </div>
             <div className="mt-8 flex flex-wrap gap-4">
-              <Button render={<Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer" />}>
-                <GithubIcon className="mr-2 h-4 w-4" />
+              <Button render={<Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer" aria-label="View the repository" />}>
+                <GithubIcon data-icon="inline-start" />
                 View the repository
               </Button>
-              <Button variant="outline" render={<Link href="/docs" />}>
+              <Button variant="outline" render={<Link href="/docs" aria-label="Read the docs" />}>
                 Read the docs
               </Button>
             </div>

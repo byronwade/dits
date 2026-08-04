@@ -33,9 +33,10 @@ use walkdir::WalkDir;
 use crate::{
     config::Config,
     core::{
-        chunk_data_with_refs, chunk_data_with_refs_parallel, Author, ChunkerConfig, Commit,
-        FileClassifier, FileMode, FileStatus, FileType, Hash, Hasher, IgnoreMatcher, Index,
-        IndexEntry, Manifest, ManifestEntry, Mp4Metadata, StorageStrategy, StoredAtom,
+        chunk_data_with_refs, chunk_data_with_refs_parallel, stream_chunk_reader, Author,
+        ChunkStreamError, ChunkerConfig, Commit, FileClassifier, FileMode, FileStatus, FileType,
+        Hash, Hasher, IgnoreMatcher, Index, IndexEntry, Manifest, ManifestEntry, Mp4Metadata,
+        StorageStrategy, StoredAtom,
     },
     mp4::Deconstructor,
     security::KeyStore,
@@ -45,6 +46,10 @@ use crate::{
 /// Minimum file size to use parallel chunking (1 MB).
 /// Below this threshold, sequential chunking is faster due to lower overhead.
 const PARALLEL_CHUNK_THRESHOLD: usize = 1024 * 1024;
+
+/// Files at or above this size are ingested through streaming FastCDC so peak
+/// memory stays near the chunker `max_size` rather than the whole file.
+const STREAMING_INGEST_THRESHOLD: u64 = 1024 * 1024;
 
 /// Index metadata should remain tiny compared with tracked content. This cap
 /// bounds both the enclosing JSON/legacy-bincode file and bincode's declared
@@ -98,6 +103,22 @@ pub enum RepoError {
          storage engine and metadata path. No repository data was read or written."
     )]
     EncryptionUnsupported,
+
+    #[error(
+        "Source file '{path}' changed during ingest (expected size {expected_size}, mtime \
+         {expected_mtime}; observed size {actual_size}, mtime {actual_mtime}). Re-run the add \
+         after the writer finishes."
+    )]
+    SourceMutated {
+        path:           String,
+        expected_size:  u64,
+        expected_mtime: i64,
+        actual_size:    u64,
+        actual_mtime:   i64,
+    },
+
+    #[error("Streaming ingest failed for '{path}': {message}")]
+    StreamingIngest { path: String, message: String },
 }
 
 /// Same-directory checkout writer that keeps the destination untouched until
@@ -720,7 +741,22 @@ impl Repository {
                 MAX_INDEX_FILE_SIZE
             )));
         }
-        fs::write(&index_path, json).map_err(|e| RepoError::IndexError(e.to_string()))?;
+
+        // Stage beside the destination and rename into place so readers never
+        // observe a truncated index after a crash mid-write.
+        let temporary = self
+            .dits_dir
+            .join(format!("index.{}.tmp", uuid::Uuid::new_v4().simple()));
+        fs::write(&temporary, &json).map_err(|e| RepoError::IndexError(e.to_string()))?;
+        // Best-effort durability before publication. Failures here are ignored
+        // on filesystems that do not support sync_data.
+        if let Ok(file) = File::open(&temporary) {
+            let _ = file.sync_data();
+        }
+        fs::rename(&temporary, &index_path).map_err(|e| {
+            let _ = fs::remove_file(&temporary);
+            RepoError::IndexError(e.to_string())
+        })?;
 
         // Update cache with new mtime
         let mtime = index_path.metadata()?.modified()?;
@@ -728,6 +764,40 @@ impl Repository {
             *cache_guard = Some(CachedIndex { index: index.clone(), mtime });
         }
 
+        Ok(())
+    }
+
+    /// Capture size + mtime used to detect writers mutating a source
+    /// mid-ingest.
+    fn source_fingerprint(path: &Path) -> Result<(u64, i64), RepoError> {
+        let metadata = fs::metadata(path)?;
+        let mtime = metadata
+            .modified()
+            .map(|t| {
+                t.duration_since(std::time::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_secs() as i64
+            })
+            .unwrap_or(0);
+        Ok((metadata.len(), mtime))
+    }
+
+    fn ensure_source_unchanged(
+        path: &str,
+        full_path: &Path,
+        expected_size: u64,
+        expected_mtime: i64,
+    ) -> Result<(), RepoError> {
+        let (actual_size, actual_mtime) = Self::source_fingerprint(full_path)?;
+        if actual_size != expected_size || actual_mtime != expected_mtime {
+            return Err(RepoError::SourceMutated {
+                path: path.to_string(),
+                expected_size,
+                expected_mtime,
+                actual_size,
+                actual_mtime,
+            });
+        }
         Ok(())
     }
 
@@ -1078,6 +1148,10 @@ impl Repository {
     /// - GitText: Store via libgit2, line-based operations
     /// - DitsChunk: Store via FastCDC chunking
     /// - Hybrid: Both (for NLE projects)
+    ///
+    /// Large binary ingest streams through FastCDC so peak memory tracks the
+    /// chunker maximum rather than the whole file. Source size/mtime are
+    /// checked before and after ingest so mid-write mutations fail closed.
     fn add_file(
         &self,
         index: &mut Index,
@@ -1090,29 +1164,56 @@ impl Repository {
             return self.add_mp4_file(index, rel_path, full_path, result);
         }
 
-        let data = fs::read(full_path)?;
-        let content_hash = Hasher::hash(&data);
+        let (expected_size, expected_mtime) = Self::source_fingerprint(full_path)?;
 
-        // Check if file has changed
-        if self.reconcile_equal_index_content(index, rel_path, content_hash, result)? {
-            return Ok(());
+        // Extension/filename classification avoids reading whole files just to
+        // choose a storage engine. Unknown paths peek a small prefix.
+        let mut strategy = self.file_classifier.classify(full_path, None);
+        if matches!(strategy, StorageStrategy::DitsChunk)
+            && full_path.extension().is_none()
+            && expected_size > 0
+        {
+            let mut probe = File::open(full_path)?;
+            let mut sample = vec![0u8; expected_size.min(8192) as usize];
+            let read = probe.read(&mut sample)?;
+            sample.truncate(read);
+            strategy = self.file_classifier.classify(full_path, Some(&sample));
         }
 
-        // Phase 3.6: Classify file to determine storage strategy
-        let strategy = self.file_classifier.classify(full_path, Some(&data));
-
-        // Route to appropriate storage engine
         match strategy {
             StorageStrategy::GitText => {
+                let data = fs::read(full_path)?;
+                Self::ensure_source_unchanged(rel_path, full_path, expected_size, expected_mtime)?;
+                let content_hash = Hasher::hash(&data);
+                if self.reconcile_equal_index_content(index, rel_path, content_hash, result)? {
+                    return Ok(());
+                }
                 self.add_text_file(index, rel_path, full_path, &data, content_hash, result)
             },
-            StorageStrategy::DitsChunk => {
-                self.add_binary_file(index, rel_path, full_path, &data, content_hash, result)
-            },
-            StorageStrategy::Hybrid => {
-                // For now, treat hybrid files as binary
-                // Full hybrid support will parse metadata vs payload
-                self.add_binary_file(index, rel_path, full_path, &data, content_hash, result)
+            StorageStrategy::DitsChunk | StorageStrategy::Hybrid => {
+                if expected_size >= STREAMING_INGEST_THRESHOLD {
+                    self.add_binary_file_streaming(
+                        index,
+                        rel_path,
+                        full_path,
+                        expected_size,
+                        expected_mtime,
+                        result,
+                    )
+                } else {
+                    let data = fs::read(full_path)?;
+                    Self::ensure_source_unchanged(
+                        rel_path,
+                        full_path,
+                        expected_size,
+                        expected_mtime,
+                    )?;
+                    let content_hash = Hasher::hash(&data);
+                    if self.reconcile_equal_index_content(index, rel_path, content_hash, result)? {
+                        return Ok(());
+                    }
+                    self.add_binary_file(index, rel_path, full_path, &data, content_hash, result)
+                }
             },
         }
     }
@@ -1292,6 +1393,86 @@ impl Repository {
         index.stage(entry);
         result.files_staged += 1;
 
+        Ok(())
+    }
+
+    /// Stream a large binary file through FastCDC and publish chunks
+    /// immediately.
+    fn add_binary_file_streaming(
+        &self,
+        index: &mut Index,
+        rel_path: &str,
+        full_path: &Path,
+        expected_size: u64,
+        expected_mtime: i64,
+        result: &mut AddResult,
+    ) -> Result<(), RepoError> {
+        let file = File::open(full_path)?;
+        let objects = &self.objects;
+        let summary = stream_chunk_reader(file, &self.chunker_config, |chunk| {
+            match objects.store_chunk(chunk) {
+                Ok(true) => {
+                    result.new_chunks += 1;
+                    result.new_bytes += chunk.size() as u64;
+                    Ok(())
+                },
+                Ok(false) => {
+                    result.dedup_chunks += 1;
+                    result.dedup_bytes += chunk.size() as u64;
+                    Ok(())
+                },
+                Err(error) => Err(ChunkStreamError::Chunker(error.to_string())),
+            }
+        })
+        .map_err(|error| RepoError::StreamingIngest {
+            path:    rel_path.to_string(),
+            message: error.to_string(),
+        })?;
+
+        Self::ensure_source_unchanged(rel_path, full_path, expected_size, expected_mtime)?;
+        if summary.size != expected_size {
+            return Err(RepoError::SourceMutated {
+                path: rel_path.to_string(),
+                expected_size,
+                expected_mtime,
+                actual_size: summary.size,
+                actual_mtime: expected_mtime,
+            });
+        }
+
+        if self.reconcile_equal_index_content(index, rel_path, summary.content_hash, result)? {
+            return Ok(());
+        }
+
+        let metadata = fs::metadata(full_path)?;
+        let mode = file_mode(&metadata);
+        let file_type = if metadata.is_symlink() {
+            FileType::Symlink
+        } else {
+            FileType::Regular
+        };
+        let symlink_target = if file_type == FileType::Symlink {
+            fs::read_link(full_path)
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_default()
+        } else {
+            String::new()
+        };
+
+        let mut entry = IndexEntry::new(
+            rel_path.to_string(),
+            summary.content_hash,
+            summary.size,
+            expected_mtime,
+            mode,
+            file_type,
+            symlink_target,
+            summary.chunk_refs,
+        );
+        entry.status = self.status_for_updated_content(index, rel_path, summary.content_hash)?;
+
+        index.stage(entry);
+        result.files_staged += 1;
         Ok(())
     }
 
@@ -3359,5 +3540,58 @@ mod tests {
         // With a single small file, physical and logical should be equal
         assert_eq!(stats.physical_size, stats.logical_size);
         assert_eq!(stats.saved_bytes, 0);
+    }
+
+    #[test]
+    fn test_streaming_ingest_round_trips_large_binary() {
+        let temp = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+        let path = temp.path().join("large.bin");
+        let content: Vec<u8> = (0..2_500_000).map(|i| (i % 251) as u8).collect();
+        fs::write(&path, &content).unwrap();
+
+        let result = repo.add("large.bin").unwrap();
+        assert_eq!(result.files_staged, 1);
+        assert!(result.new_chunks + result.dedup_chunks > 1);
+
+        let commit = repo.commit("streamed binary").unwrap();
+        fs::remove_file(&path).unwrap();
+        let checkout = repo.checkout(&commit.hash).unwrap();
+        assert_eq!(checkout.files_restored, 1);
+        assert_eq!(fs::read(&path).unwrap(), content);
+    }
+
+    #[test]
+    fn test_add_detects_source_mutation_after_read() {
+        let temp = tempdir().unwrap();
+        let _repo = Repository::init(temp.path()).unwrap();
+        let path = temp.path().join("notes.txt");
+        fs::write(&path, b"stable text").unwrap();
+
+        let (size, mtime) = Repository::source_fingerprint(&path).unwrap();
+        fs::write(&path, b"mutated after fingerprint").unwrap();
+
+        let err = Repository::ensure_source_unchanged("notes.txt", &path, size, mtime)
+            .expect_err("mutated source must fail closed");
+        assert!(matches!(err, RepoError::SourceMutated { .. }));
+    }
+
+    #[test]
+    fn test_save_index_is_atomic_for_readers() {
+        let temp = tempdir().unwrap();
+        let repo = Repository::init(temp.path()).unwrap();
+        fs::write(temp.path().join("a.bin"), b"aaa").unwrap();
+        repo.add("a.bin").unwrap();
+
+        let index = repo.load_index().unwrap();
+        repo.save_index(&index).unwrap();
+
+        let on_disk = fs::read_to_string(repo.dits_dir().join("index")).unwrap();
+        assert!(on_disk.contains("a.bin"));
+        assert!(!fs::read_dir(repo.dits_dir())
+            .unwrap()
+            .filter_map(Result::ok)
+            .any(|entry| entry.file_name().to_string_lossy().contains("index.")
+                && entry.file_name().to_string_lossy().ends_with(".tmp")));
     }
 }
