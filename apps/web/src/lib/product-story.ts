@@ -75,17 +75,17 @@ export const PRODUCT_MILESTONES = [
 export const MEASURED_BENCHMARKS = [
   {
     name: "BLAKE3 hashing",
-    value: "6,722.42 MB/s",
+    value: "6,713.14 MB/s",
     detail: "1 MiB input, 200 iterations · Linux Xeon · 2026-08-04",
   },
   {
     name: "FastCDC streaming",
-    value: "1,104.49 MB/s",
+    value: "1,102.98 MB/s",
     detail: "32 MiB input, 5 iterations · Linux Xeon · 2026-08-04",
   },
   {
     name: "add+commit+checkout",
-    value: "314.57 ms",
+    value: "238.78 ms",
     detail: "32 MiB binary via streaming ingest · 3 iterations · Linux Xeon",
   },
 ] as const;

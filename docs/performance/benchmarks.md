@@ -14,19 +14,19 @@ is [`benchmarks/latest.json`](../../benchmarks/latest.json).
 ## Latest committed measurements
 
 The latest artifact was recorded on 2026-08-04 at commit
-`124ca7b7ce00c3b099198d649ff15ad61672af48` on an Intel Xeon (`x64`, Linux)
+`15a8bda241041a1c6a88f35e693404cadbf8dac9` on an Intel Xeon (`x64`, Linux)
 with `rustc 1.97.1` and Node `v22.14.0`.
 
 ### Component microbenchmarks
 
 | Component microbenchmark | Work per iteration | Result |
 |---|---:|---:|
-| BLAKE3 hashing | 1 MiB, 200 iterations | 6,722.42 MB/s |
-| FastCDC chunking (in-memory) | 32 MiB, 5 iterations | 1,078.44 MB/s |
-| FastCDC streaming | 32 MiB, 5 iterations | 1,104.49 MB/s |
-| SHA-256 hashing | 1 MiB, 100 iterations | 1,600.10 MB/s |
-| npm platform-key lookup | 250,000 iterations | 7,821,691 ops/s |
-| npm binary-path lookup | 150,000 iterations | 1,239,991 ops/s |
+| BLAKE3 hashing | 1 MiB, 200 iterations | 6,713.14 MB/s |
+| FastCDC chunking (in-memory) | 32 MiB, 5 iterations | 1,086.61 MB/s |
+| FastCDC streaming | 32 MiB, 5 iterations | 1,102.98 MB/s |
+| SHA-256 hashing | 1 MiB, 100 iterations | 1,621.87 MB/s |
+| npm platform-key lookup | 250,000 iterations | 7,830,248 ops/s |
+| npm binary-path lookup | 150,000 iterations | 1,282,234 ops/s |
 
 ### Local repository path (library API)
 
@@ -35,12 +35,12 @@ ingest (`Repository::add` / `commit` / `checkout`), 3 iterations:
 
 | Operation | Result |
 |---|---:|
-| add 32 MiB binary (streaming) | 285.73 ms avg |
-| commit after 32 MiB add | 3.85 ms avg |
-| checkout 32 MiB binary | 24.99 ms avg |
-| add+commit+checkout 32 MiB | 314.57 ms avg |
-| add 32 MiB binary throughput | 111.99 MB/s |
-| append-ish 33 MiB re-add | 43.90 ms (5 new / 428 dedup chunks) |
+| add 32 MiB binary (streaming) | 213.21 ms avg |
+| commit after 32 MiB add | 3.10 ms avg |
+| checkout 32 MiB binary | 22.47 ms avg |
+| add+commit+checkout 32 MiB | 238.78 ms avg |
+| add 32 MiB binary throughput | 150.09 MB/s |
+| append-ish 33 MiB re-add | 42.09 ms (5 new / 428 dedup chunks) |
 
 These are **single-machine measurements** for disclosed inputs. They do not
 establish remote performance, packfile behavior, VFS latency, peak RSS bounds,
