@@ -449,7 +449,7 @@ export default function CLIReferencePage() {
         {commandCategories.map((category) => {
           const Icon = category.icon;
           return (
-            <Link key={category.title} href={category.href}>
+            <Link key={category.title} href={category.href} prefetch={false}>
               <Card className="h-full hover:border-brand/50 transition-colors cursor-pointer">
                 <CardHeader className="pb-3">
                   <div className={`w-10 h-10 rounded-lg ${category.bgColor} flex items-center justify-center mb-2`}>
@@ -549,7 +549,7 @@ export default function CLIReferencePage() {
         Hook subprocesses receive <code>DITS_DIR</code> and <code>DITS_HOOK</code> as
         context. Setting <code>DITS_DIR</code> before running the CLI does not redirect
         repository discovery. See the{" "}
-        <Link href="/docs/configuration/env">environment reference</Link> for unsupported
+        <Link href="/docs/configuration/env" prefetch={false}>environment reference</Link> for unsupported
         names that appeared in older drafts.
       </p>
 
@@ -658,13 +658,13 @@ dits proxy-status`}
       <h2>Related Topics</h2>
       <ul>
         <li>
-          <Link href="/docs/getting-started">Getting Started</Link> - Quick start guide
+          <Link href="/docs/getting-started" prefetch={false}>Getting Started</Link> - Quick start guide
         </li>
         <li>
-          <Link href="/docs/configuration">Configuration</Link> - Configure Dits behavior
+          <Link href="/docs/configuration" prefetch={false}>Configuration</Link> - Configure Dits behavior
         </li>
         <li>
-          <Link href="/docs/concepts">Core Concepts</Link> - Understanding how Dits works
+          <Link href="/docs/concepts" prefetch={false}>Core Concepts</Link> - Understanding how Dits works
         </li>
       </ul>
     </div>

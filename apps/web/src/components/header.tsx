@@ -283,6 +283,7 @@ export function Header() {
                     href="https://github.com/byronwade/dits"
                     target="_blank"
                     rel="noopener noreferrer"
+                    prefetch={false}
                     onClick={() => setMenuOpen(false)}
                     className="mt-6 flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >

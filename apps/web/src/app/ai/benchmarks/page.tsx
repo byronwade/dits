@@ -49,7 +49,7 @@ export default function AiBenchmarksPage() {
               <li>Equivalent runs with Xet, DVC, Git LFS, and plain object storage.</li>
             </ul>
             <div className="mt-10">
-              <Button render={<Link href="/benchmarks" aria-label="See measured core components" />}>See measured core components</Button>
+              <Button render={<Link href="/benchmarks" aria-label="See measured core components"  prefetch={false} />}>See measured core components</Button>
             </div>
           </div>
         </section>

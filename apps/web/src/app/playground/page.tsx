@@ -77,12 +77,12 @@ export default function PlaygroundPage() {
                 Read how it works, or install the CLI and run it on your real projects.
               </p>
               <div className="flex flex-wrap justify-center gap-3">
-                <Button render={<Link href="/how-it-works" aria-label="How it works" />}>How it works</Button>
-                <Button variant="outline" render={<Link href="/download" aria-label="Install the CLI" />}>Install the CLI</Button>
+                <Button render={<Link href="/how-it-works" aria-label="How it works"  prefetch={false} />}>How it works</Button>
+                <Button variant="outline" render={<Link href="/download" aria-label="Install the CLI"  prefetch={false} />}>Install the CLI</Button>
                 <Button
                   variant="outline"
                   render={
-                    <Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer" aria-label="GitHub" />
+                    <Link href="https://github.com/byronwade/dits" target="_blank" rel="noopener noreferrer" aria-label="GitHub"  prefetch={false} />
                   }
                 >
                   <GithubIcon data-icon="inline-start" />
