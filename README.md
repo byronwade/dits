@@ -1,5 +1,7 @@
 <div align="center">
-  <img src=".github/assets/dits-social-preview.png" alt="Dits — Version the source. Explain every result." width="100%" />
+  <a href="https://github.com/byronwade/dits">
+    <img src=".github/assets/dits-readme-hero.jpg" alt="Dits — Version the source. Explain every result." width="100%" />
+  </a>
 </div>
 
 <h1 align="center">Dits</h1>
@@ -34,6 +36,42 @@
 > projects, not as the only copy of important data. The local engine works;
 > Internet repository sync, P2P, hosted services, and official SDKs do not.
 > See the [authoritative implementation status](docs/STATUS.md).
+
+## The idea in one minute
+
+Most version-control tools can tell you that a file changed. Dits is working
+toward the harder answer:
+
+> **Which exact sources, edits, dependencies, tools, and settings produced this
+> result—and can another machine verify and reproduce it?**
+
+The current alpha establishes the trust layer first. The longer-term project
+builds an open creative history on top of it.
+
+| Question | Dits concept | Maturity |
+|---|---|---|
+| How can a large binary revision avoid becoming another full-file copy? | FastCDC finds boundaries from the content; unchanged BLAKE3-addressed chunks can be reused | **Current alpha** |
+| Can code and large assets share one history without losing useful text behavior? | Text-like files use embedded Git objects while binary/media files use the Dits chunk store | **Current alpha** |
+| How can a checkout know an object was not silently corrupted? | Immutable objects are verified against their content-derived identifiers before they are trusted | **Current alpha** |
+| Is an identical-looking frame necessarily the same source? | No—encoded bytes, canonical decoded media, and perceptual similarity are deliberately different identities | **Experimental model** |
+| Could a final render explain how it was made? | A future graph connects exact masters to edits, dependencies, tools, render recipes, and renditions | **Research direction** |
+| Could collaboration work without trusting hidden server state? | A planned open protocol verifies objects, resumes at trusted boundaries, and updates refs transactionally | **Roadmap** |
+
+## Why that could matter
+
+Imagine inspecting a final video, game build, 3D scene, or generated asset and
+being able to answer:
+
+- Which exact source files and commit produced it?
+- Which bytes are genuinely new, and which were already stored?
+- Which timeline, crop, grade, dependency, tool version, or render recipe
+  transformed the source?
+- Can the original master still be reconstructed byte-for-byte?
+- Can a collaborator verify the history without trusting one cloud provider?
+
+Dits does **not** claim all of those answers today. It is building the exact
+local history and verification foundation required to make those answers
+portable, testable, and eventually interoperable.
 
 ## Version the source. Explain every result.
 
@@ -138,18 +176,29 @@ production support today.
 
 ## Evidence, not adjectives
 
-The checked-in [benchmark artifact](benchmarks/latest.json) records component
-microbenchmarks on an Apple M2 Pro at commit `9b79be2`:
+The latest checked-in [benchmark artifact](benchmarks/latest.json) was recorded
+on an Intel Xeon Linux runner at commit `15a8bda`. It includes both component
+microbenchmarks and a bounded 32 MiB repository scenario:
 
-| Measurement | Result |
+| Measurement | Observed result |
 |---|---:|
-| BLAKE3 hashing, 1 MiB blocks | 1,809.96 MB/s |
-| FastCDC chunking, 32 MiB input | 991.76 MB/s |
-| SHA-256 hashing, 1 MiB blocks | 348.37 MB/s |
+| BLAKE3 hashing, 1 MiB blocks | 6,713.14 MB/s |
+| FastCDC chunking, 32 MiB input | 1,086.61 MB/s |
+| Streaming add of a 32 MiB binary | 213.21 ms · 150.09 MB/s |
+| Commit after the 32 MiB add | 3.10 ms |
+| Checkout of the 32 MiB binary | 22.47 ms |
+| Append-like 33 MiB revision | 428 existing chunks reused · 5 new chunks |
 
-These numbers measure components—not end-to-end repository speed, network
-performance, memory use, storage savings, or production scale. See the
-[benchmark policy](docs/performance/benchmarks.md) and
+In that synthetic append-like mutation, about **98.8% of the resulting chunk
+set was already present**. That is a concrete example of content-defined
+chunking resynchronizing around unchanged bytes—not a promise that every media
+edit will deduplicate similarly. Re-encoding, encryption, compression, color
+transforms, and nondeterministic exports can change most or all bytes.
+
+These results are not claims about production-scale repositories, network
+performance, memory use, or universal storage savings. See the
+[benchmark policy](docs/performance/benchmarks.md), raw
+[artifact](benchmarks/latest.json), and
 [performance engineering plan](docs/performance/engineering-plan.md).
 
 ## Help shape the open format
