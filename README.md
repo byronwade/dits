@@ -4,7 +4,7 @@
 
 <h1 align="center">Dits</h1>
 
-<p align="center"><strong>Open, local-first version control for large media and asset pipelines.</strong></p>
+<p align="center"><strong>Open-source, local-first version control for large files, media, video, and asset pipelines.</strong></p>
 
 <p align="center">
   Give mixed code-and-media projects Git-shaped local history with chunked,
@@ -17,6 +17,7 @@
   <a href="https://www.npmjs.com/package/@byronwade/dits"><img alt="npm" src="https://img.shields.io/npm/v/@byronwade/dits?logo=npm&label=npm" /></a>
   <a href="LICENSE"><img alt="License: Apache-2.0 OR MIT" src="https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-97a927" /></a>
   <a href="https://github.com/byronwade/dits/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/byronwade/dits?style=flat&logo=github" /></a>
+  <a href="https://github.com/sponsors/byronwade"><img alt="Sponsor Dits" src="https://img.shields.io/badge/sponsor-Dits-ea4aaa?logo=githubsponsors" /></a>
 </p>
 
 <p align="center">
@@ -24,7 +25,8 @@
   <a href="docs/STATUS.md"><strong>What works</strong></a> ·
   <a href="https://dits.byronwade.com"><strong>Website</strong></a> ·
   <a href="ROADMAP.md"><strong>Roadmap</strong></a> ·
-  <a href="CONTRIBUTING.md"><strong>Contribute</strong></a>
+  <a href="CONTRIBUTING.md"><strong>Contribute</strong></a> ·
+  <a href="https://github.com/sponsors/byronwade"><strong>Sponsor</strong></a>
 </p>
 
 > [!WARNING]
