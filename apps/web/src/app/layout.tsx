@@ -9,6 +9,7 @@ import { safeJsonLd } from "@/lib/safe-json-ld";
 import {
   generateMetadata as genMeta,
   generateOrganizationSchema,
+  generateSoftwareSourceCodeSchema,
   generateSoftwareApplicationSchema,
   generateWebSiteSchema,
 } from "@/lib/seo";
@@ -76,6 +77,15 @@ export default function RootLayout({
   });
 
   const websiteSchema = generateWebSiteSchema({});
+  const sourceCodeSchema = generateSoftwareSourceCodeSchema({
+    name: "Dits",
+    description:
+      "Open-source, local-first version control for large media and asset pipelines.",
+    codeRepository: "https://github.com/byronwade/dits",
+    programmingLanguage: ["Rust", "TypeScript"],
+    runtimePlatform: ["Command line", "Node.js"],
+    license: "Apache-2.0 OR MIT",
+  });
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -99,6 +109,13 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: safeJsonLd(websiteSchema),
+          }}
+        />
+        <Script
+          id="source-code-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: safeJsonLd(sourceCodeSchema),
           }}
         />
       </head>

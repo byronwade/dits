@@ -5,7 +5,7 @@
 Maintainer playbook for turning qualified visitors into evaluators,
 contributors, and returning followers without overstating the alpha.
 
-> Last reviewed: 2026-07-18. Messaging follows [`positioning.md`](positioning.md),
+> Last reviewed: 2026-08-08. Messaging follows [`positioning.md`](positioning.md),
 > and capability claims follow [`docs/STATUS.md`](../STATUS.md).
 
 ## The funnel
@@ -29,6 +29,8 @@ developer-tool audiences rather than undifferentiated traffic.
 - [x] Current-versus-roadmap table and evidence-linked benchmark copy.
 - [x] Root contributor and support guides, issue forms, PR template, and release-note categories.
 - [x] Direct links to `good first issue`, `help wanted`, issue forms, security, and roadmap.
+- [x] Remove temporary agent probes, patch payloads, and obsolete root benchmark scripts from the public storefront.
+- [x] Publish a compact `/llms.txt` index and SoftwareSourceCode structured data for machine-assisted discovery.
 - [ ] Apply the About description, homepage, topics, and social image in GitHub Settings.
 - [ ] Enable GitHub private vulnerability reporting, then replace the public
       security contact fallback with the private advisory form.
@@ -47,6 +49,11 @@ production.
 The repository social image is `.github/assets/dits-social-preview.png`. Upload
 that file through GitHub Settings → General → Social preview. Committing the
 file alone does not change the GitHub card.
+
+At the 2026-08-08 review, the live repository exposed only `media`,
+`version-control`, and `video`. Apply the full reviewed 15-topic set in
+`positioning.md#github-storefront`; GitHub permits up to 20 topics, but a
+focused set is more useful than filling every slot with weak synonyms.
 
 ## Demonstration ladder
 

@@ -11,7 +11,11 @@ version = "0.1.5"
 edition = "2021"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/byronwade/dits"
+homepage = "https://dits.byronwade.com"
+documentation = "https://dits.byronwade.com/docs/concepts"
 description = "Content-defined chunking (FastCDC) and BLAKE3 content addressing for Dits."
+keywords = ["fastcdc", "blake3", "chunking", "content-addressed", "deduplication"]
+categories = ["algorithms", "data-structures", "filesystem"]
 
 [dependencies]
 fastcdc = "3.1"

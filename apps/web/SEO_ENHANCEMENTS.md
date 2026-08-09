@@ -14,12 +14,17 @@ evidence of ranking, traffic, or rich-result eligibility.
   `noindex`; it is not a separate shipped product.
 - `src/app/robots.ts` allows the public site, excludes private app namespaces,
   and points crawlers to the sitemap.
+- `/llms.txt` gives AI-assisted research and coding tools a compact, truthful
+  index of the canonical product, status, documentation, source, and support
+  surfaces. It is an additional discovery aid, not a replacement for HTML,
+  `robots.txt`, or the sitemap.
 
 ## Metadata and structured data
 
 `src/lib/seo.ts` provides shared metadata plus schema helpers for:
 
 - SoftwareApplication;
+- SoftwareSourceCode;
 - Organization;
 - WebSite;
 - BreadcrumbList;

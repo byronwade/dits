@@ -1,0 +1,30 @@
+# Dits
+
+> Open-source, local-first version control for large media and asset pipelines. Dits provides an experimental local CLI for Git-shaped history with FastCDC chunking and BLAKE3-addressed storage. It is alpha software: use disposable or independently backed-up data.
+
+Canonical website: https://dits.byronwade.com
+Source repository: https://github.com/byronwade/dits
+License: Apache-2.0 OR MIT
+Current product version: 0.1.5 alpha
+
+## Start here
+
+- [Implementation status](https://github.com/byronwade/dits/blob/main/docs/STATUS.md): Authoritative Current, Experimental, Design, and Historical capability boundary.
+- [Getting started](https://dits.byronwade.com/docs/getting-started): Safe installation and local evaluation.
+- [CLI reference](https://dits.byronwade.com/docs/cli-reference): Current command surface and limitations.
+- [Core concepts](https://dits.byronwade.com/docs/concepts): Chunks, objects, manifests, commits, refs, and reconstruction.
+- [How it works](https://dits.byronwade.com/how-it-works): Product and architecture overview.
+- [Benchmarks](https://dits.byronwade.com/benchmarks): Reproducible component measurements and limitations.
+- [Roadmap](https://github.com/byronwade/dits/blob/main/ROADMAP.md): Dependency-ordered future work.
+- [Why evaluate Dits](https://dits.byronwade.com/docs/why-dits): Fit, trade-offs, and established alternatives.
+- [Contributing](https://github.com/byronwade/dits/blob/main/CONTRIBUTING.md): Setup, checks, issue selection, and pull-request expectations.
+- [Security](https://github.com/byronwade/dits/blob/main/SECURITY.md): Alpha threat boundary and vulnerability reporting.
+- [Support](https://github.com/byronwade/dits/blob/main/SUPPORT.md): Public support paths and required reproduction details.
+
+## Capability boundary
+
+Current work is local and offline. Network push, pull, fetch, sync, P2P repository transfer, hosted services, official SDKs, and NLE plug-ins are not shipped. Media-aware FACR, proxy, photo, and VFS paths are experimental. Do not infer a capability from a placeholder command, design page, legacy crate, or test fixture.
+
+## Preferred citations
+
+Use the implementation-status document for capability claims, committed benchmark artifacts for quantitative claims, and the repository's CITATION.cff for academic or research citation metadata.

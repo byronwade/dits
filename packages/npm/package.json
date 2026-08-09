@@ -31,7 +31,9 @@
     "game-development",
     "virtual-production",
     "creative-tools",
-    "developer-tools"
+    "developer-tools",
+    "rust",
+    "fastcdc"
   ],
   "bin": {
     "dits": "bin/dits"
