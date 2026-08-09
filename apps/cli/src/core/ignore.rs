@@ -10,13 +10,18 @@ use std::{
 
 use globset::{Glob, GlobSet, GlobSetBuilder};
 
+#[derive(Debug)]
+struct IgnoreRule {
+    patterns:    GlobSet,
+    is_negation: bool,
+}
+
 /// Ignore pattern matcher for filtering files.
 #[derive(Debug)]
 pub struct IgnoreMatcher {
-    /// Compiled glob patterns for ignored files.
-    ignore_set:    GlobSet,
-    /// Negation patterns (files to include despite matching ignore).
-    negate_set:    GlobSet,
+    /// User-provided rules in source order. As with gitignore, the last
+    /// matching rule determines whether a path is ignored.
+    rules:         Vec<IgnoreRule>,
     /// Whether any user-provided negation exists. An ignored directory can
     /// only be pruned from a tree walk when no negation could re-include one
     /// of its descendants.
@@ -28,42 +33,29 @@ pub struct IgnoreMatcher {
 impl IgnoreMatcher {
     /// Create a new ignore matcher for the given repository root.
     pub fn new(root: &Path) -> Self {
-        let mut builder = GlobSetBuilder::new();
-        let mut negate_builder = GlobSetBuilder::new();
+        let mut rules = Vec::new();
         let mut has_negations = false;
-
-        // Always ignore .dits directory
-        if let Ok(glob) = Glob::new("**/.dits/**") {
-            builder.add(glob);
-        }
-        if let Ok(glob) = Glob::new(".dits/**") {
-            builder.add(glob);
-        }
 
         // Load .ditsignore from root
         let ignore_file = root.join(".ditsignore");
         if ignore_file.exists() {
             if let Ok(content) = fs::read_to_string(&ignore_file) {
-                has_negations =
-                    Self::parse_ignore_file(&content, &mut builder, &mut negate_builder);
+                (rules, has_negations) = Self::parse_ignore_file(&content);
             }
         }
 
         Self {
-            ignore_set: builder.build().unwrap_or_else(|_| GlobSet::empty()),
-            negate_set: negate_builder.build().unwrap_or_else(|_| GlobSet::empty()),
+            rules,
             has_negations,
             root: root.to_path_buf(),
         }
     }
 
-    /// Parse ignore file content and add patterns to builders.
-    fn parse_ignore_file(
-        content: &str,
-        ignore_builder: &mut GlobSetBuilder,
-        negate_builder: &mut GlobSetBuilder,
-    ) -> bool {
+    /// Parse ignore file content into rules while preserving source order.
+    fn parse_ignore_file(content: &str) -> (Vec<IgnoreRule>, bool) {
+        let mut rules = Vec::new();
         let mut has_negations = false;
+
         for line in content.lines() {
             let line = line.trim();
 
@@ -82,18 +74,24 @@ impl IgnoreMatcher {
 
             // Convert gitignore pattern to glob pattern
             let glob_patterns = Self::convert_to_glob(pattern);
+            let mut builder = GlobSetBuilder::new();
+            let mut has_valid_pattern = false;
 
             for glob_pattern in glob_patterns {
                 if let Ok(glob) = Glob::new(&glob_pattern) {
-                    if is_negation {
-                        negate_builder.add(glob);
-                    } else {
-                        ignore_builder.add(glob);
-                    }
+                    builder.add(glob);
+                    has_valid_pattern = true;
+                }
+            }
+
+            if has_valid_pattern {
+                if let Ok(patterns) = builder.build() {
+                    rules.push(IgnoreRule { patterns, is_negation });
                 }
             }
         }
-        has_negations
+
+        (rules, has_negations)
     }
 
     /// Convert gitignore-style pattern to glob patterns.
@@ -123,14 +121,20 @@ impl IgnoreMatcher {
         // Get path relative to root
         let relative = path.strip_prefix(&self.root).unwrap_or(path);
 
-        // Check if it matches ignore patterns
-        let ignored = self.ignore_set.is_match(relative);
-
-        // Check if it matches negation patterns (overrides ignore)
-        if ignored && self.negate_set.is_match(relative) {
-            return false;
+        // Repository metadata is never eligible for re-inclusion.
+        if relative
+            .components()
+            .any(|component| component.as_os_str() == ".dits")
+        {
+            return true;
         }
 
+        let mut ignored = false;
+        for rule in &self.rules {
+            if rule.patterns.is_match(relative) {
+                ignored = !rule.is_negation;
+            }
+        }
         ignored
     }
 
@@ -227,6 +231,31 @@ mod tests {
 
         assert!(matcher.is_ignored_str("video.mp4"));
         assert!(!matcher.is_ignored_str("important.mp4"));
+    }
+
+    #[test]
+    fn test_last_matching_rule_wins() {
+        let dir = TempDir::new().unwrap();
+        create_test_ignore(dir.path(), "*.log\n!important.log\nimportant.log\n");
+        let matcher = IgnoreMatcher::new(dir.path());
+
+        assert!(matcher.is_ignored_str("important.log"));
+
+        create_test_ignore(dir.path(), "*.log\nimportant.log\n!important.log\n");
+        let matcher = IgnoreMatcher::new(dir.path());
+
+        assert!(!matcher.is_ignored_str("important.log"));
+    }
+
+    #[test]
+    fn test_dits_metadata_cannot_be_reincluded() {
+        let dir = TempDir::new().unwrap();
+        create_test_ignore(dir.path(), "!.dits/HEAD\n!.dits/**\n");
+        let matcher = IgnoreMatcher::new(dir.path());
+
+        assert!(matcher.is_ignored_str(".dits/HEAD"));
+        assert!(matcher.is_ignored_str(".dits/objects/test"));
+        assert!(matcher.is_ignored_str("nested/.dits/HEAD"));
     }
 
     #[test]

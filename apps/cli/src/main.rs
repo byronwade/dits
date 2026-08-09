@@ -1673,16 +1673,22 @@ async fn main() {
         },
         Commands::Serve { port, bind, base_dir } => {
             use std::path::PathBuf;
-            let base = base_dir
-                .map(PathBuf::from)
-                .unwrap_or_else(|| std::env::current_dir().unwrap());
-            match crate::store::remote_server::start_server(base, &bind, port).await {
-                Ok(()) => Ok(()),
-                Err(e) => {
-                    eprintln!("Failed to start server: {}", e);
-                    Err(anyhow::anyhow!("Failed to start server"))
-                },
+            async {
+                let base = match base_dir {
+                    Some(base_dir) => PathBuf::from(base_dir),
+                    None => std::env::current_dir().map_err(|error| {
+                        anyhow::anyhow!("Failed to resolve the current directory: {error}")
+                    })?,
+                };
+
+                crate::store::remote_server::start_server(base, &bind, port)
+                    .await
+                    .map_err(|error| {
+                        eprintln!("Failed to start server: {}", error);
+                        anyhow::anyhow!("Failed to start server")
+                    })
             }
+            .await
         },
         Commands::Sync { remote, branch, force, dry_run } => {
             commands::sync(&remote, branch.as_deref(), force, dry_run).await

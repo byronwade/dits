@@ -6,7 +6,7 @@
 
 <h1 align="center">Dits</h1>
 
-<p align="center"><strong>Open-source, local-first version control for large files, media, video, and asset pipelines.</strong></p>
+<p align="center"><strong>Open, local-first version control for large media and asset pipelines.</strong></p>
 
 <p align="center">
   Give mixed code-and-media projects Git-shaped local history with chunked,
