@@ -43,9 +43,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = genMeta({
-  title: "Dits - Local-First Version Control for Media & Assets",
+  title: "Dits - Version Control for Large Files, Media & Video",
   description:
-    "Dits is open, local-first version control for large media and asset pipelines. Try the alpha locally and help shape its open format and protocol.",
+    "Dits is open-source, local-first version control for large files, media, video, and binary asset pipelines. Try the alpha locally and help shape the open format.",
   openGraph: {
     type: "website",
     images: [
@@ -53,7 +53,7 @@ export const metadata: Metadata = genMeta({
         url: "/dits-social-preview.png",
         width: 1280,
         height: 640,
-        alt: "Dits - Local-First Version Control for Media and Assets",
+        alt: "Dits - Version Control for Large Files, Media, and Video",
       },
     ],
   },
@@ -71,7 +71,7 @@ export default function RootLayout({
   const softwareApplicationSchema = generateSoftwareApplicationSchema({
     name: "Dits",
     description:
-      "Open, local-first version control for large media and asset pipelines.",
+      "Open-source, local-first version control for large files, media, video, and binary asset pipelines.",
     operatingSystem: ["macOS on Apple silicon", "Windows x64"],
   });
 
