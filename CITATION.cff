@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If Dits contributes to your work, please cite this repository."
 type: software
-title: "Dits: local-first version control for media and asset pipelines"
+title: "Dits: open-source version control for large files, media, video, and asset pipelines"
 authors:
   - family-names: Wade
     given-names: Byron
@@ -17,3 +17,10 @@ keywords:
   - content-addressed storage
   - large files
   - reproducible pipelines
+  - video version control
+  - binary file version control
+  - game development
+  - virtual production
+  - VFX
+  - media provenance
+  - creative tools
