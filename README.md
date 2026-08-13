@@ -17,6 +17,7 @@
 <p align="center">
   <a href="https://github.com/byronwade/dits/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/byronwade/dits/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
   <a href="https://www.npmjs.com/package/@byronwade/dits"><img alt="npm" src="https://img.shields.io/npm/v/@byronwade/dits?logo=npm&label=npm" /></a>
+  <a href="https://www.npmjs.com/package/@byronwade/dits"><img alt="npm downloads" src="https://img.shields.io/npm/dm/@byronwade/dits?logo=npm&label=downloads" /></a>
   <a href="LICENSE"><img alt="License: Apache-2.0 OR MIT" src="https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-97a927" /></a>
   <a href="https://github.com/byronwade/dits/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/byronwade/dits?style=flat&logo=github" /></a>
   <a href="https://github.com/sponsors/byronwade"><img alt="Sponsor Dits" src="https://img.shields.io/badge/sponsor-Dits-ea4aaa?logo=githubsponsors" /></a>

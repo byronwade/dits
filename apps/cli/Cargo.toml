@@ -4,6 +4,12 @@ version = "0.1.5"
 edition = "2021"
 description = "Open, local-first version control for large media and asset pipelines"
 license = "Apache-2.0 OR MIT"
+repository = "https://github.com/byronwade/dits"
+homepage = "https://dits.byronwade.com"
+documentation = "https://dits.byronwade.com/docs/cli-reference"
+readme = "../../README.md"
+keywords = ["version-control", "media", "large-files", "content-addressed", "local-first"]
+categories = ["command-line-utilities", "development-tools", "filesystem"]
 
 [lib]
 name = "dits"
